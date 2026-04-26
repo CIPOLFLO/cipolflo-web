@@ -13,7 +13,7 @@ export class ServicioService extends BaseHttpService {
 
   getServicios(): Observable<ServicioRespuestaDto[]> {
     // TODO: reemplazar con llamada real cuando el backend esté disponible
-    // return this.get<Servicio[]>('servicios');
+    // return this.get<ServicioRespuestaDto[]>('servicios');
     return of(PLACEHOLDER_SERVICIOS);
   }
 }
