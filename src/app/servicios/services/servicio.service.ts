@@ -4,8 +4,8 @@ import { BaseHttpService } from '../../core/services/base-http.service';
 import { ServicioRespuestaDto } from '../models/servicio.model';
 
 const PLACEHOLDER_SERVICIOS: ServicioRespuestaDto[] = [
-  { id: 1, nombre: 'Servicio A'},
-  { id: 2, nombre: 'Servicio B'},
+  { id: 1, nombre: 'Servicio A' },
+  { id: 2, nombre: 'Servicio B' },
 ];
 
 @Injectable({ providedIn: 'root' })
