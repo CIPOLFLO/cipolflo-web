@@ -1,0 +1,81 @@
+
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2d5dca;
+    padding: 0 24px;
+    height: 56px;
+    color: white;
+    justify-content: flex-start;
+    gap: 40px;
+}
+
+.header__brand{
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-weight: 500;
+    font-size: 25px;
+    white-space: nowrap;
+
+}
+
+.header__nav{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+}
+
+.header__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.header__nav-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.header__nav-item.active {
+    background: #193CB8;
+    color: white;
+    font-weight: 600;
+}
+.header__user {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.header__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.header__username {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.material-icons {
+    font-size: 18px;
+}
