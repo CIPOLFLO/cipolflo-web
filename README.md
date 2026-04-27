@@ -192,6 +192,16 @@ providePrimeNG({ theme: { preset: Lara } })
 | ESLint + angular-eslint | 21.x | Linting |
 | Prettier | 3.x | Formato de código |
 
+## Antes de abrir un PR
+
+Ejecutar el code review de Claude Code desde la terminal antes de abrir el pull request:
+
+```bash
+/review
+```
+
+Esto analiza los cambios del branch actual y reporta problemas de calidad, seguridad y convenciones antes de que lleguen a revisión.
+
 ## Pendiente
 
 - [ ] Layout general: wrapper con header y footer que envuelva todas las páginas
