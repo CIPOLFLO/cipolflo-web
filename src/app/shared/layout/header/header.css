@@ -3,11 +3,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #2d5dca;
+    background-color: #1447E6;
     padding: 0 24px;
     height: 56px;
     color: white;
-    justify-content: flex-start;
+    
     gap: 40px;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .header__nav-item:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background-color: #193CB8;
     color: white;
 }
 
@@ -55,7 +55,7 @@
     align-items: center;
     margin-left: auto;
     gap: 10px;
-    cursor: pointer;
+    
 }
 
 .header__avatar {

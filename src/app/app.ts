@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { Header } from './shared/layout/header/header';
 import { Footer } from './shared/layout/footer/footer';
 
+
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet,Header,Footer],
@@ -10,5 +11,5 @@ import { Footer } from './shared/layout/footer/footer';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('CIPOLFLO-FrontEnd');
+ 
 }
