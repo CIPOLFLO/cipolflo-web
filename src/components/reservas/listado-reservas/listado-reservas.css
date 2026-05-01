@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* TODO: Eliminar cuando se implemente el contenido real */
+.reservas-page__placeholder {
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.reservas-page__placeholder-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.reservas-page__placeholder-text {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+}

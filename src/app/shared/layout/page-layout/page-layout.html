@@ -1,0 +1,14 @@
+<app-sub-header
+  [pageTitle]="pageTitle()"
+  [pageDescription]="pageDescription()"
+  [showBackButton]="showBackButton()"
+  [backButtonLink]="backButtonLink()"
+>
+  <ng-container ngProjectAs="[actions]">
+    <ng-content select="[actions]" />
+  </ng-container>
+</app-sub-header>
+
+<div class="page-layout__content">
+  <ng-content />
+</div>

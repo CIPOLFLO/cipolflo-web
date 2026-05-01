@@ -1,0 +1,14 @@
+<div class="sub-header">
+    @if (showBackButton()) {
+        <a class="sub-header__back-button" [href]="backButtonLink()">
+            <i class="pi pi-arrow-left"></i>
+        </a>
+    }
+    <div class="sub-header__text">
+        <h2 class="sub-header__title">{{ pageTitle() }}</h2>
+        <p class="sub-header__description">{{ pageDescription() }}</p>
+    </div>
+    <div class="sub-header__actions">
+        <ng-content select="[actions]" />
+    </div>
+</div>

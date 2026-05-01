@@ -3,8 +3,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  background-color: #ffffff;
 }
+
 
 :host {
   display: flex;
@@ -13,4 +13,6 @@
 }
 main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }

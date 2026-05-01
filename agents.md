@@ -41,7 +41,12 @@ src/
     │   └── services/
     │       └── base-http.service.ts # Clase base para todos los servicios HTTP
     ├── shared/
-    │   └── components/              # Componentes reutilizables entre módulos
+    │   ├── layout/                  # Componentes de layout globales
+    │   │   ├── header/              # Barra de navegación principal
+    │   │   ├── footer/              # Pie de página
+    │   │   ├── sub-header/          # Título de página + back button (usado internamente por page-layout)
+    │   │   └── page-layout/         # Wrapper estándar para todas las páginas
+    │   └── components/              # Componentes UI reutilizables entre módulos
     └── <modulo>/
         ├── models/                  # Interfaces y DTOs del módulo
         ├── services/                # Servicios del módulo (extienden BaseHttpService)
@@ -102,6 +107,73 @@ getItems(): Observable<MiDto[]> {
 | Componente de página o específico del módulo | `src/app/<modulo>/components/` |
 | Provider o servicio global (auth, logger…) | `src/app/core/services/` |
 | Ruta nueva | `src/app/app.routes.ts` o el archivo de rutas del módulo |
+
+---
+
+## Layout de páginas
+
+### `app-page-layout`
+
+Wrapper estándar que **todas las páginas deben usar**. Combina `app-sub-header` (título + botones) con el contenedor de contenido. Importar desde `shared/layout/page-layout/page-layout`.
+
+**Inputs:**
+
+| Input | Tipo | Default | Descripción |
+|---|---|---|---|
+| `pageTitle` | `string` | `''` | Título de la página |
+| `pageDescription` | `string` | `''` | Subtítulo bajo el título |
+| `showBackButton` | `boolean` | `false` | Muestra botón "← Volver" |
+| `backButtonLink` | `string` | `'/'` | Ruta del botón volver |
+
+**Slots de contenido (`ng-content`):**
+- `[actions]` — botones proyectados en el sub-header (lado derecho)
+- default — contenido de la página (cards, tablas, formularios)
+
+**Uso — listado con filtros y tabla:**
+```html
+<app-page-layout pageTitle="Listado de Reservas" pageDescription="...">
+  <button actions>Exportar</button>
+  <button actions>+ Nueva Reserva</button>
+
+  <app-reservas-filtros />
+  <app-reservas-tabla />
+</app-page-layout>
+```
+
+**Uso — formulario con botón volver:**
+```html
+<app-page-layout
+  pageTitle="Nueva Reserva"
+  pageDescription="Complete los datos"
+  [showBackButton]="true"
+  backButtonLink="/reservas"
+>
+  <app-nueva-reserva-form />
+</app-page-layout>
+```
+
+### CSS requerido en cada componente de página
+
+El host de cada página debe participar en la cadena flexbox para ocupar el alto completo de la pantalla:
+
+```css
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+```
+
+Sin esto, el componente colapsa a su alto de contenido y deja un espacio vacío debajo.
+
+### `app-sub-header`
+
+Usado internamente por `app-page-layout`. Solo usarlo directamente si una página necesita el sub-header sin el contenedor de contenido (caso excepcional).
+
+### Notas de implementación
+
+- **`ngProjectAs`:** `page-layout` usa `ng-container ngProjectAs="[actions]"` para re-proyectar el slot de acciones hacia `sub-header`. Angular no forwarda selectores de `ng-content` automáticamente en múltiples niveles. No eliminarlo.
+- **Color de fondo global:** `body { background-color: #f8fafc }` está en `src/styles.css`. No definir `background` en selectores `body` o `*` dentro de estilos de componentes — la encapsulación de Angular los ignora.
 
 ---
 
@@ -288,6 +360,6 @@ ng generate service <ruta>         # genera servicio
 - `src/app/core/services/base-http.service.ts` — aún no existe, debe crearse.
 - `src/environments/` — archivos de entorno aún no creados.
 - **PrimeNG** — pendiente instalar (`npm install primeng`) y configurar tema en `app.config.ts`.
-- Layout general: header y footer compartidos (usar componentes PrimeNG como `p-menubar` o `p-toolbar`).
 - Conexión real con el backend (reemplazar todos los `of()` placeholder).
 - Rutas de módulos de negocio (actualmente `app.routes.ts` retorna `[]`).
+- Implementar contenido real de los módulos (tablas, filtros, formularios) reemplazando los placeholders actuales.
