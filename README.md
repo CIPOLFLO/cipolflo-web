@@ -4,7 +4,7 @@ Frontend for the CIPOLFLO reservation management system (Círculo Policial de Fl
 
 ## Stack
 
-- Angular 19 — standalone components, signals, `input()`
+- Angular 21 — standalone components, signals, `input()`
 - Vitest — unit testing
 - PrimeIcons — iconography
 - Inter (Google Fonts) — typography
