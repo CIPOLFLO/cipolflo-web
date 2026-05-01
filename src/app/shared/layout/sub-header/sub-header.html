@@ -1,7 +1,7 @@
 <div class="sub-header">
     @if (showBackButton()) {
-        <a class="sub-header__back-button" [href]="backButtonLink()">
-            <i class="pi pi-arrow-left"></i>
+        <a class="sub-header__back-button" [href]="backButtonLink()" aria-label="Volver">
+            <i class="pi pi-arrow-left" aria-hidden="true"></i>
         </a>
     }
     <div class="sub-header__text">
