@@ -66,4 +66,4 @@ src/
 }
 ```
 
-See `CLAUDE.md` for internal conventions and architecture decisions.
+See `agents.md` for internal conventions and architecture decisions.
