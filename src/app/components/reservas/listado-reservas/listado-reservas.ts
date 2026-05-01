@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PageLayout } from '../../../app/shared/layout/page-layout/page-layout';
+import { PageLayout } from '../../shared/layout/page-layout/page-layout';
 
 @Component({
   selector: 'app-listado-reservas',

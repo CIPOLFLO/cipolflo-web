@@ -45,10 +45,7 @@ src/
 3. Use `app-page-layout` as the page wrapper:
 
 ```html
-<app-page-layout
-  pageTitle="Page title"
-  pageDescription="Short description"
->
+<app-page-layout pageTitle="Page title" pageDescription="Short description">
   <!-- Sub-header action buttons (optional) -->
   <button actions>Export</button>
 

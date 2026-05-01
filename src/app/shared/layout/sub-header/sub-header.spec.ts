@@ -45,7 +45,9 @@ describe('SubHeader', () => {
     it('should update the title when input changes', () => {
       fixture.componentRef.setInput('pageTitle', 'Listado de Reservas');
       fixture.detectChanges();
-      expect(el.querySelector('.sub-header__title')?.textContent?.trim()).toBe('Listado de Reservas');
+      expect(el.querySelector('.sub-header__title')?.textContent?.trim()).toBe(
+        'Listado de Reservas',
+      );
 
       fixture.componentRef.setInput('pageTitle', 'Clientes');
       fixture.detectChanges();
@@ -55,7 +57,10 @@ describe('SubHeader', () => {
 
   describe('description', () => {
     it('should render the given description', () => {
-      fixture.componentRef.setInput('pageDescription', 'Complete los datos para crear una nueva reserva');
+      fixture.componentRef.setInput(
+        'pageDescription',
+        'Complete los datos para crear una nueva reserva',
+      );
       fixture.detectChanges();
 
       const desc = el.querySelector('.sub-header__description');
