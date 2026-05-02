@@ -10,7 +10,6 @@ const PLACEHOLDER_SERVICIOS: ServicioRespuestaDto[] = [
 
 @Injectable({ providedIn: 'root' })
 export class ServicioService extends BaseHttpService {
-
   getServicios(): Observable<ServicioRespuestaDto[]> {
     // TODO: reemplazar con llamada real cuando el backend esté disponible
     // return this.get<ServicioRespuestaDto[]>('servicios');

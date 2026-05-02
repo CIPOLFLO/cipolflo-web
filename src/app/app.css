@@ -3,7 +3,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  background-color: #ffffff;
 }
 
 :host {
@@ -13,4 +12,6 @@
 }
 main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
