@@ -1,0 +1,86 @@
+.button {
+  --button-bg: #1447e6;
+  --button-bg-hover: #193cb8;
+  --button-bg-disabled: #93c5fd;
+  --button-border: #1447e6;
+  --button-border-disabled: #93c5fd;
+  --button-text: #ffffff;
+  --button-text-disabled: #ffffff;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--button-border);
+  border-radius: 6px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.button--primary {
+  --button-bg: #1447e6;
+  --button-bg-hover: #193cb8;
+  --button-bg-disabled: #93c5fd;
+  --button-border: #1447e6;
+  --button-border-disabled: #93c5fd;
+  --button-text: #ffffff;
+  --button-text-disabled: #ffffff;
+}
+
+.button--secondary {
+  --button-bg: #ffffff;
+  --button-bg-hover: #eff4ff;
+  --button-bg-disabled: #f8faff;
+  --button-border: #cbd5e1;
+  --button-border-disabled: #dbe3ee;
+  --button-text: #1447e6;
+  --button-text-disabled: #94a3b8;
+}
+
+.button--danger {
+  --button-bg: #dc2626;
+  --button-bg-hover: #b91c1c;
+  --button-bg-disabled: #e15f5f;
+  --button-border: #dc2626;
+  --button-border-disabled: #e15f5f;
+  --button-text: #ffffff;
+  --button-text-disabled: #ffffff;
+}
+
+.button--success {
+  --button-bg: #16a34a;
+  --button-bg-hover: #15803d;
+  --button-bg-disabled: #86efac;
+  --button-border: #16a34a;
+  --button-border-disabled: #86efac;
+  --button-text: #ffffff;
+  --button-text-disabled: #ffffff;
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--button-bg-hover);
+}
+
+.button:focus-visible {
+  outline: 2px solid #193cb8;
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  background-color: var(--button-bg-disabled);
+  border-color: var(--button-border-disabled);
+  color: var(--button-text-disabled);
+  cursor: not-allowed;
+}
+
+.button__icon {
+  font-size: 14px;
+}
