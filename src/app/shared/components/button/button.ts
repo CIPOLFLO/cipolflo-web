@@ -18,11 +18,6 @@ export class AppButton {
   clicked = output<MouseEvent>();
 
   protected handleClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      event.preventDefault();
-      return;
-    }
-
     this.clicked.emit(event);
   }
 }
