@@ -1,0 +1,33 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [style]="{ width: config.width ?? '420px' }"
+>
+  <ng-template #header>
+    <span class="confirm-dialog__title">{{ config.title }}</span>
+  </ng-template>
+
+  <ng-template #content>
+    <p class="confirm-dialog__message">{{ config.message }}</p>
+  </ng-template>
+
+  <ng-template #footer>
+    <div class="confirm-dialog__actions">
+      <p-button
+        *ngIf="config.showCancelButton !== false"
+        [label]="config.cancelButtonLabel ?? 'Cancelar'"
+        [style]="cancelButtonStyle"
+        (onClick)="onCancel()"
+      />
+
+      <p-button
+        [label]="config.confirmButtonLabel ?? 'Confirmar'"
+        [style]="confirmButtonStyle"
+        (onClick)="onConfirm()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
