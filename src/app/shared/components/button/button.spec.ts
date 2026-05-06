@@ -73,7 +73,6 @@ describe('AppButton - comportamiento base', () => {
 
 describe('AppButton - contenido e icono', () => {
   let fixture: ComponentFixture<AppButton>;
-  let component: AppButton;
   let el: HTMLElement;
 
   beforeEach(async () => {
@@ -82,7 +81,6 @@ describe('AppButton - contenido e icono', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppButton);
-    component = fixture.componentInstance;
     el = fixture.nativeElement;
     fixture.detectChanges();
   });
