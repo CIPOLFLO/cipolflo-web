@@ -1,11 +1,11 @@
 .button {
-  --button-bg: #1447e6;
-  --button-bg-hover: #193cb8;
-  --button-bg-disabled: #93c5fd;
-  --button-border: #1447e6;
-  --button-border-disabled: #93c5fd;
-  --button-text: #ffffff;
-  --button-text-disabled: #ffffff;
+  --button-bg: var(--color-primary);
+  --button-bg-hover: var(--color-primary-hover);
+  --button-bg-disabled: var(--color-primary-disabled);
+  --button-border: var(--color-primary);
+  --button-border-disabled: var(--color-primary-disabled);
+  --button-text: var(--color-text-inverse);
+  --button-text-disabled: var(--color-text-inverse);
 
   display: inline-flex;
   align-items: center;
@@ -29,43 +29,43 @@
 }
 
 .button--primary {
-  --button-bg: #1447e6;
-  --button-bg-hover: #193cb8;
-  --button-bg-disabled: #93c5fd;
-  --button-border: #1447e6;
-  --button-border-disabled: #93c5fd;
-  --button-text: #ffffff;
-  --button-text-disabled: #ffffff;
+  --button-bg: var(--color-primary);
+  --button-bg-hover: var(--color-primary-hover);
+  --button-bg-disabled: var(--color-primary-disabled);
+  --button-border: var(--color-primary);
+  --button-border-disabled: var(--color-primary-disabled);
+  --button-text: var(--color-text-inverse);
+  --button-text-disabled: var(--color-text-inverse);
 }
 
 .button--secondary {
-  --button-bg: #ffffff;
-  --button-bg-hover: #eff4ff;
-  --button-bg-disabled: #f8faff;
-  --button-border: #cbd5e1;
-  --button-border-disabled: #dbe3ee;
-  --button-text: #1447e6;
-  --button-text-disabled: #94a3b8;
+  --button-bg: var(--color-bg-white);
+  --button-bg-hover: var(--color-primary-light);
+  --button-bg-disabled: var(--color-bg-subtle);
+  --button-border: var(--color-border);
+  --button-border-disabled: var(--color-border-light);
+  --button-text: var(--color-primary);
+  --button-text-disabled: var(--color-text-muted);
 }
 
 .button--danger {
-  --button-bg: #dc2626;
-  --button-bg-hover: #b91c1c;
-  --button-bg-disabled: #e15f5f;
-  --button-border: #dc2626;
-  --button-border-disabled: #e15f5f;
-  --button-text: #ffffff;
-  --button-text-disabled: #ffffff;
+  --button-bg: var(--color-danger);
+  --button-bg-hover: var(--color-danger-hover);
+  --button-bg-disabled: var(--color-danger-disabled);
+  --button-border: var(--color-danger);
+  --button-border-disabled: var(--color-danger-disabled);
+  --button-text: var(--color-text-inverse);
+  --button-text-disabled: var(--color-text-inverse);
 }
 
 .button--success {
-  --button-bg: #16a34a;
-  --button-bg-hover: #15803d;
-  --button-bg-disabled: #86efac;
-  --button-border: #16a34a;
-  --button-border-disabled: #86efac;
-  --button-text: #ffffff;
-  --button-text-disabled: #ffffff;
+  --button-bg: var(--color-success);
+  --button-bg-hover: var(--color-success-hover);
+  --button-bg-disabled: var(--color-success-disabled);
+  --button-border: var(--color-success);
+  --button-border-disabled: var(--color-success-disabled);
+  --button-text: var(--color-text-inverse);
+  --button-text-disabled: var(--color-text-inverse);
 }
 
 .button:hover:not(:disabled) {
@@ -73,7 +73,7 @@
 }
 
 .button:focus-visible {
-  outline: 2px solid #193cb8;
+  outline: 2px solid var(--color-primary-hover);
   outline-offset: 2px;
 }
 
