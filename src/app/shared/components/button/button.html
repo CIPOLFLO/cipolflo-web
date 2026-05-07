@@ -4,6 +4,7 @@
   [disabled]="disabled()"
   [class.button--primary]="intent() === 'primary'"
   [class.button--secondary]="intent() === 'secondary'"
+  [class.button--success]="intent() === 'success'"
   [class.button--danger]="intent() === 'danger'"
   (click)="handleClick($event)"
 >
