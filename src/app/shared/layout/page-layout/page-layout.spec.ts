@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { PageLayout } from './page-layout';
 
 @Component({
@@ -7,8 +7,8 @@ import { PageLayout } from './page-layout';
     <app-page-layout
       pageTitle="Listado de Reservas"
       pageDescription="Gestión del módulo de reservas"
-      [showBackButton]="showBackButton"
-      [backButtonLink]="backButtonLink"
+      [showBackButton]="showBackButton()"
+      [backButtonLink]="backButtonLink()"
     >
       <button actions>Exportar</button>
       <button actions>+ Nueva Reserva</button>
@@ -19,8 +19,8 @@ import { PageLayout } from './page-layout';
   imports: [PageLayout],
 })
 class TestHostPageLayout {
-  showBackButton = false;
-  backButtonLink = '/';
+  showBackButton = signal(false);
+  backButtonLink = signal('/');
 }
 
 describe('PageLayout', () => {
@@ -85,12 +85,6 @@ describe('PageLayout', () => {
       const content = el.querySelector('.page-layout__content');
       expect(content).not.toBeNull();
     });
-
-    it('should project default ng-content inside .page-layout__content', () => {
-      const content = el.querySelector('.page-layout__content');
-      const testContent = content?.querySelector('.test-content');
-      expect(testContent?.textContent?.trim()).toBe('Contenido de la página');
-    });
   });
 });
 
@@ -120,6 +114,12 @@ describe('PageLayout - actions and content projection', () => {
     expect(buttons[1].textContent?.trim()).toBe('+ Nueva Reserva');
   });
 
+  it('should project default ng-content inside .page-layout__content', () => {
+    const content = hostEl.querySelector('.page-layout__content');
+    const testContent = content?.querySelector('.test-content');
+    expect(testContent?.textContent?.trim()).toBe('Contenido de la página');
+  });
+
   it('should render default content below SubHeader', () => {
     const contentDiv = hostEl.querySelector('.test-content');
     expect(contentDiv?.textContent?.trim()).toBe('Contenido de la página');
@@ -137,18 +137,18 @@ describe('PageLayout - actions and content projection', () => {
   });
 
   it('should propagate showBackButton through the component hierarchy', () => {
-    hostFixture.componentInstance.showBackButton = false;
+    hostFixture.componentInstance.showBackButton.set(false);
     hostFixture.detectChanges();
     expect(hostEl.querySelector('.sub-header__back-button')).toBeNull();
 
-    hostFixture.componentInstance.showBackButton = true;
+    hostFixture.componentInstance.showBackButton.set(true);
     hostFixture.detectChanges();
     expect(hostEl.querySelector('.sub-header__back-button')).not.toBeNull();
   });
 
   it('should propagate backButtonLink through the component hierarchy', () => {
-    hostFixture.componentInstance.showBackButton = true;
-    hostFixture.componentInstance.backButtonLink = '/reservas';
+    hostFixture.componentInstance.showBackButton.set(true);
+    hostFixture.componentInstance.backButtonLink.set('/reservas');
     hostFixture.detectChanges();
 
     const link = hostEl.querySelector<HTMLAnchorElement>('.sub-header__back-button');

@@ -1,0 +1,33 @@
+:root {
+  /* Brand */
+  --color-primary: #1447e6;
+  --color-primary-hover: #193cb8;
+  --color-primary-disabled: #93c5fd;
+  --color-primary-light: #eff4ff;
+
+  /* Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #ffffff;
+
+  /* Background */
+  --color-bg-page: #f8fafc;
+  --color-bg-white: #ffffff;
+  --color-bg-subtle: #f8faff;
+
+  /* Border */
+  --color-border: #cbd5e1;
+  --color-border-light: #dbe3ee;
+  --color-border-separator: #e5e7eb;
+
+  /* Danger */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-disabled: #e15f5f;
+
+  /* Success */
+  --color-success: #16a34a;
+  --color-success-hover: #15803d;
+  --color-success-disabled: #86efac;
+}
