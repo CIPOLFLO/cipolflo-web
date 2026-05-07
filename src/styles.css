@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'primeicons/primeicons.css';
+@import './styles/variables.css';
+
 body {
   margin: 0;
   padding: 0;
-  background-color: #f8fafc;
+  background-color: var(--color-bg-page);
 }

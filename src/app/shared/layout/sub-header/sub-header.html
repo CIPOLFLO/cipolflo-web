@@ -1,18 +1,18 @@
 <div class="sub-header">
-    @if (showBackButton()) {
-        <a class="sub-header__back-button" [href]="backButtonLink()" aria-label="Volver">
-            <i class="pi pi-arrow-left" aria-hidden="true"></i>
-        </a>
+  @if (showBackButton()) {
+    <a class="sub-header__back-button" [href]="backButtonLink()" aria-label="Volver">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </a>
+  }
+  <div class="sub-header__text">
+    @if (pageTitle()) {
+      <h2 class="sub-header__title">{{ pageTitle() }}</h2>
     }
-    <div class="sub-header__text">
-        @if (pageTitle()) {
-            <h2 class="sub-header__title">{{ pageTitle() }}</h2>
-        }
-        @if (pageDescription()) {
-            <p class="sub-header__description">{{ pageDescription() }}</p>
-        }
-    </div>
-    <div class="sub-header__actions">
-        <ng-content select="[actions]" />
-    </div>
+    @if (pageDescription()) {
+      <p class="sub-header__description">{{ pageDescription() }}</p>
+    }
+  </div>
+  <div class="sub-header__actions">
+    <ng-content select="[actions]" />
+  </div>
 </div>
