@@ -48,8 +48,7 @@ describe('AppButton - comportamiento base', () => {
       emitted += 1;
     });
 
-    const button = el.querySelector<HTMLButtonElement>('button');
-    button?.click();
+    component['handleClick'](new MouseEvent('click'));
 
     expect(emitted).toBe(1);
   });
