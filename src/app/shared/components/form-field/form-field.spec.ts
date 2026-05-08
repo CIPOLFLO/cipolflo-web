@@ -47,7 +47,12 @@ describe('FormField', () => {
   });
 
   it('debería renderizar un p-select para type select', () => {
-    setup({ key: 'metodo', label: 'Método', type: 'select', options: [{ label: 'A', value: 'a' }] });
+    setup({
+      key: 'metodo',
+      label: 'Método',
+      type: 'select',
+      options: [{ label: 'A', value: 'a' }],
+    });
     expect(el.querySelector('p-select')).not.toBeNull();
     expect(el.querySelector('input')).toBeNull();
   });
@@ -60,11 +65,15 @@ describe('FormField', () => {
 
   it('debería aplicar la clase form-field--full al host cuando fullWidth es true', () => {
     setup({ key: 'dir', label: 'Dirección', type: 'text', fullWidth: true });
-    expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--full')).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--full')).toBe(
+      true,
+    );
   });
 
   it('no debería aplicar form-field--full cuando fullWidth no está definido', () => {
     setup({ key: 'nombre', label: 'Nombre', type: 'text' });
-    expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--full')).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--full')).toBe(
+      false,
+    );
   });
 });
