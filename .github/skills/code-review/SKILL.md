@@ -53,9 +53,13 @@ user-invocable: true
    - TypeScript strict: no hay `any` sin justificación.
    - Selectores de componentes con prefijo `app-` en kebab-case.
    - Selectores de directivas con prefijo `app` en camelCase.
+   - No usar sintaxis Angular deprecada como `*ngIf` o `*ngFor`; usar `@if` y `@for`.
    - Single quotes en TypeScript, doble en HTML.
    - Las líneas no superan los 100 caracteres.
    - Solo se comenta el por qué, no el qué.
+
+   Regla de error obligatorio
+   - Marcar como `❌ Problema` cualquier uso de sintaxis Angular deprecada, incluyendo `*ngIf`, `*ngFor` o patrones equivalentes que deban migrarse a `@if` y `@for`.
 
    Servicios y datos
    - Los métodos placeholder tienen comentario `// TODO: reemplazar cuando el backend esté disponible.`

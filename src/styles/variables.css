@@ -30,4 +30,9 @@
   --color-success: #16a34a;
   --color-success-hover: #15803d;
   --color-success-disabled: #86efac;
+
+  /* Warning */
+  --color-warning: #d97706;
+  --color-warning-hover: #b45309;
+  --color-warning-disabled: #fcd34d;
 }
