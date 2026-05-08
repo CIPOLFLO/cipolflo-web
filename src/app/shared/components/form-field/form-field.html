@@ -1,0 +1,36 @@
+<label class="form-field__label">
+  {{ config().label }}
+  @if (config().required) {
+    <span class="form-field__required" aria-hidden="true">*</span>
+  }
+</label>
+
+@switch (config().type) {
+  @case ('select') {
+    <p-select
+      [options]="config().options ?? []"
+      optionLabel="label"
+      optionValue="value"
+      [placeholder]="config().placeholder ?? ''"
+      [fluid]="true"
+    />
+  }
+  @case ('textarea') {
+    <textarea
+      pTextarea
+      [placeholder]="config().placeholder ?? ''"
+      rows="3"
+      [fluid]="true"
+    ></textarea>
+  }
+  @default {
+    <input
+      pInputText
+      [type]="config().type"
+      [placeholder]="config().placeholder ?? ''"
+      [disabled]="config().disabled ?? false"
+      [value]="config().defaultValue ?? ''"
+      [fluid]="true"
+    />
+  }
+}

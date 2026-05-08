@@ -1,0 +1,12 @@
+<section class="form-section">
+  <div class="form-section__header">
+    <h3 class="form-section__title">{{ title() }}</h3>
+    <div class="form-section__separator" aria-hidden="true"></div>
+  </div>
+  <div class="form-section__fields">
+    @for (field of fields(); track field.key) {
+      <app-form-field [config]="field" />
+    }
+    <ng-content />
+  </div>
+</section>
