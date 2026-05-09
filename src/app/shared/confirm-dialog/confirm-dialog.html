@@ -2,8 +2,10 @@
   [(visible)]="visible"
   [modal]="true"
   [closable]="false"
+  [closeOnEscape]="false"
   [resizable]="false"
   [draggable]="false"
+  [header]="config.title"
   [style]="{ width: config.width ?? '420px' }"
 >
   <ng-template #header>
@@ -16,17 +18,18 @@
 
   <ng-template #footer>
     <div class="confirm-dialog__actions">
-      <p-button
-        *ngIf="config.showCancelButton !== false"
+      <app-button
+        *If="config.showCancelButton !== false"
+        intent="secondary"
         [label]="config.cancelButtonLabel ?? 'Cancelar'"
-        [style]="cancelButtonStyle"
-        (onClick)="onCancel()"
+        (clicked)="onCancel()"
       />
 
-      <p-button
-        [label]="config.confirmButtonLabel ?? 'Confirmar'"
-        [style]="confirmButtonStyle"
-        (onClick)="onConfirm()"
+    <app-button
+  [intent]="config.variant ?? 'primary'"
+  [label]="config.confirmButtonLabel ?? 'Confirmar'"
+  (clicked)="onConfirm()"
+/>
       />
     </div>
   </ng-template>

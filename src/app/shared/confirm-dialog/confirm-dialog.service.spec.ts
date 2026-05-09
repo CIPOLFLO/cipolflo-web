@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogService } from './confirm-dialog.service';
-import { ConfirmDialogData } from '../../servicios/models/confirm-dialog.model';
+import { ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.model';
 
 const baseConfig: ConfirmDialogData = {
   title: 'Eliminar Reserva',

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { ConfirmDialogData } from '../../servicios/models/confirm-dialog.model';
+import { ConfirmDialogData } from './confirm-dialog.model';
 @Injectable({
   providedIn: 'root',
 })

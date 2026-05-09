@@ -3,14 +3,14 @@ import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { ConfirmDialogComponent } from './confirm-dialog';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
-import { ConfirmDialogData } from '../../../servicios/models/confirm-dialog.model';
+import { ConfirmDialogData } from './confirm-dialog.model';
 
 const mockConfig: ConfirmDialogData = {
   title: 'Dar de baja a socio',
   message: '¿Está seguro que desea dar de baja al socio?',
   confirmButtonLabel: 'Eliminar',
-  confirmButtonColor: '#ef4444',
   cancelButtonLabel: 'Cancelar',
+  variant: 'danger', // ✅ reemplaza confirmButtonColor
 };
 
 class MockConfirmDialogService {
@@ -58,18 +58,18 @@ describe('ConfirmDialogComponent', () => {
     });
   });
 
- describe('when service emits', () => {
-  it('should set visible to true', () => {
-    service.open(mockConfig);
-    expect(component.visible).toBe(true);
-  });
+  describe('when service emits', () => {
+    it('should set visible to true', () => {
+      service.open(mockConfig);
+      expect(component.visible).toBe(true);
+    });
 
-  it('should update config with emitted data', () => {
-    service.open(mockConfig);
-    expect(component.config.title).toBe(mockConfig.title);
-    expect(component.config.message).toBe(mockConfig.message);
+    it('should update config with emitted data', () => {
+      service.open(mockConfig);
+      expect(component.config.title).toBe(mockConfig.title);
+      expect(component.config.message).toBe(mockConfig.message);
+    });
   });
-});
 
   describe('onConfirm', () => {
     it('should set visible to false', () => {
@@ -97,35 +97,33 @@ describe('ConfirmDialogComponent', () => {
     });
   });
 
-  describe('confirmButtonStyle', () => {
-    it('should use custom color when provided', () => {
-      component.config = { ...mockConfig, confirmButtonColor: '#f97316' };
-      expect(component.confirmButtonStyle['background-color']).toBe('#f97316');
+  // ✅ confirmButtonStyle reemplazado por confirmVariant
+  describe('confirmVariant', () => {
+    it('should use variant when provided', () => {
+      component.config = { ...mockConfig, variant: 'danger' };
+      expect(component.confirmVariant).toBe('warning');
     });
 
-    it('should use default color when not provided', () => {
+    it('should use default variant when not provided', () => {
       component.config = { title: 'T', message: 'M' };
-      expect(component.confirmButtonStyle['background-color']).toBe('#ef4444');
+      expect(component.confirmVariant).toBe('default');
     });
   });
 
-  describe('cancelButtonStyle', () => {
-    it('should use custom color when provided', () => {
-      component.config = { ...mockConfig, cancelButtonColor: '#6b7280' };
-      expect(component.cancelButtonStyle['background-color']).toBe('#6b7280');
-    });
-
-    it('should use transparent when not provided', () => {
-      component.config = { title: 'T', message: 'M' };
-      expect(component.cancelButtonStyle['background-color']).toBe('transparent');
-    });
-  });
-
+  // ✅ cancelButtonStyle eliminado — el cancel no varía por variant
+  
   describe('ngOnDestroy', () => {
     it('should unsubscribe on destroy', () => {
       const spy = vi.spyOn(component['subscription'], 'unsubscribe');
       component.ngOnDestroy();
       expect(spy).toHaveBeenCalled();
+    });
+
+    // ✅ test adicional de comportamiento real post-destroy
+    it('should stop reacting after destroy', () => {
+      component.ngOnDestroy();
+      service.open(mockConfig);
+      expect(component.visible).toBe(false);
     });
   });
 });
