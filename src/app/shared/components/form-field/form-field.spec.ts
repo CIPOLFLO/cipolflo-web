@@ -145,7 +145,12 @@ describe('FormField', () => {
   });
 
   it('debería actualizar el modelo al cambiar la selección del p-select', () => {
-    setup({ key: 'estado', label: 'Estado', type: 'select', options: [{ label: 'A', value: 'a' }] });
+    setup({
+      key: 'estado',
+      label: 'Estado',
+      type: 'select',
+      options: [{ label: 'A', value: 'a' }],
+    });
     const ngModelDir = fixture.debugElement.query(By.directive(NgModel)).injector.get(NgModel);
     ngModelDir.update.emit('a');
     fixture.detectChanges();
