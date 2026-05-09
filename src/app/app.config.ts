@@ -11,6 +11,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withFetch()),
-    providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: false } } }),
+    providePrimeNG({
+      theme: { preset: Aura, options: { darkModeSelector: false } },
+      translation: { emptyMessage: 'Sin resultados', emptyFilterMessage: 'Sin resultados' },
+    }),
   ],
 };

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -17,4 +17,9 @@ import { FormFieldConfig } from '../../models/form-field.model';
 })
 export class FormField {
   config = input.required<FormFieldConfig>();
+  value = model<string | null>(null);
+
+  protected captureInput(event: Event): void {
+    this.value.set((event.target as HTMLInputElement | HTMLTextAreaElement).value);
+  }
 }
