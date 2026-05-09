@@ -1,8 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { Signal, signal } from '@angular/core';
 import { FilterPanel } from './filter-panel';
 import { FilterConfigProvider } from '../../services/filter-config.provider';
 import { FormFieldConfig } from '../../models/form-field.model';
+
+interface FilterPanelTestApi {
+  updateValue(key: string, value: string | null): void;
+  onSearch(): void;
+  onClear(): void;
+  filterValues: Signal<Record<string, string | null>>;
+}
 
 const mockFields: FormFieldConfig[] = [
   { key: 'nombre', label: 'Nombre', type: 'text', placeholder: 'Buscar...' },
@@ -16,6 +23,7 @@ class MockFilterConfigProvider extends FilterConfigProvider {
 describe('FilterPanel', () => {
   let fixture: ComponentFixture<FilterPanel>;
   let component: FilterPanel;
+  let api: FilterPanelTestApi;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -25,6 +33,7 @@ describe('FilterPanel', () => {
 
     fixture = TestBed.createComponent(FilterPanel);
     component = fixture.componentInstance;
+    api = component as unknown as FilterPanelTestApi;
     fixture.detectChanges();
   });
 
@@ -55,18 +64,18 @@ describe('FilterPanel', () => {
   });
 
   it('debe limpiar los valores al llamar a onClear()', () => {
-    (component as any).updateValue('nombre', 'test');
-    (component as any).onClear();
-    expect((component as any).filterValues()).toEqual({});
+    api.updateValue('nombre', 'test');
+    api.onClear();
+    expect(api.filterValues()).toEqual({});
   });
 
   it('debe emitir solo los valores no vacíos ni nulos al llamar a onSearch()', () => {
     const emitted: Record<string, string>[] = [];
     component.filterChange.subscribe((v) => emitted.push(v));
-    (component as any).updateValue('nombre', 'Juan');
-    (component as any).updateValue('estado', null);
-    (component as any).updateValue('concepto', '');
-    (component as any).onSearch();
+    api.updateValue('nombre', 'Juan');
+    api.updateValue('estado', null);
+    api.updateValue('concepto', '');
+    api.onSearch();
     expect(emitted.length).toBe(1);
     expect(emitted[0]).toEqual({ nombre: 'Juan' });
   });
@@ -74,8 +83,8 @@ describe('FilterPanel', () => {
   it('debe emitir un objeto vacío al llamar a onClear()', () => {
     const emitted: Record<string, string>[] = [];
     component.filterChange.subscribe((v) => emitted.push(v));
-    (component as any).updateValue('nombre', 'Juan');
-    (component as any).onClear();
+    api.updateValue('nombre', 'Juan');
+    api.onClear();
     expect(emitted[0]).toEqual({});
   });
 });
