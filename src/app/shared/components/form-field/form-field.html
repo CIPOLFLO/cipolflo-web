@@ -1,0 +1,46 @@
+<label class="form-field__label" [for]="config().key">
+  {{ config().label }}
+  @if (config().required) {
+    <span class="form-field__required" aria-hidden="true">*</span>
+  }
+</label>
+
+@switch (config().type) {
+  @case ('select') {
+    <p-select
+      [inputId]="config().key"
+      [options]="config().options ?? []"
+      optionLabel="label"
+      optionValue="value"
+      [placeholder]="config().placeholder ?? ''"
+      [ngModel]="config().defaultValue ?? null"
+      [disabled]="config().disabled ?? false"
+      [required]="config().required ?? false"
+      [fluid]="true"
+    />
+  }
+  @case ('textarea') {
+    <textarea
+      pTextarea
+      [id]="config().key"
+      [placeholder]="config().placeholder ?? ''"
+      [disabled]="config().disabled ?? false"
+      [value]="config().defaultValue ?? ''"
+      [required]="config().required ?? false"
+      rows="3"
+      [fluid]="true"
+    ></textarea>
+  }
+  @default {
+    <input
+      pInputText
+      [id]="config().key"
+      [type]="config().type"
+      [placeholder]="config().placeholder ?? ''"
+      [disabled]="config().disabled ?? false"
+      [value]="config().defaultValue ?? ''"
+      [required]="config().required ?? false"
+      [fluid]="true"
+    />
+  }
+}

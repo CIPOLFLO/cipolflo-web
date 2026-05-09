@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:host(.form-field--full) {
+  grid-column: 1 / -1;
+}
+
+.form-field__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-field__required {
+  color: var(--color-danger);
+}
