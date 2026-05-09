@@ -14,7 +14,7 @@ import { ConfirmDialogData } from '../../../servicios/models/confirm-dialog.mode
 })
 
 
-export class ConfirmDialogComponent implements OnInit, OnDestroy {
+export class ConfirmDialog implements OnInit, OnDestroy {
   visible = false;
   config: ConfirmDialogData = { title: '', message: '' };
 
