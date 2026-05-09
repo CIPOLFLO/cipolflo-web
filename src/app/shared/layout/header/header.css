@@ -2,10 +2,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1447e6;
+  background-color: var(--color-primary);
   padding: 0 24px;
   height: 56px;
-  color: white;
+  color: var(--color-text-inverse);
 
   gap: 40px;
 }
@@ -38,13 +38,13 @@
 }
 
 .header__nav-item:hover {
-  background-color: #193cb8;
-  color: white;
+  background-color: var(--color-primary-hover);
+  color: var(--color-text-inverse);
 }
 
 .header__nav-item.active {
-  background: #193cb8;
-  color: white;
+  background: var(--color-primary-hover);
+  color: var(--color-text-inverse);
   font-weight: 600;
 }
 .header__user {
