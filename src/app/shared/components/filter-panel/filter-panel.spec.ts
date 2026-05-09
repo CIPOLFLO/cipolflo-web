@@ -63,6 +63,30 @@ describe('FilterPanel', () => {
     expect(body.classList).not.toContain('filter-panel__body--collapsed');
   });
 
+  it('debe colapsar el panel al presionar Enter en el encabezado', () => {
+    const header: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__header');
+    header.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+    const body: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__body');
+    expect(body.classList).toContain('filter-panel__body--collapsed');
+  });
+
+  it('debe colapsar el panel al presionar Espacio en el encabezado', () => {
+    const header: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__header');
+    header.dispatchEvent(new KeyboardEvent('keypress', { key: ' ', bubbles: true }));
+    fixture.detectChanges();
+    const body: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__body');
+    expect(body.classList).toContain('filter-panel__body--collapsed');
+  });
+
+  it('no debe colapsar el panel al presionar otra tecla en el encabezado', () => {
+    const header: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__header');
+    header.dispatchEvent(new KeyboardEvent('keypress', { key: 'Tab', bubbles: true }));
+    fixture.detectChanges();
+    const body: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__body');
+    expect(body.classList).not.toContain('filter-panel__body--collapsed');
+  });
+
   it('debe limpiar los valores al llamar a onClear()', () => {
     api.updateValue('nombre', 'test');
     api.onClear();
@@ -86,5 +110,26 @@ describe('FilterPanel', () => {
     api.updateValue('nombre', 'Juan');
     api.onClear();
     expect(emitted[0]).toEqual({});
+  });
+
+  it('debe actualizar filterValues cuando un campo emite valueChange', () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+    input.value = 'Juan';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(api.filterValues()['nombre']).toBe('Juan');
+  });
+
+  it('debe llamar a onSearch al hacer click en el botón Buscar', () => {
+    const emitted: Record<string, string>[] = [];
+    component.filterChange.subscribe((v) => emitted.push(v));
+    fixture.nativeElement.querySelector('.filter-panel__actions .button--primary').click();
+    expect(emitted.length).toBe(1);
+  });
+
+  it('debe llamar a onClear al hacer click en el botón Limpiar Filtros', () => {
+    api.updateValue('nombre', 'Juan');
+    fixture.nativeElement.querySelector('.filter-panel__actions .button--secondary').click();
+    expect(api.filterValues()).toEqual({});
   });
 });

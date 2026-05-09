@@ -125,4 +125,35 @@ describe('FormField', () => {
       false,
     );
   });
+
+  it('debería actualizar el modelo al escribir en el input nativo', () => {
+    setup({ key: 'nombre', label: 'Nombre', type: 'text' });
+    const input = el.querySelector('input')!;
+    input.value = 'Juan';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe('Juan');
+  });
+
+  it('debería actualizar el modelo al escribir en el textarea', () => {
+    setup({ key: 'notas', label: 'Notas', type: 'textarea' });
+    const textarea = el.querySelector('textarea')!;
+    textarea.value = 'nuevo texto';
+    textarea.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe('nuevo texto');
+  });
+
+  it('debería actualizar el modelo al cambiar la selección del p-select', () => {
+    setup({ key: 'estado', label: 'Estado', type: 'select', options: [{ label: 'A', value: 'a' }] });
+    const ngModelDir = fixture.debugElement.query(By.directive(NgModel)).injector.get(NgModel);
+    ngModelDir.update.emit('a');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe('a');
+  });
+
+  it('debería usar array vacío cuando options no está definido en el select', () => {
+    setup({ key: 'tipo', label: 'Tipo', type: 'select' });
+    expect(el.querySelector('p-select')).not.toBeNull();
+  });
 });
