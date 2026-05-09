@@ -1,5 +1,13 @@
 <section class="filter-panel">
-  <div class="filter-panel__header" (click)="toggle()" role="button" [attr.aria-expanded]="isExpanded()">
+  <div
+    class="filter-panel__header"
+    (click)="toggle()"
+    (keypress)="onHeaderKeypress($event)"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isExpanded()"
+    aria-controls="filter-panel-body"
+  >
     <span class="filter-panel__title">
       <i class="pi pi-filter" aria-hidden="true"></i>
       Filtros
@@ -11,7 +19,11 @@
     ></i>
   </div>
 
-  <div class="filter-panel__body" [class.filter-panel__body--collapsed]="!isExpanded()">
+  <div
+    id="filter-panel-body"
+    class="filter-panel__body"
+    [class.filter-panel__body--collapsed]="!isExpanded()"
+  >
     <div class="filter-panel__separator"></div>
     <div class="filter-panel__fields">
       @for (field of filterFields(); track field.key) {

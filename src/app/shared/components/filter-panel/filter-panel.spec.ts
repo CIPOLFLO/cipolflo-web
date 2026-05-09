@@ -28,47 +28,50 @@ describe('FilterPanel', () => {
     fixture.detectChanges();
   });
 
-  it('should render the "Filtros" title', () => {
+  it('debe renderizar el título "Filtros"', () => {
     const title: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__title');
     expect(title.textContent).toContain('Filtros');
   });
 
-  it('should be expanded by default', () => {
+  it('debe estar expandido por defecto', () => {
     const body: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__body');
     expect(body.classList).not.toContain('filter-panel__body--collapsed');
   });
 
-  it('should collapse the body when toggle() is called', () => {
-    (component as any).toggle();
+  it('debe colapsar el panel al hacer click en el encabezado', () => {
+    fixture.nativeElement.querySelector('.filter-panel__header').click();
     fixture.detectChanges();
     const body: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__body');
     expect(body.classList).toContain('filter-panel__body--collapsed');
   });
 
-  it('should re-expand when toggle() is called twice', () => {
-    (component as any).toggle();
-    (component as any).toggle();
+  it('debe expandirse nuevamente al hacer click dos veces en el encabezado', () => {
+    const header: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__header');
+    header.click();
+    header.click();
     fixture.detectChanges();
     const body: HTMLElement = fixture.nativeElement.querySelector('.filter-panel__body');
     expect(body.classList).not.toContain('filter-panel__body--collapsed');
   });
 
-  it('should reset filterValues when onClear() is called', () => {
+  it('debe limpiar los valores al llamar a onClear()', () => {
     (component as any).updateValue('nombre', 'test');
     (component as any).onClear();
     expect((component as any).filterValues()).toEqual({});
   });
 
-  it('should emit filterValues when onSearch() is called', () => {
+  it('debe emitir solo los valores no vacíos ni nulos al llamar a onSearch()', () => {
     const emitted: Record<string, string>[] = [];
     component.filterChange.subscribe((v) => emitted.push(v));
     (component as any).updateValue('nombre', 'Juan');
+    (component as any).updateValue('estado', null);
+    (component as any).updateValue('concepto', '');
     (component as any).onSearch();
     expect(emitted.length).toBe(1);
     expect(emitted[0]).toEqual({ nombre: 'Juan' });
   });
 
-  it('should emit empty object when onClear() is called', () => {
+  it('debe emitir un objeto vacío al llamar a onClear()', () => {
     const emitted: Record<string, string>[] = [];
     component.filterChange.subscribe((v) => emitted.push(v));
     (component as any).updateValue('nombre', 'Juan');
