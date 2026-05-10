@@ -2,15 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { ConfirmDialogComponent } from './confirm-dialog';
-import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { ConfirmDialogService } from './confirm-dialog.service';
 import { ConfirmDialogData } from './confirm-dialog.model';
 
 const mockConfig: ConfirmDialogData = {
   title: 'Dar de baja a socio',
-  message: '¿Está seguro que desea dar de baja al socio?',
-  confirmButtonLabel: 'Eliminar',
+  message: '¿Está seguro que desea dar de baja a este socio?',
   cancelButtonLabel: 'Cancelar',
-  variant: 'danger', // ✅ reemplaza confirmButtonColor
+  variant: 'danger',
 };
 
 class MockConfirmDialogService {
@@ -97,21 +96,18 @@ describe('ConfirmDialogComponent', () => {
     });
   });
 
-  // ✅ confirmButtonStyle reemplazado por confirmVariant
   describe('confirmVariant', () => {
     it('should use variant when provided', () => {
       component.config = { ...mockConfig, variant: 'danger' };
-      expect(component.confirmVariant).toBe('warning');
+      expect(component.confirmVariant).toBe('danger'); // ✅
     });
 
     it('should use default variant when not provided', () => {
       component.config = { title: 'T', message: 'M' };
-      expect(component.confirmVariant).toBe('default');
+      expect(component.confirmVariant).toBe('primary'); // ✅
     });
   });
 
-  // ✅ cancelButtonStyle eliminado — el cancel no varía por variant
-  
   describe('ngOnDestroy', () => {
     it('should unsubscribe on destroy', () => {
       const spy = vi.spyOn(component['subscription'], 'unsubscribe');
@@ -119,7 +115,6 @@ describe('ConfirmDialogComponent', () => {
       expect(spy).toHaveBeenCalled();
     });
 
-    // ✅ test adicional de comportamiento real post-destroy
     it('should stop reacting after destroy', () => {
       component.ngOnDestroy();
       service.open(mockConfig);
