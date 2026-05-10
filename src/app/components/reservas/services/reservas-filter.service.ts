@@ -15,10 +15,10 @@ export class ReservasFilterService extends FilterConfigProvider {
       options: PROCEDENCIA_OPTIONS,
     },
     {
-      key: 'concepto',
-      label: 'Concepto',
+      key: 'servicio',
+      label: 'Servicio',
       type: 'select',
-      placeholder: 'Seleccionar concepto',
+      placeholder: 'Seleccionar servicio',
       options: [],
     },
     {

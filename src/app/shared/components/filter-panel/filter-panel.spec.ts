@@ -98,7 +98,7 @@ describe('FilterPanel', () => {
     component.filterChange.subscribe((v) => emitted.push(v));
     api.updateValue('nombre', 'Juan');
     api.updateValue('estado', null);
-    api.updateValue('concepto', '');
+    api.updateValue('servicio', '');
     api.onSearch();
     expect(emitted.length).toBe(1);
     expect(emitted[0]).toEqual({ nombre: 'Juan' });
