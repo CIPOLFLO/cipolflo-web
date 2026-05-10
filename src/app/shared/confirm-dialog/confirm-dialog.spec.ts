@@ -31,9 +31,7 @@ describe('ConfirmDialogComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ConfirmDialogComponent],
-      providers: [
-        { provide: ConfirmDialogService, useClass: MockConfirmDialogService },
-      ],
+      providers: [{ provide: ConfirmDialogService, useClass: MockConfirmDialogService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfirmDialogComponent);

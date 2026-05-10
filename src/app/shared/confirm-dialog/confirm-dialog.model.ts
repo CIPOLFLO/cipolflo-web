@@ -1,4 +1,3 @@
-
 export type ConfirmDialogVariant = 'primary' | 'secondary' | 'danger' | 'success';
 
 export interface ConfirmDialogData {

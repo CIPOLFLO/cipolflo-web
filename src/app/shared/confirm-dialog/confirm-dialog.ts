@@ -8,7 +8,7 @@ import { AppButton } from '../components/button/button';
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [Dialog,  AppButton],
+  imports: [Dialog, AppButton],
   templateUrl: './confirm-dialog.html',
   styleUrl: './confirm-dialog.css',
 })
