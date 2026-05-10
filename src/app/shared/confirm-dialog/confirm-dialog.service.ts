@@ -6,7 +6,7 @@ import { ConfirmDialogData } from './confirm-dialog.model';
 })
 export class ConfirmDialogService {
 
-private dialogStateSubject = new Subject<ConfirmDialogData>();
+private readonly dialogStateSubject = new Subject<ConfirmDialogData>();
 private confirmSubject: Subject<boolean> | null = null;
 
 readonly dialogState$ = this.dialogStateSubject.asObservable();

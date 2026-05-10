@@ -1,15 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogService } from './confirm-dialog.service';
 import { ConfirmDialogData, ConfirmDialogVariant } from './confirm-dialog.model';
-import { AppButton } from '../layout/components/button/button';
+import { AppButton } from '../components/button/button';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [Dialog, ButtonModule, AppButton],
+  imports: [Dialog,  AppButton],
   templateUrl: './confirm-dialog.html',
   styleUrl: './confirm-dialog.css',
 })
@@ -17,9 +16,9 @@ export class ConfirmDialogComponent implements OnInit, OnDestroy {
   visible = false;
   config: ConfirmDialogData = { title: '', message: '' };
 
-  protected subscription: Subscription = new Subscription(); // ✅ protected para el test
+  protected subscription: Subscription = new Subscription();
 
-  constructor(private confirmDialogService: ConfirmDialogService) {}
+  private readonly confirmDialogService = inject(ConfirmDialogService);
 
   ngOnInit(): void {
     this.subscription = this.confirmDialogService.dialogState$.subscribe((config) => {
@@ -45,6 +44,4 @@ export class ConfirmDialogComponent implements OnInit, OnDestroy {
   get confirmVariant(): ConfirmDialogVariant {
     return this.config.variant ?? 'primary';
   }
-
-  
 }
