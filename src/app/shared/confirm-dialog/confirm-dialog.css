@@ -1,0 +1,35 @@
+:host ::ng-deep .p-dialog {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+:host ::ng-deep .p-dialog-header {
+  padding: 20px 24px 12px;
+  border-bottom: none;
+  background-color: #ffffff;
+}
+
+:host ::ng-deep .p-dialog-content {
+  padding: 0 24px 8px;
+  background-color: #ffffff;
+}
+
+:host ::ng-deep .p-dialog-footer {
+  padding: 16px 24px 20px;
+  border-top: none;
+  background-color: #ffffff;
+}
+
+.confirm-dialog__message {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

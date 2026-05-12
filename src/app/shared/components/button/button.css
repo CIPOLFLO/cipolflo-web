@@ -68,6 +68,16 @@
   --button-text-disabled: var(--color-text-inverse);
 }
 
+.button--warning {
+  --button-bg: var(--color-warning);
+  --button-bg-hover: var(--color-warning-hover);
+  --button-bg-disabled: var(--color-warning-disabled);
+  --button-border: var(--color-warning);
+  --button-border-disabled: var(--color-warning-disabled);
+  --button-text: var(--color-text-inverse);
+  --button-text-disabled: var(--color-text-inverse);
+}
+
 .button:hover:not(:disabled) {
   background-color: var(--button-bg-hover);
 }
