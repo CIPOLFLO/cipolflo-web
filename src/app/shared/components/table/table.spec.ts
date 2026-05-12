@@ -242,7 +242,9 @@ describe('AppTable', () => {
   });
 
   it('debe renderizar celda tipo amount', async () => {
-    fixture.componentRef.setInput('columns', [{ key: 'monto', label: 'Monto', cellType: 'amount' }]);
+    fixture.componentRef.setInput('columns', [
+      { key: 'monto', label: 'Monto', cellType: 'amount' },
+    ]);
     fixture.componentRef.setInput(
       'loadDataFn',
       vi.fn().mockReturnValue(of({ ...mockPageResponse, content: [{ monto: 5000 }] })),
@@ -253,7 +255,9 @@ describe('AppTable', () => {
   });
 
   it('debe usar getNumber con valor no numérico y retornar 0', async () => {
-    fixture.componentRef.setInput('columns', [{ key: 'monto', label: 'Monto', cellType: 'amount' }]);
+    fixture.componentRef.setInput('columns', [
+      { key: 'monto', label: 'Monto', cellType: 'amount' },
+    ]);
     fixture.componentRef.setInput(
       'loadDataFn',
       vi.fn().mockReturnValue(of({ ...mockPageResponse, content: [{ monto: 'no-es-numero' }] })),
@@ -270,9 +274,11 @@ describe('AppTable', () => {
     ]);
     fixture.componentRef.setInput(
       'loadDataFn',
-      vi.fn().mockReturnValue(
-        of({ ...mockPageResponse, content: [{ precio: 10000, unidad: 'noche' }] }),
-      ),
+      vi
+        .fn()
+        .mockReturnValue(
+          of({ ...mockPageResponse, content: [{ precio: 10000, unidad: 'noche' }] }),
+        ),
     );
     fixture.detectChanges();
     await fixture.whenStable();
@@ -280,7 +286,9 @@ describe('AppTable', () => {
   });
 
   it('debe renderizar celda tipo price sin unitKey usando cadena vacía como fallback', async () => {
-    fixture.componentRef.setInput('columns', [{ key: 'precio', label: 'Precio', cellType: 'price' }]);
+    fixture.componentRef.setInput('columns', [
+      { key: 'precio', label: 'Precio', cellType: 'price' },
+    ]);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('app-price-cell')).not.toBeNull();
@@ -508,7 +516,8 @@ describe('PaginationComponent', () => {
       create(0, 10, 30);
       const spy = vi.fn();
       component.pageChange.subscribe(spy);
-      const pageBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.pagination__btn--page');
+      const pageBtn: HTMLButtonElement =
+        fixture.nativeElement.querySelector('.pagination__btn--page');
       pageBtn?.click();
       expect(spy).toHaveBeenCalled();
     });
