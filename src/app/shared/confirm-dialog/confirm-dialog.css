@@ -21,12 +21,6 @@
   background-color: #ffffff;
 }
 
-.confirm-dialog__title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #111827;
-}
-
 .confirm-dialog__message {
   font-size: 0.875rem;
   color: #4b5563;
