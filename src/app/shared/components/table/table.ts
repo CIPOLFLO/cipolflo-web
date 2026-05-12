@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { finalize, switchMap, tap } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { SortEvent } from 'primeng/api';
-import { ColumnConfig, EMPTY_PAGE, LoadDataFn, PageResponse, RowAction } from './table.models';
+import { ColumnConfig, EMPTY_PAGE, LoadDataFn, PageResponse, RowAction, TagStyle } from './table.models';
 import { TableStateService } from './table-state.service';
 import { TagCellComponent } from './cells/tag-cell/tag-cell';
 import { AmountCellComponent } from './cells/amount-cell/amount-cell';
@@ -51,10 +51,10 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
   protected readonly tableData = toSignal(
     this.params$.pipe(
-      tap(() => this.loading.set(true)),
-      switchMap((params) =>
-        this.loadDataFn()(params).pipe(finalize(() => this.loading.set(false))),
-      ),
+      switchMap((params) => {
+        this.loading.set(true);
+        return this.loadDataFn()(params).pipe(finalize(() => this.loading.set(false)));
+      }),
     ),
     { initialValue: EMPTY_PAGE as PageResponse<T> },
   );
@@ -67,8 +67,10 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
   }
 
   protected onSort(event: SortEvent): void {
-    if (event.field) {
+    if (event.field && (event.order === 1 || event.order === -1)) {
       this.tableState.updateSort(event.field, event.order === -1 ? 'desc' : 'asc');
+    } else {
+      this.tableState.clearSort();
     }
   }
 
@@ -82,6 +84,10 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
   protected getNumber(val: unknown): number {
     return typeof val === 'number' ? val : 0;
+  }
+
+  protected getTagMap(col: ColumnConfig): Record<string, TagStyle> {
+    return col.cellType === 'tag' ? col.tagMap : {};
   }
 
   protected getRowActionsForRow(row: T): RowAction<T>[] {

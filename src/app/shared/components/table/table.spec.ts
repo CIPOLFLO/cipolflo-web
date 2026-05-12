@@ -103,6 +103,15 @@ describe('TableStateService', () => {
     expect(service.queryParams().page).toBe(0);
   });
 
+  it('clearSort debe limpiar sortField y resetear sortOrder y page', () => {
+    service.updateSort('nombre', 'desc');
+    service.updatePage(2);
+    service.clearSort();
+    expect(service.queryParams().sortField).toBeUndefined();
+    expect(service.queryParams().sortOrder).toBe('asc');
+    expect(service.queryParams().page).toBe(0);
+  });
+
   it('updatePage debe actualizar page', () => {
     service.updatePage(2);
     expect(service.queryParams().page).toBe(2);
@@ -228,10 +237,23 @@ describe('AppTable', () => {
     expect(service.queryParams().sortOrder).toBe('asc');
   });
 
-  it('onSort sin field debe no modificar el estado de ordenamiento', () => {
+  it('onSort sin field debe limpiar el sort', () => {
     const service = TestBed.inject(TableStateService);
+    service.updateSort('nombre', 'desc');
     component['onSort']({ order: 1 });
     expect(service.queryParams().sortField).toBeUndefined();
+  });
+
+  it('onSort con field y order 0 debe limpiar el sort', () => {
+    const service = TestBed.inject(TableStateService);
+    service.updateSort('nombre', 'desc');
+    component['onSort']({ field: 'nombre', order: 0 });
+    expect(service.queryParams().sortField).toBeUndefined();
+  });
+
+  it('getTagMap debe retornar {} para columna no-tag', () => {
+    const col: ColumnConfig = { key: 'nombre', label: 'Nombre' };
+    expect(component['getTagMap'](col)).toEqual({});
   });
 
   it('debe renderizar el ícono de sort en columnas sortables', () => {
@@ -473,6 +495,18 @@ describe('PaginationComponent', () => {
       component.pageSizeChange.subscribe(spy);
       const mockEvent = { target: { value: '25' } } as unknown as Event;
       component['onPageSizeChange'](mockEvent);
+      expect(spy).toHaveBeenCalledWith(25);
+    });
+
+    it('debe emitir pageSizeChange al disparar change en el select del DOM', () => {
+      create(0, 10, 30);
+      fixture.componentRef.setInput('pageSizeOptions', [10, 25, 50]);
+      fixture.detectChanges();
+      const spy = vi.fn();
+      component.pageSizeChange.subscribe(spy);
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector('select');
+      select.value = '25';
+      select.dispatchEvent(new Event('change'));
       expect(spy).toHaveBeenCalledWith(25);
     });
   });

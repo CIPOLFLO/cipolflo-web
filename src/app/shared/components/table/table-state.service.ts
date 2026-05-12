@@ -42,4 +42,10 @@ export class TableStateService {
     this.sortOrder.set(order);
     this.page.set(0);
   }
+
+  clearSort(): void {
+    this.sortField.set(undefined);
+    this.sortOrder.set('asc');
+    this.page.set(0);
+  }
 }

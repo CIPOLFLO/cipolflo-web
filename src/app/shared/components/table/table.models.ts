@@ -7,14 +7,17 @@ export interface TagStyle {
   label?: string;
 }
 
-export interface ColumnConfig {
+interface BaseColumnConfig {
   key: string;
   label: string;
   sortable?: boolean;
-  cellType?: CellType;
-  tagMap?: Record<string, TagStyle>;
   unitKey?: string;
 }
+
+export type ColumnConfig =
+  | (BaseColumnConfig & { cellType?: 'text' | 'amount' | 'date' })
+  | (BaseColumnConfig & { cellType: 'tag'; tagMap: Record<string, TagStyle> })
+  | (BaseColumnConfig & { cellType: 'price' });
 
 export interface PageResponse<T> {
   content: T[];

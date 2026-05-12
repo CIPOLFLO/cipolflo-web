@@ -3,13 +3,13 @@
   [lazy]="true"
   [loading]="loading()"
   [sortField]="sortFieldOrDefault"
-  [sortOrder]="tableState.queryParams().sortOrder === 'desc' ? -1 : 1"
+  [sortOrder]="tableState.queryParams().sortField ? (tableState.queryParams().sortOrder === 'desc' ? -1 : 1) : 0"
   (onSort)="onSort($event)"
 >
   <ng-template pTemplate="header">
     <tr>
       @for (col of columns(); track col.key) {
-        <th scope="col" [pSortableColumn]="col.sortable ? col.key : ''">
+        <th scope="col" [pSortableColumn]="col.key" [pSortableColumnDisabled]="!col.sortable">
           {{ col.label }}
           @if (col.sortable) {
             <p-sortIcon [field]="col.key" />
@@ -28,7 +28,7 @@
         <td>
           @switch (col.cellType) {
             @case ('tag') {
-              <app-tag-cell [value]="getString(row[col.key])" [tagMap]="col.tagMap!" />
+              <app-tag-cell [value]="getString(row[col.key])" [tagMap]="getTagMap(col)" />
             }
             @case ('amount') {
               <app-amount-cell [value]="getNumber(row[col.key])" />
