@@ -3,7 +3,13 @@
   [lazy]="true"
   [loading]="loading()"
   [sortField]="sortFieldOrDefault"
-  [sortOrder]="tableState.queryParams().sortField ? (tableState.queryParams().sortOrder === 'desc' ? -1 : 1) : 0"
+  [sortOrder]="
+    tableState.queryParams().sortField
+      ? tableState.queryParams().sortOrder === 'desc'
+        ? -1
+        : 1
+      : 0
+  "
   (onSort)="onSort($event)"
 >
   <ng-template pTemplate="header">

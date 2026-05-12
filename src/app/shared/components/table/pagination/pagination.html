@@ -30,6 +30,7 @@
         <span class="pagination__ellipsis">...</span>
       } @else {
         <button
+          type="button"
           class="pagination__btn pagination__btn--page"
           [class.pagination__btn--active]="p === page() + 1"
           (click)="goTo(+p - 1)"

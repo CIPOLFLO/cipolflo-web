@@ -3,7 +3,14 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { finalize, switchMap } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { SortEvent } from 'primeng/api';
-import { ColumnConfig, EMPTY_PAGE, LoadDataFn, PageResponse, RowAction, TagStyle } from './table.models';
+import {
+  ColumnConfig,
+  EMPTY_PAGE,
+  LoadDataFn,
+  PageResponse,
+  RowAction,
+  TagStyle,
+} from './table.models';
 import { TableStateService } from './table-state.service';
 import { TagCellComponent } from './cells/tag-cell/tag-cell';
 import { AmountCellComponent } from './cells/amount-cell/amount-cell';
