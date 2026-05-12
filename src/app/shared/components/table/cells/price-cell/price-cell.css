@@ -1,0 +1,15 @@
+.price-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.price-cell__value {
+  font-weight: 600;
+  color: var(--p-primary-color);
+}
+
+.price-cell__unit {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}

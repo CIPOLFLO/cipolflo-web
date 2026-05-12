@@ -5,9 +5,7 @@
   <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
   <app-button actions label="Nuevo" intent="primary" icon="pi-plus" />
 
-  <!-- TODO: Reemplazar por el contenido real. Eliminar este div y los estilos asociados -->
-  <div class="reservas-page__placeholder">
-    <h3 class="reservas-page__placeholder-title">Contenido principal</h3>
-    <p class="reservas-page__placeholder-text">Aquí se renderizará la tabla de reservas.</p>
-  </div>
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
 </app-page-layout>

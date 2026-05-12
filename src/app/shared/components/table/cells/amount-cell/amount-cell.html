@@ -1,0 +1,6 @@
+<div
+  [class]="isPositive() ? 'amount-cell amount-cell--positive' : 'amount-cell amount-cell--negative'"
+>
+  <i [class]="isPositive() ? 'pi pi-arrow-up-right' : 'pi pi-arrow-down-right'"></i>
+  <span>{{ isPositive() ? '+' : '-' }} {{ value() | currencyFormat }}</span>
+</div>
