@@ -1,0 +1,42 @@
+<section class="filter-panel">
+  <div
+    class="filter-panel__header"
+    (click)="toggle()"
+    (keypress)="onHeaderKeypress($event)"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isExpanded()"
+    aria-controls="filter-panel-body"
+  >
+    <span class="filter-panel__title">
+      <i class="pi pi-filter" aria-hidden="true"></i>
+      Filtros
+    </span>
+    <i
+      class="pi pi-chevron-up filter-panel__chevron"
+      [class.filter-panel__chevron--collapsed]="!isExpanded()"
+      aria-hidden="true"
+    ></i>
+  </div>
+
+  <div
+    id="filter-panel-body"
+    class="filter-panel__body"
+    [class.filter-panel__body--collapsed]="!isExpanded()"
+  >
+    <div class="filter-panel__separator"></div>
+    <div class="filter-panel__fields">
+      @for (field of filterFields(); track field.key) {
+        <app-form-field
+          [config]="field"
+          [value]="filterValues()[field.key]"
+          (valueChange)="updateValue(field.key, $event)"
+        />
+      }
+    </div>
+    <div class="filter-panel__actions">
+      <app-button label="Buscar" intent="primary" icon="pi-search" (clicked)="onSearch()" />
+      <app-button label="Limpiar Filtros" intent="secondary" (clicked)="onClear()" />
+    </div>
+  </div>
+</section>
