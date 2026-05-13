@@ -32,6 +32,11 @@
   --color-success-hover: #15803d;
   --color-success-disabled: #86efac;
 
+  /* Warning */
+  --color-warning: #d97706;
+  --color-warning-hover: #b45309;
+  --color-warning-disabled: #fcd34d;
+
   /* Tags — red */
   --tag-red-bg: #fee2e2;
   --tag-red-color: #b91c1c;

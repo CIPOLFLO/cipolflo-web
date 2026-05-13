@@ -1,0 +1,29 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="config.title"
+  [style]="{ width: config.width ?? '420px' }"
+>
+  <p class="confirm-dialog__message">{{ config.message }}</p>
+
+  <ng-template #footer>
+    <div class="confirm-dialog__actions">
+      @if (config.showCancelButton !== false) {
+        <app-button
+          intent="secondary"
+          [label]="config.cancelButtonLabel ?? 'Cancelar'"
+          (clicked)="onCancel()"
+        />
+      }
+      <app-button
+        [intent]="config.variant ?? 'primary'"
+        [label]="config.confirmButtonLabel ?? 'Confirmar'"
+        (clicked)="onConfirm()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

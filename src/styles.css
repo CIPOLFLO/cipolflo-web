@@ -56,3 +56,10 @@ body {
   color: var(--tag-yellow-color);
   border: 1px solid var(--tag-yellow-color);
 }
+
+/* Dialog */
+.p-dialog-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
