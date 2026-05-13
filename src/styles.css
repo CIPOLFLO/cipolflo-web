@@ -8,6 +8,55 @@ body {
   background-color: var(--color-bg-page);
 }
 
+/* ── Tags ────────────────────────────────────────────────────────────── */
+.app-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 7rem;
+  padding: 0.25rem 0;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.tag--red {
+  background-color: var(--tag-red-bg);
+  color: var(--tag-red-color);
+  border: 1px solid var(--tag-red-color);
+}
+
+.tag--green {
+  background-color: var(--tag-green-bg);
+  color: var(--tag-green-color);
+  border: 1px solid var(--tag-green-color);
+}
+
+.tag--blue {
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-color);
+  border: 1px solid var(--tag-blue-color);
+}
+
+.tag--purple {
+  background-color: var(--tag-purple-bg);
+  color: var(--tag-purple-color);
+  border: 1px solid var(--tag-purple-color);
+}
+
+.tag--gray {
+  background-color: var(--tag-gray-bg);
+  color: var(--tag-gray-color);
+  border: 1px solid var(--tag-gray-color);
+}
+
+.tag--yellow {
+  background-color: var(--tag-yellow-bg);
+  color: var(--tag-yellow-color);
+  border: 1px solid var(--tag-yellow-color);
+}
+
 /* Dialog */
 .p-dialog-title {
   font-size: 1rem;

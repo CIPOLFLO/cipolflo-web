@@ -1,0 +1,8 @@
+<p-button
+  icon="pi pi-ellipsis-v"
+  [text]="true"
+  ariaLabel="Acciones"
+  (click)="menu.toggle($event)"
+  (keydown.enter)="menu.toggle($event)"
+/>
+<p-menu #menu [popup]="true" [model]="menuItems()" appendTo="body" />

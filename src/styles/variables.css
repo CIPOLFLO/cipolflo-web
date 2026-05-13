@@ -15,6 +15,7 @@
   --color-bg-page: #f8fafc;
   --color-bg-white: #ffffff;
   --color-bg-subtle: #f8faff;
+  --color-bg-table-header: #eff6ff;
 
   /* Border */
   --color-border: #cbd5e1;
@@ -35,4 +36,28 @@
   --color-warning: #d97706;
   --color-warning-hover: #b45309;
   --color-warning-disabled: #fcd34d;
+
+  /* Tags — red */
+  --tag-red-bg: #fee2e2;
+  --tag-red-color: #b91c1c;
+
+  /* Tags — green */
+  --tag-green-bg: #dcfce7;
+  --tag-green-color: #016630;
+
+  /* Tags — blue */
+  --tag-blue-bg: #eff6ff;
+  --tag-blue-color: #193cb8;
+
+  /* Tags — purple */
+  --tag-purple-bg: #dfbaff;
+  --tag-purple-color: #8e0eff;
+
+  /* Tags — gray */
+  --tag-gray-bg: #f3f4f6;
+  --tag-gray-color: #6b7280;
+
+  /* Tags — yellow */
+  --tag-yellow-bg: #fef9c3;
+  --tag-yellow-color: #a16207;
 }

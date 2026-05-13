@@ -1,0 +1,81 @@
+<p-table
+  [value]="tableData().content"
+  [lazy]="true"
+  [loading]="loading()"
+  [sortField]="sortFieldOrDefault"
+  [sortOrder]="
+    tableState.queryParams().sortField
+      ? tableState.queryParams().sortOrder === 'desc'
+        ? -1
+        : 1
+      : 0
+  "
+  (onSort)="onSort($event)"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      @for (col of columns(); track col.key) {
+        <th scope="col" [pSortableColumn]="col.key" [pSortableColumnDisabled]="!col.sortable">
+          {{ col.label }}
+          @if (col.sortable) {
+            <p-sortIcon [field]="col.key" />
+          }
+        </th>
+      }
+      @if (getRowActions()) {
+        <th scope="col">Acciones</th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row>
+    <tr>
+      @for (col of columns(); track col.key) {
+        <td>
+          @switch (col.cellType) {
+            @case ('tag') {
+              <app-tag-cell [value]="getString(row[col.key])" [tagMap]="getTagMap(col)" />
+            }
+            @case ('amount') {
+              <app-amount-cell [value]="getNumber(row[col.key])" />
+            }
+            @case ('price') {
+              <app-price-cell
+                [value]="getNumber(row[col.key])"
+                [unit]="getString(row[col.unitKey ?? ''])"
+              />
+            }
+            @case ('date') {
+              {{ getString(row[col.key]) | dateFormat }}
+            }
+            @default {
+              {{ row[col.key] }}
+            }
+          }
+        </td>
+      }
+      @if (getRowActions()) {
+        <td>
+          <app-row-actions [actions]="getRowActionsForRow(row)" [row]="row" />
+        </td>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td [attr.colspan]="columns().length + (getRowActions() ? 1 : 0)" class="table__empty">
+        No hay registros para mostrar.
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<app-pagination
+  [page]="tableState.queryParams().page"
+  [pageSize]="tableState.queryParams().size"
+  [totalElements]="tableData().totalElements"
+  [pageSizeOptions]="pageSizeOptions()"
+  (pageChange)="tableState.updatePage($event)"
+  (pageSizeChange)="tableState.updateSize($event)"
+/>

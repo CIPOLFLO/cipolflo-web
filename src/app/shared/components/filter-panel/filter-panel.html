@@ -29,7 +29,7 @@
       @for (field of filterFields(); track field.key) {
         <app-form-field
           [config]="field"
-          [value]="filterValues()[field.key]"
+          [value]="filterValues()[field.key] ?? null"
           (valueChange)="updateValue(field.key, $event)"
         />
       }
