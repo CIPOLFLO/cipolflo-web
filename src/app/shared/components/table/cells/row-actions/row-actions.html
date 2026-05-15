@@ -2,7 +2,33 @@
   icon="pi pi-ellipsis-v"
   [text]="true"
   ariaLabel="Acciones"
-  (click)="menu.toggle($event)"
-  (keydown.enter)="menu.toggle($event)"
+  (click)="toggle($event)"
+  (keydown.enter)="toggle($event)"
 />
-<p-menu #menu [popup]="true" [model]="menuItems()" appendTo="body" />
+
+@if (isOpen()) {
+  <ul
+    class="row-actions-menu"
+    [style.top.px]="dropdownPos().top"
+    [style.left.px]="dropdownPos().left"
+  >
+    @for (action of actions(); track action.label) {
+      @if (action.separator) {
+        <li class="row-actions-menu__separator"></li>
+      } @else {
+        <li>
+          <button
+            class="row-actions-menu__item"
+            [disabled]="isDisabled(action)"
+            (click)="execute(action)"
+          >
+            @if (action.icon) {
+              <i [class]="action.icon"></i>
+            }
+            {{ action.label }}
+          </button>
+        </li>
+      }
+    }
+  </ul>
+}

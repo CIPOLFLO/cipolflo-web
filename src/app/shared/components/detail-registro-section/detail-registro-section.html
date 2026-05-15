@@ -1,0 +1,15 @@
+<section class="detail-registro-section">
+  <div class="detail-registro-section__header">
+    <h3 class="detail-registro-section__title">Información de Registro</h3>
+    <div class="detail-registro-section__separator" aria-hidden="true"></div>
+  </div>
+  <div class="detail-registro-section__content">
+    <div class="detail-registro-section__fields">
+      @for (field of allFields(); track field.key) {
+        <app-form-field [config]="field" [displayOnly]="true" />
+      }
+      <ng-content />
+    </div>
+  </div>
+  <p class="detail-registro-section__note">La información de registro no puede ser modificada</p>
+</section>

@@ -1,0 +1,22 @@
+<section class="detail-section">
+  <div class="detail-section__header">
+    <h3 class="detail-section__title">
+      {{ title() }}
+      @if (locked()) {
+        <i class="pi pi-lock detail-section__lock-icon" aria-hidden="true"></i>
+      }
+    </h3>
+    <div class="detail-section__separator" aria-hidden="true"></div>
+  </div>
+  @if (note()) {
+    <p class="detail-section__note">{{ note() }}</p>
+  }
+  <div class="detail-section__content">
+    <div class="detail-section__fields">
+      @for (field of formFields(); track field.key) {
+        <app-form-field [config]="field" [displayOnly]="true" />
+      }
+      <ng-content />
+    </div>
+  </div>
+</section>

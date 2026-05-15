@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
@@ -24,6 +25,7 @@ import { ReservaRow } from '../models/reserva.model';
 })
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
+  private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
 
   protected readonly columns: ColumnConfig[] = [
@@ -52,7 +54,7 @@ export class ListadoReservas {
     {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
-      command: () => console.log('Ver', row.id),
+      command: () => this.router.navigate(['/reservas', row.id]),
     },
     {
       label: 'Editar',

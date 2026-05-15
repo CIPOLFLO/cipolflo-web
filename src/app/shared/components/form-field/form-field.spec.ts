@@ -62,7 +62,6 @@ describe('FormField', () => {
   it('debería deshabilitar el p-select cuando disabled es true', () => {
     setup({ key: 'metodo', label: 'Método', type: 'select', options: [], disabled: true });
     const select = fixture.debugElement.query(By.css('p-select'));
-    // disabled es un signal input en PrimeNG 21 — se invoca como función
     expect(select.componentInstance.disabled()).toBe(true);
   });
 
@@ -74,8 +73,6 @@ describe('FormField', () => {
       options: [{ label: 'A', value: 'a' }],
       defaultValue: 'a',
     });
-    // dir.model es el valor crudo que llega al binding [ngModel]="..." antes de
-    // que el CVA lo propague — suficiente para verificar que el template lo pasa
     const dir = fixture.debugElement.query(By.directive(NgModel)).injector.get(NgModel);
     expect(dir.model).toBe('a');
   });
@@ -160,5 +157,98 @@ describe('FormField', () => {
   it('debería usar array vacío cuando options no está definido en el select', () => {
     setup({ key: 'tipo', label: 'Tipo', type: 'select' });
     expect(el.querySelector('p-select')).not.toBeNull();
+  });
+
+  describe('modo displayOnly', () => {
+    function setupDisplay(config: FormFieldConfig): void {
+      fixture = TestBed.createComponent(FormField);
+      fixture.componentRef.setInput('config', config);
+      fixture.componentRef.setInput('displayOnly', true);
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+    }
+
+    it('debería renderizar un span de valor en lugar de inputs cuando displayOnly es true', () => {
+      setupDisplay({ key: 'nombre', label: 'Nombre', type: 'text' });
+      expect(el.querySelector('.form-field__value')).not.toBeNull();
+      expect(el.querySelector('input')).toBeNull();
+    });
+
+    it('debería mostrar el valor del model en el span', () => {
+      setupDisplay({ key: 'nombre', label: 'Nombre', type: 'text' });
+      fixture.componentInstance.value.set('Carlos');
+      fixture.detectChanges();
+      expect(el.querySelector('.form-field__value')?.textContent?.trim()).toBe('Carlos');
+    });
+
+    it('debería mostrar defaultValue cuando value es null en modo displayOnly', () => {
+      setupDisplay({ key: 'nombre', label: 'Nombre', type: 'text', defaultValue: 'Sin dato' });
+      expect(el.querySelector('.form-field__value')?.textContent?.trim()).toBe('Sin dato');
+    });
+
+    it('debería mostrar "-" cuando value y defaultValue son null en modo displayOnly', () => {
+      setupDisplay({ key: 'nombre', label: 'Nombre', type: 'text' });
+      expect(el.querySelector('.form-field__value')?.textContent?.trim()).toBe('-');
+    });
+
+    it('debería aplicar clase multiline para type textarea en modo displayOnly', () => {
+      setupDisplay({ key: 'notas', label: 'Notas', type: 'textarea' });
+      expect(
+        el.querySelector('.form-field__value')?.classList.contains('form-field__value--multiline'),
+      ).toBe(true);
+    });
+
+    it('debería aplicar clase host form-field--display cuando displayOnly es true', () => {
+      setupDisplay({ key: 'nombre', label: 'Nombre', type: 'text' });
+      expect(
+        (fixture.nativeElement as HTMLElement).classList.contains('form-field--display'),
+      ).toBe(true);
+    });
+  });
+
+  describe('modo locked', () => {
+    it('debería mostrar el icono de candado cuando locked es true', () => {
+      fixture = TestBed.createComponent(FormField);
+      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
+      fixture.componentRef.setInput('locked', true);
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+      expect(el.querySelector('.form-field__lock-icon')).not.toBeNull();
+    });
+
+    it('no debería mostrar el icono de candado cuando locked es false', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text' });
+      expect(el.querySelector('.form-field__lock-icon')).toBeNull();
+    });
+
+    it('debería deshabilitar el input cuando locked es true', () => {
+      fixture = TestBed.createComponent(FormField);
+      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
+      fixture.componentRef.setInput('locked', true);
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+      expect(el.querySelector('input')?.disabled).toBe(true);
+    });
+
+    it('debería aplicar clase host form-field--locked cuando locked es true', () => {
+      fixture = TestBed.createComponent(FormField);
+      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
+      fixture.componentRef.setInput('locked', true);
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--locked')).toBe(
+        true,
+      );
+    });
+
+    it('debería renderizar input (no span valor) cuando locked es true', () => {
+      fixture = TestBed.createComponent(FormField);
+      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
+      fixture.componentRef.setInput('locked', true);
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+      expect(el.querySelector('input')).not.toBeNull();
+      expect(el.querySelector('.form-field__value')).toBeNull();
+    });
   });
 });

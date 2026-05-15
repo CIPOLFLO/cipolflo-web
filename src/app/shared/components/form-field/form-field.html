@@ -3,47 +3,56 @@
   @if (config().required) {
     <span class="form-field__required" aria-hidden="true">*</span>
   }
+  @if (locked()) {
+    <i class="pi pi-lock form-field__lock-icon" aria-hidden="true"></i>
+  }
 </label>
 
-@switch (config().type) {
-  @case ('select') {
-    <p-select
-      [inputId]="config().key"
-      [options]="config().options ?? []"
-      optionLabel="label"
-      optionValue="value"
-      [placeholder]="config().placeholder ?? ''"
-      [ngModel]="value() ?? config().defaultValue ?? null"
-      (ngModelChange)="value.set($event)"
-      [disabled]="config().disabled ?? false"
-      [required]="config().required ?? false"
-      [fluid]="true"
-    />
-  }
-  @case ('textarea') {
-    <textarea
-      pTextarea
-      [id]="config().key"
-      [placeholder]="config().placeholder ?? ''"
-      [disabled]="config().disabled ?? false"
-      [value]="value() ?? config().defaultValue ?? ''"
-      (input)="captureInput($event)"
-      [required]="config().required ?? false"
-      rows="3"
-      [fluid]="true"
-    ></textarea>
-  }
-  @default {
-    <input
-      pInputText
-      [id]="config().key"
-      [type]="config().type"
-      [placeholder]="config().placeholder ?? ''"
-      [disabled]="config().disabled ?? false"
-      [value]="value() ?? config().defaultValue ?? ''"
-      (input)="captureInput($event)"
-      [required]="config().required ?? false"
-      [fluid]="true"
-    />
+@if (displayOnly()) {
+  <span class="form-field__value" [class.form-field__value--multiline]="config().type === 'textarea'">
+    {{ value() ?? config().defaultValue ?? '-' }}
+  </span>
+} @else {
+  @switch (config().type) {
+    @case ('select') {
+      <p-select
+        [inputId]="config().key"
+        [options]="config().options ?? []"
+        optionLabel="label"
+        optionValue="value"
+        [placeholder]="config().placeholder ?? ''"
+        [ngModel]="value() ?? config().defaultValue ?? null"
+        (ngModelChange)="value.set($event)"
+        [disabled]="config().disabled || locked()"
+        [required]="config().required ?? false"
+        [fluid]="true"
+      />
+    }
+    @case ('textarea') {
+      <textarea
+        pTextarea
+        [id]="config().key"
+        [placeholder]="config().placeholder ?? ''"
+        [disabled]="config().disabled || locked()"
+        [value]="value() ?? config().defaultValue ?? ''"
+        (input)="captureInput($event)"
+        [required]="config().required ?? false"
+        rows="3"
+        [fluid]="true"
+      ></textarea>
+    }
+    @default {
+      <input
+        pInputText
+        [id]="config().key"
+        [type]="config().type"
+        [placeholder]="config().placeholder ?? ''"
+        [disabled]="config().disabled || locked()"
+        [value]="value() ?? config().defaultValue ?? ''"
+        (input)="captureInput($event)"
+        [required]="config().required ?? false"
+        [fluid]="true"
+      />
+    }
   }
 }

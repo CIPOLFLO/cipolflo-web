@@ -12,5 +12,6 @@ export interface FormFieldConfig {
   options?: FormFieldOption[];
   fullWidth?: boolean;
   disabled?: boolean;
+  locked?: boolean;
   defaultValue?: string;
 }
