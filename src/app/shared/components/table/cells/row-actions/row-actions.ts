@@ -44,6 +44,8 @@ export class RowActionsComponent<T> {
   }
 
   protected isDisabled(action: RowAction<T>): boolean {
-    return typeof action.disabled === 'function' ? action.disabled(this.row()) : (action.disabled ?? false);
+    return typeof action.disabled === 'function'
+      ? action.disabled(this.row())
+      : (action.disabled ?? false);
   }
 }

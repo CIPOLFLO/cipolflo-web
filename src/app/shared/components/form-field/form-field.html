@@ -9,7 +9,10 @@
 </label>
 
 @if (displayOnly()) {
-  <span class="form-field__value" [class.form-field__value--multiline]="config().type === 'textarea'">
+  <span
+    class="form-field__value"
+    [class.form-field__value--multiline]="config().type === 'textarea'"
+  >
     {{ value() ?? config().defaultValue ?? '-' }}
   </span>
 } @else {

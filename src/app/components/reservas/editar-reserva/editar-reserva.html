@@ -5,11 +5,7 @@
   backButtonLink="/reservas/RSV-2026-001"
 >
   <app-form-layout>
-
-    <app-form-section
-      title="Información de la Reserva"
-      [fields]="reservaFields"
-    />
+    <app-form-section title="Información de la Reserva" [fields]="reservaFields" />
 
     <app-detail-section
       title="Información del Cliente"
@@ -18,26 +14,13 @@
       note="La información del cliente no puede ser modificada desde esta pantalla"
     />
 
-    <app-form-section
-      title="Información Adicional"
-      [fields]="adicionalFields"
-    />
+    <app-form-section title="Información Adicional" [fields]="adicionalFields" />
 
     <app-detail-registro-section [data]="registroData" />
 
     <app-form-actions actions>
-      <app-button
-        label="Cancelar"
-        intent="secondary"
-        icon="pi pi-times"
-        (clicked)="onCancelar()"
-      />
-      <app-button
-        label="Confirmar"
-        icon="pi pi-check"
-        (clicked)="onConfirmar()"
-      />
+      <app-button label="Cancelar" intent="secondary" icon="pi pi-times" (clicked)="onCancelar()" />
+      <app-button label="Confirmar" icon="pi pi-check" (clicked)="onConfirmar()" />
     </app-form-actions>
-
   </app-form-layout>
 </app-page-layout>

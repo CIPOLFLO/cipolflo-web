@@ -200,9 +200,9 @@ describe('FormField', () => {
 
     it('debería aplicar clase host form-field--display cuando displayOnly es true', () => {
       setupDisplay({ key: 'nombre', label: 'Nombre', type: 'text' });
-      expect(
-        (fixture.nativeElement as HTMLElement).classList.contains('form-field--display'),
-      ).toBe(true);
+      expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--display')).toBe(
+        true,
+      );
     });
   });
 
