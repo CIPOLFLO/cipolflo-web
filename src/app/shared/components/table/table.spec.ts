@@ -826,7 +826,7 @@ describe('RowActionsComponent', () => {
     fixture.componentRef.setInput('row', {});
     fixture.detectChanges();
     component['isOpen'].set(true);
-    component['toggle']({ stopPropagation: () => {} } as unknown as Event);
+    component['toggle']({ stopPropagation: vi.fn() } as unknown as Event);
     fixture.detectChanges();
     expect(component['isOpen']()).toBe(false);
   });
