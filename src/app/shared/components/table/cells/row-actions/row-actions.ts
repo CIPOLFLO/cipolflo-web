@@ -1,8 +1,8 @@
+import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DOCUMENT,
   inject,
   input,
   signal,
