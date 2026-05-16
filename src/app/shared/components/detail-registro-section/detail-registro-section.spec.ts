@@ -106,4 +106,22 @@ describe('DetailRegistroSection', () => {
     setup(baseData);
     expect(el.querySelector('.detail-registro-section__content')).not.toBeNull();
   });
+
+  it('debería mapear extraField con multiline=true a type textarea', () => {
+    const extra: DetailFieldConfig[] = [
+      { key: 'notas', label: 'Notas', value: 'texto largo', multiline: true },
+    ];
+    setup(baseData, extra);
+    const fields = fixture.componentInstance['allFields']();
+    const notasField = fields.find((f) => f.key === 'notas');
+    expect(notasField?.type).toBe('textarea');
+  });
+
+  it('debería mapear value null de extraField a defaultValue undefined', () => {
+    const extra: DetailFieldConfig[] = [{ key: 'obs', label: 'Observación', value: null }];
+    setup(baseData, extra);
+    const fields = fixture.componentInstance['allFields']();
+    const obsField = fields.find((f) => f.key === 'obs');
+    expect(obsField?.defaultValue).toBeUndefined();
+  });
 });

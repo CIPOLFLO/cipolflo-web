@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DOCUMENT, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DOCUMENT, inject, input, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { RowAction } from '../../table.models';
 
@@ -17,6 +17,18 @@ export class RowActionsComponent<T> {
 
   protected isOpen = signal(false);
   protected dropdownPos = signal({ top: 0, left: 0 });
+
+  protected menuItems = computed(() =>
+    this.actions().map(action => ({
+      label: action.label,
+      icon: action.icon,
+      separator: action.separator,
+      disabled: typeof action.disabled === 'function'
+        ? action.disabled(this.row())
+        : (action.disabled ?? false),
+      command: action.command ? () => action.command!(this.row()) : undefined,
+    }))
+  );
 
   protected toggle(event: Event): void {
     event.stopPropagation();

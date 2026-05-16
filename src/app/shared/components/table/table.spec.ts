@@ -763,4 +763,82 @@ describe('RowActionsComponent', () => {
     fixture.detectChanges();
     expect(button).not.toBeNull();
   });
+
+  it('debe renderizar el separador en el menú abierto', () => {
+    fixture.componentRef.setInput('actions', [
+      { label: 'Ver' },
+      { label: 'sep', separator: true },
+    ]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.row-actions-menu__separator')).not.toBeNull();
+  });
+
+  it('debe renderizar el ícono de la acción cuando está definido', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver', icon: 'pi pi-eye' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('i.pi-eye')).not.toBeNull();
+  });
+
+  it('debe mostrar el item deshabilitado cuando disabled es true', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Eliminar', disabled: true }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    const menuItem: HTMLButtonElement = fixture.nativeElement.querySelector('.row-actions-menu__item');
+    expect(menuItem?.disabled).toBe(true);
+  });
+
+  it('debe evaluar disabled como función en el template via isDisabled', () => {
+    fixture.componentRef.setInput('actions', [
+      { label: 'Editar', disabled: (r: { id: number }) => r.id > 0 },
+    ]);
+    fixture.componentRef.setInput('row', { id: 1 });
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    const menuItem: HTMLButtonElement = fixture.nativeElement.querySelector('.row-actions-menu__item');
+    expect(menuItem?.disabled).toBe(true);
+  });
+
+  it('debe ejecutar la acción y cerrar el menú al hacer click en el item', () => {
+    const command = vi.fn();
+    fixture.componentRef.setInput('actions', [{ label: 'Ejecutar', command }]);
+    fixture.componentRef.setInput('row', { id: 5 });
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    const menuItem: HTMLButtonElement = fixture.nativeElement.querySelector('.row-actions-menu__item');
+    menuItem.click();
+    fixture.detectChanges();
+    expect(command).toHaveBeenCalledWith({ id: 5 });
+    expect(component['isOpen']()).toBe(false);
+  });
+
+  it('debe cerrar el menú al hacer toggle cuando ya está abierto (cubre línea close en toggle)', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    component['toggle']({ stopPropagation: () => {} } as unknown as Event);
+    fixture.detectChanges();
+    expect(component['isOpen']()).toBe(false);
+  });
+
+  it('debe cerrar el menú al disparar el listener de documento (cubre onDocumentClick)', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    component['onDocumentClick']();
+    fixture.detectChanges();
+    expect(component['isOpen']()).toBe(false);
+  });
 });

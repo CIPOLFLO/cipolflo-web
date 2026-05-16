@@ -89,4 +89,25 @@ describe('DetailSection', () => {
     setup('Datos', [{ key: 'nombre', label: 'Nombre', value: 'test' }]);
     expect(el.querySelector('.detail-section__content')).not.toBeNull();
   });
+
+  it('debería mostrar el ícono de candado cuando locked es true', () => {
+    fixture = TestBed.createComponent(DetailSection);
+    fixture.componentRef.setInput('title', 'Datos bloqueados');
+    fixture.componentRef.setInput('locked', true);
+    el = fixture.nativeElement;
+    fixture.detectChanges();
+    expect(el.querySelector('.detail-section__lock-icon')).not.toBeNull();
+  });
+
+  it('no debería mostrar el ícono de candado cuando locked no se provee', () => {
+    setup('Datos');
+    expect(el.querySelector('.detail-section__lock-icon')).toBeNull();
+  });
+
+  it('debería mapear value null a defaultValue undefined', () => {
+    const fields: DetailFieldConfig[] = [{ key: 'obs', label: 'Observaciones', value: null }];
+    setup('Datos', fields);
+    const formField = fixture.debugElement.query(By.directive(FormField));
+    expect(formField.componentInstance.config().defaultValue).toBeUndefined();
+  });
 });
