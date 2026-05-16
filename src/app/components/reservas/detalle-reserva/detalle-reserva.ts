@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { FormLayout } from '../../../shared/components/form-layout/form-layout';
 import { FormActions } from '../../../shared/components/form-actions/form-actions';
@@ -17,8 +19,13 @@ import { DetailFieldConfig, DetailRegistroData } from '../../../shared/models/de
 })
 export class DetalleReserva {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  // Datos mock — en producción vendrían de ReservasService.getById(id)
+  protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
+    initialValue: '',
+  });
+
+  // Datos mock — en producción vendrían de ReservasService.getById(this.reservaId())
   protected readonly reservaFields: DetailFieldConfig[] = [
     { key: 'numeroReserva', label: 'Número de Reserva', value: 'RSV-2026-001' },
     { key: 'estado', label: 'Estado', value: 'Confirmada' },
@@ -48,18 +55,14 @@ export class DetalleReserva {
     },
   ];
 
-  protected readonly registroData: DetailRegistroData = {
-    entityId: 'RSV-2026-001',
+  protected readonly registroData = computed<DetailRegistroData>(() => ({
+    entityId: this.reservaId(),
     entityIdLabel: 'ID de la Reserva',
     fechaRegistro: '15 mar 2026, 14:30',
     registradoPor: 'Juan Pérez',
-  };
+  }));
 
   protected onEditar(): void {
-    this.router.navigate(['/reservas', 'RSV-2026-001', 'editar']);
-  }
-
-  protected onVolver(): void {
-    this.router.navigate(['/reservas']);
+    this.router.navigate(['/reservas', this.reservaId(), 'editar']);
   }
 }

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   DOCUMENT,
   inject,
   input,
@@ -19,6 +20,8 @@ import { RowAction } from '../../table.models';
 })
 export class RowActionsComponent<T> {
   private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  private pendingTimeout: ReturnType<typeof setTimeout> | null = null;
 
   actions = input.required<RowAction<T>[]>();
   row = input.required<T>();
@@ -35,12 +38,20 @@ export class RowActionsComponent<T> {
         typeof action.disabled === 'function'
           ? action.disabled(this.row())
           : (action.disabled ?? false),
-      command: action.command ? () => action.command!(this.row()) : undefined,
+      command: action.command
+        ? (): void => {
+            this.close();
+            action.command!(this.row());
+          }
+        : undefined,
     })),
   );
 
+  constructor() {
+    this.destroyRef.onDestroy(() => this.cleanup());
+  }
+
   protected toggle(event: Event): void {
-    event.stopPropagation();
     if (this.isOpen()) {
       this.close();
     } else {
@@ -48,25 +59,29 @@ export class RowActionsComponent<T> {
       const rect = btn.getBoundingClientRect();
       this.dropdownPos.set({ top: rect.bottom + 4, left: rect.right });
       this.isOpen.set(true);
-      setTimeout(() => this.document.addEventListener('click', this.onDocumentClick));
+      this.document.addEventListener('scroll', this.onScrollOrResize, true);
+      window.addEventListener('resize', this.onScrollOrResize);
+      this.pendingTimeout = setTimeout(() =>
+        this.document.addEventListener('click', this.onDocumentClick),
+      );
     }
   }
 
   protected close(): void {
     this.isOpen.set(false);
-    this.document.removeEventListener('click', this.onDocumentClick);
+    this.cleanup();
   }
 
   private readonly onDocumentClick = (): void => this.close();
+  private readonly onScrollOrResize = (): void => this.close();
 
-  protected execute(action: RowAction<T>): void {
-    this.close();
-    action.command?.(this.row());
-  }
-
-  protected isDisabled(action: RowAction<T>): boolean {
-    return typeof action.disabled === 'function'
-      ? action.disabled(this.row())
-      : (action.disabled ?? false);
+  private cleanup(): void {
+    if (this.pendingTimeout !== null) {
+      clearTimeout(this.pendingTimeout);
+      this.pendingTimeout = null;
+    }
+    this.document.removeEventListener('click', this.onDocumentClick);
+    this.document.removeEventListener('scroll', this.onScrollOrResize, true);
+    window.removeEventListener('resize', this.onScrollOrResize);
   }
 }

@@ -5,7 +5,7 @@
   </div>
   <div class="form-section__fields">
     @for (field of fields(); track field.key) {
-      <app-form-field [config]="field" [locked]="field.locked ?? false" />
+      <app-form-field [config]="field" />
     }
     <ng-content />
   </div>

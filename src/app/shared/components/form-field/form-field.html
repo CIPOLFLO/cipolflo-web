@@ -1,9 +1,9 @@
-<label class="form-field__label" [for]="config().key">
+<label class="form-field__label" [attr.for]="displayOnly() ? null : config().key">
   {{ config().label }}
   @if (config().required) {
     <span class="form-field__required" aria-hidden="true">*</span>
   }
-  @if (locked()) {
+  @if (config().locked) {
     <i class="pi pi-lock form-field__lock-icon" aria-hidden="true"></i>
   }
 </label>
@@ -26,7 +26,7 @@
         [placeholder]="config().placeholder ?? ''"
         [ngModel]="value() ?? config().defaultValue ?? null"
         (ngModelChange)="value.set($event)"
-        [disabled]="config().disabled || locked()"
+        [disabled]="config().disabled || (config().locked ?? false)"
         [required]="config().required ?? false"
         [fluid]="true"
       />
@@ -36,7 +36,7 @@
         pTextarea
         [id]="config().key"
         [placeholder]="config().placeholder ?? ''"
-        [disabled]="config().disabled || locked()"
+        [disabled]="config().disabled || (config().locked ?? false)"
         [value]="value() ?? config().defaultValue ?? ''"
         (input)="captureInput($event)"
         [required]="config().required ?? false"
@@ -50,7 +50,7 @@
         [id]="config().key"
         [type]="config().type"
         [placeholder]="config().placeholder ?? ''"
-        [disabled]="config().disabled || locked()"
+        [disabled]="config().disabled || (config().locked ?? false)"
         [value]="value() ?? config().defaultValue ?? ''"
         (input)="captureInput($event)"
         [required]="config().required ?? false"

@@ -14,14 +14,13 @@ import { FormFieldConfig } from '../../models/form-field.model';
   host: {
     '[class.form-field--full]': 'config().fullWidth',
     '[class.form-field--display]': 'displayOnly()',
-    '[class.form-field--locked]': 'locked()',
+    '[class.form-field--locked]': 'config().locked ?? false',
   },
 })
 export class FormField {
   config = input.required<FormFieldConfig>();
   value = model<string | null>(null);
   displayOnly = input<boolean>(false);
-  locked = input<boolean>(false);
 
   protected captureInput(event: Event): void {
     this.value.set((event.target as HTMLInputElement | HTMLTextAreaElement).value);

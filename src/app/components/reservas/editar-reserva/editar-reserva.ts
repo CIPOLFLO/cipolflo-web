@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { FormLayout } from '../../../shared/components/form-layout/form-layout';
 import { FormSection } from '../../../shared/components/form-section/form-section';
@@ -27,6 +29,11 @@ import { DetailFieldConfig, DetailRegistroData } from '../../../shared/models/de
 })
 export class EditarReserva {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
+    initialValue: '',
+  });
 
   // Campos con locked:true quedan deshabilitados + muestran ícono de candado
   protected readonly reservaFields: FormFieldConfig[] = [
@@ -113,19 +120,19 @@ export class EditarReserva {
     },
   ];
 
-  protected readonly registroData: DetailRegistroData = {
-    entityId: 'RSV-2026-001',
+  protected readonly registroData = computed<DetailRegistroData>(() => ({
+    entityId: this.reservaId(),
     entityIdLabel: 'ID de la Reserva',
     fechaRegistro: '15 mar 2026, 14:30',
     registradoPor: 'Juan Pérez',
-  };
+  }));
 
   protected onCancelar(): void {
-    this.router.navigate(['/reservas', 'RSV-2026-001']);
+    this.router.navigate(['/reservas', this.reservaId()]);
   }
 
   protected onConfirmar(): void {
-    // En producción: llamar a ReservasService.update(id, formData)
-    this.router.navigate(['/reservas', 'RSV-2026-001']);
+    // En producción: llamar a ReservasService.update(this.reservaId(), formData)
+    this.router.navigate(['/reservas', this.reservaId()]);
   }
 }

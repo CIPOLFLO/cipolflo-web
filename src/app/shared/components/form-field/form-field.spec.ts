@@ -206,47 +206,47 @@ describe('FormField', () => {
     });
   });
 
-  describe('modo locked', () => {
-    it('debería mostrar el icono de candado cuando locked es true', () => {
+  describe('label [for]', () => {
+    it('debería enlazar el for del label con el key del campo en modo edición', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text' });
+      expect(el.querySelector('label')?.getAttribute('for')).toBe('nombre');
+    });
+
+    it('no debería tener atributo for en el label cuando displayOnly es true', () => {
       fixture = TestBed.createComponent(FormField);
       fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
-      fixture.componentRef.setInput('locked', true);
+      fixture.componentRef.setInput('displayOnly', true);
       el = fixture.nativeElement;
       fixture.detectChanges();
+      expect(el.querySelector('label')?.hasAttribute('for')).toBe(false);
+    });
+  });
+
+  describe('modo locked', () => {
+    it('debería mostrar el icono de candado cuando config.locked es true', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text', locked: true });
       expect(el.querySelector('.form-field__lock-icon')).not.toBeNull();
     });
 
-    it('no debería mostrar el icono de candado cuando locked es false', () => {
+    it('no debería mostrar el icono de candado cuando config.locked no está definido', () => {
       setup({ key: 'nombre', label: 'Nombre', type: 'text' });
       expect(el.querySelector('.form-field__lock-icon')).toBeNull();
     });
 
-    it('debería deshabilitar el input cuando locked es true', () => {
-      fixture = TestBed.createComponent(FormField);
-      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
-      fixture.componentRef.setInput('locked', true);
-      el = fixture.nativeElement;
-      fixture.detectChanges();
+    it('debería deshabilitar el input cuando config.locked es true', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text', locked: true });
       expect(el.querySelector('input')?.disabled).toBe(true);
     });
 
-    it('debería aplicar clase host form-field--locked cuando locked es true', () => {
-      fixture = TestBed.createComponent(FormField);
-      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
-      fixture.componentRef.setInput('locked', true);
-      el = fixture.nativeElement;
-      fixture.detectChanges();
+    it('debería aplicar clase host form-field--locked cuando config.locked es true', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text', locked: true });
       expect((fixture.nativeElement as HTMLElement).classList.contains('form-field--locked')).toBe(
         true,
       );
     });
 
-    it('debería renderizar input (no span valor) cuando locked es true', () => {
-      fixture = TestBed.createComponent(FormField);
-      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
-      fixture.componentRef.setInput('locked', true);
-      el = fixture.nativeElement;
-      fixture.detectChanges();
+    it('debería renderizar input (no span valor) cuando config.locked es true', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text', locked: true });
       expect(el.querySelector('input')).not.toBeNull();
       expect(el.querySelector('.form-field__value')).toBeNull();
     });

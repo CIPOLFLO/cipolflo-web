@@ -793,7 +793,7 @@ describe('RowActionsComponent', () => {
     expect(menuItem?.disabled).toBe(true);
   });
 
-  it('debe evaluar disabled como función en el template via isDisabled', () => {
+  it('debe evaluar disabled como función en menuItems y reflejarlo en el template', () => {
     fixture.componentRef.setInput('actions', [
       { label: 'Editar', disabled: (r: { id: number }) => r.id > 0 },
     ]);
@@ -826,7 +826,7 @@ describe('RowActionsComponent', () => {
     fixture.componentRef.setInput('row', {});
     fixture.detectChanges();
     component['isOpen'].set(true);
-    component['toggle']({ stopPropagation: vi.fn() } as unknown as Event);
+    component['toggle']({} as unknown as Event);
     fixture.detectChanges();
     expect(component['isOpen']()).toBe(false);
   });
@@ -838,6 +838,104 @@ describe('RowActionsComponent', () => {
     component['isOpen'].set(true);
     fixture.detectChanges();
     component['onDocumentClick']();
+    fixture.detectChanges();
+    expect(component['isOpen']()).toBe(false);
+  });
+
+  it('debe tener aria-haspopup="menu" en el botón disparador', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('p-button');
+    expect(trigger?.getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('debe tener aria-expanded="false" cuando el menú está cerrado', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('p-button');
+    expect(trigger?.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('debe tener aria-expanded="true" cuando el menú está abierto', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('p-button');
+    expect(trigger?.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('debe tener role="menu" en la lista cuando el menú está abierto', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    const menu = fixture.nativeElement.querySelector('.row-actions-menu');
+    expect(menu?.getAttribute('role')).toBe('menu');
+  });
+
+  it('no debe lanzar error al destruir el componente con el menú abierto', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    expect(() => fixture.destroy()).not.toThrow();
+  });
+
+  it('no debe lanzar error al hacer click en un item sin command (cubre rama ?. undefined)', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Info' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    component['isOpen'].set(true);
+    fixture.detectChanges();
+    const menuItem: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.row-actions-menu__item');
+    expect(() => {
+      menuItem.click();
+      fixture.detectChanges();
+    }).not.toThrow();
+  });
+
+  it('debe registrar el listener de documento tras el setTimeout al abrir el menú', async () => {
+    const addListenerSpy = vi.spyOn(document, 'addEventListener');
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const fakeBtn = { getBoundingClientRect: vi.fn(() => ({ bottom: 10, right: 10 })) };
+    component['toggle']({
+      currentTarget: fakeBtn,
+    } as unknown as Event);
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    expect(addListenerSpy).toHaveBeenCalled();
+    addListenerSpy.mockRestore();
+    component['close']();
+  });
+
+  it('debe cerrar el menú al hacer scroll en el documento', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const fakeBtn = { getBoundingClientRect: vi.fn(() => ({ bottom: 10, right: 10 })) };
+    component['toggle']({ currentTarget: fakeBtn } as unknown as Event);
+    fixture.detectChanges();
+    document.dispatchEvent(new Event('scroll', { bubbles: true }));
+    fixture.detectChanges();
+    expect(component['isOpen']()).toBe(false);
+  });
+
+  it('debe cerrar el menú al redimensionar la ventana', () => {
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const fakeBtn = { getBoundingClientRect: vi.fn(() => ({ bottom: 10, right: 10 })) };
+    component['toggle']({ currentTarget: fakeBtn } as unknown as Event);
+    fixture.detectChanges();
+    window.dispatchEvent(new Event('resize'));
     fixture.detectChanges();
     expect(component['isOpen']()).toBe(false);
   });

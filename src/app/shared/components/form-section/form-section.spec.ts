@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { FormSection } from './form-section';
 import { FormFieldConfig } from '../../models/form-field.model';
+import { By } from '@angular/platform-browser';
+import { FormField } from '../form-field/form-field';
 
 @Component({
   template: `
@@ -69,6 +71,28 @@ describe('FormSection', () => {
       fixture.componentRef.setInput('fields', fields);
       fixture.detectChanges();
     }).not.toThrow();
+  });
+
+  it('debería mostrar el ícono de candado cuando el campo tiene locked: true', () => {
+    const fields: FormFieldConfig[] = [{ key: 'nro', label: 'Número', type: 'text', locked: true }];
+    fixture.componentRef.setInput('fields', fields);
+    fixture.detectChanges();
+    expect(el.querySelector('.form-field__lock-icon')).not.toBeNull();
+  });
+
+  it('debería deshabilitar el input cuando el campo tiene locked: true', () => {
+    const fields: FormFieldConfig[] = [{ key: 'nro', label: 'Número', type: 'text', locked: true }];
+    fixture.componentRef.setInput('fields', fields);
+    fixture.detectChanges();
+    expect(el.querySelector('input')?.disabled).toBe(true);
+  });
+
+  it('no debería mostrar el ícono de candado cuando el campo no tiene locked', () => {
+    const fields: FormFieldConfig[] = [{ key: 'nro', label: 'Número', type: 'text' }];
+    fixture.componentRef.setInput('fields', fields);
+    fixture.detectChanges();
+    const formField = fixture.debugElement.query(By.directive(FormField));
+    expect(formField.nativeElement.querySelector('.form-field__lock-icon')).toBeNull();
   });
 });
 

@@ -2,7 +2,7 @@
   pageTitle="Editar Reserva"
   pageDescription="Modifique los datos de la reserva"
   [showBackButton]="true"
-  backButtonLink="/reservas/RSV-2026-001"
+  [backButtonLink]="'/reservas/' + reservaId()"
 >
   <app-form-layout>
     <app-form-section title="Información de la Reserva" [fields]="reservaFields" />
@@ -16,11 +16,11 @@
 
     <app-form-section title="Información Adicional" [fields]="adicionalFields" />
 
-    <app-detail-registro-section [data]="registroData" />
+    <app-detail-registro-section [data]="registroData()" />
 
     <app-form-actions actions>
-      <app-button label="Cancelar" intent="secondary" icon="pi pi-times" (clicked)="onCancelar()" />
-      <app-button label="Confirmar" icon="pi pi-check" (clicked)="onConfirmar()" />
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button label="Confirmar" icon="pi-check" (clicked)="onConfirmar()" />
     </app-form-actions>
   </app-form-layout>
 </app-page-layout>

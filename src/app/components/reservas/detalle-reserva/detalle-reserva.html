@@ -11,10 +11,10 @@
 
     <app-detail-section title="Información Adicional" [fields]="adicionalFields" />
 
-    <app-detail-registro-section [data]="registroData" />
+    <app-detail-registro-section [data]="registroData()" />
 
     <app-form-actions actions>
-      <app-button label="Editar" icon="pi pi-pencil" (clicked)="onEditar()" />
+      <app-button label="Editar" icon="pi-pencil" (clicked)="onEditar()" />
     </app-form-actions>
   </app-form-layout>
 </app-page-layout>
