@@ -765,10 +765,7 @@ describe('RowActionsComponent', () => {
   });
 
   it('debe renderizar el separador en el menú abierto', () => {
-    fixture.componentRef.setInput('actions', [
-      { label: 'Ver' },
-      { label: 'sep', separator: true },
-    ]);
+    fixture.componentRef.setInput('actions', [{ label: 'Ver' }, { label: 'sep', separator: true }]);
     fixture.componentRef.setInput('row', {});
     fixture.detectChanges();
     component['isOpen'].set(true);
@@ -791,7 +788,8 @@ describe('RowActionsComponent', () => {
     fixture.detectChanges();
     component['isOpen'].set(true);
     fixture.detectChanges();
-    const menuItem: HTMLButtonElement = fixture.nativeElement.querySelector('.row-actions-menu__item');
+    const menuItem: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.row-actions-menu__item');
     expect(menuItem?.disabled).toBe(true);
   });
 
@@ -803,7 +801,8 @@ describe('RowActionsComponent', () => {
     fixture.detectChanges();
     component['isOpen'].set(true);
     fixture.detectChanges();
-    const menuItem: HTMLButtonElement = fixture.nativeElement.querySelector('.row-actions-menu__item');
+    const menuItem: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.row-actions-menu__item');
     expect(menuItem?.disabled).toBe(true);
   });
 
@@ -814,7 +813,8 @@ describe('RowActionsComponent', () => {
     fixture.detectChanges();
     component['isOpen'].set(true);
     fixture.detectChanges();
-    const menuItem: HTMLButtonElement = fixture.nativeElement.querySelector('.row-actions-menu__item');
+    const menuItem: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.row-actions-menu__item');
     menuItem.click();
     fixture.detectChanges();
     expect(command).toHaveBeenCalledWith({ id: 5 });
