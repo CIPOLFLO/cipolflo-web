@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { BaseHttpService } from '../../core/services/base-http.service';
+import { BaseHttpService } from '../../../core/services/base-http.service';
 import { ServicioRespuestaDto } from '../models/servicio.model';
 
 const PLACEHOLDER_SERVICIOS: ServicioRespuestaDto[] = [
