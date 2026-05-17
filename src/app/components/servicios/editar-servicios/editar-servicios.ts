@@ -3,7 +3,7 @@ import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 
 @Component({
   selector: 'app-editar-servicios',
-    imports: [PageLayout],
+  imports: [PageLayout],
   templateUrl: './editar-servicios.html',
   styleUrl: './editar-servicios.css',
 })
