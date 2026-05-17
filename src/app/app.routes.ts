@@ -14,6 +14,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'reservas/:id',
+    loadComponent: () =>
+      import('./components/reservas/detalle-reserva/detalle-reserva').then(
+        (module) => module.DetalleReserva,
+      ),
+  },
+  {
+    path: 'reservas/:id/editar',
+    loadComponent: () =>
+      import('./components/reservas/editar-reserva/editar-reserva').then(
+        (module) => module.EditarReserva,
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'reservas',
   },

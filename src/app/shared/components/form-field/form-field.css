@@ -9,11 +9,37 @@
 }
 
 .form-field__label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:host(:not(.form-field--display)) .form-field__label {
+  font-size: 13px;
   color: var(--color-text-primary);
 }
 
 .form-field__required {
   color: var(--color-danger);
+}
+
+.form-field__lock-icon {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.form-field__value {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  font-weight: 400;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.form-field__value--multiline {
+  white-space: pre-wrap;
+  min-height: 3em;
 }

@@ -1,0 +1,26 @@
+<app-page-layout
+  pageTitle="Editar Reserva"
+  pageDescription="Modifique los datos de la reserva"
+  [showBackButton]="true"
+  [backButtonLink]="'/reservas/' + reservaId()"
+>
+  <app-form-layout>
+    <app-form-section title="Información de la Reserva" [fields]="reservaFields" />
+
+    <app-detail-section
+      title="Información del Cliente"
+      [fields]="clienteFields"
+      [locked]="true"
+      note="La información del cliente no puede ser modificada desde esta pantalla"
+    />
+
+    <app-form-section title="Información Adicional" [fields]="adicionalFields" />
+
+    <app-detail-registro-section [data]="registroData()" />
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button label="Confirmar" icon="pi-check" (clicked)="onConfirmar()" />
+    </app-form-actions>
+  </app-form-layout>
+</app-page-layout>

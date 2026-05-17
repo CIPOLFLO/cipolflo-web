@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.detail-registro-section {
+  padding: 24px 24px 28px;
+}
+
+.detail-registro-section__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.detail-registro-section__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.detail-registro-section__separator {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border-separator);
+}
+
+.detail-registro-section__content {
+  background-color: var(--color-bg-page);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+.detail-registro-section__fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 24px;
+}
+
+.detail-registro-section__note {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-style: italic;
+}
