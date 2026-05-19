@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 
 @Component({
-  selector: 'app-editar-servicios',
+  selector: 'app-detalle-servicio',
   imports: [PageLayout],
-  templateUrl: './editar-servicios.html',
-  styleUrl: './editar-servicios.css',
+  templateUrl: './detalle-servicio.html',
+  styleUrl: './detalle-servicio.css',
 })
-export class EditarServicios {}
+export class DetalleServicio {}

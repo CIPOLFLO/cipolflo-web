@@ -9,11 +9,10 @@ export const SERVICIOS_ROUTES: Routes = [
   {
     path: ':id',
     loadComponent: () =>
-      import('./detalle-servicios/detalle-servicios').then((m) => m.DetalleServicios),
+      import('./detalle-servicio/detalle-servicio').then((m) => m.DetalleServicio),
   },
   {
     path: ':id/editar',
-    loadComponent: () =>
-      import('./editar-servicios/editar-servicios').then((m) => m.EditarServicios),
+    loadComponent: () => import('./editar-servicio/editar-servicio').then((m) => m.EditarServicio),
   },
 ];
