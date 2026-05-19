@@ -28,6 +28,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'servicios',
+    loadChildren: () =>
+      import('./components/servicios/servicios.routes').then((m) => m.SERVICIOS_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'reservas',
   },
