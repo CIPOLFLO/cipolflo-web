@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ListadoServicios } from './listado-servicios';
@@ -105,6 +106,12 @@ describe('ListadoServicios', () => {
       nombre: 'Cabaña',
       estado: EstadoServicio.Habilitado,
     });
+  });
+
+  it('debe actualizar filtros cuando app-filter-panel emite filterChange', () => {
+    const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
+    filterPanel.triggerEventHandler('filterChange', { procedencia: 'CAMPING' });
+    expect(component['tableState'].queryParams().filters).toEqual({ procedencia: 'CAMPING' });
   });
 
   it('rowActions debe ser una función', () => {
