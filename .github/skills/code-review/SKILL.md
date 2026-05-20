@@ -74,7 +74,7 @@ user-invocable: true
    - **Columnas en servicio dedicado**: las columnas de listados van en `*ColumnsService`, no inline en el componente.
    - **Filtros en servicio dedicado**: los filtros van en `*FilterService` extendiendo `FilterConfigProvider`.
    - **Row actions en el componente**: las acciones de fila están en el componente, no en un servicio.
-   - **Orden de row actions**: Ver detalle → Modificar → Habilitar/Deshabilitar (spread ternario condicional) → separator → Eliminar. Cargadas como comentarios inicialmente.
+   - **Orden de row actions**: Ver detalle → Modificar → Habilitar/Deshabilitar (spread ternario condicional) → Eliminar. Cargadas como comentarios inicialmente.
    - **Modelos**: DTOs como `*RespuestaDto`, filas como `*Row extends Record<string, unknown>`, mappings de enums como `Record<string, string>` con sufijo `_LABEL`, opciones de select (`*_OPTIONS`) co-ubicadas con su enum.
    - **Imports del shared**: siempre desde el barrel `shared/index.ts`, nunca desde rutas internas de `shared/`.
    - **Query params en BaseHttpService**: se pasan como objeto plano `Record<string, unknown>`, sin construir `HttpParams` manualmente.
