@@ -1,1 +1,10 @@
-<app-page-layout pageTitle="Servicios" pageDescription="Listado de servicios"> </app-page-layout>
+<app-page-layout
+  pageTitle="Servicios"
+  pageDescription="Gestiona los servicios disponibles"
+>
+  <app-button actions label="Nuevo Servicio" intent="primary" icon="pi-plus" />
+
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+</app-page-layout>

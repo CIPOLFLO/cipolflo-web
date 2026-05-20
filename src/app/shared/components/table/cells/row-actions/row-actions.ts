@@ -33,7 +33,6 @@ export class RowActionsComponent<T> {
     this.actions().map((action) => ({
       label: action.label,
       icon: action.icon,
-      separator: action.separator,
       disabled:
         typeof action.disabled === 'function'
           ? action.disabled(this.row())

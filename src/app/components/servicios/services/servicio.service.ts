@@ -1,18 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
+import { PageResponse, TableQueryParams } from '../../../shared';
 import { ServicioRespuestaDto } from '../models/servicio.model';
-
-const PLACEHOLDER_SERVICIOS: ServicioRespuestaDto[] = [
-  { id: 1, nombre: 'Servicio A' },
-  { id: 2, nombre: 'Servicio B' },
-];
 
 @Injectable({ providedIn: 'root' })
 export class ServicioService extends BaseHttpService {
-  getServicios(): Observable<ServicioRespuestaDto[]> {
-    // TODO: reemplazar con llamada real cuando el backend esté disponible
-    // return this.get<ServicioRespuestaDto[]>('servicios');
-    return of(PLACEHOLDER_SERVICIOS);
+  getAll({ page, size, filters }: TableQueryParams): Observable<PageResponse<ServicioRespuestaDto>> {
+    return this.get<PageResponse<ServicioRespuestaDto>>('servicios', { page, size, ...filters });
   }
 }
