@@ -51,7 +51,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
   },
   {
     id: 6,
-    nombre: 'George O\'Malley',
+    nombre: "George O'Malley",
     tipoCliente: 'SOCIO',
     numeroSocio: '777',
     cedula: '6.789.012-3',
