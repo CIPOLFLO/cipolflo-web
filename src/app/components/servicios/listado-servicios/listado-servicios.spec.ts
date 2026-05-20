@@ -7,24 +7,34 @@ import { ServicioService } from '../services/servicio.service';
 import { PageResponse } from '../../../shared';
 import { EstadoServicio, ServicioRow } from '../models/servicio.model';
 
-const mockPageResponse: PageResponse<ServicioRow> = {
+type ServicioRespuestaDtoMock = {
+  id: number;
+  nombre: string;
+  procedencia: string;
+  precioSocio: number;
+  precioParticular: number;
+  modalidadPrecio: string;
+  estado: EstadoServicio;
+};
+
+const mockPageResponse: PageResponse<ServicioRespuestaDtoMock> = {
   content: [
     {
       id: 1,
       nombre: 'Cabaña 1',
-      procedencia: 'Camping',
+      procedencia: 'CAMPING',
       precioSocio: 800,
       precioParticular: 1200,
-      unidad: 'p/día',
+      modalidadPrecio: 'POR_DIA',
       estado: EstadoServicio.Habilitado,
     },
     {
       id: 2,
       nombre: 'Salón',
-      procedencia: 'Sede',
+      procedencia: 'SEDE',
       precioSocio: 100,
       precioParticular: 180,
-      unidad: 'p/hora',
+      modalidadPrecio: 'POR_HORA',
       estado: EstadoServicio.Deshabilitado,
     },
   ],
