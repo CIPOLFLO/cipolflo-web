@@ -133,3 +133,39 @@ describe('FilterPanel', () => {
     expect(api.filterValues()).toEqual({});
   });
 });
+
+describe('FilterPanel con campos que tienen defaultValue', () => {
+  const fieldsWithDefault: FormFieldConfig[] = [
+    { key: 'nombre', label: 'Nombre', type: 'text' },
+    { key: 'estado', label: 'Estado', type: 'select', options: [], defaultValue: 'HABILITADO' },
+  ];
+
+  class MockFilterWithDefaults extends FilterConfigProvider {
+    readonly filterFields = signal(fieldsWithDefault);
+  }
+
+  let fixture: ComponentFixture<FilterPanel>;
+  let api: FilterPanelTestApi;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FilterPanel],
+      providers: [{ provide: FilterConfigProvider, useClass: MockFilterWithDefaults }],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(FilterPanel);
+    api = fixture.componentInstance as unknown as FilterPanelTestApi;
+    fixture.detectChanges();
+  });
+
+  it('debe inicializar filterValues con los defaultValue de los campos', () => {
+    expect(api.filterValues()).toEqual({ estado: 'HABILITADO' });
+  });
+
+  it('onSearch debe incluir el defaultValue en la emisión inicial', () => {
+    const emitted: Record<string, string>[] = [];
+    fixture.componentInstance.filterChange.subscribe((v) => emitted.push(v));
+    api.onSearch();
+    expect(emitted[0]).toEqual({ estado: 'HABILITADO' });
+  });
+});

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { FilterConfigProvider, FormFieldConfig, PROCEDENCIA_OPTIONS } from '../../../shared';
-import { ESTADO_SERVICIO_OPTIONS } from '../models/servicio.model';
+import { ESTADO_SERVICIO_OPTIONS, EstadoServicio } from '../models/servicio.model';
 
 @Injectable()
 export class ServiciosFilterService extends FilterConfigProvider {
@@ -24,6 +24,7 @@ export class ServiciosFilterService extends FilterConfigProvider {
       type: 'select',
       placeholder: 'Seleccionar estado',
       options: ESTADO_SERVICIO_OPTIONS,
+      defaultValue: EstadoServicio.Habilitado,
     },
   ]);
 }

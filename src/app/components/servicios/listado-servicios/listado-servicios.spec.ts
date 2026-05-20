@@ -109,6 +109,13 @@ describe('ListadoServicios', () => {
     expect(mockServicioService.getAll).toHaveBeenCalled();
   });
 
+  it('debe cargar datos con el filtro estado=HABILITADO por defecto', () => {
+    const params = mockServicioService.getAll.mock.calls[0][0] as {
+      filters: Record<string, string>;
+    };
+    expect(params.filters['estado']).toBe(EstadoServicio.Habilitado);
+  });
+
   it('onFilterChange debe actualizar los filtros en tableState', () => {
     const tableState = component['tableState'];
     component['onFilterChange']({ nombre: 'Cabaña', estado: EstadoServicio.Habilitado });

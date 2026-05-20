@@ -16,7 +16,13 @@ export class FilterPanel {
   protected readonly filterConfigProvider = inject(FilterConfigProvider);
   protected readonly filterFields = this.filterConfigProvider.filterFields;
   protected readonly isExpanded = signal(true);
-  protected readonly filterValues = signal<Record<string, string | null>>({});
+  protected readonly filterValues = signal<Record<string, string | null>>(
+    Object.fromEntries(
+      this.filterFields()
+        .filter((f) => f.defaultValue != null)
+        .map((f) => [f.key, f.defaultValue!]),
+    ),
+  );
 
   protected toggle(): void {
     this.isExpanded.update((v) => !v);

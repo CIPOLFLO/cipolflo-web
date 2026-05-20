@@ -31,7 +31,20 @@ import { MODALIDAD_PRECIO_LABEL, ServicioRow } from '../models/servicio.model';
 export class ListadoServicios {
   private readonly servicioService = inject(ServicioService);
   private readonly columnsService = inject(ServiciosColumnsService);
+  private readonly filterConfigProvider = inject(FilterConfigProvider);
   protected readonly tableState = inject(TableStateService);
+
+  constructor() {
+    const defaults = Object.fromEntries(
+      this.filterConfigProvider
+        .filterFields()
+        .filter((f) => f.defaultValue != null)
+        .map((f) => [f.key, f.defaultValue!]),
+    );
+    if (Object.keys(defaults).length) {
+      this.tableState.updateFilters(defaults);
+    }
+  }
 
   protected readonly columns = this.columnsService.columns;
 
