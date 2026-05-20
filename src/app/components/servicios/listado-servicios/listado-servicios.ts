@@ -41,7 +41,7 @@ export class ListadoServicios {
         ...response,
         content: response.content.map((dto) => ({
           ...dto,
-          unidad: MODALIDAD_PRECIO_LABEL[dto.modalidadPrecio],
+          unidad: MODALIDAD_PRECIO_LABEL[dto.modalidadPrecio] ?? String(dto.modalidadPrecio),
           procedencia: PROCEDENCIA_LABEL[dto.procedencia] ?? dto.procedencia,
         })),
       })),
