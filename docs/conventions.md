@@ -38,12 +38,12 @@ protected readonly loadDataFn: LoadDataFn<ServicioRow> = (params) =>
 
 Cada listado debe separar su configuración en servicios dedicados:
 
-| Responsabilidad | Dónde va |
-|---|---|
-| Definición de columnas | `*ColumnsService` — clase `@Injectable()` con `readonly columns: ColumnConfig[]` |
-| Definición de filtros | `*FilterService` — extiende `FilterConfigProvider`, define `readonly filterFields` |
-| Acciones de fila | Método `rowActions` en el **componente** (no en un servicio, son comportamiento) |
-| Wiring (`loadDataFn`, `onFilterChange`) | Componente |
+| Responsabilidad                         | Dónde va                                                                           |
+| --------------------------------------- | ---------------------------------------------------------------------------------- |
+| Definición de columnas                  | `*ColumnsService` — clase `@Injectable()` con `readonly columns: ColumnConfig[]`   |
+| Definición de filtros                   | `*FilterService` — extiende `FilterConfigProvider`, define `readonly filterFields` |
+| Acciones de fila                        | Método `rowActions` en el **componente** (no en un servicio, son comportamiento)   |
+| Wiring (`loadDataFn`, `onFilterChange`) | Componente                                                                         |
 
 ```
 feature/

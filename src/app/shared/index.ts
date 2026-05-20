@@ -34,7 +34,10 @@ export { EMPTY_PAGE } from './components/table/table.models';
 // Confirm Dialog
 export { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog';
 export { ConfirmDialogService } from './confirm-dialog/confirm-dialog.service';
-export type { ConfirmDialogData, ConfirmDialogVariant } from './confirm-dialog/confirm-dialog.model';
+export type {
+  ConfirmDialogData,
+  ConfirmDialogVariant,
+} from './confirm-dialog/confirm-dialog.model';
 
 // Models
 export type { FormFieldConfig, FormFieldOption } from './models/form-field.model';

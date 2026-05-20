@@ -7,7 +7,13 @@ export class ServiciosColumnsService {
   readonly columns: ColumnConfig[] = [
     { key: 'procedencia', label: 'Procedencia' },
     { key: 'nombre', label: 'Nombre' },
-    { key: 'precioSocio', label: 'Precio Socio', cellType: 'price', unitKey: 'unidad', colorVariant: 'green' },
+    {
+      key: 'precioSocio',
+      label: 'Precio Socio',
+      cellType: 'price',
+      unitKey: 'unidad',
+      colorVariant: 'green',
+    },
     { key: 'precioParticular', label: 'Precio Particular', cellType: 'price', unitKey: 'unidad' },
     {
       key: 'estado',

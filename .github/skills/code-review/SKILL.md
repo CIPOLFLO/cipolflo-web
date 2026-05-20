@@ -69,7 +69,6 @@ user-invocable: true
    Convenciones del proyecto (`docs/conventions.md`)
 
    Para cada convención marcar ✅ cumple, ❌ no cumple (archivo y línea) o ➖ no aplica en este PR.
-
    - **Servicios HTTP puros**: el servicio devuelve `*RespuestaDto`, sin mapeos a tipos de presentación.
    - **Mapeo en el componente**: la transformación DTO → `*Row` ocurre en el `loadDataFn` del componente.
    - **Columnas en servicio dedicado**: las columnas de listados van en `*ColumnsService`, no inline en el componente.
@@ -137,17 +136,17 @@ user-invocable: true
 
 ## Convenciones del proyecto
 
-| Convención | Estado | Detalle |
-|---|---|---|
-| Servicios HTTP puros | ✅ / ❌ / ➖ | |
-| Mapeo en el componente | ✅ / ❌ / ➖ | |
-| Columnas en servicio dedicado | ✅ / ❌ / ➖ | |
-| Filtros en servicio dedicado | ✅ / ❌ / ➖ | |
-| Row actions en el componente | ✅ / ❌ / ➖ | |
-| Orden de row actions | ✅ / ❌ / ➖ | |
-| Modelos (`*RespuestaDto`, `*Row`, `*_LABEL`, `*_OPTIONS`) | ✅ / ❌ / ➖ | |
-| Imports desde barrel `shared/index.ts` | ✅ / ❌ / ➖ | |
-| Query params como objeto plano | ✅ / ❌ / ➖ | |
+| Convención                                                | Estado       | Detalle |
+| --------------------------------------------------------- | ------------ | ------- |
+| Servicios HTTP puros                                      | ✅ / ❌ / ➖ |         |
+| Mapeo en el componente                                    | ✅ / ❌ / ➖ |         |
+| Columnas en servicio dedicado                             | ✅ / ❌ / ➖ |         |
+| Filtros en servicio dedicado                              | ✅ / ❌ / ➖ |         |
+| Row actions en el componente                              | ✅ / ❌ / ➖ |         |
+| Orden de row actions                                      | ✅ / ❌ / ➖ |         |
+| Modelos (`*RespuestaDto`, `*Row`, `*_LABEL`, `*_OPTIONS`) | ✅ / ❌ / ➖ |         |
+| Imports desde barrel `shared/index.ts`                    | ✅ / ❌ / ➖ |         |
+| Query params como objeto plano                            | ✅ / ❌ / ➖ |         |
 
 ## Tests
 
