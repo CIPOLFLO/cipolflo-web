@@ -118,7 +118,7 @@ describe('ListadoServicios', () => {
     expect(typeof component['rowActions']).toBe('function');
   });
 
-  it('rowActions debe retornar array vacío cuando no hay acciones implementadas', () => {
+  it('rowActions debe retornar la acción "Ver detalle"', () => {
     const row: ServicioRow = {
       id: 1,
       nombre: 'Cabaña 1',
@@ -128,7 +128,10 @@ describe('ListadoServicios', () => {
       unidad: 'p/día',
       estado: EstadoServicio.Habilitado,
     };
-    expect(component['rowActions'](row)).toEqual([]);
+    const actions = component['rowActions'](row);
+    expect(actions).toHaveLength(1);
+    expect(actions[0].label).toBe('Ver detalle');
+    expect(actions[0].icon).toBe('pi pi-eye');
   });
 
   it('debe renderizar los encabezados de columna en la tabla', async () => {
