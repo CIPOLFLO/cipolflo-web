@@ -7,7 +7,7 @@ import { ServicioService } from '../services/servicio.service';
 import { PageResponse } from '../../../shared';
 import { EstadoServicio, ServicioRow } from '../models/servicio.model';
 
-type ServicioRespuestaDtoMock = {
+interface ServicioRespuestaDtoMock {
   id: number;
   nombre: string;
   procedencia: string;
@@ -15,7 +15,7 @@ type ServicioRespuestaDtoMock = {
   precioParticular: number;
   modalidadPrecio: string;
   estado: EstadoServicio;
-};
+}
 
 const mockPageResponse: PageResponse<ServicioRespuestaDtoMock> = {
   content: [
