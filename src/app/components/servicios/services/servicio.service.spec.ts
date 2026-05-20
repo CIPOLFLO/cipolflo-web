@@ -43,7 +43,11 @@ describe('ServicioService', () => {
 
   it('getAll incluye los filtros activos en los query params', () => {
     service
-      .getAll({ page: 0, size: 10, filters: { nombre: 'Cabaña', estado: EstadoServicio.Habilitado } })
+      .getAll({
+        page: 0,
+        size: 10,
+        filters: { nombre: 'Cabaña', estado: EstadoServicio.Habilitado },
+      })
       .subscribe();
     const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/servicios`);
     expect(req.request.params.get('nombre')).toBe('Cabaña');

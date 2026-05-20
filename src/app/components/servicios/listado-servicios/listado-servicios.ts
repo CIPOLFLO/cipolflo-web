@@ -48,7 +48,7 @@ export class ListadoServicios {
     );
 
   protected readonly rowActions = (row: ServicioRow): RowAction<ServicioRow>[] => [
-    { label: 'Ver detalle',  icon: 'pi pi-eye',          command: () => console.log('ver detalle', row.id) },
+    { label: 'Ver detalle', icon: 'pi pi-eye', command: () => console.log('ver detalle', row.id) },
     // { label: 'Modificar',    icon: 'pi pi-pencil',       command: () => console.log('modificar', row.id) },
     // ...(row.estado === EstadoServicio.Deshabilitado
     //   ? [{ label: 'Habilitar',    icon: 'pi pi-check-circle', command: () => console.log('habilitar', row.id) }]
