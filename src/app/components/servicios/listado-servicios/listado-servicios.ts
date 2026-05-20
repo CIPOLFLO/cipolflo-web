@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { map } from 'rxjs';
 import {
   AppButton,
   AppTable,
