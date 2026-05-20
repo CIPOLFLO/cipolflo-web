@@ -6,8 +6,8 @@ import { FilterPanel } from '../../../shared/components/filter-panel/filter-pane
 import { AppTable } from '../../../shared/components/table/table';
 import { TableStateService } from '../../../shared/components/table/table-state.service';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
-import { ClientesFilterService } from '../services/cliente-filter.service';
-import { ClienteService } from '../services/clientes.service';
+import { ClientesFilterService } from '../services/clientes-filter.service';
+import { ClientesService } from '../services/clientes.service';
 import { ColumnConfig, LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
 import { ClienteRow } from '../models/cliente.model';
 
@@ -16,7 +16,7 @@ import { ClienteRow } from '../models/cliente.model';
   imports: [PageLayout, AppButton, FilterPanel, AppTable],
   providers: [
     TableStateService,
-    ClienteService,
+    ClientesService,
     { provide: FilterConfigProvider, useClass: ClientesFilterService },
   ],
   templateUrl: './listado-clientes.html',
@@ -24,7 +24,7 @@ import { ClienteRow } from '../models/cliente.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListadoClientes {
-  private readonly clienteService = inject(ClienteService);
+  private readonly clientesService = inject(ClientesService);
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
 
@@ -46,13 +46,13 @@ export class ListadoClientes {
   ];
 
   protected readonly loadDataFn: LoadDataFn<ClienteRow> = (params) =>
-    this.clienteService.getDatos(params);
+    this.clientesService.getDatos(params);
 
   protected readonly rowActions = (row: ClienteRow): RowAction<ClienteRow>[] => [
     {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
-      command: () => this.router.navigate(['/clientes', row.id]),
+      command: () => this.router.navigate(['Ver detalle', row.id]),
     },
     {
       label: 'Editar',

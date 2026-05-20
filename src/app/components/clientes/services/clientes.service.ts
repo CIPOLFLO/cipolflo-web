@@ -10,7 +10,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'SOCIO',
     numeroSocio: '123',
     cedula: '1.234.567-8',
-    email: 'juan@gmail.com',
+    email: 'juan@example.com',
     estado: 'ACTIVO',
   },
   {
@@ -19,7 +19,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'PARTICULAR',
     numeroSocio: '-',
     cedula: '2.345.678-9',
-    email: 'maria@gmail.com',
+    email: 'maria@example.com',
     estado: 'ACTIVO',
   },
   {
@@ -28,7 +28,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'SOCIO',
     numeroSocio: '878',
     cedula: '3.456.789-0',
-    email: 'jo@gmail.com',
+    email: 'jo@example.com',
     estado: 'ACTIVO',
   },
   {
@@ -37,7 +37,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'SOCIO',
     numeroSocio: '456',
     cedula: '4.567.890-1',
-    email: 'alex@gmail.com',
+    email: 'alex@example.com',
     estado: 'INACTIVO',
   },
   {
@@ -46,16 +46,16 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'SOCIO',
     numeroSocio: '9754',
     cedula: '5.678.901-2',
-    email: 'meredith@gmail.com',
+    email: 'meredith@example.com',
     estado: 'ACTIVO',
   },
   {
     id: 6,
-    nombre: "George O'Malley",
+    nombre: 'George O\'Malley',
     tipoCliente: 'SOCIO',
     numeroSocio: '777',
     cedula: '6.789.012-3',
-    email: 'george@gmail.com',
+    email: 'george@example.com',
     estado: 'BAJA',
   },
   {
@@ -64,7 +64,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'PARTICULAR',
     numeroSocio: '-',
     cedula: '7.890.123-4',
-    email: 'christina@gmail.com',
+    email: 'christina@example.com',
     estado: 'ACTIVO',
   },
   {
@@ -73,12 +73,12 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     tipoCliente: 'SOCIO',
     numeroSocio: '178',
     cedula: '8.901.234-5',
-    email: 'izzie@gmail.com',
+    email: 'izzie@example.com',
     estado: 'INACTIVO',
   },
 ];
 @Injectable()
-export class ClienteService {
+export class ClientesService {
   getDatos(params: TableQueryParams): Observable<PageResponse<ClienteRow>> {
     const filters = params.filters ?? {};
 
