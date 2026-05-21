@@ -43,6 +43,7 @@
               <app-price-cell
                 [value]="getNumber(row[col.key])"
                 [unit]="getString(row[col.unitKey ?? ''])"
+                [colorVariant]="getPriceColorVariant(col)"
               />
             }
             @case ('date') {

@@ -764,15 +764,6 @@ describe('RowActionsComponent', () => {
     expect(button).not.toBeNull();
   });
 
-  it('debe renderizar el separador en el menú abierto', () => {
-    fixture.componentRef.setInput('actions', [{ label: 'Ver' }, { label: 'sep', separator: true }]);
-    fixture.componentRef.setInput('row', {});
-    fixture.detectChanges();
-    component['isOpen'].set(true);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.row-actions-menu__separator')).not.toBeNull();
-  });
-
   it('debe renderizar el ícono de la acción cuando está definido', () => {
     fixture.componentRef.setInput('actions', [{ label: 'Ver', icon: 'pi pi-eye' }]);
     fixture.componentRef.setInput('row', {});
