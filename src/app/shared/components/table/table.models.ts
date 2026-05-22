@@ -17,7 +17,7 @@ interface BaseColumnConfig {
 export type ColumnConfig =
   | (BaseColumnConfig & { cellType?: 'text' | 'amount' | 'date' })
   | (BaseColumnConfig & { cellType: 'tag'; tagMap: Record<string, TagStyle> })
-  | (BaseColumnConfig & { cellType: 'price' });
+  | (BaseColumnConfig & { cellType: 'price'; colorVariant?: 'green' });
 
 export interface PageResponse<T> {
   content: T[];
@@ -42,7 +42,6 @@ export interface RowAction<T = unknown> {
   icon?: string;
   command?: (row: T) => void;
   disabled?: boolean | ((row: T) => boolean);
-  separator?: boolean;
 }
 
 export type LoadDataFn<T> = (params: TableQueryParams) => Observable<PageResponse<T>>;

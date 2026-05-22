@@ -1,4 +1,6 @@
 <div class="price-cell">
-  <span class="price-cell__value">{{ value() | currencyFormat }}</span>
+  <span class="price-cell__value" [class.price-cell__value--green]="colorVariant() === 'green'">{{
+    value() | currencyFormat
+  }}</span>
   <span class="price-cell__unit">{{ unit() }}</span>
 </div>

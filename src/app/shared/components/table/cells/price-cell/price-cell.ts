@@ -11,4 +11,5 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 export class PriceCellComponent {
   value = input.required<number>();
   unit = input.required<string>();
+  colorVariant = input<'green'>();
 }

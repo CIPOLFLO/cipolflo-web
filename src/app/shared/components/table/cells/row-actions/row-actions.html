@@ -16,23 +16,19 @@
     [style.left.px]="dropdownPos().left"
   >
     @for (item of menuItems(); track $index) {
-      @if (item.separator) {
-        <li role="separator" class="row-actions-menu__separator"></li>
-      } @else {
-        <li role="none">
-          <button
-            role="menuitem"
-            class="row-actions-menu__item"
-            [disabled]="item.disabled"
-            (click)="item.command?.()"
-          >
-            @if (item.icon) {
-              <i [class]="item.icon"></i>
-            }
-            {{ item.label }}
-          </button>
-        </li>
-      }
+      <li role="none">
+        <button
+          role="menuitem"
+          class="row-actions-menu__item"
+          [disabled]="item.disabled"
+          (click)="item.command?.()"
+        >
+          @if (item.icon) {
+            <i [class]="item.icon"></i>
+          }
+          {{ item.label }}
+        </button>
+      </li>
     }
   </ul>
 }

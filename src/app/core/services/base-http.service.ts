@@ -7,8 +7,17 @@ export abstract class BaseHttpService {
   protected readonly http = inject(HttpClient);
   protected readonly apiUrl = environment.apiUrl;
 
-  protected get<T>(path: string, params?: HttpParams): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}/${path}`, { params });
+  protected get<T>(path: string, params?: Record<string, unknown>): Observable<T> {
+    const httpParams = params
+      ? new HttpParams({
+          fromObject: Object.fromEntries(
+            Object.entries(params)
+              .filter(([, v]) => v != null)
+              .map(([k, v]) => [k, String(v)]),
+          ),
+        })
+      : undefined;
+    return this.http.get<T>(`${this.apiUrl}/${path}`, { params: httpParams });
   }
 
   protected post<T>(path: string, body: unknown): Observable<T> {

@@ -36,6 +36,7 @@ user-invocable: true
 2. Leer solo lo relevante.
    - `README.md` para documentación de desarrolladores.
    - `AGENTS.md` para convenciones vigentes del proyecto.
+   - `docs/conventions.md` para las convenciones de arquitectura del proyecto.
    - Cada archivo listado en el diff del paso anterior.
 
    No leer archivos que no hayan cambiado salvo que sea necesario para entender un cambio puntual.
@@ -64,6 +65,19 @@ user-invocable: true
    Servicios y datos
    - Los métodos placeholder tienen comentario `// TODO: reemplazar cuando el backend esté disponible.`
    - No hay lógica de negocio en componentes que debería estar en servicios.
+
+   Convenciones del proyecto (`docs/conventions.md`)
+
+   Para cada convención marcar ✅ cumple, ❌ no cumple (archivo y línea) o ➖ no aplica en este PR.
+   - **Servicios HTTP puros**: el servicio devuelve `*RespuestaDto`, sin mapeos a tipos de presentación.
+   - **Mapeo en el componente**: la transformación DTO → `*Row` ocurre en el `loadDataFn` del componente.
+   - **Columnas en servicio dedicado**: las columnas de listados van en `*ColumnsService`, no inline en el componente.
+   - **Filtros en servicio dedicado**: los filtros van en `*FilterService` extendiendo `FilterConfigProvider`.
+   - **Row actions en el componente**: las acciones de fila están en el componente, no en un servicio.
+   - **Orden de row actions**: Ver detalle → Modificar → Habilitar/Deshabilitar (spread ternario condicional) → Eliminar. Cargadas como comentarios inicialmente.
+   - **Modelos**: DTOs como `*RespuestaDto`, filas como `*Row extends Record<string, unknown>`, mappings de enums como `Record<string, string>` con sufijo `_LABEL`, opciones de select (`*_OPTIONS`) co-ubicadas con su enum.
+   - **Imports del shared**: siempre desde el barrel `shared/index.ts`, nunca desde rutas internas de `shared/`.
+   - **Query params en BaseHttpService**: se pasan como objeto plano `Record<string, unknown>`, sin construir `HttpParams` manualmente.
 
    PrimeNG
    - Los componentes se importan en el `imports` del `@Component`, no en un módulo global.
@@ -120,6 +134,20 @@ user-invocable: true
 
 - <qué debe corregirse antes del merge>
 
+## Convenciones del proyecto
+
+| Convención                                                | Estado       | Detalle |
+| --------------------------------------------------------- | ------------ | ------- |
+| Servicios HTTP puros                                      | ✅ / ❌ / ➖ |         |
+| Mapeo en el componente                                    | ✅ / ❌ / ➖ |         |
+| Columnas en servicio dedicado                             | ✅ / ❌ / ➖ |         |
+| Filtros en servicio dedicado                              | ✅ / ❌ / ➖ |         |
+| Row actions en el componente                              | ✅ / ❌ / ➖ |         |
+| Orden de row actions                                      | ✅ / ❌ / ➖ |         |
+| Modelos (`*RespuestaDto`, `*Row`, `*_LABEL`, `*_OPTIONS`) | ✅ / ❌ / ➖ |         |
+| Imports desde barrel `shared/index.ts`                    | ✅ / ❌ / ➖ |         |
+| Query params como objeto plano                            | ✅ / ❌ / ➖ |         |
+
 ## Tests
 
 **Estado general:** ✅ Pasaron / ⚠️ Pasaron con advertencias / ❌ Fallaron
@@ -149,6 +177,6 @@ user-invocable: true
 
 ## Recursos
 
-- [convenciones](./references/convenciones.md)
+- [convenciones](../../../docs/conventions.md)
 - Skill relacionada: review-error-suggestions
 ```

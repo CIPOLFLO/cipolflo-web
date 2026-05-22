@@ -19,16 +19,6 @@ import { RowActionsComponent } from './cells/row-actions/row-actions';
 import { PaginationComponent } from './pagination/pagination';
 import { DateFormatPipe } from './pipes/date-format.pipe';
 
-/**
- * Tabla genérica reutilizable con paginación, ordenamiento y filtros.
- *
- * **Requisito de DI:** el componente padre debe proveer `TableStateService`
- * en su propio `providers` para que `AppTable` y `FilterPanel` compartan
- * el mismo estado. Ejemplo:
- * ```ts
- * @Component({ providers: [TableStateService, { provide: FilterConfigProvider, useClass: MiFilterService }] })
- * ```
- */
 @Component({
   selector: 'app-table',
   imports: [
@@ -95,6 +85,10 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
   protected getTagMap(col: ColumnConfig): Record<string, TagStyle> {
     return col.cellType === 'tag' ? col.tagMap : {};
+  }
+
+  protected getPriceColorVariant(col: ColumnConfig): 'green' | undefined {
+    return col.cellType === 'price' ? col.colorVariant : undefined;
   }
 
   protected getRowActionsForRow(row: T): RowAction<T>[] {
