@@ -57,7 +57,7 @@
   flex-shrink: 0;
 }
 
-.form-field__currency-row p-inputNumber {
+.form-field__currency-row {
   flex: 1;
 }
 
