@@ -1,6 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { FormFieldConfig } from '../../../shared/models/form-field.model';
+import {
+  ESTADO_CLIENTE_OPTIONS,
+  EstadoCliente,
+  TIPO_CLIENTE_OPTIONS,
+} from '../models/cliente.model';
 
 @Injectable()
 export class ClientesFilterService extends FilterConfigProvider {
@@ -10,11 +15,7 @@ export class ClientesFilterService extends FilterConfigProvider {
       label: 'Tipo de cliente',
       type: 'select',
       placeholder: 'Todos',
-      options: [
-        { label: 'Todos', value: '' },
-        { label: 'Socio', value: 'SOCIO' },
-        { label: 'Particular', value: 'PARTICULAR' },
-      ],
+      options: TIPO_CLIENTE_OPTIONS,
     },
     {
       key: 'nombre',
@@ -33,12 +34,8 @@ export class ClientesFilterService extends FilterConfigProvider {
       label: 'Estado',
       type: 'select',
       placeholder: 'Todos',
-      options: [
-        { label: 'Todos', value: '' },
-        { label: 'Activo', value: 'ACTIVO' },
-        { label: 'Inactivo', value: 'INACTIVO' },
-        { label: 'De baja', value: 'BAJA' },
-      ],
+      options: ESTADO_CLIENTE_OPTIONS,
+      defaultValue: EstadoCliente.Activo,
     },
   ]);
 }

@@ -34,6 +34,30 @@ protected readonly loadDataFn: LoadDataFn<ServicioRow> = (params) =>
 
 ---
 
+## Convención de iconos en componentes compartidos
+
+- Cuando pases un icono a los componentes compartidos (`AppButton`, acciones de tabla, etc.), pasa sólo la clase específica con un único prefijo `pi-` (por ejemplo `pi-download`, `pi-eye`, `pi-plus`).
+- Los componentes compartidos son responsables de anteponer la clase base `pi` y componer la clase final `pi pi-download` antes de aplicarla al elemento. Esto evita duplicar el prefijo en plantillas y en código TS.
+
+Ejemplo — `AppButton` (uso en templates):
+
+```html
+<!-- Correcto: pasar sólo la clase específica -->
+<app-button label="Exportar" intent="secondary" icon="pi-download" />
+
+<!-- Incorrecto: evita pasar la clase completa con doble prefijo -->
+<!-- <app-button label="Exportar" icon="pi pi-download" /> -->
+```
+
+Ejemplo — `rowActions` (uso en el componente):
+
+```ts
+// Correcto: pasar sólo 'pi-eye' y dejar que la vista añada la clase base
+{ label: 'Ver detalle', icon: 'pi-eye', command: () => ... }
+```
+
+Nota: si algún componente compartido actual requiere el formato antiguo (`pi pi-*`), actualízalo para aceptar la convención nueva y documenta el cambio en el componente antes de migrar las llamadas existentes.
+
 ## Estructura de componentes de listado
 
 Cada listado debe separar su configuración en servicios dedicados:
@@ -60,6 +84,45 @@ feature/
   models/
     feature.model.ts            ← DTOs, enums, opciones
 ```
+
+### Definición de columnas en `*ColumnsService`
+
+- Las columnas de un listado deben definirse en un servicio dedicado denominado `*ColumnsService` y no inline en el componente. Esto facilita reuso, pruebas y mantenimiento (ver ejemplo en `servicios`).
+- El servicio es una clase `@Injectable()` que exporta una propiedad `readonly columns: ColumnConfig[]` (o un `signal` que la devuelva) y se provee en el `providers` del componente de listado cuando corresponda.
+
+Ejemplo de `ClientesColumnsService`:
+
+```ts
+@Injectable()
+export class ClientesColumnsService {
+  readonly columns: ColumnConfig[] = [
+    { key: 'nombre', label: 'Nombre', sortable: true },
+    { key: 'numeroSocio', label: 'Nro de socio' },
+    { key: 'cedula', label: 'Cédula' },
+    { key: 'email', label: 'Email' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      cellType: 'tag',
+      tagMap: {
+        /* ... */
+      },
+    },
+  ];
+}
+```
+
+Uso en el componente:
+
+```ts
+providers: [ClientesColumnsService, TableStateService, { provide: FilterConfigProvider, useClass: ClientesFilterService }]
+
+constructor(private columnsService: ClientesColumnsService) {
+  this.columns = this.columnsService.columns;
+}
+```
+
+Nota: No aplicar la refactorización automáticamente en este PR si el código ya está funcionando; abrir un ticket/PR separado para mover las columnas inline a un `*ColumnsService` y actualizar los tests en consecuencia.
 
 ---
 

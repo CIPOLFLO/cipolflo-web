@@ -1,14 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
-import { AppButton } from '../../../shared/components/button/button';
-import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
-import { AppTable } from '../../../shared/components/table/table';
-import { TableStateService } from '../../../shared/components/table/table-state.service';
-import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
+import {
+  AppButton,
+  AppTable,
+  FilterConfigProvider,
+  FilterPanel,
+  LoadDataFn,
+  PageLayout,
+  RowAction,
+  TableStateService,
+} from '../../../shared';
+import { ClientesColumnsService } from '../services/clientes-columns.service';
 import { ClientesFilterService } from '../services/clientes-filter.service';
 import { ClientesService } from '../services/clientes.service';
-import { ColumnConfig, LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
 import { ClienteRow } from '../models/cliente.model';
 
 @Component({
@@ -16,64 +19,45 @@ import { ClienteRow } from '../models/cliente.model';
   imports: [PageLayout, AppButton, FilterPanel, AppTable],
   providers: [
     TableStateService,
-    ClientesService,
+    ClientesColumnsService,
     { provide: FilterConfigProvider, useClass: ClientesFilterService },
   ],
   templateUrl: './listado-clientes.html',
-  styleUrl: './listado-clientes.css',
+  styleUrls: ['./listado-clientes.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListadoClientes {
   private readonly clientesService = inject(ClientesService);
-  private readonly router = inject(Router);
+  private readonly columnsService = inject(ClientesColumnsService);
+  private readonly filterConfigProvider = inject(FilterConfigProvider);
   protected readonly tableState = inject(TableStateService);
 
-  protected readonly columns: ColumnConfig[] = [
-    { key: 'nombre', label: 'Nombre', sortable: true },
-    { key: 'numeroSocio', label: 'Nro de socio' },
-    { key: 'cedula', label: 'Cédula' },
-    { key: 'email', label: 'Email' },
-    {
-      key: 'estado',
-      label: 'Estado',
-      cellType: 'tag',
-      tagMap: {
-        ACTIVO: { styleClass: 'tag--green', label: 'Activo' },
-        INACTIVO: { styleClass: 'tag--yellow', label: 'Inactivo' },
-        BAJA: { styleClass: 'tag--gray', label: 'De baja' },
-      },
-    },
-  ];
+  constructor() {
+    const defaults = Object.fromEntries(
+      this.filterConfigProvider
+        .filterFields()
+        .filter((f) => f.defaultValue != null)
+        .map((f) => [f.key, f.defaultValue!]),
+    );
+    if (Object.keys(defaults).length) {
+      this.tableState.updateFilters(defaults);
+    }
+  }
+
+  protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRow> = (params) =>
     this.clientesService.getDatos(params);
 
   protected readonly rowActions = (row: ClienteRow): RowAction<ClienteRow>[] => [
-    {
-      label: 'Ver detalle',
-      icon: 'pi pi-eye',
-      command: () => this.router.navigate(['Ver detalle', row.id]),
-    },
-    {
-      label: 'Editar',
-      icon: 'pi pi-pencil',
-      command: () => console.log('Editar', row.id),
-    },
-    {
-      label: 'Eliminar',
-      icon: 'pi pi-trash',
-      command: () => console.log('Eliminar', row.id),
-    },
-    {
-      label: 'Pago de cuota',
-      icon: 'pi pi-dollar',
-      command: () => console.log('Pago de cuota', row.id),
-    },
-    {
-      label: 'Nueva Reserva',
-      icon: 'pi pi-calendar',
-      command: () => console.log('Reserva', row.id),
-    },
+    { label: 'Ver detalle', icon: 'pi pi-eye', command: () => console.log('ver detalle', row.id) },
+    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
+    // ...(row.estado !== 'ACTIVO'
+    //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
+    //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
+    // { label: 'Pago de cuota', icon: 'pi pi-dollar',       command: () => console.log('pago cuota', row.id) },
+    // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => console.log('nueva reserva', row.id) },
+    // { label: 'Eliminar',      icon: 'pi pi-trash',        command: () => console.log('eliminar', row.id) },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
