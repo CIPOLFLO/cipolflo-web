@@ -7,10 +7,10 @@
   <app-form-layout>
     <app-detail-section title="Información del Servicio" [fields]="infoFields()" />
 
-    <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()"/>
+    <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()" />
 
-    @if (registroData() as rd) {
-      <app-detail-registro-section [data]="rd" />
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
     }
 
     <app-form-actions actions>

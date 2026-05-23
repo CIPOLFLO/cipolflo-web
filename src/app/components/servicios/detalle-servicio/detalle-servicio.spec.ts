@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { DetalleServicio } from './detalle-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
@@ -23,11 +24,13 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   updatedBy: 'Juan Pérez',
 };
 
-function setup(overrides: {
-  getById?: ReturnType<typeof vi.fn>;
-  navigate?: ReturnType<typeof vi.fn>;
-  paramId?: string;
-} = {}): {
+function setup(
+  overrides: {
+    getById?: ReturnType<typeof vi.fn>;
+    navigate?: ReturnType<typeof vi.fn>;
+    paramId?: string;
+  } = {},
+): {
   fixture: ComponentFixture<DetalleServicio>;
   el: HTMLElement;
   navigateSpy: ReturnType<typeof vi.fn>;
@@ -112,15 +115,15 @@ describe('DetalleServicio', () => {
     expect(el.textContent).toContain('---');
   });
 
-  it('debería mostrar la sección "Precio para Particulares" con su precio', () => {
+  it('debería mostrar la sección "Precio particular" con su precio', () => {
     const { el } = setup();
-    expect(el.textContent).toContain('Precio para Particulares');
+    expect(el.textContent).toContain('Precio particular');
     expect(el.textContent).toContain('$ 1200');
   });
 
-  it('debería mostrar la sección "Precio para Socios" con su precio', () => {
+  it('debería mostrar la sección "Precio socio" con su precio', () => {
     const { el } = setup();
-    expect(el.textContent).toContain('Precio para Socios');
+    expect(el.textContent).toContain('Precio socio');
     expect(el.textContent).toContain('$ 800');
   });
 

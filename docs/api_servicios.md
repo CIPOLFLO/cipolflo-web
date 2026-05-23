@@ -332,8 +332,8 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
   estado: EstadoServicio;
   modalidadPrecio: ModalidadPrecio;
   // campos de auditoría (AuditInfoDto)
-  createdAt: string;  // Instant ISO-8601 UTC
-  updatedAt: string;  // Instant ISO-8601 UTC
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
   createdBy: string;
   updatedBy: string;
 }

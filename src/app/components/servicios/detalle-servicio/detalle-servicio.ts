@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, filter, map, switchMap } from 'rxjs';
 import {
@@ -18,10 +18,19 @@ import { EstadoServicio, MODALIDAD_PRECIO_DETALLE_LABEL } from '../models/servic
 import { ServicioService } from '../services/servicio.service';
 
 @Component({
+  standalone: true,
   selector: 'app-detalle-servicio',
-  imports: [PageLayout, FormLayout, FormActions, AppButton, DetailSection, DetailRegistroSection],
+  imports: [
+    CommonModule,
+    PageLayout,
+    FormLayout,
+    FormActions,
+    AppButton,
+    DetailSection,
+    DetailRegistroSection,
+  ],
   templateUrl: './detalle-servicio.html',
-  styleUrl: './detalle-servicio.css',
+  styleUrls: ['./detalle-servicio.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalleServicio {
@@ -38,7 +47,11 @@ export class DetalleServicio {
     toObservable(this.servicioId).pipe(
       filter((id) => /^\d+$/.test(id)),
       switchMap((id) =>
-        this.servicioService.getById(Number(id)).pipe(catchError(() => EMPTY)),
+        this.servicioService.getById(Number(id)).pipe(
+          // TODO: Manejar errores HTTP mostrando feedback al usuario (toast/redirect).
+          // Actualmente se atrapan y se suprimen aquí, lo que puede dejar la página en blanco.
+          catchError(() => EMPTY),
+        ),
       ),
     ),
     { initialValue: null },
@@ -49,11 +62,24 @@ export class DetalleServicio {
     if (!s) return [];
     const estadoLabel = s.estado === EstadoServicio.Habilitado ? 'Habilitado' : 'Deshabilitado';
     return [
-      { key: 'procedencia', label: 'Procedencia', value: PROCEDENCIA_LABEL[s.procedencia] ?? s.procedencia },
+      {
+        key: 'procedencia',
+        label: 'Procedencia',
+        value: PROCEDENCIA_LABEL[s.procedencia] ?? s.procedencia,
+      },
       { key: 'nombre', label: 'Nombre del Servicio', value: s.nombre },
       { key: 'estado', label: 'Estado', value: estadoLabel },
-      { key: 'capacidad', label: 'Capacidad', value: s.capacidad !== null ? String(s.capacidad) : '---' },
-      { key: 'cantidad', label: 'Cantidad', value: s.cantidad !== null ? String(s.cantidad) : '---' },
+      // Usar != null para cubrir null y undefined
+      {
+        key: 'capacidad',
+        label: 'Capacidad',
+        value: s.capacidad != null ? String(s.capacidad) : '---',
+      },
+      {
+        key: 'cantidad',
+        label: 'Cantidad',
+        value: s.cantidad != null ? String(s.cantidad) : '---',
+      },
     ];
   });
 
@@ -63,7 +89,11 @@ export class DetalleServicio {
     return [
       { key: 'precioParticular', label: 'Precio particular', value: `$ ${s.precioParticular}` },
       { key: 'precioSocio', label: 'Precio socio', value: `$ ${s.precioSocio}` },
-      { key: 'tipoCobro', label: 'Tipo de Cobro', value: MODALIDAD_PRECIO_DETALLE_LABEL[s.modalidadPrecio] ?? s.modalidadPrecio },
+      {
+        key: 'tipoCobro',
+        label: 'Tipo de Cobro',
+        value: MODALIDAD_PRECIO_DETALLE_LABEL[s.modalidadPrecio] ?? s.modalidadPrecio,
+      },
     ];
   });
 

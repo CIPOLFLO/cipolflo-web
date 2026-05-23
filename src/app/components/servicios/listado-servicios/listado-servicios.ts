@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { map } from 'rxjs';
 import {
@@ -18,15 +19,16 @@ import { ServicioService } from '../services/servicio.service';
 import { MODALIDAD_PRECIO_LABEL, ServicioRow } from '../models/servicio.model';
 
 @Component({
+  standalone: true,
   selector: 'app-listado-servicios',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable],
+  imports: [CommonModule, PageLayout, AppButton, FilterPanel, AppTable],
   providers: [
     TableStateService,
     ServiciosColumnsService,
     { provide: FilterConfigProvider, useClass: ServiciosFilterService },
   ],
   templateUrl: './listado-servicios.html',
-  styleUrl: './listado-servicios.css',
+  styleUrls: ['./listado-servicios.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListadoServicios {

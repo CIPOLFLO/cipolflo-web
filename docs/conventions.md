@@ -167,10 +167,10 @@ export const ESTADO_FEATURE_OPTIONS = [
 
 El módulo shared provee dos pipes para formatear fechas. Siempre importarlos desde el barrel `src/app/shared/index.ts`.
 
-| Pipe               | Nombre template    | Entrada                     | Salida                     | Uso                                      |
-| ------------------ | ------------------ | --------------------------- | -------------------------- | ---------------------------------------- |
-| `DateFormatPipe`   | `dateFormat`       | `'YYYY-MM-DD'`              | `'dd/mm/yyyy'`             | Fechas planas (sin hora) en tablas       |
-| `DateTimeFormatPipe` | `dateTimeFormat` | ISO 8601 (`'...T...Z'`)     | `'dd/mm/yyyy HH:mm hs'`   | Timestamps de auditoría (`createdAt`, etc.) |
+| Pipe                 | Nombre template  | Entrada                 | Salida                  | Uso                                         |
+| -------------------- | ---------------- | ----------------------- | ----------------------- | ------------------------------------------- |
+| `DateFormatPipe`     | `dateFormat`     | `'YYYY-MM-DD'`          | `'dd/mm/yyyy'`          | Fechas planas (sin hora) en tablas          |
+| `DateTimeFormatPipe` | `dateTimeFormat` | ISO 8601 (`'...T...Z'`) | `'dd/mm/yyyy HH:mm hs'` | Timestamps de auditoría (`createdAt`, etc.) |
 
 `DateTimeFormatPipe` convierte a **hora local del navegador** usando `new Date()`. No usar `DateFormatPipe` para ISO 8601 con tiempo, ya que solo extrae la parte de fecha.
 
