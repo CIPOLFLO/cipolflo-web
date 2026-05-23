@@ -1,9 +1,19 @@
+import { AuditInfoDto } from '../../../shared/models/audit.model';
+
 export const MODALIDAD_PRECIO_LABEL: Record<string, string> = {
   POR_DIA: 'p/día',
   POR_PERSONA: 'p/persona',
   POR_DIA_POR_PERSONA: 'p/día p/persona',
   POR_UNIDAD: 'p/unidad',
   POR_HORA: 'p/hora',
+};
+
+export const MODALIDAD_PRECIO_DETALLE_LABEL: Record<string, string> = {
+  POR_DIA: 'Por día',
+  POR_PERSONA: 'Por persona',
+  POR_DIA_POR_PERSONA: 'Por día por persona',
+  POR_UNIDAD: 'Por unidad',
+  POR_HORA: 'Por hora',
 };
 
 export enum EstadoServicio {
@@ -24,6 +34,18 @@ export interface ServicioRespuestaDto {
   precioSocio: number;
   modalidadPrecio: string;
   estado: EstadoServicio;
+}
+
+export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
+  id: number;
+  nombre: string;
+  procedencia: string;
+  cantidad: number | null;
+  precioSocio: number;
+  precioParticular: number;
+  capacidad: number | null;
+  estado: EstadoServicio;
+  modalidadPrecio: string;
 }
 
 export interface ServicioRow extends Record<string, unknown> {

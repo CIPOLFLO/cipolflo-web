@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { map } from 'rxjs';
 import {
   AppButton,
@@ -29,6 +30,7 @@ import { MODALIDAD_PRECIO_LABEL, ServicioRow } from '../models/servicio.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListadoServicios {
+  private readonly router = inject(Router);
   private readonly servicioService = inject(ServicioService);
   private readonly columnsService = inject(ServiciosColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
@@ -61,12 +63,16 @@ export class ListadoServicios {
     );
 
   protected readonly rowActions = (row: ServicioRow): RowAction<ServicioRow>[] => [
-    { label: 'Ver detalle', icon: 'pi pi-eye', command: () => console.log('ver detalle', row.id) },
-    // { label: 'Modificar',    icon: 'pi pi-pencil',       command: () => console.log('modificar', row.id) },
+    {
+      label: 'Ver detalle',
+      icon: 'pi pi-eye',
+      command: () => this.router.navigate(['/servicios', row.id]),
+    },
+    // { label: 'Modificar',    icon: 'pi pi-pencil',       command: () => ... },
     // ...(row.estado === EstadoServicio.Deshabilitado
-    //   ? [{ label: 'Habilitar',    icon: 'pi pi-check-circle', command: () => console.log('habilitar', row.id) }]
-    //   : [{ label: 'Deshabilitar', icon: 'pi pi-ban',          command: () => console.log('deshabilitar', row.id) }]),
-    // { label: 'Eliminar',     icon: 'pi pi-trash',        command: () => console.log('eliminar', row.id) },
+    //   ? [{ label: 'Habilitar',    icon: 'pi pi-check-circle', command: () => ... }]
+    //   : [{ label: 'Deshabilitar', icon: 'pi pi-ban',          command: () => ... }]),
+    // { label: 'Eliminar',     icon: 'pi pi-trash',        command: () => ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {

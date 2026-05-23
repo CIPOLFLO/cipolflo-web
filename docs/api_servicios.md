@@ -130,8 +130,12 @@ Retorna el detalle completo de un servicio.
   "precioSocio": 2500.0,
   "precioParticular": 5000.0,
   "capacidad": 4,
-  "habilitado": true,
-  "modalidadPrecio": "POR_HORA"
+  "estado": "HABILITADO",
+  "modalidadPrecio": "POR_HORA",
+  "createdAt": "2026-01-10T03:00:00Z",
+  "updatedAt": "2026-03-15T18:30:00Z",
+  "createdBy": "admin",
+  "updatedBy": "admin"
 }
 ```
 
@@ -314,7 +318,7 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 
 ### Response DTOs
 
-#### `ServicioResponseDto` — respuesta de detalle
+#### `ServicioDetalleRespuestaDto` — respuesta de detalle
 
 ```typescript
 {
@@ -325,8 +329,13 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
   precioSocio: number;
   precioParticular: number;
   capacidad: number | null;
-  habilitado: boolean;
+  estado: EstadoServicio;
   modalidadPrecio: ModalidadPrecio;
+  // campos de auditoría (AuditInfoDto)
+  createdAt: string;  // Instant ISO-8601 UTC
+  updatedAt: string;  // Instant ISO-8601 UTC
+  createdBy: string;
+  updatedBy: string;
 }
 ```
 
