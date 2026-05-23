@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, filter, map, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -10,8 +11,9 @@ import {
   FormLayout,
   PageLayout,
   PROCEDENCIA_LABEL,
+  type DetailFieldConfig,
+  type DetailRegistroData,
 } from '../../../shared';
-import { DetailFieldConfig, DetailRegistroData } from '../../../shared/models/detail-field.model';
 import { EstadoServicio, MODALIDAD_PRECIO_DETALLE_LABEL } from '../models/servicio.model';
 import { ServicioService } from '../services/servicio.service';
 
