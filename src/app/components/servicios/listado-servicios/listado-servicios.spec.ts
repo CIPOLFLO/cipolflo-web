@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ListadoServicios } from './listado-servicios';
@@ -57,15 +58,20 @@ describe('ListadoServicios', () => {
   let fixture: ComponentFixture<ListadoServicios>;
   let component: ListadoServicios;
   let mockServicioService: { getAll: ReturnType<typeof vi.fn> };
+  let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     mockServicioService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
     };
+    navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [ListadoServicios],
-      providers: [{ provide: ServicioService, useValue: mockServicioService }],
+      providers: [
+        { provide: ServicioService, useValue: mockServicioService },
+        { provide: Router, useValue: { navigate: navigateSpy } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ListadoServicios);
@@ -158,8 +164,7 @@ describe('ListadoServicios', () => {
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
-  it('el comando de "Ver detalle" puede ejecutarse', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+  it('el comando de "Ver detalle" navega a /servicios/{id}', () => {
     const row: ServicioRow = {
       id: 1,
       nombre: 'Cabaña 1',
@@ -171,8 +176,7 @@ describe('ListadoServicios', () => {
     };
     const actions = component['rowActions'](row);
     actions[0].command?.(row);
-    expect(spy).toHaveBeenCalledWith('ver detalle', row.id);
-    spy.mockRestore();
+    expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1]);
   });
 
   it('debe renderizar los encabezados de columna en la tabla', async () => {

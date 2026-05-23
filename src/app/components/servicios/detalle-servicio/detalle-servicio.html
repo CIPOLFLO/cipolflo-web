@@ -1,2 +1,20 @@
-<app-page-layout pageTitle="Detalle de Servicio" pageDescription="Información del servicio">
+<app-page-layout
+  pageTitle="Detalle de Servicio"
+  pageDescription="Información completa del servicio"
+  [showBackButton]="true"
+  backButtonLink="/servicios"
+>
+  <app-form-layout>
+    <app-detail-section title="Información del Servicio" [fields]="infoFields()" />
+
+    <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()" />
+
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
+
+    <app-form-actions actions>
+      <app-button label="Editar" icon="pi-pencil" (clicked)="onEditar()" />
+    </app-form-actions>
+  </app-form-layout>
 </app-page-layout>

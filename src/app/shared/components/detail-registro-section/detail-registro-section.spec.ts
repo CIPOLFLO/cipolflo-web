@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { describe, expect, it } from 'vitest';
 import { DetailRegistroSection } from './detail-registro-section';
 import { FormField } from '../form-field/form-field';
 import { DetailRegistroData, DetailFieldConfig } from '../../models/detail-field.model';
@@ -65,7 +66,7 @@ describe('DetailRegistroSection', () => {
     setup(baseData);
     const fields = fixture.componentInstance['allFields']();
     const field = fields.find((f) => f.key === 'fechaRegistro');
-    expect(field?.defaultValue).toBe('15 mar 2026, 14:30');
+    expect(field?.defaultValue).toBe('15/03/2026 14:30 hs');
   });
 
   it('debería incluir el campo registradoPor con el valor correcto', () => {
