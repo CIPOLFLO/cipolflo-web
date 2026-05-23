@@ -13,6 +13,7 @@ import { ClientesColumnsService } from '../services/clientes-columns.service';
 import { ClientesFilterService } from '../services/clientes-filter.service';
 import { ClientesService } from '../services/clientes.service';
 import { ClienteRow } from '../models/cliente.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -31,6 +32,7 @@ export class ListadoClientes {
   private readonly columnsService = inject(ClientesColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
   protected readonly tableState = inject(TableStateService);
+  private readonly router = inject(Router);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -50,14 +52,18 @@ export class ListadoClientes {
     this.clientesService.getDatos(params);
 
   protected readonly rowActions = (row: ClienteRow): RowAction<ClienteRow>[] => [
-    { label: 'Ver detalle', icon: 'pi pi-eye', command: () => console.log('ver detalle', row.id) },
-    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
-    // ...(row.estado !== 'ACTIVO'
-    //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
-    //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
-    // { label: 'Pago de cuota', icon: 'pi pi-dollar',       command: () => console.log('pago cuota', row.id) },
-    // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => console.log('nueva reserva', row.id) },
-    // { label: 'Eliminar',      icon: 'pi pi-trash',        command: () => console.log('eliminar', row.id) },
+    {
+      label: 'Ver detalle',
+      icon: 'pi pi-eye',
+      command: () => this.router.navigate(['/clientes', row.id]),
+      // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
+      // ...(row.estado !== 'ACTIVO'
+      //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
+      //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
+      // { label: 'Pago de cuota', icon: 'pi pi-dollar',       command: () => console.log('pago cuota', row.id) },
+      // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => console.log('nueva reserva', row.id) },
+      // { label: 'Eliminar',      icon: 'pi pi-trash',        command: () => console.log('eliminar', row.id) },
+    },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {

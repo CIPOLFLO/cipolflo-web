@@ -6,12 +6,20 @@ import { ClienteRow, EstadoCliente, TipoCliente } from '../models/cliente.model'
 const PLACEHOLDER_CLIENTES: ClienteRow[] = [
   {
     id: 1,
-    nombre: 'Juan Perez',
+    nombre: 'Camila Ayuto',
     tipoCliente: TipoCliente.Socio,
     numeroSocio: '123',
-    cedula: '1.234.567-8',
-    email: 'juan@example.com',
+    cedula: '5.191.926-8',
+    email: 'email@example.com',
     estado: EstadoCliente.Activo,
+    fechaNacimiento: '29/06/0999',
+    telefono: '099985648',
+    metodoPago: 'Cobradora',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle A 123',
+    observaciones: 'Socia Nueva',
   },
   {
     id: 2,
@@ -21,6 +29,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '2.345.678-9',
     email: 'maria@example.com',
     estado: EstadoCliente.Activo,
+    fechaNacimiento: '15/04/1985',
+    telefono: '099123456',
+    metodoPago: 'Caja',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle B 456',
+    observaciones: 'Cliente particular',
   },
   {
     id: 3,
@@ -30,6 +46,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '3.456.789-0',
     email: 'jo@example.com',
     estado: EstadoCliente.Activo,
+    fechaNacimiento: '20/08/1990',
+    telefono: '098456789',
+    metodoPago: 'Débito automático',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle C 789',
+    observaciones: 'Sin observaciones',
   },
   {
     id: 4,
@@ -39,6 +63,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '4.567.890-1',
     email: 'alex@example.com',
     estado: EstadoCliente.Inactivo,
+    fechaNacimiento: '03/11/1982',
+    telefono: '097654321',
+    metodoPago: 'Cobradora',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle D 321',
+    observaciones: 'Socio inactivo',
   },
   {
     id: 5,
@@ -48,6 +80,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '5.678.901-2',
     email: 'meredith@example.com',
     estado: EstadoCliente.Activo,
+    fechaNacimiento: '12/02/1988',
+    telefono: '096789123',
+    metodoPago: 'Transferencia',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle E 654',
+    observaciones: 'Pago al día',
   },
   {
     id: 6,
@@ -57,6 +97,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '6.789.012-3',
     email: 'george@example.com',
     estado: EstadoCliente.Baja,
+    fechaNacimiento: '09/09/1980',
+    telefono: '095321654',
+    metodoPago: 'Caja',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle F 987',
+    observaciones: 'Cliente dado de baja',
   },
   {
     id: 7,
@@ -66,6 +114,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '7.890.123-4',
     email: 'christina@example.com',
     estado: EstadoCliente.Activo,
+    fechaNacimiento: '18/07/1992',
+    telefono: '094987654',
+    metodoPago: 'Efectivo',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle G 147',
+    observaciones: 'Cliente frecuente',
   },
   {
     id: 8,
@@ -75,6 +131,14 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '8.901.234-5',
     email: 'izzie@example.com',
     estado: EstadoCliente.Inactivo,
+    fechaNacimiento: '25/12/1987',
+    telefono: '093147258',
+    metodoPago: 'Cobradora',
+    pais: 'Uruguay',
+    departamento: 'Flores',
+    ciudad: 'Trinidad',
+    direccion: 'Calle H 258',
+    observaciones: 'Revisar datos de contacto',
   },
 ];
 @Injectable({ providedIn: 'root' })
@@ -114,5 +178,9 @@ export class ClientesService {
       first: params.page === 0,
       last: start + params.size >= clientesFiltrados.length,
     });
+  }
+
+  getById(id: number): Observable<ClienteRow | undefined> {
+    return of(PLACEHOLDER_CLIENTES.find((cliente) => cliente.id === id));
   }
 }

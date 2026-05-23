@@ -30,4 +30,12 @@ export interface ClienteRow extends Record<string, unknown> {
   cedula: string;
   email: string;
   estado: EstadoCliente;
+  fechaNacimiento: string;
+  telefono: string;
+  metodoPago: string;
+  pais: string;
+  departamento: string;
+  ciudad: string;
+  direccion: string;
+  observaciones: string;
 }

@@ -41,9 +41,9 @@ describe('ClientesService', () => {
   });
 
   it('filtra por nombre de forma parcial e insensible a mayúsculas', () => {
-    const res = getDatos({ ...base, filters: { nombre: 'juan' } });
+    const res = getDatos({ ...base, filters: { nombre: 'camila' } });
     expect(res.totalElements).toBe(1);
-    expect(res.content[0].nombre).toBe('Juan Perez');
+    expect(res.content[0].nombre).toBe('Camila Ayuto');
   });
 
   it('filtro nombre sin coincidencias devuelve lista vacía', () => {
@@ -52,9 +52,9 @@ describe('ClientesService', () => {
   });
 
   it('filtra por cédula de forma parcial', () => {
-    const res = getDatos({ ...base, filters: { cedula: '1.234.567' } });
+    const res = getDatos({ ...base, filters: { cedula: '5.191.926' } });
     expect(res.totalElements).toBe(1);
-    expect(res.content[0].cedula).toBe('1.234.567-8');
+    expect(res.content[0].cedula).toBe('5.191.926-8');
   });
 
   it('filtra por número de socio vía campo cédula', () => {

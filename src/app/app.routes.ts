@@ -40,6 +40,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'clientes/:id',
+    loadComponent: () =>
+      import('./components/clientes/detalle-cliente/detalle-cliente').then((m) => m.DetalleCliente),
+  },
+  {
     path: '**',
     redirectTo: 'reservas',
   },

@@ -24,6 +24,14 @@ const mockPageResponse: PageResponse<ClienteRow> = {
       cedula: '1.234.567-8',
       email: 'juan@example.com',
       estado: EstadoCliente.Activo,
+      fechaNacimiento: '29/06/1999',
+      telefono: '099985648',
+      metodoPago: 'Cobradora',
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Calle A 123',
+      observaciones: 'Socia Nueva',
     },
     {
       id: 2,
@@ -33,6 +41,14 @@ const mockPageResponse: PageResponse<ClienteRow> = {
       cedula: '2.345.678-9',
       email: 'maria@example.com',
       estado: EstadoCliente.Inactivo,
+      fechaNacimiento: '15/04/1985',
+      telefono: '099123456',
+      metodoPago: 'Caja',
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Calle B 456',
+      observaciones: 'Cliente particular',
     },
   ],
   page: 0,
@@ -118,13 +134,14 @@ describe('ListadoClientes', () => {
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
-  it('el comando de "Ver detalle" puede ejecutarse', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-    const row: ClienteRow = mockPageResponse.content[0];
+  it('el comando de "Ver detalle" navega correctamente', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    const row = {
+      id: 1,
+    } as ClienteRow;
     const actions = component['rowActions'](row);
     actions[0].command?.(row);
-    expect(spy).toHaveBeenCalledWith('ver detalle', row.id);
-    spy.mockRestore();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
   });
 
   it('debe renderizar los encabezados de columna en la tabla', async () => {
