@@ -33,6 +33,13 @@ export const routes: Routes = [
       import('./components/servicios/servicios.routes').then((m) => m.SERVICIOS_ROUTES),
   },
   {
+    path: 'clientes',
+    loadComponent: () =>
+      import('./components/clientes/listado-clientes/listado-clientes').then(
+        (module) => module.ListadoClientes,
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'reservas',
   },
