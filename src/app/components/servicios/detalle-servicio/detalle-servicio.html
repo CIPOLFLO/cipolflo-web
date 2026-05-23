@@ -9,7 +9,9 @@
 
     <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()"/>
 
-    <app-detail-registro-section [data]="registroData()!" />
+    @if (registroData() as rd) {
+      <app-detail-registro-section [data]="rd" />
+    }
 
     <app-form-actions actions>
       <app-button label="Editar" icon="pi-pencil" (clicked)="onEditar()" />
