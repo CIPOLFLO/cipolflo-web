@@ -1,0 +1,10 @@
+.nuevo-servicio__info {
+  flex-grow: 1;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.nuevo-servicio__info-estado {
+  color: var(--color-success);
+  font-weight: 600;
+}

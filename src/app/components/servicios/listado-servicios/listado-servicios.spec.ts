@@ -189,6 +189,11 @@ describe('ListadoServicios', () => {
     expect(labels).toContain('Estado');
   });
 
+  it('onNuevoServicio navega a /servicios/nuevo', () => {
+    component['onNuevoServicio']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/servicios/nuevo']);
+  });
+
   it('usa el valor original para modalidadPrecio y procedencia desconocidos', () => {
     const unknownDto = {
       id: 99,

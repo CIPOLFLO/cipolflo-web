@@ -3,14 +3,16 @@ import { NgModel } from '@angular/forms';
 import { FormField } from './form-field';
 import { FormFieldConfig } from '../../models/form-field.model';
 import { By } from '@angular/platform-browser';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('FormField', () => {
   let fixture: ComponentFixture<FormField>;
   let el: HTMLElement;
 
-  function setup(config: FormFieldConfig): void {
+  function setup(config: FormFieldConfig, error?: string | null): void {
     fixture = TestBed.createComponent(FormField);
     fixture.componentRef.setInput('config', config);
+    if (error !== undefined) fixture.componentRef.setInput('error', error);
     el = fixture.nativeElement;
     fixture.detectChanges();
   }
@@ -249,6 +251,67 @@ describe('FormField', () => {
       setup({ key: 'nombre', label: 'Nombre', type: 'text', locked: true });
       expect(el.querySelector('input')).not.toBeNull();
       expect(el.querySelector('.form-field__value')).toBeNull();
+    });
+  });
+
+  describe('type number', () => {
+    it('debería renderizar un input con type="number"', () => {
+      setup({ key: 'cantidad', label: 'Cantidad', type: 'number' });
+      const input = el.querySelector('input');
+      expect(input).not.toBeNull();
+      expect(input?.getAttribute('type')).toBe('number');
+    });
+
+    it('no debería renderizar select ni textarea para type number', () => {
+      setup({ key: 'cantidad', label: 'Cantidad', type: 'number' });
+      expect(el.querySelector('p-select')).toBeNull();
+      expect(el.querySelector('textarea')).toBeNull();
+    });
+  });
+
+  describe('type currency', () => {
+    it('debería renderizar el prefijo $ con clase form-field__currency-prefix', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      const prefix = el.querySelector('.form-field__currency-prefix');
+      expect(prefix).not.toBeNull();
+      expect(prefix?.textContent?.trim()).toBe('$');
+    });
+
+    it('debería renderizar p-inputNumber', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      expect(el.querySelector('p-inputnumber')).not.toBeNull();
+    });
+
+    it('no debería renderizar un input nativo para type currency', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      expect(el.querySelector('input[type="text"]')).toBeNull();
+    });
+  });
+
+  describe('input error', () => {
+    it('debería mostrar un span con clase form-field__error cuando error tiene valor', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text' }, 'Campo obligatorio');
+      expect(el.querySelector('.form-field__error')).not.toBeNull();
+    });
+
+    it('el contenido del span de error es el mensaje de error', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text' }, 'Campo obligatorio');
+      expect(el.querySelector('.form-field__error')?.textContent?.trim()).toBe('Campo obligatorio');
+    });
+
+    it('no debería mostrar el span de error cuando error es null', () => {
+      setup({ key: 'nombre', label: 'Nombre', type: 'text' }, null);
+      expect(el.querySelector('.form-field__error')).toBeNull();
+    });
+
+    it('no debería mostrar el span de error en modo displayOnly aunque error tenga valor', () => {
+      fixture = TestBed.createComponent(FormField);
+      fixture.componentRef.setInput('config', { key: 'nombre', label: 'Nombre', type: 'text' });
+      fixture.componentRef.setInput('displayOnly', true);
+      fixture.componentRef.setInput('error', 'Campo obligatorio');
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+      expect(el.querySelector('.form-field__error')).toBeNull();
     });
   });
 });

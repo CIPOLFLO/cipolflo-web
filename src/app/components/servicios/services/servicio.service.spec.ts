@@ -4,7 +4,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ServicioService } from './servicio.service';
 import { environment } from '@env/environment';
-import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import {
+  EstadoServicio,
+  ServicioCrearDto,
+  ServicioDetalleRespuestaDto,
+} from '../models/servicio.model';
 
 const emptyPage = {
   content: [],
@@ -112,6 +116,61 @@ describe('ServicioService', () => {
         .expectOne(`${environment.apiUrl}/servicios/-1`)
         .flush(
           { codigo: 'BAD_REQUEST', descripcion: 'Parámetro inválido' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('create', () => {
+    const mockDto: ServicioCrearDto = {
+      nombre: 'Cabaña 1',
+      procedencia: 'CAMPING',
+      precioParticular: 1200,
+      precioSocio: 800,
+      modalidadPrecio: 'POR_DIA',
+      cantidad: null,
+      capacidad: null,
+    };
+
+    const mockRespuesta = {
+      id: 1,
+      nombre: 'Cabaña 1',
+      procedencia: 'CAMPING',
+      precioParticular: 1200,
+      precioSocio: 800,
+      modalidadPrecio: 'POR_DIA',
+      estado: EstadoServicio.Habilitado,
+    };
+
+    it('hace POST a /servicios con el DTO', () => {
+      service.create(mockDto).subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/servicios`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockRespuesta);
+    });
+
+    it('el body del request contiene los campos del DTO', () => {
+      service.create(mockDto).subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/servicios`);
+      expect(req.request.body).toEqual(mockDto);
+      req.flush(mockRespuesta);
+    });
+
+    it('retorna el servicio creado', () => {
+      let resultado: typeof mockRespuesta | undefined;
+      service.create(mockDto).subscribe((r) => (resultado = r));
+      httpMock.expectOne(`${environment.apiUrl}/servicios`).flush(mockRespuesta);
+      expect(resultado).toEqual(mockRespuesta);
+    });
+
+    it('propaga error 400 cuando el DTO es inválido', () => {
+      let errorStatus = 0;
+      service.create(mockDto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${environment.apiUrl}/servicios`)
+        .flush(
+          { codigo: 'BAD_REQUEST', descripcion: 'Datos inválidos' },
           { status: 400, statusText: 'Bad Request' },
         );
       expect(errorStatus).toBe(400);

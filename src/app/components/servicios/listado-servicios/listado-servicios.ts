@@ -77,6 +77,10 @@ export class ListadoServicios {
     // { label: 'Eliminar',     icon: 'pi pi-trash',        command: () => ... },
   ];
 
+  protected onNuevoServicio(): void {
+    this.router.navigate(['/servicios/nuevo']);
+  }
+
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }

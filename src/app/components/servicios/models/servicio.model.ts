@@ -1,4 +1,12 @@
-import type { AuditInfoDto } from '../../../shared';
+import type { AuditInfoDto, FormFieldOption } from '../../../shared';
+
+export const MODALIDAD_PRECIO_OPTIONS: FormFieldOption[] = [
+  { label: 'Por día', value: 'POR_DIA' },
+  { label: 'Por persona', value: 'POR_PERSONA' },
+  { label: 'Por día por persona', value: 'POR_DIA_POR_PERSONA' },
+  { label: 'Por unidad', value: 'POR_UNIDAD' },
+  { label: 'Por hora', value: 'POR_HORA' },
+];
 
 export const MODALIDAD_PRECIO_LABEL: Record<string, string> = {
   POR_DIA: 'p/día',
@@ -25,6 +33,16 @@ export const ESTADO_SERVICIO_OPTIONS = [
   { label: 'Habilitado', value: EstadoServicio.Habilitado },
   { label: 'Deshabilitado', value: EstadoServicio.Deshabilitado },
 ];
+
+export interface ServicioCrearDto {
+  nombre: string;
+  procedencia: string;
+  precioParticular: number;
+  precioSocio: number;
+  modalidadPrecio: string;
+  cantidad?: number | null;
+  capacidad?: number | null;
+}
 
 export interface ServicioRespuestaDto {
   id: number;
