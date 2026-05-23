@@ -34,7 +34,7 @@ export class DetalleServicio {
 
   protected readonly servicio = toSignal(
     toObservable(this.servicioId).pipe(
-      filter((id) => id !== ''),
+      filter((id) => /^\d+$/.test(id)),
       switchMap((id) =>
         this.servicioService.getById(Number(id)).pipe(catchError(() => EMPTY)),
       ),
