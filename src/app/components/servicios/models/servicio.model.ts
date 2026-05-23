@@ -1,4 +1,4 @@
-import { AuditInfoDto } from '../../../shared/models/audit.model';
+import type { AuditInfoDto } from '../../../shared';
 
 export const MODALIDAD_PRECIO_LABEL: Record<string, string> = {
   POR_DIA: 'p/día',
