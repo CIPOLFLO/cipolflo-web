@@ -1,4 +1,4 @@
-import { AuditInfoDto } from '../../../shared/models/audit.model';
+import { AuditInfoDto } from '../../../shared';
 
 export enum EstadoCliente {
   Activo = 'ACTIVO',
