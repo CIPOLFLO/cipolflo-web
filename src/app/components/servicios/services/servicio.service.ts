@@ -28,7 +28,6 @@ export class ServicioService extends BaseHttpService {
   }
 
   update(id: number, dto: ServicioActualizarDto): Observable<ServicioRespuestaDto> {
-    // TODO: reemplazar cuando el backend esté disponible
     return this.put<ServicioRespuestaDto>(`servicios/${id}`, dto);
   }
 }
