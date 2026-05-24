@@ -12,7 +12,7 @@ import {
   TableStateService,
 } from '../../../shared';
 import { ClientesColumnsService } from '../services/clientes-columns.service';
-import {ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import { ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
 import { Router } from '@angular/router';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
@@ -131,7 +131,7 @@ describe('ListadoClientes', () => {
   });
 
   it('rowActions debe retornar la acción "Ver detalle"', () => {
-    const row: ClienteRespuestaDto  = mockPageResponse.content[0];
+    const row: ClienteRespuestaDto = mockPageResponse.content[0];
     const actions = component['rowActions'](row);
     expect(actions).toHaveLength(1);
     expect(actions[0].label).toBe('Ver detalle');
@@ -142,7 +142,7 @@ describe('ListadoClientes', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     const row = {
       id: 1,
-    } as ClienteRespuestaDto ;
+    } as ClienteRespuestaDto;
     const actions = component['rowActions'](row);
     actions[0].command?.(row);
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);

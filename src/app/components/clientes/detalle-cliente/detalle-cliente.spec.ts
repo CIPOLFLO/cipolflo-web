@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router,convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { DetalleCliente } from './detalle-cliente';
 import { ClientesService } from '../services/clientes.service';
-import { ClienteDetalleRespuestaDto, EstadoCliente, TipoCliente,} from '../models/cliente.model';
+import { ClienteDetalleRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
 import { By } from '@angular/platform-browser';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
@@ -60,7 +60,6 @@ function setup(
 
   return { fixture, el: fixture.nativeElement, navigateSpy, getByIdSpy };
 }
-
 
 describe('DetalleCliente', () => {
   let component: DetalleCliente;

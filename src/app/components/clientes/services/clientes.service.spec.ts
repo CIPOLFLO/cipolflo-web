@@ -94,7 +94,7 @@ describe('ClientesService', () => {
   it('filtra por estado BAJA', () => {
     const res = getAll({ ...base, filters: { estado: EstadoCliente.Baja } });
     expect(res.totalElements).toBe(1);
-    expect(res.content[0].nombre).toBe("Andrés Martínez");
+    expect(res.content[0].nombre).toBe('Andrés Martínez');
   });
 
   it('combina filtros de tipo y estado', () => {
