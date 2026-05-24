@@ -12,7 +12,7 @@ const PLACEHOLDER_CLIENTES: ClienteRow[] = [
     cedula: '5.191.926-8',
     email: 'email@example.com',
     estado: EstadoCliente.Activo,
-    fechaNacimiento: '29/06/0999',
+    fechaNacimiento: '29/06/1999',
     telefono: '099985648',
     metodoPago: 'Cobradora',
     pais: 'Uruguay',
