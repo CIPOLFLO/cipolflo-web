@@ -4,7 +4,6 @@ import { of } from 'rxjs';
 import { DetalleCliente } from './detalle-cliente';
 import { ClientesService } from '../services/clientes.service';
 import { ClienteDetalleRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
-import { By } from '@angular/platform-browser';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -28,15 +27,6 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   updatedBy: 'Juan Pérez',
 };
 
-function setup(): {
-  fixture: ComponentFixture<DetalleCliente>;
-  el: HTMLElement;
-} {
-  const fixture = TestBed.createComponent(DetalleCliente);
-  fixture.detectChanges();
-
-  return { fixture, el: fixture.nativeElement };
-}
 let getByIdSpy: ReturnType<typeof vi.fn>;
 let navigateSpy: ReturnType<typeof vi.fn>;
 
