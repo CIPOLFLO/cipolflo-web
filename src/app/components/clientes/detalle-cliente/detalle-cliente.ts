@@ -91,6 +91,9 @@ export class DetalleCliente {
   });
 
   protected onEditar(): void {
-    this.router.navigate(['/clientes', this.clienteId(), 'editar']);
+    const id = this.clienteId();
+    if (!/^\d+$/.test(id)) return;
+
+    this.router.navigate(['/clientes', id]);
   }
 }
