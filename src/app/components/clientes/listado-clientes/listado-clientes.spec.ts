@@ -12,9 +12,10 @@ import {
   TableStateService,
 } from '../../../shared';
 import { ClientesColumnsService } from '../services/clientes-columns.service';
-import { ClienteRow, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import {ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import { Router } from '@angular/router';
 
-const mockPageResponse: PageResponse<ClienteRow> = {
+const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
     {
       id: 1,
@@ -62,16 +63,19 @@ const mockPageResponse: PageResponse<ClienteRow> = {
 describe('ListadoClientes', () => {
   let fixture: ComponentFixture<ListadoClientes>;
   let component: ListadoClientes;
-  let mockClientesService: { getDatos: ReturnType<typeof vi.fn> };
+  let mockClientesService: { getAll: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockClientesService = {
-      getDatos: vi.fn().mockReturnValue(of(mockPageResponse)),
+      getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
     };
 
     await TestBed.configureTestingModule({
       imports: [ListadoClientes],
-      providers: [{ provide: ClientesService, useValue: mockClientesService }],
+      providers: [
+        { provide: ClientesService, useValue: mockClientesService },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ListadoClientes);
@@ -107,7 +111,7 @@ describe('ListadoClientes', () => {
   });
 
   it('debe llamar a ClientesService.getDatos al cargar datos', () => {
-    expect(mockClientesService.getDatos).toHaveBeenCalled();
+    expect(mockClientesService.getAll).toHaveBeenCalled();
   });
 
   it('onFilterChange debe actualizar los filtros en tableState', () => {
@@ -127,7 +131,7 @@ describe('ListadoClientes', () => {
   });
 
   it('rowActions debe retornar la acción "Ver detalle"', () => {
-    const row: ClienteRow = mockPageResponse.content[0];
+    const row: ClienteRespuestaDto  = mockPageResponse.content[0];
     const actions = component['rowActions'](row);
     expect(actions).toHaveLength(1);
     expect(actions[0].label).toBe('Ver detalle');
@@ -138,7 +142,7 @@ describe('ListadoClientes', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     const row = {
       id: 1,
-    } as ClienteRow;
+    } as ClienteRespuestaDto ;
     const actions = component['rowActions'](row);
     actions[0].command?.(row);
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
@@ -168,7 +172,7 @@ describe('ListadoClientes sin filtros por defecto', () => {
       providers: [
         {
           provide: ClientesService,
-          useValue: { getDatos: vi.fn().mockReturnValue(of(mockPageResponse)) },
+          useValue: { getAll: vi.fn().mockReturnValue(of(mockPageResponse)) },
         },
       ],
     })

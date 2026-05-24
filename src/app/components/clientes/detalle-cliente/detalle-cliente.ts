@@ -67,14 +67,14 @@ export class DetalleCliente {
       { key: 'departamento', label: 'Departamento', value: c.departamento },
       { key: 'ciudad', label: 'Ciudad', value: c.ciudad },
       { key: 'direccion', label: 'Dirección', value: c.direccion },
+      { key: 'numeroSocio', label: 'Nro de socio', value: c.numeroSocio },
+      { key: 'tipoCliente', label: 'Tipo de cliente', value: c.tipoCliente },
+      { key: 'estado', label: 'Estado', value: c.estado },
       {
         key: 'observaciones',
         label: 'Notas/Observaciones',
         value: c.observaciones,
       },
-      { key: 'numeroSocio', label: 'Nro de socio', value: c.numeroSocio },
-      { key: 'tipoCliente', label: 'Tipo de cliente', value: c.tipoCliente },
-      { key: 'estado', label: 'Estado', value: c.estado },
     ];
   });
 
@@ -92,6 +92,7 @@ export class DetalleCliente {
 
   protected onEditar(): void {
     const id = this.clienteId();
+
     if (!/^\d+$/.test(id)) return;
 
     this.router.navigate(['/clientes', id]);
