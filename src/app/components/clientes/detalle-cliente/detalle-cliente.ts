@@ -85,16 +85,8 @@ export class DetalleCliente {
     return {
       entityId: `CLI-${String(c.id).padStart(3, '0')}`,
       entityIdLabel: 'ID del Cliente',
-      fechaRegistro: '15 mar 2026, 14:30',
-      registradoPor: 'Juan Pérez',
+      fechaRegistro: c.createdAt,
+      registradoPor: c.createdBy,
     };
   });
-
-  protected onEditar(): void {
-    const id = this.clienteId();
-
-    if (!/^\d+$/.test(id)) return;
-
-    this.router.navigate(['/clientes', id]);
-  }
 }

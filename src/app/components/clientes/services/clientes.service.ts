@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { PageResponse, TableQueryParams } from '../../../shared/components/table/table.models';
+import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
@@ -25,9 +25,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'Luis Alberto de Herrera 123',
     observaciones: 'Socia nueva',
-    createdAt: '15 mar 2026, 14:30',
+    createdAt: '2026-03-15T14:30:00Z',
     createdBy: 'Pedro Aguirre',
-    updatedAt: '18 mar 2026, 09:15',
+    updatedAt: '2026-03-18T09:15:00Z',
     updatedBy: 'Mariana Silva',
   },
   {
@@ -46,9 +46,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'José Batlle y Ordóñez 456',
     observaciones: 'Cliente frecuente',
-    createdAt: '10 ene 2026, 11:20',
+    createdAt: '2026-01-10T10:30:00Z',
     createdBy: 'Laura Méndez',
-    updatedAt: '22 feb 2026, 16:40',
+    updatedAt: '2026-02-22T16:30:00Z',
     updatedBy: 'Pedro Aguirre',
   },
   {
@@ -67,9 +67,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: '25 de Agosto 789',
     observaciones: 'Pago al día',
-    createdAt: '02 feb 2026, 08:10',
+    createdAt: '2026-04-15T08:30:00Z',
     createdBy: 'Mariana Silva',
-    updatedAt: '12 mar 2026, 10:05',
+    updatedAt: '2026-05-15T14:30:00Z',
     updatedBy: 'Mariana Silva',
   },
   {
@@ -88,9 +88,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'Manuel Oribe 321',
     observaciones: 'Socio inactivo por falta de pago',
-    createdAt: '18 dic 2025, 17:25',
+    createdAt: '2025-12-18T17:25:00Z',
     createdBy: 'Pedro Aguirre',
-    updatedAt: '05 mar 2026, 12:30',
+    updatedAt: '2026-03-05T12:30:00Z',
     updatedBy: 'Laura Méndez',
   },
   {
@@ -109,9 +109,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'Sarandí 654',
     observaciones: 'Documentación actualizada',
-    createdAt: '08 ene 2026, 13:45',
+    createdAt: '2026-01-08T13:45:00Z',
     createdBy: 'Mariana Silva',
-    updatedAt: '14 mar 2026, 18:10',
+    updatedAt: '2026-03-14T18:10:00Z',
     updatedBy: 'Pedro Aguirre',
   },
   {
@@ -130,9 +130,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'Artigas 987',
     observaciones: 'Cliente dado de baja',
-    createdAt: '20 nov 2025, 15:00',
+    createdAt: '2025-11-20T15:00:00Z',
     createdBy: 'Laura Méndez',
-    updatedAt: '01 mar 2026, 09:50',
+    updatedAt: '2026-03-01T09:50:00Z',
     updatedBy: 'Pedro Aguirre',
   },
   {
@@ -151,9 +151,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'Treinta y Tres 147',
     observaciones: 'Consulta frecuentemente disponibilidad',
-    createdAt: '11 feb 2026, 10:35',
+    createdAt: '2026-02-11T10:35:00Z',
     createdBy: 'Pedro Aguirre',
-    updatedAt: '11 feb 2026, 10:35',
+    updatedAt: '2026-02-11T10:35:00Z',
     updatedBy: 'Pedro Aguirre',
   },
   {
@@ -172,9 +172,9 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     ciudad: 'Trinidad',
     direccion: 'Rincón 258',
     observaciones: 'Revisar datos de contacto',
-    createdAt: '30 dic 2025, 19:10',
+    createdAt: '2025-12-30T19:10:00Z',
     createdBy: 'Mariana Silva',
-    updatedAt: '10 mar 2026, 14:00',
+    updatedAt: '2026-03-10T14:00:00Z',
     updatedBy: 'Laura Méndez',
   },
 ];

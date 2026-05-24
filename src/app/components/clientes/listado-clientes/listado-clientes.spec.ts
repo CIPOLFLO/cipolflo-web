@@ -25,14 +25,6 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       cedula: '1.234.567-8',
       email: 'juan@example.com',
       estado: EstadoCliente.Activo,
-      fechaNacimiento: '29/06/1999',
-      telefono: '099985648',
-      metodoPago: 'Cobradora',
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-      direccion: 'Calle A 123',
-      observaciones: 'Socia Nueva',
     },
     {
       id: 2,
@@ -42,14 +34,6 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       cedula: '2.345.678-9',
       email: 'maria@example.com',
       estado: EstadoCliente.Inactivo,
-      fechaNacimiento: '15/04/1985',
-      telefono: '099123456',
-      metodoPago: 'Caja',
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-      direccion: 'Calle B 456',
-      observaciones: 'Cliente particular',
     },
   ],
   page: 0,
@@ -110,7 +94,7 @@ describe('ListadoClientes', () => {
     });
   });
 
-  it('debe llamar a ClientesService.getDatos al cargar datos', () => {
+  it('debe llamar a ClientesService.getAll al cargar datos', () => {
     expect(mockClientesService.getAll).toHaveBeenCalled();
   });
 
