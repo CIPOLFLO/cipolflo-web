@@ -54,7 +54,7 @@ export class ListadoClientes {
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
       label: 'Ver detalle',
-      icon: 'pi-eye',
+      icon: 'pi pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
     },
     // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
