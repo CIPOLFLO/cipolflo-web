@@ -28,6 +28,7 @@
         (ngModelChange)="value.set($event)"
         [disabled]="config().disabled || (config().locked ?? false)"
         [required]="config().required ?? false"
+        [invalid]="!!error()"
         [fluid]="true"
       />
     }
@@ -40,6 +41,7 @@
         [value]="value() ?? config().defaultValue ?? ''"
         (input)="captureInput($event)"
         [required]="config().required ?? false"
+        [invalid]="!!error()"
         rows="3"
         [fluid]="true"
       ></textarea>
@@ -52,6 +54,7 @@
           [placeholder]="config().placeholder ?? '0.00'"
           [disabled]="config().disabled || (config().locked ?? false)"
           [required]="config().required ?? false"
+          [invalid]="!!error()"
           [ngModel]="numericValue"
           (ngModelChange)="captureNumericInput($event)"
           [minFractionDigits]="2"
@@ -71,6 +74,7 @@
         [value]="value() ?? config().defaultValue ?? ''"
         (input)="captureInput($event)"
         [required]="config().required ?? false"
+        [invalid]="!!error()"
         [fluid]="true"
       />
     }

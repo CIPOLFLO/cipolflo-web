@@ -44,6 +44,17 @@ export interface ServicioCrearDto {
   capacidad?: number | null;
 }
 
+export interface ServicioActualizarDto {
+  nombre: string;
+  procedencia: string;
+  estado: EstadoServicio;
+  precioParticular: number;
+  precioSocio: number;
+  modalidadPrecio: string;
+  cantidad?: number | null;
+  capacidad?: number | null;
+}
+
 export interface ServicioRespuestaDto {
   id: number;
   nombre: string;

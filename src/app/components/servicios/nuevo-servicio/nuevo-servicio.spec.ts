@@ -143,6 +143,16 @@ describe('NuevoServicio', () => {
     expect(component['form'].get('cantidad')?.value).toBeNull();
   });
 
+  it('onInfoChange debería establecer null si cantidad es string no numérico', () => {
+    component['onInfoChange']({
+      procedencia: null,
+      nombre: null,
+      cantidad: 'abc',
+      capacidad: null,
+    });
+    expect(component['form'].get('cantidad')?.value).toBeNull();
+  });
+
   // ── onPreciosChange ──────────────────────────────────────────────────────
 
   it('onPreciosChange debería convertir string a número para precios', () => {
@@ -163,6 +173,15 @@ describe('NuevoServicio', () => {
     });
     expect(component['form'].get('precioParticular')?.value).toBeNull();
     expect(component['form'].get('precioSocio')?.value).toBeNull();
+  });
+
+  it('onPreciosChange debería establecer null si el string es no numérico', () => {
+    component['onPreciosChange']({
+      precioParticular: 'xyz',
+      precioSocio: null,
+      modalidadPrecio: null,
+    });
+    expect(component['form'].get('precioParticular')?.value).toBeNull();
   });
 
   // ── Navegación ───────────────────────────────────────────────────────────
