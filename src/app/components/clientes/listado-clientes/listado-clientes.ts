@@ -54,10 +54,11 @@ export class ListadoClientes {
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
       label: 'Ver detalle',
-      icon: 'pi pi-eye',
+      icon: 'pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
     },
     // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
+
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
     //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
