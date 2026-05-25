@@ -92,8 +92,10 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Generar environment.ts para compilación
-        run: cp src/environments/environment.example.ts src/environments/environment.ts
+      - name: Generar environments para compilación
+        run: |
+          cp src/environments/environment.example.ts src/environments/environment.ts
+          cp src/environments/environment.example.ts src/environments/environment.development.ts
 
       - name: Generar reporte de cobertura para Sonar
         run: npx ng test --watch=false --coverage
