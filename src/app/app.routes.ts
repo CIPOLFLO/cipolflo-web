@@ -37,7 +37,7 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./components/servicios/servicios.routes').then((m) => m.SERVICIOS_ROUTES),
       },
-    ]
+    ],
   },
   {
     path: '**',

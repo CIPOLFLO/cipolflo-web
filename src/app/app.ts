@@ -6,10 +6,9 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
 
-
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, ConfirmDialogComponent,CommonModule],
+  imports: [RouterOutlet, Header, Footer, ConfirmDialogComponent, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

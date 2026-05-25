@@ -30,8 +30,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withFetch(),
-    withInterceptors([authHttpInterceptorFn])),
+    provideHttpClient(withFetch(), withInterceptors([authHttpInterceptorFn])),
     providePrimeNG({
       theme: { preset: CipolfloPreset, options: { darkModeSelector: false } },
       translation: { emptyMessage: 'Sin resultados', emptyFilterMessage: 'Sin resultados' },
@@ -44,9 +43,7 @@ export const appConfig: ApplicationConfig = {
         audience: environment.auth0.audience,
       },
       httpInterceptor: {
-        allowedList: [
-          `${environment.apiUrl}/*`,
-        ],
+        allowedList: [`${environment.apiUrl}/*`],
       },
     }),
   ],

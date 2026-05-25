@@ -4,6 +4,6 @@ export const environment = {
   auth0: {
     domain: 'dev-jkssh7xkp4k2krwe.us.auth0.com',
     clientId: '1ApyAYxJP5ZtgPaYkcuc7nIkuc4DvuCE',
-    audience: 'https://api.cipolflo.com'
-  }
+    audience: 'https://api.cipolflo.com',
+  },
 };

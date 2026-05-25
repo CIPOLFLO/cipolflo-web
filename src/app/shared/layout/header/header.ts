@@ -5,7 +5,7 @@ import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, RouterLinkActive,AsyncPipe],
+  imports: [RouterLink, RouterLinkActive, AsyncPipe],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
