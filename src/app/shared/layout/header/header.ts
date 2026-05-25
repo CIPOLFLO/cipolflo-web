@@ -1,7 +1,7 @@
-import { AsyncPipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-header',
@@ -10,7 +10,7 @@ import { AuthService } from '@auth0/auth0-angular';
   styleUrl: './header.css',
 })
 export class Header {
-  constructor(public auth: AuthService) {}
+  auth = inject(AuthService);
 
   logout() {
     this.auth.logout({ logoutParams: { returnTo: window.location.origin } });
