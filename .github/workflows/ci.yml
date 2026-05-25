@@ -51,7 +51,9 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependencias
-        run: npm ci
+        run: |
+          npm ci
+          npm install @rollup/rollup-linux-x64-gnu --no-save
 
       - name: Generar environments para compilación
         run: |
@@ -90,7 +92,9 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependencias
-        run: npm ci
+        run: |
+          npm ci
+          npm install @rollup/rollup-linux-x64-gnu --no-save
 
       - name: Generar environments para compilación
         run: |
