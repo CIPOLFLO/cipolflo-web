@@ -5,7 +5,11 @@
   </div>
   <div class="form-section__fields">
     @for (field of fields(); track field.key) {
-      <app-form-field [config]="field" />
+      <app-form-field
+        [config]="field"
+        [error]="errors()[field.key] ?? null"
+        (valueChange)="onFieldValueChange(field.key, $event)"
+      />
     }
     <ng-content />
   </div>

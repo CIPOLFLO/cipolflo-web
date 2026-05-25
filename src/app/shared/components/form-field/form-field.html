@@ -44,6 +44,23 @@
         [fluid]="true"
       ></textarea>
     }
+    @case ('currency') {
+      <div class="form-field__currency-row">
+        <span class="form-field__currency-prefix">$</span>
+        <p-inputNumber
+          [inputId]="config().key"
+          [placeholder]="config().placeholder ?? '0.00'"
+          [disabled]="config().disabled || (config().locked ?? false)"
+          [required]="config().required ?? false"
+          [ngModel]="numericValue"
+          (ngModelChange)="captureNumericInput($event)"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          [min]="0"
+          [fluid]="true"
+        />
+      </div>
+    }
     @default {
       <input
         pInputText
@@ -58,4 +75,8 @@
       />
     }
   }
+}
+
+@if (!displayOnly() && error()) {
+  <span class="form-field__error">{{ error() }}</span>
 }

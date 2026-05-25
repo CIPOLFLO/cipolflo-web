@@ -43,3 +43,22 @@
   white-space: pre-wrap;
   min-height: 3em;
 }
+
+.form-field__currency-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-field__currency-prefix {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.form-field__error {
+  font-size: 12px;
+  color: var(--color-danger);
+  line-height: 1.4;
+}

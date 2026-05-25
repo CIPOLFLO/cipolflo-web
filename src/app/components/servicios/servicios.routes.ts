@@ -7,6 +7,10 @@ export const SERVICIOS_ROUTES: Routes = [
       import('./listado-servicios/listado-servicios').then((m) => m.ListadoServicios),
   },
   {
+    path: 'nuevo',
+    loadComponent: () => import('./nuevo-servicio/nuevo-servicio').then((m) => m.NuevoServicio),
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('./detalle-servicio/detalle-servicio').then((m) => m.DetalleServicio),
