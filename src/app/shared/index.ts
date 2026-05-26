@@ -43,6 +43,10 @@ export type {
 export type { FormFieldConfig, FormFieldOption } from './models/form-field.model';
 export type { DetailFieldConfig, DetailRegistroData } from './models/detail-field.model';
 export { Procedencia, PROCEDENCIA_LABEL, PROCEDENCIA_OPTIONS } from './models/procedencia.model';
+export type { AuditInfoDto } from './models/audit.model';
+
+// Pipes
+export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';

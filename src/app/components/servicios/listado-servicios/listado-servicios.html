@@ -1,5 +1,11 @@
 <app-page-layout pageTitle="Servicios" pageDescription="Gestiona los servicios disponibles">
-  <app-button actions label="Nuevo Servicio" intent="primary" icon="pi-plus" />
+  <app-button
+    actions
+    label="Nuevo Servicio"
+    intent="primary"
+    icon="pi-plus"
+    (clicked)="onNuevoServicio()"
+  />
 
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 

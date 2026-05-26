@@ -1,0 +1,38 @@
+<app-page-layout
+  pageTitle="Nuevo Servicio"
+  pageDescription="Complete los datos para crear un nuevo servicio"
+  [showBackButton]="true"
+  backButtonLink="/servicios"
+>
+  <app-form-layout>
+    <app-form-section
+      title="Información General"
+      [fields]="infoFields()"
+      [errors]="infoErrors()"
+      (valuesChange)="onInfoChange($event)"
+    />
+
+    <app-form-section
+      title="Precios"
+      [fields]="preciosFields()"
+      [errors]="preciosErrors()"
+      (valuesChange)="onPreciosChange($event)"
+    />
+
+    <app-form-actions actions>
+      <p class="nuevo-servicio__info">
+        El servicio se creará en estado
+        <strong class="nuevo-servicio__info-estado">Habilitado</strong> y estará disponible
+        inmediatamente.
+      </p>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Confirmar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+  </app-form-layout>
+</app-page-layout>

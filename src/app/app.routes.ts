@@ -40,6 +40,18 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'clientes',
+    loadComponent: () =>
+      import('./components/clientes/listado-clientes/listado-clientes').then(
+        (module) => module.ListadoClientes,
+      ),
+  },
+  {
+    path: 'clientes/:id',
+    loadComponent: () =>
+      import('./components/clientes/detalle-cliente/detalle-cliente').then((m) => m.DetalleCliente),
+  },
+  {
     path: '**',
     redirectTo: 'reservas',
   },

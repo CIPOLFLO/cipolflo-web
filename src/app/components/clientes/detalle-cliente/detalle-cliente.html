@@ -1,20 +1,19 @@
 <app-page-layout
-  pageTitle="Detalle de Servicio"
-  pageDescription="Información completa del servicio"
+  pageTitle="Detalle de Cliente"
+  pageDescription="Información completa del cliente"
   [showBackButton]="true"
-  backButtonLink="/servicios"
+  backButtonLink="/clientes"
 >
   <app-form-layout>
-    <app-detail-section title="Información del Servicio" [fields]="infoFields()" />
-
-    <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()" />
+    <app-detail-section title="Resumen del Cliente" [fields]="infoFields()" />
 
     @if (registroData()) {
       <app-detail-registro-section [data]="registroData()!" />
     }
-
+    <!--
     <app-form-actions actions>
       <app-button label="Editar" icon="pi-pencil" (clicked)="onEditar()" />
     </app-form-actions>
+    -->
   </app-form-layout>
 </app-page-layout>

@@ -1,0 +1,11 @@
+<app-page-layout
+  pageTitle="Listado de Clientes"
+  pageDescription="Gestiona y consulta información de todos los clientes del sistema"
+>
+  <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
+  <app-button actions label="Nuevo Socio" intent="primary" icon="pi-plus" />
+
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+</app-page-layout>

@@ -34,6 +34,30 @@ protected readonly loadDataFn: LoadDataFn<ServicioRow> = (params) =>
 
 ---
 
+## Convención de iconos en componentes compartidos
+
+- Cuando pases un icono a los componentes compartidos (`AppButton`, acciones de tabla, etc.), pasa sólo la clase específica con un único prefijo `pi-` (por ejemplo `pi-download`, `pi-eye`, `pi-plus`).
+- Los componentes compartidos son responsables de anteponer la clase base `pi` y componer la clase final `pi pi-download` antes de aplicarla al elemento. Esto evita duplicar el prefijo en plantillas y en código TS.
+
+Ejemplo — `AppButton` (uso en templates):
+
+```html
+<!-- Correcto: pasar sólo la clase específica -->
+<app-button label="Exportar" intent="secondary" icon="pi-download" />
+
+<!-- Incorrecto: evita pasar la clase completa con doble prefijo -->
+<!-- <app-button label="Exportar" icon="pi pi-download" /> -->
+```
+
+Ejemplo — `rowActions` (uso en el componente):
+
+```ts
+// Correcto: pasar sólo 'pi-eye' y dejar que la vista añada la clase base
+{ label: 'Ver detalle', icon: 'pi-eye', command: () => ... }
+```
+
+Nota: si algún componente compartido actual requiere el formato antiguo (`pi pi-*`), actualízalo para aceptar la convención nueva y documenta el cambio en el componente antes de migrar las llamadas existentes.
+
 ## Estructura de componentes de listado
 
 Cada listado debe separar su configuración en servicios dedicados:
@@ -60,6 +84,45 @@ feature/
   models/
     feature.model.ts            ← DTOs, enums, opciones
 ```
+
+### Definición de columnas en `*ColumnsService`
+
+- Las columnas de un listado deben definirse en un servicio dedicado denominado `*ColumnsService` y no inline en el componente. Esto facilita reuso, pruebas y mantenimiento (ver ejemplo en `servicios`).
+- El servicio es una clase `@Injectable()` que exporta una propiedad `readonly columns: ColumnConfig[]` (o un `signal` que la devuelva) y se provee en el `providers` del componente de listado cuando corresponda.
+
+Ejemplo de `ClientesColumnsService`:
+
+```ts
+@Injectable()
+export class ClientesColumnsService {
+  readonly columns: ColumnConfig[] = [
+    { key: 'nombre', label: 'Nombre', sortable: true },
+    { key: 'numeroSocio', label: 'Nro de socio' },
+    { key: 'cedula', label: 'Cédula' },
+    { key: 'email', label: 'Email' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      cellType: 'tag',
+      tagMap: {
+        /* ... */
+      },
+    },
+  ];
+}
+```
+
+Uso en el componente:
+
+```ts
+providers: [ClientesColumnsService, TableStateService, { provide: FilterConfigProvider, useClass: ClientesFilterService }]
+
+constructor(private columnsService: ClientesColumnsService) {
+  this.columns = this.columnsService.columns;
+}
+```
+
+Nota: No aplicar la refactorización automáticamente en este PR si el código ya está funcionando; abrir un ticket/PR separado para mover las columnas inline a un `*ColumnsService` y actualizar los tests en consecuencia.
 
 ---
 
@@ -96,6 +159,35 @@ export const ESTADO_FEATURE_OPTIONS = [
   { label: 'Habilitado', value: EstadoFeature.Habilitado },
   { label: 'Deshabilitado', value: EstadoFeature.Deshabilitado },
 ];
+```
+
+---
+
+## Pipes de fechas
+
+El módulo shared provee dos pipes para formatear fechas. Siempre importarlos desde el barrel `src/app/shared/index.ts`.
+
+| Pipe                 | Nombre template  | Entrada                 | Salida                  | Uso                                         |
+| -------------------- | ---------------- | ----------------------- | ----------------------- | ------------------------------------------- |
+| `DateFormatPipe`     | `dateFormat`     | `'YYYY-MM-DD'`          | `'dd/mm/yyyy'`          | Fechas planas (sin hora) en tablas          |
+| `DateTimeFormatPipe` | `dateTimeFormat` | ISO 8601 (`'...T...Z'`) | `'dd/mm/yyyy HH:mm hs'` | Timestamps de auditoría (`createdAt`, etc.) |
+
+`DateTimeFormatPipe` convierte a **hora local del navegador** usando `new Date()`. No usar `DateFormatPipe` para ISO 8601 con tiempo, ya que solo extrae la parte de fecha.
+
+Para usar un pipe en TypeScript (no en template), inyectarlo vía `providers` del componente:
+
+```typescript
+@Component({
+  providers: [DateTimeFormatPipe],
+})
+export class MiComponente {
+  private readonly dateTimePipe = inject(DateTimeFormatPipe);
+
+  // uso dentro de computed:
+  protected readonly campos = computed(() => [
+    { key: 'fecha', label: 'Fecha', value: this.dateTimePipe.transform(this.data().createdAt) },
+  ]);
+}
 ```
 
 ---

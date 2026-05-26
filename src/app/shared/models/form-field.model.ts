@@ -6,7 +6,7 @@ export interface FormFieldOption {
 export interface FormFieldConfig {
   key: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'date' | 'select' | 'textarea';
+  type: 'text' | 'number' | 'email' | 'tel' | 'date' | 'select' | 'textarea' | 'currency';
   required?: boolean;
   placeholder?: string;
   options?: FormFieldOption[];
