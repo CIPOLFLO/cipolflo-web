@@ -48,6 +48,11 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Crear archivos de environment para CI
+        run: |
+          cp src/environments/environment.test.ts src/environments/environment.ts
+          cp src/environments/environment.test.ts src/environments/environment.development.ts
+
       - name: Ejecutar tests con cobertura
         run: npx ng test --watch=false --coverage
 
@@ -81,6 +86,11 @@ jobs:
 
       - name: Instalar dependencias
         run: npm ci
+
+      - name: Crear archivos de environment para CI
+        run: |
+          cp src/environments/environment.test.ts src/environments/environment.ts
+          cp src/environments/environment.test.ts src/environments/environment.development.ts
 
       - name: Generar reporte de cobertura para Sonar
         run: npx ng test --watch=false --coverage
