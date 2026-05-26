@@ -1,0 +1,40 @@
+<app-page-layout
+  pageTitle="Nuevo Cliente"
+  pageDescription="Complete los datos para registrar un nuevo socio"
+  [showBackButton]="true"
+  backButtonLink="/clientes"
+>
+  <app-form-layout>
+    <app-form-section
+      title="Información del Cliente"
+      [fields]="clienteFields()"
+      [errors]="clienteErrors()"
+      (valuesChange)="onClienteChange($event)"
+    />
+
+    <app-form-section
+      title="Información de Ubicación"
+      [fields]="ubicacionFields()"
+      [errors]="ubicacionErrors()"
+      (valuesChange)="onUbicacionChange($event)"
+    />
+
+    <app-form-section
+      title="Información Adicional"
+      [fields]="adicionalFields()"
+      [errors]="adicionalErrors()"
+      (valuesChange)="onAdicionalChange($event)"
+    />
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Confirmar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+  </app-form-layout>
+</app-page-layout>

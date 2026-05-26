@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { DetalleCliente } from './detalle-cliente';
-import { ClientesService } from '../services/clientes.service';
-import { ClienteDetalleRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import { ClientesService } from '../services/cliente.service';
+import { ClienteDetalleRespuestaDto, EstadoCliente, MetodoPago, TipoCliente } from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -15,7 +15,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   estado: EstadoCliente.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
-  metodoPago: 'Cobradora',
+  metodoPago: MetodoPago.Cobradora,
   pais: 'Uruguay',
   departamento: 'Flores',
   ciudad: 'Trinidad',
@@ -101,7 +101,7 @@ describe('DetalleCliente', () => {
   });
 
   it('debería mostrar el método de pago', () => {
-    expect(fixture.nativeElement.textContent).toContain('Cobradora');
+    expect(fixture.nativeElement.textContent).toContain('COBRADORA');
   });
 
   it('debería mostrar la dirección del cliente', () => {

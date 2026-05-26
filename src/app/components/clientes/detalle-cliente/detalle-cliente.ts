@@ -13,7 +13,7 @@ import {
   type DetailFieldConfig,
   type DetailRegistroData,
 } from '../../../shared';
-import { ClientesService } from '../services/clientes.service';
+import { ClientesService } from '../services/cliente.service';
 
 @Component({
   standalone: true,
@@ -22,8 +22,6 @@ import { ClientesService } from '../services/clientes.service';
     CommonModule,
     PageLayout,
     FormLayout,
-    FormActions,
-    AppButton,
     DetailSection,
     DetailRegistroSection,
   ],

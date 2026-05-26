@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ClientesService } from './clientes.service';
+import { ClientesService } from './cliente.service';
 import { EstadoCliente, TipoCliente } from '../models/cliente.model';
 
 describe('ClientesService', () => {

@@ -47,6 +47,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'clientes/nuevo',
+    loadComponent: () =>
+      import('./components/clientes/nuevo-cliente/nuevo-cliente').then((m) => m.NuevoCliente),
+  },
+  {
     path: 'clientes/:id',
     loadComponent: () =>
       import('./components/clientes/detalle-cliente/detalle-cliente').then((m) => m.DetalleCliente),

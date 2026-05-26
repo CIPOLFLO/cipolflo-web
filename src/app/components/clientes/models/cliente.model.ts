@@ -10,6 +10,21 @@ export enum TipoCliente {
   Socio = 'SOCIO',
   Particular = 'PARTICULAR',
 }
+export enum MetodoPago {
+  Cobradora = 'COBRADORA',
+  Caja = 'CAJA',
+  Transferencia = 'TRANSFERENCIA',
+  Efectivo = 'EFECTIVO',
+  DebitoAutomatico = 'DEBITO_AUTOMATICO',
+}
+
+export const METODO_PAGO_OPTIONS = [
+  { label: 'Cobradora', value: MetodoPago.Cobradora },
+  { label: 'Caja', value: MetodoPago.Caja },
+  { label: 'Transferencia', value: MetodoPago.Transferencia },
+  { label: 'Efectivo', value: MetodoPago.Efectivo },
+  { label: 'Débito automático', value: MetodoPago.DebitoAutomatico },
+];
 
 export const ESTADO_CLIENTE_OPTIONS = [
   { label: 'Todos', value: '' },
@@ -44,10 +59,24 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   estado: EstadoCliente;
   fechaNacimiento: string;
   telefono: string;
-  metodoPago: string;
+  metodoPago: MetodoPago;
   pais: string;
   departamento: string;
   ciudad: string;
   direccion: string;
   observaciones: string;
+}
+export interface ClienteCrearDto {
+  tipoCliente: TipoCliente;
+  nombre: string;
+  cedula: string;
+  fechaNacimiento: string;
+  telefono: string;
+  email: string | null;
+  metodoPago: MetodoPago;
+  pais: string;
+  departamento: string;
+  ciudad: string;
+  direccion: string | null;
+  observaciones: string | null;
 }
