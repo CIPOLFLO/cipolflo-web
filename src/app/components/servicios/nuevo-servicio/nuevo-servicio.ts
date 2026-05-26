@@ -146,6 +146,10 @@ export class NuevoServicio {
       cantidad: toOptionalInt(values['cantidad']),
       capacidad: toOptionalInt(values['capacidad']),
     });
+    this.form.markAsDirty();
+    for (const key of Object.keys(values)) {
+      this.form.get(key)?.markAsTouched();
+    }
   }
 
   protected onPreciosChange(values: Record<string, string | null>): void {
@@ -159,6 +163,10 @@ export class NuevoServicio {
       precioSocio: toNumber(values['precioSocio']),
       modalidadPrecio: values['modalidadPrecio'] ?? null,
     });
+    this.form.markAsDirty();
+    for (const key of Object.keys(values)) {
+      this.form.get(key)?.markAsTouched();
+    }
   }
 
   protected onCancelar(): void {

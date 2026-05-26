@@ -256,7 +256,7 @@ describe('EditarServicio', () => {
     expect(component['infoErrors']()).toEqual({});
   });
 
-  it('infoErrors muestra error de cantidadYCapacidad solo tras submit', () => {
+  it('infoErrors muestra error de cantidadYCapacidad en cuanto el campo es tocado', () => {
     const { component } = setup();
     component['onInfoChange']({
       procedencia: null,
@@ -265,9 +265,14 @@ describe('EditarServicio', () => {
       cantidad: '5',
       capacidad: '10',
     });
-    expect(component['infoErrors']()['capacidad']).toBeUndefined();
-    component['submitted'].set(true);
     expect(component['infoErrors']()['capacidad']).toBeTruthy();
+  });
+
+  it('infoErrors no muestra error de cantidadYCapacidad si los campos no fueron tocados', () => {
+    const { component } = setup();
+    component['form'].get('cantidad')!.setValue(5);
+    component['form'].get('capacidad')!.setValue(10);
+    expect(component['infoErrors']()['capacidad']).toBeUndefined();
   });
 
   it('preciosErrors muestra error de precioSocio mayor tras submit', () => {
@@ -335,5 +340,46 @@ describe('EditarServicio', () => {
     expect(consoleSpy).toHaveBeenCalled();
     expect(navigateSpy).not.toHaveBeenCalled();
     consoleSpy.mockRestore();
+  });
+
+  // ── confirmDisabled ──────────────────────────────────────────────────────────
+
+  it('confirmDisabled es false cuando el form es válido', () => {
+    const { component, fixture } = setup();
+    fixture.detectChanges();
+    expect(component['confirmDisabled']()).toBe(false);
+  });
+
+  it('confirmDisabled es true cuando el form está dirty e inválido', () => {
+    const { component, fixture } = setup();
+    component['onInfoChange']({ nombre: null });
+    fixture.detectChanges();
+    expect(component['confirmDisabled']()).toBe(true);
+  });
+
+  it('confirmDisabled es true mientras loading es true', () => {
+    const { component, fixture } = setup();
+    component['loading'].set(true);
+    fixture.detectChanges();
+    expect(component['confirmDisabled']()).toBe(true);
+  });
+
+  // ── Keys parciales en onInfoChange / onPreciosChange ─────────────────────────
+
+  it('onInfoChange solo modifica las claves presentes, dejando las demás sin cambio', () => {
+    const { component } = setup();
+    component['onInfoChange']({ procedencia: 'SEDE' });
+    expect(component['form'].get('procedencia')?.value).toBe('SEDE');
+    expect(component['form'].get('nombre')?.value).toBe('Cabaña 1');
+    expect(component['form'].get('estado')?.value).toBe(EstadoServicio.Habilitado);
+    expect(component['form'].get('capacidad')?.value).toBe(4);
+  });
+
+  it('onPreciosChange solo modifica las claves presentes, dejando las demás sin cambio', () => {
+    const { component } = setup();
+    component['onPreciosChange']({ precioParticular: '1500' });
+    expect(component['form'].get('precioParticular')?.value).toBe(1500);
+    expect(component['form'].get('precioSocio')?.value).toBe(800);
+    expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_DIA');
   });
 });

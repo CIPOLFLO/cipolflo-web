@@ -93,27 +93,37 @@ describe('ServicioValidacionesService', () => {
       expect(errs['estado']).toBeUndefined();
     });
 
-    it('muestra error de cantidadYCapacidad inmediatamente cuando cantidadErrorOnSubmitOnly es false', () => {
+    it('no muestra error de cantidadYCapacidad cuando ningún campo fue tocado y no hay submit', () => {
       const form = makeInfoForm();
       form.get('cantidad')!.setValue(5);
+      form.get('capacidad')!.setValue(10);
+      const errs = service.getInfoErrors(form, false);
+      expect(errs['capacidad']).toBeUndefined();
+    });
+
+    it('muestra error de cantidadYCapacidad cuando el campo cantidad fue tocado', () => {
+      const form = makeInfoForm();
+      form.get('cantidad')!.setValue(5);
+      form.get('cantidad')!.markAsTouched();
       form.get('capacidad')!.setValue(10);
       const errs = service.getInfoErrors(form, false);
       expect(errs['capacidad']).toBeDefined();
     });
 
-    it('no muestra error de cantidadYCapacidad sin submit cuando cantidadErrorOnSubmitOnly es true', () => {
+    it('muestra error de cantidadYCapacidad cuando el campo capacidad fue tocado', () => {
       const form = makeInfoForm();
       form.get('cantidad')!.setValue(5);
       form.get('capacidad')!.setValue(10);
-      const errs = service.getInfoErrors(form, false, { cantidadErrorOnSubmitOnly: true });
-      expect(errs['capacidad']).toBeUndefined();
+      form.get('capacidad')!.markAsTouched();
+      const errs = service.getInfoErrors(form, false);
+      expect(errs['capacidad']).toBeDefined();
     });
 
-    it('muestra error de cantidadYCapacidad tras submit cuando cantidadErrorOnSubmitOnly es true', () => {
+    it('muestra error de cantidadYCapacidad tras submit aunque los campos no estén tocados', () => {
       const form = makeInfoForm();
       form.get('cantidad')!.setValue(5);
       form.get('capacidad')!.setValue(10);
-      const errs = service.getInfoErrors(form, true, { cantidadErrorOnSubmitOnly: true });
+      const errs = service.getInfoErrors(form, true);
       expect(errs['capacidad']).toBeDefined();
     });
 
@@ -161,11 +171,19 @@ describe('ServicioValidacionesService', () => {
       expect(service.getPreciosErrors(form, false)['precioParticular']).toMatch(/mayor que 0/);
     });
 
-    it('muestra error de precioSocio mayor cuando socio >= particular', () => {
+    it('muestra error de precioSocio mayor cuando socio >= particular y el campo fue tocado', () => {
       const form = makePreciosForm();
       form.get('precioParticular')!.setValue(100);
       form.get('precioSocio')!.setValue(100);
+      form.get('precioSocio')!.markAsTouched();
       expect(service.getPreciosErrors(form, false)['precioSocio']).toMatch(/menor/);
+    });
+
+    it('no muestra error de precioSocioMayor antes de tocar el campo o hacer submit', () => {
+      const form = makePreciosForm();
+      form.get('precioParticular')!.setValue(100);
+      form.get('precioSocio')!.setValue(100);
+      expect(service.getPreciosErrors(form, false)['precioSocio']).toBeUndefined();
     });
 
     it('muestra error min de precioSocio cuando el valor es 0', () => {

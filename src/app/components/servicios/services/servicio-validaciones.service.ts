@@ -21,19 +21,13 @@ export class ServicioValidacionesService {
     return null;
   }
 
-  /**
-   * @param cantidadErrorOnSubmitOnly - true: el error de cantidadYCapacidad solo aparece
-   * tras submit (editar). false: aparece en cuanto ambos campos tienen valor (nuevo).
-   */
-  getInfoErrors(
-    form: FormGroup,
-    submitted: boolean,
-    opts: { cantidadErrorOnSubmitOnly?: boolean } = {},
-  ): Record<string, string> {
+  getInfoErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errs: Record<string, string> = {};
     const procedencia = form.get('procedencia')!;
     const nombre = form.get('nombre')!;
     const estado = form.get('estado');
+    const cantidad = form.get('cantidad');
+    const capacidad = form.get('capacidad');
 
     if ((submitted || procedencia.touched) && procedencia.hasError('required')) {
       errs['procedencia'] = 'La procedencia es obligatoria.';
@@ -44,8 +38,10 @@ export class ServicioValidacionesService {
     if (estado && (submitted || estado.touched) && estado.hasError('required')) {
       errs['estado'] = 'El estado es obligatorio.';
     }
-    const showCantidad = opts.cantidadErrorOnSubmitOnly ? submitted : true;
-    if (showCantidad && form.errors?.['cantidadYCapacidad']) {
+    if (
+      (submitted || cantidad?.touched || capacidad?.touched) &&
+      form.errors?.['cantidadYCapacidad']
+    ) {
       errs['capacidad'] = 'Solo se puede completar cantidad o capacidad, no ambas.';
     }
     return errs;
@@ -67,7 +63,7 @@ export class ServicioValidacionesService {
       errs['precioSocio'] = 'El precio para socios es obligatorio.';
     } else if ((submitted || socio.touched) && socio.hasError('min')) {
       errs['precioSocio'] = 'El precio debe ser mayor que 0.';
-    } else if (form.errors?.['precioSocioMayor']) {
+    } else if ((submitted || socio.touched) && form.errors?.['precioSocioMayor']) {
       errs['precioSocio'] = 'Debe ser menor al precio para particulares.';
     }
 

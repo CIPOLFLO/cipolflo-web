@@ -9,7 +9,6 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -34,7 +33,6 @@ import { ServicioPresentacionService } from '../services/servicio-presentacion.s
   standalone: true,
   selector: 'app-editar-servicio',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     PageLayout,
     FormLayout,
@@ -134,7 +132,11 @@ export class EditarServicio implements OnInit {
     this.servicioService
       .getById(Number(this.id()))
       .pipe(
-        catchError(() => EMPTY),
+        // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
+        catchError((err) => {
+          console.error('Error al cargar el servicio', err);
+          return EMPTY;
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((s) => this.servicio.set(s));
@@ -150,9 +152,7 @@ export class EditarServicio implements OnInit {
 
   protected readonly infoErrors = computed<Record<string, string>>(() => {
     this.formEvents();
-    return this.validaciones.getInfoErrors(this.form, this.submitted(), {
-      cantidadErrorOnSubmitOnly: true,
-    });
+    return this.validaciones.getInfoErrors(this.form, this.submitted());
   });
 
   protected readonly preciosErrors = computed<Record<string, string>>(() => {
@@ -243,6 +243,7 @@ export class EditarServicio implements OnInit {
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.loading.set(false);
