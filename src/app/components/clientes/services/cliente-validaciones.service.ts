@@ -26,9 +26,17 @@ export class ClienteValidacionesService {
 
     if (!value) return null;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const trimmed = value.trim();
+    const atIndex = trimmed.indexOf('@');
+    const lastDotIndex = trimmed.lastIndexOf('.');
 
-    return emailRegex.test(value) ? null : { emailInvalido: true };
+    const isValid =
+      atIndex > 0 &&
+      lastDotIndex > atIndex + 1 &&
+      lastDotIndex < trimmed.length - 1 &&
+      !trimmed.includes(' ');
+
+    return isValid ? null : { emailInvalido: true };
   }
 
   cedulaValida(control: AbstractControl): ValidationErrors | null {
