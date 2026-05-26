@@ -146,11 +146,7 @@ export class NuevoCliente {
       placeholder: 'Ingrese cualquier observación o nota adicional sobre el cliente...',
     },
   ]);
-  private addRequiredError(
-    errors: Record<string, string>,
-    key: string,
-    message: string,
-  ): void {
+  private addRequiredError(errors: Record<string, string>, key: string, message: string): void {
     const control = this.form.get(key);
 
     if (this.submitted() && control?.hasError('required')) {
