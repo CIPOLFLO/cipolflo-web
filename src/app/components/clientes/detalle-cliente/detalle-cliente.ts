@@ -18,13 +18,7 @@ import { ClientesService } from '../services/cliente.service';
 @Component({
   standalone: true,
   selector: 'app-detalle-cliente',
-  imports: [
-    CommonModule,
-    PageLayout,
-    FormLayout,
-    DetailSection,
-    DetailRegistroSection,
-  ],
+  imports: [CommonModule, PageLayout, FormLayout, DetailSection, DetailRegistroSection],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

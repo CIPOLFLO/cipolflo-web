@@ -50,7 +50,7 @@ export class NuevoCliente {
     email: new FormControl<string | null>(null, [
       (control) => this.validaciones.emailValido(control),
     ]),
-    metodoPago: new FormControl<MetodoPago | null>(MetodoPago.Cobradora, Validators.required,),
+    metodoPago: new FormControl<MetodoPago | null>(MetodoPago.Cobradora, Validators.required),
     pais: new FormControl<string | null>('Uruguay', Validators.required),
     departamento: new FormControl<string | null>(null, Validators.required),
     ciudad: new FormControl<string | null>(null, Validators.required),
@@ -58,9 +58,7 @@ export class NuevoCliente {
     observaciones: new FormControl<string | null>(null),
   });
 
-  protected readonly confirmDisabled = computed(
-    () => this.form.invalid || this.loading(),
-  );
+  protected readonly confirmDisabled = computed(() => this.form.invalid || this.loading());
 
   protected readonly clienteFields = computed<FormFieldConfig[]>(() => [
     {
@@ -158,47 +156,29 @@ export class NuevoCliente {
     const telefono = this.form.get('telefono')!;
     const email = this.form.get('email')!;
 
-    if (
-      this.submitted() &&
-      this.form.get('nombre')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('nombre')?.hasError('required')) {
       errors['nombre'] = 'El nombre es obligatorio.';
     }
 
-    if (
-      this.submitted() &&
-      this.form.get('cedula')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('cedula')?.hasError('required')) {
       errors['cedula'] = 'La cédula es obligatoria.';
     }
 
-    if (
-      this.submitted() &&
-      this.form.get('fechaNacimiento')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('fechaNacimiento')?.hasError('required')) {
       errors['fechaNacimiento'] = 'La fecha de nacimiento es obligatoria.';
     }
 
-    if (
-      this.submitted() &&
-      this.form.get('telefono')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('telefono')?.hasError('required')) {
       errors['telefono'] = 'El teléfono es obligatorio.';
     }
 
-    if (
-      this.submitted() &&
-      this.form.get('email')?.hasError('email')
-    ) {
+    if (this.submitted() && this.form.get('email')?.hasError('email')) {
       errors['email'] = 'El email no es válido.';
     }
     if ((this.submitted() || cedula.touched) && cedula.hasError('cedulaInvalida')) {
       errors['cedula'] = 'La cédula no es válida.';
     }
-    if (
-      (this.submitted() || fechaNacimiento.touched) &&
-      fechaNacimiento.hasError('menorDeEdad')
-    ) {
+    if ((this.submitted() || fechaNacimiento.touched) && fechaNacimiento.hasError('menorDeEdad')) {
       errors['fechaNacimiento'] = 'El cliente debe ser mayor de 18 años.';
     }
 
@@ -212,24 +192,15 @@ export class NuevoCliente {
   protected readonly ubicacionErrors = computed<Record<string, string>>(() => {
     const errors: Record<string, string> = {};
 
-    if (
-      this.submitted() &&
-      this.form.get('pais')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('pais')?.hasError('required')) {
       errors['pais'] = 'El país es obligatorio.';
     }
 
-    if (
-      this.submitted() &&
-      this.form.get('departamento')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('departamento')?.hasError('required')) {
       errors['departamento'] = 'El departamento es obligatorio.';
     }
 
-    if (
-      this.submitted() &&
-      this.form.get('ciudad')?.hasError('required')
-    ) {
+    if (this.submitted() && this.form.get('ciudad')?.hasError('required')) {
       errors['ciudad'] = 'La ciudad es obligatoria.';
     }
 
@@ -283,8 +254,8 @@ export class NuevoCliente {
 
   protected onConfirmar(): void {
     this.submitted.set(true);
-     if (this.form.invalid) return;
-     this.loading.set(true);
+    if (this.form.invalid) return;
+    this.loading.set(true);
     const {
       nombre,
       cedula,

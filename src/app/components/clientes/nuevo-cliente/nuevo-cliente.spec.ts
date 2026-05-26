@@ -189,35 +189,35 @@ describe('NuevoCliente', () => {
   });
 
   it('onConfirmar con form inválido no debería llamar a create', () => {
-  component['onConfirmar']();
+    component['onConfirmar']();
 
-  expect(createSpy).not.toHaveBeenCalled();
-});
+    expect(createSpy).not.toHaveBeenCalled();
+  });
 
   it('onConfirmar con form válido debería llamar a create con los datos del formulario', () => {
     component['form'].patchValue({
       tipoCliente: TipoCliente.Socio,
-    nombre: 'Lucía Rodríguez',
-    cedula: '5.191.926-8',
-    fechaNacimiento: '1999-06-29',
-    telefono: '099985648',
-    email: 'lucia.rodriguez@example.com',
-    metodoPago: MetodoPago.Cobradora,
-    pais: 'Uruguay',
-    departamento: 'Flores',
-    ciudad: 'Trinidad',
-    direccion: 'Luis Alberto de Herrera 123',
-    observaciones: 'Socia nueva',
-  });
-
-  component['onConfirmar']();
-
-  expect(createSpy).toHaveBeenCalledWith(
-    expect.objectContaining({
       nombre: 'Lucía Rodríguez',
       cedula: '5.191.926-8',
+      fechaNacimiento: '1999-06-29',
+      telefono: '099985648',
+      email: 'lucia.rodriguez@example.com',
       metodoPago: MetodoPago.Cobradora,
-    }),
-  );
-});
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Luis Alberto de Herrera 123',
+      observaciones: 'Socia nueva',
+    });
+
+    component['onConfirmar']();
+
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nombre: 'Lucía Rodríguez',
+        cedula: '5.191.926-8',
+        metodoPago: MetodoPago.Cobradora,
+      }),
+    );
+  });
 });

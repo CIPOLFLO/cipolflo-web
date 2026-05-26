@@ -3,7 +3,12 @@ import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { DetalleCliente } from './detalle-cliente';
 import { ClientesService } from '../services/cliente.service';
-import { ClienteDetalleRespuestaDto, EstadoCliente, MetodoPago, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteDetalleRespuestaDto,
+  EstadoCliente,
+  MetodoPago,
+  TipoCliente,
+} from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
