@@ -60,6 +60,11 @@ jobs:
           cp src/environments/environment.example.ts src/environments/environment.ts
           cp src/environments/environment.example.ts src/environments/environment.development.ts
 
+      - name: Crear archivos de environment para CI
+        run: |
+          cp src/environments/environment.test.ts src/environments/environment.ts
+          cp src/environments/environment.test.ts src/environments/environment.development.ts
+
       - name: Ejecutar tests con cobertura
         run: npx ng test --watch=false --coverage
 
@@ -100,6 +105,11 @@ jobs:
         run: |
           cp src/environments/environment.example.ts src/environments/environment.ts
           cp src/environments/environment.example.ts src/environments/environment.development.ts
+
+      - name: Crear archivos de environment para CI
+        run: |
+          cp src/environments/environment.test.ts src/environments/environment.ts
+          cp src/environments/environment.test.ts src/environments/environment.development.ts
 
       - name: Generar reporte de cobertura para Sonar
         run: npx ng test --watch=false --coverage

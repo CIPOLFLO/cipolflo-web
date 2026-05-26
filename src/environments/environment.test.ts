@@ -7,8 +7,8 @@ export const environment = {
   production: false,
   apiUrl: 'http://localhost:0',
   auth0: {
-    domain: '',
-    clientId: '',
-    audience: '',
+    domain: 'test.auth0.com',
+    clientId: 'test-client-id',
+    audience: 'https://test.api',
   },
 };
