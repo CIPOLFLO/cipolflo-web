@@ -65,6 +65,22 @@ src/
 
 See `agents.md` for internal conventions and architecture decisions.
 
+## Troubleshooting
+
+### CI falla con `npm ci` — paquetes faltantes en el lock file
+
+Ocurre cuando se instala un paquete nuevo en Windows: el `package-lock.json` resultante omite dependencias opcionales de Linux que el CI necesita. Para corregirlo, regenerar el lock file desde Linux usando WSL:
+
+```bash
+wsl
+cd /mnt/c/Users/<tu-usuario>/Desktop/Proyecto\ CIPOLFLO/cipolflo-web
+rm package-lock.json
+npm install
+exit
+```
+
+Commitear el `package-lock.json` regenerado.
+
 ## Pre-PR checklist
 
 Before opening a pull request, run the following commands and make sure they all pass:

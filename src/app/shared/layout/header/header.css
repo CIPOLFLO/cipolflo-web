@@ -75,3 +75,19 @@
 .pi {
   font-size: 16px;
 }
+.header__logout {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.header__logout:hover {
+  background-color: var(--color-primary-hover);
+  color: var(--color-text-inverse);
+}

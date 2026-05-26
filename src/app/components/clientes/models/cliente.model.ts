@@ -1,3 +1,5 @@
+import { AuditInfoDto } from '../../../shared';
+
 export enum EstadoCliente {
   Activo = 'ACTIVO',
   Inactivo = 'INACTIVO',
@@ -22,7 +24,7 @@ export const TIPO_CLIENTE_OPTIONS = [
   { label: 'Particular', value: TipoCliente.Particular },
 ];
 
-export interface ClienteRow extends Record<string, unknown> {
+export interface ClienteRespuestaDto extends Record<string, unknown> {
   id: number;
   nombre: string;
   tipoCliente: TipoCliente;
@@ -30,4 +32,22 @@ export interface ClienteRow extends Record<string, unknown> {
   cedula: string;
   email: string;
   estado: EstadoCliente;
+}
+
+export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
+  id: number;
+  nombre: string;
+  tipoCliente: TipoCliente;
+  numeroSocio: string;
+  cedula: string;
+  email: string;
+  estado: EstadoCliente;
+  fechaNacimiento: string;
+  telefono: string;
+  metodoPago: string;
+  pais: string;
+  departamento: string;
+  ciudad: string;
+  direccion: string;
+  observaciones: string;
 }

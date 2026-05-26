@@ -20,9 +20,13 @@
       <i class="pi pi-building"></i> Servicios
     </a>
   </nav>
-
-  <div class="header__user">
-    <div class="header__avatar">F</div>
-    <span class="header__username">Franco Rico</span>
-  </div>
+  @if (auth.user$ | async; as user) {
+    <div class="header__user">
+      <div class="header__avatar">{{ (user.name ?? user.email)?.charAt(0)?.toUpperCase() }}</div>
+      <span class="header__username">{{ user.name ?? user.email }}</span>
+      <button class="header__logout" (click)="logout()">
+        <i class="pi pi-sign-out"></i>
+      </button>
+    </div>
+  }
 </header>
