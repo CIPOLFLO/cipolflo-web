@@ -286,6 +286,40 @@ describe('FormField', () => {
       setup({ key: 'precio', label: 'Precio', type: 'currency' });
       expect(el.querySelector('input[type="text"]')).toBeNull();
     });
+
+    it('numericValue retorna número cuando value es un string numérico válido', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      fixture.componentInstance.value.set('1200');
+      expect(fixture.componentInstance['numericValue']).toBe(1200);
+    });
+
+    it('numericValue retorna null cuando value es un string no numérico', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      fixture.componentInstance.value.set('abc');
+      expect(fixture.componentInstance['numericValue']).toBeNull();
+    });
+
+    it('numericValue usa defaultValue cuando value es null', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency', defaultValue: '800' });
+      expect(fixture.componentInstance['numericValue']).toBe(800);
+    });
+
+    it('numericValue retorna null cuando value es null y defaultValue es no numérico', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency', defaultValue: 'abc' });
+      expect(fixture.componentInstance['numericValue']).toBeNull();
+    });
+
+    it('captureNumericInput establece el string del número cuando val no es null', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      fixture.componentInstance['captureNumericInput'](500);
+      expect(fixture.componentInstance.value()).toBe('500');
+    });
+
+    it('captureNumericInput establece string vacío cuando val es null', () => {
+      setup({ key: 'precio', label: 'Precio', type: 'currency' });
+      fixture.componentInstance['captureNumericInput'](null);
+      expect(fixture.componentInstance.value()).toBe('');
+    });
   });
 
   describe('input error', () => {

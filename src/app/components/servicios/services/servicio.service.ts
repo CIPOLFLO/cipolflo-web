@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
+  ServicioActualizarDto,
   ServicioCrearDto,
   ServicioDetalleRespuestaDto,
   ServicioRespuestaDto,
@@ -24,5 +25,9 @@ export class ServicioService extends BaseHttpService {
 
   create(dto: ServicioCrearDto): Observable<ServicioRespuestaDto> {
     return this.post<ServicioRespuestaDto>('servicios', dto);
+  }
+
+  update(id: number, dto: ServicioActualizarDto): Observable<ServicioRespuestaDto> {
+    return this.put<ServicioRespuestaDto>(`servicios/${id}`, dto);
   }
 }

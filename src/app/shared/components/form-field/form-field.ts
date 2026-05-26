@@ -26,9 +26,20 @@ export class FormField {
 
   protected get numericValue(): number | null {
     const v = this.value();
-    if (v === null || v === '') return null;
-    const n = Number(v);
-    return Number.isNaN(n) ? null : n;
+    if (v !== null && v !== '') {
+      const n = Number(v);
+      return Number.isNaN(n) ? null : n;
+    }
+    // v === null → campo intacto, usar defaultValue como valor inicial
+    // v === ''  → usuario borró explícitamente, no usar fallback
+    if (v === null) {
+      const d = this.config().defaultValue;
+      if (d !== undefined && d !== '') {
+        const n = Number(d);
+        return Number.isNaN(n) ? null : n;
+      }
+    }
+    return null;
   }
 
   protected captureInput(event: Event): void {
@@ -36,6 +47,7 @@ export class FormField {
   }
 
   protected captureNumericInput(val: number | null): void {
-    this.value.set(val !== null ? String(val) : null);
+    // '' en lugar de null para distinguir "borrado por el usuario" de "intacto"
+    this.value.set(val !== null ? String(val) : '');
   }
 }

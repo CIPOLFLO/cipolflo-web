@@ -159,7 +159,7 @@ describe('ListadoServicios', () => {
       estado: EstadoServicio.Habilitado,
     };
     const actions = component['rowActions'](row);
-    expect(actions).toHaveLength(1);
+    expect(actions).toHaveLength(2);
     expect(actions[0].label).toBe('Ver detalle');
     expect(actions[0].icon).toBe('pi pi-eye');
   });
@@ -177,6 +177,38 @@ describe('ListadoServicios', () => {
     const actions = component['rowActions'](row);
     actions[0].command?.(row);
     expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1]);
+  });
+
+  it('rowActions debe retornar la acción "Editar"', () => {
+    const row: ServicioRow = {
+      id: 1,
+      nombre: 'Cabaña 1',
+      procedencia: 'Camping',
+      precioSocio: 800,
+      precioParticular: 1200,
+      unidad: 'p/día',
+      estado: EstadoServicio.Habilitado,
+    };
+    const actions = component['rowActions'](row);
+    expect(actions[1].label).toBe('Editar');
+    expect(actions[1].icon).toBe('pi pi-pencil');
+  });
+
+  it('el comando de "Editar" navega a /servicios/{id}/editar con from=listado', () => {
+    const row: ServicioRow = {
+      id: 1,
+      nombre: 'Cabaña 1',
+      procedencia: 'Camping',
+      precioSocio: 800,
+      precioParticular: 1200,
+      unidad: 'p/día',
+      estado: EstadoServicio.Habilitado,
+    };
+    const actions = component['rowActions'](row);
+    actions[1].command?.(row);
+    expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1, 'editar'], {
+      queryParams: { from: 'listado' },
+    });
   });
 
   it('debe renderizar los encabezados de columna en la tabla', async () => {

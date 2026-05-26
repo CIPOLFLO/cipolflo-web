@@ -70,7 +70,14 @@ export class ListadoServicios {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/servicios', row.id]),
     },
-    // { label: 'Modificar',    icon: 'pi pi-pencil',       command: () => ... },
+    {
+      label: 'Editar',
+      icon: 'pi pi-pencil',
+      command: () =>
+        this.router.navigate(['/servicios', row.id, 'editar'], {
+          queryParams: { from: 'listado' },
+        }),
+    },
     // ...(row.estado === EstadoServicio.Deshabilitado
     //   ? [{ label: 'Habilitar',    icon: 'pi pi-check-circle', command: () => ... }]
     //   : [{ label: 'Deshabilitar', icon: 'pi pi-ban',          command: () => ... }]),

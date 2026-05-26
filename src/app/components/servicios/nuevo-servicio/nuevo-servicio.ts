@@ -123,51 +123,14 @@ export class NuevoServicio {
     },
   ]);
 
-  // ── Errores computados ───────────────────────────────────────────────────
   protected readonly infoErrors = computed<Record<string, string>>(() => {
     this.formEvents();
-    const errs: Record<string, string> = {};
-    const procedencia = this.form.get('procedencia')!;
-    const nombre = this.form.get('nombre')!;
-
-    if ((this.submitted() || procedencia.touched) && procedencia.hasError('required')) {
-      errs['procedencia'] = 'La procedencia es obligatoria.';
-    }
-    if ((this.submitted() || nombre.touched) && nombre.hasError('required')) {
-      errs['nombre'] = 'El nombre del servicio es obligatorio.';
-    }
-    if (this.form.errors?.['cantidadYCapacidad']) {
-      errs['capacidad'] = 'Solo se puede completar cantidad o capacidad, no ambas.';
-    }
-    return errs;
+    return this.validaciones.getInfoErrors(this.form, this.submitted());
   });
 
   protected readonly preciosErrors = computed<Record<string, string>>(() => {
     this.formEvents();
-    const errs: Record<string, string> = {};
-    const particular = this.form.get('precioParticular')!;
-    const socio = this.form.get('precioSocio')!;
-    const modalidad = this.form.get('modalidadPrecio')!;
-
-    if ((this.submitted() || particular.touched) && particular.hasError('required')) {
-      errs['precioParticular'] = 'El precio para particulares es obligatorio.';
-    } else if ((this.submitted() || particular.touched) && particular.hasError('min')) {
-      errs['precioParticular'] = 'El precio debe ser mayor que 0.';
-    }
-
-    if ((this.submitted() || socio.touched) && socio.hasError('required')) {
-      errs['precioSocio'] = 'El precio para socios es obligatorio.';
-    } else if ((this.submitted() || socio.touched) && socio.hasError('min')) {
-      errs['precioSocio'] = 'El precio debe ser mayor que 0.';
-    } else if (this.form.errors?.['precioSocioMayor']) {
-      errs['precioSocio'] = 'Debe ser menor al precio para particulares.';
-    }
-
-    if ((this.submitted() || modalidad.touched) && modalidad.hasError('required')) {
-      errs['modalidadPrecio'] = 'El tipo de cobro es obligatorio.';
-    }
-
-    return errs;
+    return this.validaciones.getPreciosErrors(this.form, this.submitted());
   });
 
   // ── Sincronización de secciones con el FormGroup ─────────────────────────
@@ -183,6 +146,10 @@ export class NuevoServicio {
       cantidad: toOptionalInt(values['cantidad']),
       capacidad: toOptionalInt(values['capacidad']),
     });
+    this.form.markAsDirty();
+    for (const key of Object.keys(values)) {
+      this.form.get(key)?.markAsTouched();
+    }
   }
 
   protected onPreciosChange(values: Record<string, string | null>): void {
@@ -196,6 +163,10 @@ export class NuevoServicio {
       precioSocio: toNumber(values['precioSocio']),
       modalidadPrecio: values['modalidadPrecio'] ?? null,
     });
+    this.form.markAsDirty();
+    for (const key of Object.keys(values)) {
+      this.form.get(key)?.markAsTouched();
+    }
   }
 
   protected onCancelar(): void {

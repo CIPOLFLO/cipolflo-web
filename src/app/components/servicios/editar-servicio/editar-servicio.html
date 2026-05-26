@@ -1,2 +1,37 @@
-<app-page-layout pageTitle="Editar Servicio" pageDescription="Edición del servicio">
+<app-page-layout
+  pageTitle="Editar Servicio"
+  [pageDescription]="pageDescription()"
+  [showBackButton]="true"
+  [backButtonLink]="backLink()"
+>
+  <app-form-layout>
+    <app-form-section
+      title="Información del Servicio"
+      [fields]="infoFields()"
+      [errors]="infoErrors()"
+      (valuesChange)="onInfoChange($event)"
+    />
+
+    <app-form-section
+      title="Precios y Modalidad de Cobro"
+      [fields]="preciosFields()"
+      [errors]="preciosErrors()"
+      (valuesChange)="onPreciosChange($event)"
+    />
+
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Confirmar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+  </app-form-layout>
 </app-page-layout>

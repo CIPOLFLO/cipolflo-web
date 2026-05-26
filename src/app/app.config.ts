@@ -1,11 +1,12 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { definePreset } from '@primeng/themes';
-
+import { authHttpInterceptorFn, provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
+import { environment } from '../environments/environment';
 
 const CipolfloPreset = definePreset(Aura, {
   semantic: {
@@ -28,11 +29,24 @@ const CipolfloPreset = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
-    provideHttpClient(withFetch()),
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(withFetch(), withInterceptors([authHttpInterceptorFn])),
     providePrimeNG({
       theme: { preset: CipolfloPreset, options: { darkModeSelector: false } },
       translation: { emptyMessage: 'Sin resultados', emptyFilterMessage: 'Sin resultados' },
+    }),
+    provideAuth0({
+      domain: environment.auth0.domain,
+      clientId: environment.auth0.clientId,
+      authorizationParams: {
+        redirect_uri: window.location.origin,
+        audience: environment.auth0.audience,
+      },
+      cacheLocation: 'localstorage',
+      useRefreshTokens: true,
+      httpInterceptor: {
+        allowedList: [`${environment.apiUrl}/*`],
+      },
     }),
   ],
 };

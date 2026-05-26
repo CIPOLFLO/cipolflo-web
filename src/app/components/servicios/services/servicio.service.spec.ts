@@ -6,6 +6,7 @@ import { ServicioService } from './servicio.service';
 import { environment } from '@env/environment';
 import {
   EstadoServicio,
+  ServicioActualizarDto,
   ServicioCrearDto,
   ServicioDetalleRespuestaDto,
 } from '../models/servicio.model';
@@ -174,6 +175,62 @@ describe('ServicioService', () => {
           { status: 400, statusText: 'Bad Request' },
         );
       expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('update', () => {
+    const mockActualizarDto: ServicioActualizarDto = {
+      nombre: 'Cabaña Actualizada',
+      procedencia: 'CAMPING',
+      estado: EstadoServicio.Habilitado,
+      precioParticular: 1500,
+      precioSocio: 1000,
+      modalidadPrecio: 'POR_DIA',
+      cantidad: null,
+      capacidad: null,
+    };
+
+    const mockRespuesta = {
+      id: 1,
+      nombre: 'Cabaña Actualizada',
+      procedencia: 'CAMPING',
+      precioParticular: 1500,
+      precioSocio: 1000,
+      modalidadPrecio: 'POR_DIA',
+      estado: EstadoServicio.Habilitado,
+    };
+
+    it('hace PUT a /servicios/{id}', () => {
+      service.update(1, mockActualizarDto).subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1`);
+      expect(req.request.method).toBe('PUT');
+      req.flush(mockRespuesta);
+    });
+
+    it('el body del request contiene los campos del DTO', () => {
+      service.update(1, mockActualizarDto).subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1`);
+      expect(req.request.body).toEqual(mockActualizarDto);
+      req.flush(mockRespuesta);
+    });
+
+    it('retorna el servicio actualizado', () => {
+      let resultado: typeof mockRespuesta | undefined;
+      service.update(1, mockActualizarDto).subscribe((r) => (resultado = r));
+      httpMock.expectOne(`${environment.apiUrl}/servicios/1`).flush(mockRespuesta);
+      expect(resultado).toEqual(mockRespuesta);
+    });
+
+    it('propaga error 404 cuando el id no existe', () => {
+      let errorStatus = 0;
+      service.update(9999, mockActualizarDto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${environment.apiUrl}/servicios/9999`)
+        .flush(
+          { codigo: 'NOT_FOUND', descripcion: 'Servicio no encontrado' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
     });
   });
 });

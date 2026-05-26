@@ -25,6 +25,11 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Generar environments para compilación
+        run: |
+          cp src/environments/environment.example.ts src/environments/environment.ts
+          cp src/environments/environment.example.ts src/environments/environment.development.ts
+
       - name: Verificar formato con Prettier
         run: npx prettier --check .
 
@@ -46,7 +51,14 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependencias
-        run: npm ci
+        run: |
+          npm ci
+          npm install @rollup/rollup-linux-x64-gnu --no-save
+
+      - name: Generar environments para compilación
+        run: |
+          cp src/environments/environment.example.ts src/environments/environment.ts
+          cp src/environments/environment.example.ts src/environments/environment.development.ts
 
       - name: Crear archivos de environment para CI
         run: |
@@ -85,7 +97,14 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependencias
-        run: npm ci
+        run: |
+          npm ci
+          npm install @rollup/rollup-linux-x64-gnu --no-save
+
+      - name: Generar environments para compilación
+        run: |
+          cp src/environments/environment.example.ts src/environments/environment.ts
+          cp src/environments/environment.example.ts src/environments/environment.development.ts
 
       - name: Crear archivos de environment para CI
         run: |

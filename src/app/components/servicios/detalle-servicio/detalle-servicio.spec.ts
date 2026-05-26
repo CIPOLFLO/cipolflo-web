@@ -51,6 +51,7 @@ function setup(
   });
 
   const fixture = TestBed.createComponent(DetalleServicio);
+  fixture.componentRef.setInput('id', paramId);
   fixture.detectChanges();
 
   return { fixture, el: fixture.nativeElement, navigateSpy, getByIdSpy };
