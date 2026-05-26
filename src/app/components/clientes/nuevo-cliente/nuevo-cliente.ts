@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteOptionsService } from '../services/cliente-options.service';
@@ -156,7 +155,7 @@ export class NuevoCliente {
     const telefono = this.form.get('telefono')!;
     const email = this.form.get('email')!;
 
-    if (this.submitted() && this.form.get('nombre')?.hasError('required')) {
+    if (this.submitted() && nombre.hasError('required')) {
       errors['nombre'] = 'El nombre es obligatorio.';
     }
 
@@ -168,7 +167,7 @@ export class NuevoCliente {
       errors['fechaNacimiento'] = 'La fecha de nacimiento es obligatoria.';
     }
 
-    if (this.submitted() && this.form.get('telefono')?.hasError('required')) {
+    if (this.submitted() && telefono.hasError('required')) {
       errors['telefono'] = 'El teléfono es obligatorio.';
     }
 

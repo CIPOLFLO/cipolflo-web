@@ -31,22 +31,6 @@ describe('NuevoCliente', () => {
     fixture.detectChanges();
   });
 
-  function fillValidForm(): void {
-    component['form'].patchValue({
-      nombre: 'Lucía Rodríguez',
-      cedula: '5.191.926-8',
-      fechaNacimiento: '1999-06-29',
-      telefono: '099985648',
-      email: 'lucia.rodriguez@example.com',
-      metodoPago: MetodoPago.Cobradora,
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-      direccion: 'Luis Alberto de Herrera 123',
-      observaciones: 'Socia nueva',
-    });
-  }
-
   it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });

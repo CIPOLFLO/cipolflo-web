@@ -4,10 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
-  AppButton,
   DetailRegistroSection,
   DetailSection,
-  FormActions,
   FormLayout,
   PageLayout,
   type DetailFieldConfig,
