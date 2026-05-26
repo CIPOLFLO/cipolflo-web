@@ -146,42 +146,38 @@ export class NuevoCliente {
       placeholder: 'Ingrese cualquier observación o nota adicional sobre el cliente...',
     },
   ]);
+  private addRequiredError(
+    errors: Record<string, string>,
+    key: string,
+    message: string,
+  ): void {
+    const control = this.form.get(key);
+
+    if (this.submitted() && control?.hasError('required')) {
+      errors[key] = message;
+    }
+  }
 
   protected readonly clienteErrors = computed<Record<string, string>>(() => {
     const errors: Record<string, string> = {};
-    const nombre = this.form.get('nombre')!;
     const cedula = this.form.get('cedula')!;
     const fechaNacimiento = this.form.get('fechaNacimiento')!;
-    const telefono = this.form.get('telefono')!;
     const email = this.form.get('email')!;
 
-    if (this.submitted() && nombre.hasError('required')) {
-      errors['nombre'] = 'El nombre es obligatorio.';
-    }
+    this.addRequiredError(errors, 'nombre', 'El nombre es obligatorio.');
+    this.addRequiredError(errors, 'cedula', 'La cédula es obligatoria.');
+    this.addRequiredError(errors, 'fechaNacimiento', 'La fecha de nacimiento es obligatoria.');
+    this.addRequiredError(errors, 'telefono', 'El teléfono es obligatorio.');
 
-    if (this.submitted() && this.form.get('cedula')?.hasError('required')) {
-      errors['cedula'] = 'La cédula es obligatoria.';
-    }
-
-    if (this.submitted() && this.form.get('fechaNacimiento')?.hasError('required')) {
-      errors['fechaNacimiento'] = 'La fecha de nacimiento es obligatoria.';
-    }
-
-    if (this.submitted() && telefono.hasError('required')) {
-      errors['telefono'] = 'El teléfono es obligatorio.';
-    }
-
-    if (this.submitted() && this.form.get('email')?.hasError('email')) {
-      errors['email'] = 'El email no es válido.';
-    }
-    if ((this.submitted() || cedula.touched) && cedula.hasError('cedulaInvalida')) {
+    if (this.submitted() && cedula.hasError('cedulaInvalida')) {
       errors['cedula'] = 'La cédula no es válida.';
     }
-    if ((this.submitted() || fechaNacimiento.touched) && fechaNacimiento.hasError('menorDeEdad')) {
+
+    if (this.submitted() && fechaNacimiento.hasError('menorDeEdad')) {
       errors['fechaNacimiento'] = 'El cliente debe ser mayor de 18 años.';
     }
 
-    if ((this.submitted() || email.touched) && email.hasError('emailInvalido')) {
+    if (this.submitted() && email.hasError('emailInvalido')) {
       errors['email'] = 'El email no es válido.';
     }
 
