@@ -12,7 +12,8 @@ import {
 import { ClientesColumnsService } from '../services/clientes-columns.service';
 import { ClientesFilterService } from '../services/clientes-filter.service';
 import { ClientesService } from '../services/clientes.service';
-import { ClienteRow } from '../models/cliente.model';
+import { ClienteRespuestaDto } from '../models/cliente.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -31,6 +32,7 @@ export class ListadoClientes {
   private readonly columnsService = inject(ClientesColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
   protected readonly tableState = inject(TableStateService);
+  private readonly router = inject(Router);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -46,12 +48,17 @@ export class ListadoClientes {
 
   protected readonly columns = this.columnsService.columns;
 
-  protected readonly loadDataFn: LoadDataFn<ClienteRow> = (params) =>
-    this.clientesService.getDatos(params);
+  protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
+    this.clientesService.getAll(params);
 
-  protected readonly rowActions = (row: ClienteRow): RowAction<ClienteRow>[] => [
-    { label: 'Ver detalle', icon: 'pi pi-eye', command: () => console.log('ver detalle', row.id) },
+  protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
+    {
+      label: 'Ver detalle',
+      icon: 'pi pi-eye',
+      command: () => this.router.navigate(['/clientes', row.id]),
+    },
     // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
+
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
     //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),

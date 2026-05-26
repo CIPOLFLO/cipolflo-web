@@ -1,0 +1,19 @@
+<app-page-layout
+  pageTitle="Detalle de Cliente"
+  pageDescription="Información completa del cliente"
+  [showBackButton]="true"
+  backButtonLink="/clientes"
+>
+  <app-form-layout>
+    <app-detail-section title="Resumen del Cliente" [fields]="infoFields()" />
+
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
+    <!--
+    <app-form-actions actions>
+      <app-button label="Editar" icon="pi-pencil" (clicked)="onEditar()" />
+    </app-form-actions>
+    -->
+  </app-form-layout>
+</app-page-layout>
