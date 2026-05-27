@@ -34,6 +34,35 @@ describe('NuevoCliente', () => {
   it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });
+  it('debería mostrar error si la cédula es inválida', () => {
+    component['submitted'].set(true);
+
+    component['form'].get('cedula')?.setErrors({
+      cedulaInvalida: true,
+    });
+
+    expect(component['clienteErrors']()['cedula']).toContain('no es válida');
+  });
+
+  it('debería mostrar error si es menor de edad', () => {
+    component['submitted'].set(true);
+
+    component['form'].get('fechaNacimiento')?.setErrors({
+      menorDeEdad: true,
+    });
+
+    expect(component['clienteErrors']()['fechaNacimiento']).toContain('mayor de 18 años');
+  });
+
+  it('debería mostrar error si el email es inválido', () => {
+    component['submitted'].set(true);
+
+    component['form'].get('email')?.setErrors({
+      emailInvalido: true,
+    });
+
+    expect(component['clienteErrors']()['email']).toContain('email no es válido');
+  });
 
   it('confirmDisabled debería ser true con el formulario vacío', () => {
     expect(component['confirmDisabled']()).toBe(true);
