@@ -119,7 +119,7 @@ describe('ClientesService', () => {
   it('devuelve la última página con last=true y first=false', () => {
     const res = getAll({ page: 2, size: 3, filters: {} });
     expect(res.first).toBe(false);
-    expect(res.page).toBe(1);
+    expect(res.page).toBe(2);
     expect(res.size).toBe(3);
   });
 });
