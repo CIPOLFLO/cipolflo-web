@@ -26,31 +26,11 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
   observaciones: 'Socia Nueva',
-  createdAt: '15 mar 2026, 14:30',
+  createdAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',
-  updatedAt: '15 mar 2026, 14:30',
+  updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
 };
-
-let getByIdSpy: ReturnType<typeof vi.fn>;
-let navigateSpy: ReturnType<typeof vi.fn>;
-
-beforeEach(async () => {
-  getByIdSpy = vi.fn().mockReturnValue(of(mockCliente));
-  navigateSpy = vi.fn();
-
-  await TestBed.configureTestingModule({
-    imports: [DetalleCliente],
-    providers: [
-      { provide: ClientesService, useValue: { getById: getByIdSpy } },
-      {
-        provide: ActivatedRoute,
-        useValue: { paramMap: of(convertToParamMap({ id: '1' })) },
-      },
-      { provide: Router, useValue: { navigate: navigateSpy } },
-    ],
-  }).compileComponents();
-});
 
 describe('DetalleCliente', () => {
   let fixture: ComponentFixture<DetalleCliente>;
@@ -106,7 +86,7 @@ describe('DetalleCliente', () => {
   });
 
   it('debería mostrar el método de pago', () => {
-    expect(fixture.nativeElement.textContent).toContain('COBRADORA');
+    expect(fixture.nativeElement.textContent).toContain('Cobradora');
   });
 
   it('debería mostrar la dirección del cliente', () => {

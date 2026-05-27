@@ -1,12 +1,12 @@
 <app-page-layout
-  pageTitle="Nuevo Cliente"
+  pageTitle="Nuevo Socio"
   pageDescription="Complete los datos para registrar un nuevo socio"
   [showBackButton]="true"
   backButtonLink="/clientes"
 >
   <app-form-layout>
     <app-form-section
-      title="Información del Cliente"
+      title="Información del socio"
       [fields]="clienteFields()"
       [errors]="clienteErrors()"
       (valuesChange)="onClienteChange($event)"
@@ -22,7 +22,6 @@
     <app-form-section
       title="Información Adicional"
       [fields]="adicionalFields()"
-      [errors]="adicionalErrors()"
       (valuesChange)="onAdicionalChange($event)"
     />
 

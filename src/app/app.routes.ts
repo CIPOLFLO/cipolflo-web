@@ -37,25 +37,14 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./components/servicios/servicios.routes').then((m) => m.SERVICIOS_ROUTES),
       },
+      {
+        path: 'clientes',
+        loadChildren: () =>
+          import('./components/clientes/clientes.routes').then((m) => m.CLIENTES_ROUTES),
+      },
     ],
   },
-  {
-    path: 'clientes',
-    loadComponent: () =>
-      import('./components/clientes/listado-clientes/listado-clientes').then(
-        (module) => module.ListadoClientes,
-      ),
-  },
-  {
-    path: 'clientes/nuevo',
-    loadComponent: () =>
-      import('./components/clientes/nuevo-cliente/nuevo-cliente').then((m) => m.NuevoCliente),
-  },
-  {
-    path: 'clientes/:id',
-    loadComponent: () =>
-      import('./components/clientes/detalle-cliente/detalle-cliente').then((m) => m.DetalleCliente),
-  },
+
   {
     path: '**',
     redirectTo: 'reservas',

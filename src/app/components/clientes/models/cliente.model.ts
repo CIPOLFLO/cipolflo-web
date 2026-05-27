@@ -1,4 +1,4 @@
-import { AuditInfoDto } from '../../../shared';
+import { AuditInfoDto, FormFieldOption } from '../../../shared';
 
 export enum EstadoCliente {
   Activo = 'ACTIVO',
@@ -18,13 +18,20 @@ export enum MetodoPago {
   DebitoAutomatico = 'DEBITO_AUTOMATICO',
 }
 
-export const METODO_PAGO_OPTIONS = [
+export const METODO_PAGO_OPTIONS: FormFieldOption[] = [
   { label: 'Cobradora', value: MetodoPago.Cobradora },
   { label: 'Caja', value: MetodoPago.Caja },
   { label: 'Transferencia', value: MetodoPago.Transferencia },
   { label: 'Efectivo', value: MetodoPago.Efectivo },
   { label: 'Débito automático', value: MetodoPago.DebitoAutomatico },
 ];
+export const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
+  [MetodoPago.Cobradora]: 'Cobradora',
+  [MetodoPago.Caja]: 'Caja',
+  [MetodoPago.Transferencia]: 'Transferencia',
+  [MetodoPago.Efectivo]: 'Efectivo',
+  [MetodoPago.DebitoAutomatico]: 'Débito automático',
+};
 
 export const ESTADO_CLIENTE_OPTIONS = [
   { label: 'Todos', value: '' },

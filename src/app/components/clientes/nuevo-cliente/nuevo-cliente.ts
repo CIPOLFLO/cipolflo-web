@@ -57,16 +57,17 @@ export class NuevoCliente {
     observaciones: new FormControl<string | null>(null),
   });
 
-  protected readonly confirmDisabled = computed(() => this.form.invalid || this.loading());
+  private readonly formEvents = toSignal(this.form.events, {
+    initialValue: null,
+  });
+
+  protected readonly confirmDisabled = computed(() => {
+    this.formEvents();
+
+    return this.form.invalid || this.loading();
+  });
 
   protected readonly clienteFields = computed<FormFieldConfig[]>(() => [
-    {
-      key: 'tipoCliente',
-      label: 'Tipo de cliente',
-      type: 'text',
-      value: 'Socio',
-      disabled: true,
-    },
     {
       key: 'nombre',
       label: 'Nombre',
@@ -104,8 +105,8 @@ export class NuevoCliente {
       key: 'metodoPago',
       label: 'Método de pago',
       type: 'select',
-      required: true,
       options: this.metodosPago(),
+      defaultValue: MetodoPago.Cobradora,
     },
   ]);
 
@@ -115,6 +116,7 @@ export class NuevoCliente {
       label: 'País',
       type: 'text',
       required: true,
+      defaultValue: 'Uruguay',
     },
     {
       key: 'departamento',
@@ -143,65 +145,25 @@ export class NuevoCliente {
       key: 'observaciones',
       label: 'Notas / Observaciones',
       type: 'textarea',
-      placeholder: 'Ingrese cualquier observación o nota adicional sobre el cliente...',
+      placeholder: 'Ingrese observaciones adicionales',
     },
   ]);
-  private addRequiredError(errors: Record<string, string>, key: string, message: string): void {
-    const control = this.form.get(key);
-
-    if (this.submitted() && control?.hasError('required')) {
-      errors[key] = message;
-    }
-  }
 
   protected readonly clienteErrors = computed<Record<string, string>>(() => {
-    const errors: Record<string, string> = {};
-    const cedula = this.form.get('cedula')!;
-    const fechaNacimiento = this.form.get('fechaNacimiento')!;
-    const email = this.form.get('email')!;
+    this.formEvents();
 
-    this.addRequiredError(errors, 'nombre', 'El nombre es obligatorio.');
-    this.addRequiredError(errors, 'cedula', 'La cédula es obligatoria.');
-    this.addRequiredError(errors, 'fechaNacimiento', 'La fecha de nacimiento es obligatoria.');
-    this.addRequiredError(errors, 'telefono', 'El teléfono es obligatorio.');
-
-    if (this.submitted() && cedula.hasError('cedulaInvalida')) {
-      errors['cedula'] = 'La cédula no es válida.';
-    }
-
-    if (this.submitted() && fechaNacimiento.hasError('menorDeEdad')) {
-      errors['fechaNacimiento'] = 'El cliente debe ser mayor de 18 años.';
-    }
-
-    if (this.submitted() && email.hasError('emailInvalido')) {
-      errors['email'] = 'El email no es válido.';
-    }
-
-    return errors;
+    return this.validaciones.getClienteErrors(this.form, this.submitted());
   });
 
   protected readonly ubicacionErrors = computed<Record<string, string>>(() => {
-    const errors: Record<string, string> = {};
+    this.formEvents();
 
-    if (this.submitted() && this.form.get('pais')?.hasError('required')) {
-      errors['pais'] = 'El país es obligatorio.';
-    }
-
-    if (this.submitted() && this.form.get('departamento')?.hasError('required')) {
-      errors['departamento'] = 'El departamento es obligatorio.';
-    }
-
-    if (this.submitted() && this.form.get('ciudad')?.hasError('required')) {
-      errors['ciudad'] = 'La ciudad es obligatoria.';
-    }
-
-    return errors;
+    return this.validaciones.getUbicacionErrors(this.form, this.submitted());
   });
 
   protected readonly metodosPago = toSignal(this.optionsService.getMetodosPago(), {
     initialValue: [],
   });
-  protected readonly adicionalErrors = computed<Record<string, string>>(() => ({}));
 
   protected onClienteChange(
     values: Partial<{

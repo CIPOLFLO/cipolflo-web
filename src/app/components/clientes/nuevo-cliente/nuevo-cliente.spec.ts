@@ -34,6 +34,7 @@ describe('NuevoCliente', () => {
   it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });
+
   it('debería mostrar error si la cédula es inválida', () => {
     component['submitted'].set(true);
 
@@ -74,10 +75,6 @@ describe('NuevoCliente', () => {
 
   it('ubicacionErrors debería estar vacío cuando submitted es false', () => {
     expect(component['ubicacionErrors']()).toEqual({});
-  });
-
-  it('adicionalErrors debería estar vacío', () => {
-    expect(component['adicionalErrors']()).toEqual({});
   });
 
   it('clienteErrors[nombre] debería mostrar error cuando submitted y campo vacío', () => {
@@ -232,5 +229,39 @@ describe('NuevoCliente', () => {
         metodoPago: MetodoPago.Cobradora,
       }),
     );
+  });
+
+  it('debería habilitar confirmar cuando el formulario es válido', () => {
+    component['form'].patchValue({
+      nombre: 'Lucía Rodríguez',
+      cedula: '1.111.111-1',
+      fechaNacimiento: '1990-01-01',
+      telefono: '099123456',
+      email: 'lucia@test.com',
+      metodoPago: MetodoPago.Cobradora,
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Calle 123',
+      observaciones: 'Observación',
+    });
+
+    expect(component['confirmDisabled']()).toBe(false);
+  });
+
+  it('debería limpiar errores reactivos luego de corregir un campo', () => {
+    component['submitted'].set(true);
+
+    component['form'].patchValue({
+      nombre: '',
+    });
+
+    expect(component['clienteErrors']()['nombre']).toContain('El nombre es obligatorio.');
+
+    component['form'].patchValue({
+      nombre: 'Lucía Rodríguez',
+    });
+
+    expect(component['clienteErrors']()['nombre']).toBeUndefined();
   });
 });
