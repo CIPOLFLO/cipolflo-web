@@ -27,26 +27,6 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   updatedBy: 'Juan Pérez',
 };
 
-let getByIdSpy: ReturnType<typeof vi.fn>;
-let navigateSpy: ReturnType<typeof vi.fn>;
-
-beforeEach(async () => {
-  getByIdSpy = vi.fn().mockReturnValue(of(mockCliente));
-  navigateSpy = vi.fn();
-
-  await TestBed.configureTestingModule({
-    imports: [DetalleCliente],
-    providers: [
-      { provide: ClientesService, useValue: { getById: getByIdSpy } },
-      {
-        provide: ActivatedRoute,
-        useValue: { paramMap: of(convertToParamMap({ id: '1' })) },
-      },
-      { provide: Router, useValue: { navigate: navigateSpy } },
-    ],
-  }).compileComponents();
-});
-
 describe('DetalleCliente', () => {
   let fixture: ComponentFixture<DetalleCliente>;
   let component: DetalleCliente;

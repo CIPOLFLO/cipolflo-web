@@ -86,14 +86,15 @@ Commitear el `package-lock.json` regenerado.
 Before opening a pull request, run the following commands and make sure they all pass:
 
 ```bash
-# 1. Formatting — auto-fixes code style
-npx prettier --write .
-
-# 2. Tests with coverage — all new lines must be covered
+# 1. Tests with coverage — all new lines must be covered
 npx ng test --no-watch --coverage
 
-# 3. Lint — code must comply with ESLint rules
+# 2. Lint — code must comply with ESLint rules
 npx ng lint
+
+# 3. Formatting — auto-fixes code style
+npx prettier --write .
+
 ```
 
 > SonarQube will fail if coverage drops. Make sure to add tests for all new code before opening a PR.

@@ -88,6 +88,11 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
     return typeof val === 'number' ? val : 0;
   }
 
+  protected getTagCellValue(col: ColumnConfig, val: unknown): string {
+    if (val == null) return col.nullFallback ?? '';
+    return String(val);
+  }
+
   protected getTagMap(col: ColumnConfig): Record<string, TagStyle> {
     return col.cellType === 'tag' ? col.tagMap : {};
   }

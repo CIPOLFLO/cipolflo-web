@@ -1,5 +1,6 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Injectable, Pipe, PipeTransform } from '@angular/core';
 
+@Injectable({ providedIn: 'root' })
 @Pipe({ name: 'cedulaFormat', pure: true })
 export class CedulaFormatPipe implements PipeTransform {
   transform(value?: string | null): string {

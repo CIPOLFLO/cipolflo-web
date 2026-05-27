@@ -34,7 +34,10 @@
         <td>
           @switch (col.cellType) {
             @case ('tag') {
-              <app-tag-cell [value]="getString(row[col.key])" [tagMap]="getTagMap(col)" />
+              <app-tag-cell
+                [value]="getTagCellValue(col, row[col.key])"
+                [tagMap]="getTagMap(col)"
+              />
             }
             @case ('amount') {
               <app-amount-cell [value]="getNumber(row[col.key])" />

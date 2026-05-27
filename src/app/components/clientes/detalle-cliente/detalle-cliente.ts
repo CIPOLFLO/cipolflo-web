@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
@@ -32,7 +32,6 @@ import { ClientesService } from '../services/clientes.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalleCliente {
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly clientesService = inject(ClientesService);
 
@@ -43,7 +42,15 @@ export class DetalleCliente {
   protected readonly cliente = toSignal(
     toObservable(this.clienteId).pipe(
       filter((id) => /^\d+$/.test(id)),
-      switchMap((id) => this.clientesService.getById(Number(id)).pipe(catchError(() => EMPTY))),
+      switchMap((id) =>
+        this.clientesService.getById(Number(id)).pipe(
+          // TODO: reemplazar con manejo de errores real (toast/error state) cuando esté implementado
+          catchError((err) => {
+            console.error('Error al cargar el detalle del cliente:', err);
+            return EMPTY;
+          }),
+        ),
+      ),
     ),
     { initialValue: undefined },
   );
