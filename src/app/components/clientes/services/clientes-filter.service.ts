@@ -1,6 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
-import { FormFieldConfig } from '../../../shared/models/form-field.model';
+import { FilterConfigProvider, FormFieldConfig } from '../../../shared';
 import { ESTADO_SOCIO_OPTIONS, TIPO_CLIENTE_OPTIONS } from '../models/cliente.model';
 
 @Injectable()
