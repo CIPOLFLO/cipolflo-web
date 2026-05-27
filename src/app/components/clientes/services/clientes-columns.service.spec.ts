@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ClientesColumnsService } from './clientes-columns.service';
-import { EstadoCliente } from '../models/cliente.model';
+import { EstadoSocio } from '../models/cliente.model';
 
 describe('ClientesColumnsService', () => {
   let service: ClientesColumnsService;
@@ -19,9 +19,9 @@ describe('ClientesColumnsService', () => {
     expect(service.columns.length).toBe(5);
   });
 
-  it('debe definir columna nombre como sortable', () => {
-    const col = service.columns.find((c) => c.key === 'nombre');
-    expect(col).toMatchObject({ key: 'nombre', label: 'Nombre', sortable: true });
+  it('debe definir columna nombreCompleto como sortable', () => {
+    const col = service.columns.find((c) => c.key === 'nombreCompleto');
+    expect(col).toMatchObject({ key: 'nombreCompleto', label: 'Nombre', sortable: true });
   });
 
   it('debe definir columna numeroSocio', () => {
@@ -49,9 +49,9 @@ describe('ClientesColumnsService', () => {
     const col = service.columns.find((c) => c.key === 'estado');
     expect(col).toMatchObject({
       tagMap: {
-        [EstadoCliente.Activo]: { styleClass: 'tag--green', label: 'Activo' },
-        [EstadoCliente.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
-        [EstadoCliente.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
+        [EstadoSocio.Activo]: { styleClass: 'tag--green', label: 'Activo' },
+        [EstadoSocio.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
+        [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
       },
     });
   });

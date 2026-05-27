@@ -12,6 +12,8 @@ interface BaseColumnConfig {
   label: string;
   sortable?: boolean;
   unitKey?: string;
+  nullFallback?: string;
+  transform?: (value: unknown) => string;
 }
 
 export type ColumnConfig =

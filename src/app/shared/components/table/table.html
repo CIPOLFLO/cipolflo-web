@@ -50,7 +50,7 @@
               {{ getString(row[col.key]) | dateFormat }}
             }
             @default {
-              {{ row[col.key] }}
+              {{ getTextValue(col, row[col.key]) }}
             }
           }
         </td>

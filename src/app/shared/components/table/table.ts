@@ -79,6 +79,11 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
     return val == null ? '' : String(val);
   }
 
+  protected getTextValue(col: ColumnConfig, val: unknown): unknown {
+    if (col.transform) return col.transform(val);
+    return val ?? col.nullFallback;
+  }
+
   protected getNumber(val: unknown): number {
     return typeof val === 'number' ? val : 0;
   }

@@ -1,9 +1,9 @@
 import { AuditInfoDto } from '../../../shared';
 
-export enum EstadoCliente {
+export enum EstadoSocio {
   Activo = 'ACTIVO',
   Inactivo = 'INACTIVO',
-  Baja = 'BAJA',
+  Baja = 'DE_BAJA',
 }
 
 export enum TipoCliente {
@@ -11,11 +11,11 @@ export enum TipoCliente {
   Particular = 'PARTICULAR',
 }
 
-export const ESTADO_CLIENTE_OPTIONS = [
+export const ESTADO_SOCIO_OPTIONS = [
   { label: 'Todos', value: '' },
-  { label: 'Activo', value: EstadoCliente.Activo },
-  { label: 'Inactivo', value: EstadoCliente.Inactivo },
-  { label: 'De baja', value: EstadoCliente.Baja },
+  { label: 'Activo', value: EstadoSocio.Activo },
+  { label: 'Inactivo', value: EstadoSocio.Inactivo },
+  { label: 'De baja', value: EstadoSocio.Baja },
 ];
 
 export const TIPO_CLIENTE_OPTIONS = [
@@ -24,14 +24,21 @@ export const TIPO_CLIENTE_OPTIONS = [
   { label: 'Particular', value: TipoCliente.Particular },
 ];
 
+export interface ListadoClientesRequestDto {
+  tipoCliente?: TipoCliente;
+  nombre?: string;
+  identificador?: string;
+  estado?: EstadoSocio;
+}
+
 export interface ClienteRespuestaDto extends Record<string, unknown> {
   id: number;
-  nombre: string;
-  tipoCliente: TipoCliente;
-  numeroSocio: string;
+  nombreCompleto: string;
   cedula: string;
-  email: string;
-  estado: EstadoCliente;
+  email: string | null;
+  tipoCliente: TipoCliente;
+  numeroSocio: number | null;
+  estado: EstadoSocio | null;
 }
 
 export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
@@ -41,7 +48,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   numeroSocio: string;
   cedula: string;
   email: string;
-  estado: EstadoCliente;
+  estado: EstadoSocio;
   fechaNacimiento: string;
   telefono: string;
   metodoPago: string;

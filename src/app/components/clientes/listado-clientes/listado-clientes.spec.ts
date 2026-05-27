@@ -12,28 +12,28 @@ import {
   TableStateService,
 } from '../../../shared';
 import { ClientesColumnsService } from '../services/clientes-columns.service';
-import { ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { Router } from '@angular/router';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
     {
       id: 1,
-      nombre: 'Juan Perez',
+      nombreCompleto: 'Juan Perez',
       tipoCliente: TipoCliente.Socio,
-      numeroSocio: '123',
+      numeroSocio: 123,
       cedula: '1.234.567-8',
       email: 'juan@example.com',
-      estado: EstadoCliente.Activo,
+      estado: EstadoSocio.Activo,
     },
     {
       id: 2,
-      nombre: 'Maria Fernandez',
+      nombreCompleto: 'Maria Fernandez',
       tipoCliente: TipoCliente.Particular,
-      numeroSocio: '-',
+      numeroSocio: null,
       cedula: '2.345.678-9',
-      email: 'maria@example.com',
-      estado: EstadoCliente.Inactivo,
+      email: null,
+      estado: null,
     },
   ],
   page: 0,
@@ -76,20 +76,20 @@ describe('ListadoClientes', () => {
     expect(component['columns'].length).toBe(5);
   });
 
-  it('debe definir columna nombre como sortable', () => {
-    const col = component['columns'].find((c) => c.key === 'nombre');
+  it('debe definir columna nombreCompleto como sortable', () => {
+    const col = component['columns'].find((c) => c.key === 'nombreCompleto');
     expect(col).toBeDefined();
     expect(col!.sortable).toBe(true);
   });
 
-  it('debe definir columna estado con cellType tag y tagMap ACTIVO/INACTIVO/BAJA', () => {
+  it('debe definir columna estado con cellType tag y tagMap ACTIVO/INACTIVO/DE_BAJA', () => {
     const col = component['columns'].find((c) => c.key === 'estado');
     expect(col).toMatchObject({
       cellType: 'tag',
       tagMap: {
-        [EstadoCliente.Activo]: { styleClass: 'tag--green', label: 'Activo' },
-        [EstadoCliente.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
-        [EstadoCliente.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
+        [EstadoSocio.Activo]: { styleClass: 'tag--green', label: 'Activo' },
+        [EstadoSocio.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
+        [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
       },
     });
   });

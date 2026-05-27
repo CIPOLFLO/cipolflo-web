@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { DetalleCliente } from './detalle-cliente';
 import { ClientesService } from '../services/clientes.service';
-import { ClienteDetalleRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import { ClienteDetalleRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -12,7 +12,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   numeroSocio: '123',
   cedula: '5.191.926-8',
   email: 'email@example.com',
-  estado: EstadoCliente.Activo,
+  estado: EstadoSocio.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
   metodoPago: 'Cobradora',
