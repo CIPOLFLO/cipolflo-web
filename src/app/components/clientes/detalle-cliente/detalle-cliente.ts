@@ -34,7 +34,15 @@ export class DetalleCliente {
   protected readonly cliente = toSignal(
     toObservable(this.clienteId).pipe(
       filter((id) => /^\d+$/.test(id)),
-      switchMap((id) => this.clientesService.getById(Number(id)).pipe(catchError(() => EMPTY))),
+      switchMap((id) =>
+        this.clientesService.getById(Number(id)).pipe(
+          // TODO: reemplazar con manejo de errores real (toast/error state) cuando esté implementado
+          catchError((err) => {
+            console.error('Error al cargar el detalle del cliente:', err);
+            return EMPTY;
+          }),
+        ),
+      ),
     ),
     { initialValue: undefined },
   );

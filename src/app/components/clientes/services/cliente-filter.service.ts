@@ -1,11 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
-import { FormFieldConfig } from '../../../shared/models/form-field.model';
-import {
-  ESTADO_CLIENTE_OPTIONS,
-  EstadoCliente,
-  TIPO_CLIENTE_OPTIONS,
-} from '../models/cliente.model';
+import { FilterConfigProvider, FormFieldConfig } from '../../../shared';
+import { ESTADO_SOCIO_OPTIONS, TIPO_CLIENTE_OPTIONS } from '../models/cliente.model';
 
 @Injectable()
 export class ClientesFilterService extends FilterConfigProvider {
@@ -24,7 +19,7 @@ export class ClientesFilterService extends FilterConfigProvider {
       placeholder: 'Buscar por nombre del cliente...',
     },
     {
-      key: 'cedula',
+      key: 'identificador',
       label: 'Cédula / Número de socio',
       type: 'text',
       placeholder: 'Buscar por cédula o número de socio...',
@@ -34,8 +29,7 @@ export class ClientesFilterService extends FilterConfigProvider {
       label: 'Estado',
       type: 'select',
       placeholder: 'Todos',
-      options: ESTADO_CLIENTE_OPTIONS,
-      defaultValue: EstadoCliente.Activo,
+      options: ESTADO_SOCIO_OPTIONS,
     },
   ]);
 }

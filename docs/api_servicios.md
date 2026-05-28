@@ -12,7 +12,9 @@
 2. [DTOs Compartidos](#dtos-compartidos)
 3. [Servicios — Endpoints](#servicios--endpoints)
 4. [Servicios — DTOs](#servicios--dtos)
-5. [Manejo de errores](#manejo-de-errores)
+5. [Clientes — Endpoints](#clientes--endpoints)
+6. [Clientes — DTOs](#clientes--dtos)
+7. [Manejo de errores](#manejo-de-errores)
 
 ---
 
@@ -40,6 +42,18 @@ POR_DIA | POR_PERSONA | POR_DIA_POR_PERSONA | POR_UNIDAD | POR_HORA
 
 ```
 PENDIENTE | CONFIRMADA | EN_CURSO | FINALIZADA | CANCELADA
+```
+
+### `TipoCliente`
+
+```
+SOCIO | PARTICULAR
+```
+
+### `EstadoSocio`
+
+```
+ACTIVO | INACTIVO | DE_BAJA
 ```
 
 ---
@@ -132,10 +146,10 @@ Retorna el detalle completo de un servicio.
   "capacidad": 4,
   "estado": "HABILITADO",
   "modalidadPrecio": "POR_HORA",
-  "createdAt": "2026-01-10T03:00:00Z",
-  "updatedAt": "2026-03-15T18:30:00Z",
-  "createdBy": "admin",
-  "updatedBy": "admin"
+  "createdAt": "2025-01-10T09:00:00Z",
+  "updatedAt": "2025-03-15T14:30:00Z",
+  "createdBy": "admin@cipolflo.com",
+  "updatedBy": "admin@cipolflo.com"
 }
 ```
 
@@ -202,6 +216,8 @@ Reemplaza los datos de un servicio existente.
 | `modalidadPrecio`  | `ModalidadPrecio` | Sí          | —                |
 | `capacidad`        | integer           | No          | >= 0 si se envía |
 | `cantidad`         | integer           | No          | >= 0 si se envía |
+
+> `procedencia` no es modificable. `capacidad` y `cantidad` son mutuamente excluyentes; enviar `null` o no incluir el que no aplica.
 
 **Respuesta 200:** misma estructura que `GET /api/v1/servicios/{id}`
 
@@ -318,7 +334,7 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 
 ### Response DTOs
 
-#### `ServicioDetalleRespuestaDto` — respuesta de detalle
+#### `ServicioResponseDto` — respuesta de detalle
 
 ```typescript
 {
@@ -331,7 +347,6 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
   capacidad: number | null;
   estado: EstadoServicio;
   modalidadPrecio: ModalidadPrecio;
-  // campos de auditoría (AuditInfoDto)
   createdAt: string; // Instant ISO-8601 UTC
   updatedAt: string; // Instant ISO-8601 UTC
   createdBy: string;
@@ -363,6 +378,93 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
   fechaSalida: string; // Instant ISO-8601 UTC
   pago: boolean;
   estado: EstadoReserva;
+}
+```
+
+---
+
+## Clientes — Endpoints
+
+### `GET /api/v1/clientes`
+
+Retorna el listado paginado de clientes con filtros opcionales.
+
+**Query params** (todos opcionales):
+
+| Param           | Tipo          | Validación                                                                                                                       |
+| --------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `tipoCliente`   | `TipoCliente` | —                                                                                                                                |
+| `nombre`        | string        | máx 100 caracteres                                                                                                               |
+| `identificador` | string        | Solo dígitos (`12345678`) o formato parcial de cédula (`1.234`, `1.234.567-8`). Cualquier otro formato devuelve resultado vacío. |
+| `estado`        | `EstadoSocio` | Solo aplica a socios; combinarlo con `tipoCliente=PARTICULAR` devuelve resultado vacío                                           |
+| `page`          | integer       | >= 0, default 0                                                                                                                  |
+| `size`          | integer       | 1–100, default 1                                                                                                                 |
+
+> El campo `identificador` busca por cédula o por número de socio usando el prefijo del valor ingresado (ej: `123` devuelve clientes cuya cédula o nro de socio comience con `123`). Los puntos y guiones del formato de cédula se normalizan automáticamente antes de la búsqueda.
+
+**Respuesta 200:**
+
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "nombreCompleto": "Juan Pérez",
+      "cedula": "12345678",
+      "email": "juan@mail.com",
+      "tipoCliente": "SOCIO",
+      "numeroSocio": 5,
+      "estado": "ACTIVO"
+    },
+    {
+      "id": 2,
+      "nombreCompleto": "Laura Fernández",
+      "cedula": "67890123",
+      "email": null,
+      "tipoCliente": "PARTICULAR",
+      "numeroSocio": null,
+      "estado": null
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 2,
+  "totalPages": 1,
+  "first": true,
+  "last": true
+}
+```
+
+---
+
+## Clientes — DTOs
+
+### Request DTOs
+
+#### `ListadoClientesRequestDto` — query params en `GET /api/v1/clientes`
+
+```typescript
+{
+  tipoCliente?: TipoCliente   // opcional
+  nombre?: string             // opcional, máx 100 chars
+  identificador?: string      // opcional, solo dígitos o formato parcial de cédula
+  estado?: EstadoSocio        // opcional
+}
+```
+
+### Response DTOs
+
+#### `ListadoClientesResponseDto` — ítem dentro del listado paginado
+
+```typescript
+{
+  id: number;
+  nombreCompleto: string;
+  cedula: string;
+  email: string | null;
+  tipoCliente: TipoCliente;
+  numeroSocio: number | null; // null para Particulares
+  estado: EstadoSocio | null; // null para Particulares
 }
 ```
 

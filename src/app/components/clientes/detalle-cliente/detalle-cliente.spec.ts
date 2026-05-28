@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { DetalleCliente } from './detalle-cliente';
-import { ClientesService } from '../services/cliente.service';
 import {
   ClienteDetalleRespuestaDto,
-  EstadoCliente,
+  EstadoSocio,
   MetodoPago,
   TipoCliente,
 } from '../models/cliente.model';
+import { ClientesService } from '../services/cliente.service';
+import { DetalleCliente } from './detalle-cliente';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -17,7 +17,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   numeroSocio: '123',
   cedula: '5.191.926-8',
   email: 'email@example.com',
-  estado: EstadoCliente.Activo,
+  estado: EstadoSocio.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
   metodoPago: MetodoPago.Cobradora,

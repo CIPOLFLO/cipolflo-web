@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
-import {
-  ClienteCrearDto,
-  ClienteDetalleRespuestaDto,
-  ClienteRespuestaDto,
-  EstadoCliente,
-  MetodoPago,
-  TipoCliente,
-} from '../models/cliente.model';
+import { ClienteDetalleRespuestaDto, ClienteRespuestaDto } from '../models/cliente.model';
+import { ClienteCrearDto, EstadoSocio, MetodoPago, TipoCliente } from '../models/cliente.model';
 
 const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
   {
@@ -18,7 +13,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '123',
     cedula: '5.191.926-8',
     email: 'lucia.rodriguez@example.com',
-    estado: EstadoCliente.Activo,
+    estado: EstadoSocio.Activo,
     fechaNacimiento: '29/06/1999',
     telefono: '099985648',
     metodoPago: MetodoPago.Cobradora,
@@ -39,7 +34,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '-',
     cedula: '2.345.678-9',
     email: 'martin.gonzalez@example.com',
-    estado: EstadoCliente.Activo,
+    estado: EstadoSocio.Activo,
     fechaNacimiento: '15/04/1985',
     telefono: '099123456',
     metodoPago: MetodoPago.Caja,
@@ -60,7 +55,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '878',
     cedula: '3.456.789-0',
     email: 'sofia.pereira@example.com',
-    estado: EstadoCliente.Activo,
+    estado: EstadoSocio.Activo,
     fechaNacimiento: '20/08/1990',
     telefono: '098456789',
     metodoPago: MetodoPago.DebitoAutomatico,
@@ -81,7 +76,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '456',
     cedula: '4.567.890-1',
     email: 'diego.fernandez@example.com',
-    estado: EstadoCliente.Inactivo,
+    estado: EstadoSocio.Inactivo,
     fechaNacimiento: '03/11/1982',
     telefono: '097654321',
     metodoPago: MetodoPago.Cobradora,
@@ -102,7 +97,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '9754',
     cedula: '5.678.901-2',
     email: 'valentina.suarez@example.com',
-    estado: EstadoCliente.Activo,
+    estado: EstadoSocio.Activo,
     fechaNacimiento: '12/02/1988',
     telefono: '096789123',
     metodoPago: MetodoPago.Transferencia,
@@ -123,7 +118,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '777',
     cedula: '6.789.012-3',
     email: 'andres.martinez@example.com',
-    estado: EstadoCliente.Baja,
+    estado: EstadoSocio.Baja,
     fechaNacimiento: '09/09/1980',
     telefono: '095321654',
     metodoPago: MetodoPago.Caja,
@@ -144,7 +139,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '-',
     cedula: '7.890.123-4',
     email: 'camila.nunez@example.com',
-    estado: EstadoCliente.Activo,
+    estado: EstadoSocio.Activo,
     fechaNacimiento: '18/07/1992',
     telefono: '094987654',
     metodoPago: MetodoPago.Efectivo,
@@ -165,7 +160,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     numeroSocio: '178',
     cedula: '8.901.234-5',
     email: 'paula.morales@example.com',
-    estado: EstadoCliente.Inactivo,
+    estado: EstadoSocio.Inactivo,
     fechaNacimiento: '25/12/1987',
     telefono: '093147258',
     metodoPago: MetodoPago.Cobradora,
@@ -181,56 +176,15 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
   },
 ];
 @Injectable({ providedIn: 'root' })
-export class ClientesService {
-  getAll(params: TableQueryParams): Observable<PageResponse<ClienteRespuestaDto>> {
-    const filters = params.filters ?? {};
-
-    const clientesFiltrados = PLACEHOLDER_CLIENTES.filter((cliente) => {
-      const nombre = String(filters['nombre'] ?? '').toLowerCase();
-      const cedula = String(filters['cedula'] ?? '').toLowerCase();
-      const tipoCliente = String(filters['tipoCliente'] ?? '');
-      const estado = String(filters['estado'] ?? '');
-
-      const coincideNombre = !nombre || cliente.nombre.toLowerCase().includes(nombre);
-
-      const coincideCedula =
-        !cedula ||
-        cliente.cedula.toLowerCase().includes(cedula) ||
-        cliente.numeroSocio.toLowerCase().includes(cedula);
-
-      const coincideTipo = !tipoCliente || cliente.tipoCliente === tipoCliente;
-      const coincideEstado = !estado || cliente.estado === estado;
-
-      return coincideNombre && coincideCedula && coincideTipo && coincideEstado;
-    });
-
-    const start = params.page * params.size;
-
-    const content: ClienteRespuestaDto[] = clientesFiltrados
-      .slice(start, start + params.size)
-      .map((cliente) => ({
-        id: cliente.id,
-        nombre: cliente.nombre,
-        tipoCliente: cliente.tipoCliente,
-        numeroSocio: cliente.numeroSocio,
-        cedula: cliente.cedula,
-        email: cliente.email,
-        estado: cliente.estado,
-      }));
-
-    return of({
-      content,
-      page: params.page,
-      size: params.size,
-      totalElements: clientesFiltrados.length,
-      totalPages: Math.ceil(clientesFiltrados.length / params.size),
-      first: params.page === 0,
-      last: start + params.size >= clientesFiltrados.length,
-    });
+export class ClientesService extends BaseHttpService {
+  getAll({ page, size, filters }: TableQueryParams): Observable<PageResponse<ClienteRespuestaDto>> {
+    return this.get<PageResponse<ClienteRespuestaDto>>('clientes', { page, size, ...filters });
   }
 
   getById(id: number): Observable<ClienteDetalleRespuestaDto | undefined> {
-    return of(PLACEHOLDER_CLIENTES.find((cliente) => cliente.id === id));
+    // TODO: reemplazar cuando el endpoint de detalle esté disponible
+    console.log('id', id);
+    return of(undefined);
   }
 
   create(dto: Partial<ClienteCrearDto>): Observable<ClienteDetalleRespuestaDto> {
@@ -243,7 +197,7 @@ export class ClientesService {
       numeroSocio: String(PLACEHOLDER_CLIENTES.length + 1).padStart(3, '0'),
       cedula: dto.cedula ?? '',
       email: dto.email ?? '',
-      estado: EstadoCliente.Activo,
+      estado: EstadoSocio.Activo,
       fechaNacimiento: dto.fechaNacimiento ?? '',
       telefono: dto.telefono ?? '',
       metodoPago: dto.metodoPago ?? MetodoPago.Cobradora,

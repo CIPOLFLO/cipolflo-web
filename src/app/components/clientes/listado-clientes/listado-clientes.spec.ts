@@ -1,39 +1,39 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ListadoClientes } from './listado-clientes';
-import { ClientesService } from '../services/cliente.service';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   FilterConfigProvider,
   FormFieldConfig,
   PageResponse,
   TableStateService,
 } from '../../../shared';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
-import { ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
-import { Router } from '@angular/router';
+import { ListadoClientes } from './listado-clientes';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
     {
       id: 1,
-      nombre: 'Juan Perez',
+      nombreCompleto: 'Juan Perez',
       tipoCliente: TipoCliente.Socio,
-      numeroSocio: '123',
+      numeroSocio: 123,
       cedula: '1.234.567-8',
       email: 'juan@example.com',
-      estado: EstadoCliente.Activo,
+      estado: EstadoSocio.Activo,
     },
     {
       id: 2,
-      nombre: 'Maria Fernandez',
+      nombreCompleto: 'Maria Fernandez',
       tipoCliente: TipoCliente.Particular,
-      numeroSocio: '-',
+      numeroSocio: null,
       cedula: '2.345.678-9',
-      email: 'maria@example.com',
-      estado: EstadoCliente.Inactivo,
+      email: null,
+      estado: null,
     },
   ],
   page: 0,
@@ -76,20 +76,20 @@ describe('ListadoClientes', () => {
     expect(component['columns'].length).toBe(5);
   });
 
-  it('debe definir columna nombre como sortable', () => {
-    const col = component['columns'].find((c) => c.key === 'nombre');
+  it('debe definir columna nombreCompleto como sortable', () => {
+    const col = component['columns'].find((c) => c.key === 'nombreCompleto');
     expect(col).toBeDefined();
     expect(col!.sortable).toBe(true);
   });
 
-  it('debe definir columna estado con cellType tag y tagMap ACTIVO/INACTIVO/BAJA', () => {
+  it('debe definir columna estado con cellType tag y tagMap ACTIVO/INACTIVO/DE_BAJA', () => {
     const col = component['columns'].find((c) => c.key === 'estado');
     expect(col).toMatchObject({
       cellType: 'tag',
       tagMap: {
-        [EstadoCliente.Activo]: { styleClass: 'tag--green', label: 'Activo' },
-        [EstadoCliente.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
-        [EstadoCliente.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
+        [EstadoSocio.Activo]: { styleClass: 'tag--green', label: 'Activo' },
+        [EstadoSocio.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
+        [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
       },
     });
   });
@@ -117,9 +117,9 @@ describe('ListadoClientes', () => {
   it('rowActions debe retornar la acción "Ver detalle"', () => {
     const row: ClienteRespuestaDto = mockPageResponse.content[0];
     const actions = component['rowActions'](row);
-    expect(actions).toHaveLength(1);
-    expect(actions[0].label).toBe('Ver detalle');
-    expect(actions[0].icon).toBe('pi pi-eye');
+    const verDetalle = actions.find((a) => a.label === 'Ver detalle');
+    expect(verDetalle).toBeDefined();
+    expect(verDetalle!.icon).toBe('pi pi-eye');
   });
 
   it('el comando de "Ver detalle" navega correctamente', () => {
