@@ -10,6 +10,7 @@
       [fields]="clienteFields()"
       [errors]="clienteErrors()"
       (valuesChange)="onClienteChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-section
@@ -17,12 +18,14 @@
       [fields]="ubicacionFields()"
       [errors]="ubicacionErrors()"
       (valuesChange)="onUbicacionChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-section
       title="Información Adicional"
       [fields]="adicionalFields()"
       (valuesChange)="onAdicionalChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-actions actions>
@@ -32,6 +35,7 @@
         intent="primary"
         icon="pi-save"
         [disabled]="confirmDisabled()"
+        tooltip="Complete con valores válidos el formulario para continuar"
         (clicked)="onConfirmar()"
       />
     </app-form-actions>

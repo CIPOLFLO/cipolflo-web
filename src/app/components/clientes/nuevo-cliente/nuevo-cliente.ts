@@ -31,6 +31,7 @@ export class NuevoCliente {
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
+  private readonly touchCount = signal(0);
 
   protected readonly form = new FormGroup({
     tipoCliente: new FormControl<TipoCliente>(TipoCliente.Socio, {
@@ -151,12 +152,14 @@ export class NuevoCliente {
 
   protected readonly clienteErrors = computed<Record<string, string>>(() => {
     this.formEvents();
+    this.touchCount();
 
     return this.validaciones.getClienteErrors(this.form, this.submitted());
   });
 
   protected readonly ubicacionErrors = computed<Record<string, string>>(() => {
     this.formEvents();
+    this.touchCount();
 
     return this.validaciones.getUbicacionErrors(this.form, this.submitted());
   });
@@ -184,6 +187,7 @@ export class NuevoCliente {
       email: values['email'] ?? null,
       metodoPago: values['metodoPago'] ?? null,
     });
+    this.form.markAsDirty();
   }
 
   protected onUbicacionChange(values: Record<string, string | null>): void {
@@ -193,12 +197,19 @@ export class NuevoCliente {
       ciudad: values['ciudad'] ?? null,
       direccion: values['direccion'] ?? null,
     });
+    this.form.markAsDirty();
   }
 
   protected onAdicionalChange(values: Record<string, string | null>): void {
     this.form.patchValue({
       observaciones: values['observaciones'] ?? null,
     });
+    this.form.markAsDirty();
+  }
+
+  protected onFieldBlur(key: string): void {
+    this.form.get(key)?.markAsTouched();
+    this.touchCount.update((n) => n + 1);
   }
 
   protected onCancelar(): void {
