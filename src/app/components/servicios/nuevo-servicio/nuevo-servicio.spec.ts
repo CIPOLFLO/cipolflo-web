@@ -116,6 +116,7 @@ describe('NuevoServicio', () => {
 
   it('infoErrors[capacidad] debería mostrar error cuando cantidad y capacidad tienen valor', () => {
     component['onInfoChange']({ cantidad: '5', capacidad: '10', procedencia: null, nombre: null });
+    component['onFieldBlur']('capacidad');
     fixture.detectChanges();
     expect(component['infoErrors']()['capacidad']).toBeTruthy();
   });

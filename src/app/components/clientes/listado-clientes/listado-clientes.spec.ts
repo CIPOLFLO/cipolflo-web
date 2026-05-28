@@ -4,14 +4,14 @@ import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ListadoClientes } from './listado-clientes';
-import { ClientesService } from '../services/clientes.service';
+import { ClientesService } from '../services/cliente.service';
 import {
   FilterConfigProvider,
   FormFieldConfig,
   PageResponse,
   TableStateService,
 } from '../../../shared';
-import { ClientesColumnsService } from '../services/clientes-columns.service';
+import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
 import { Router } from '@angular/router';
 

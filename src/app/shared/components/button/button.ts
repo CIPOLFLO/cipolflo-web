@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Tooltip } from 'primeng/tooltip';
 import { ButtonIntent, ButtonType } from './button.models';
 
 @Component({
   selector: 'app-button',
-  imports: [],
+  imports: [Tooltip],
   templateUrl: './button.html',
   styleUrl: './button.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -14,6 +15,7 @@ export class AppButton {
   icon = input<string>('');
   disabled = input<boolean>(false);
   type = input<ButtonType>('button');
+  tooltip = input<string>('');
 
   clicked = output<MouseEvent>();
 

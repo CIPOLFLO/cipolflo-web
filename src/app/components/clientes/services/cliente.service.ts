@@ -2,9 +2,11 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
+  ClienteCrearDto,
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
   EstadoCliente,
+  MetodoPago,
   TipoCliente,
 } from '../models/cliente.model';
 
@@ -19,7 +21,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Activo,
     fechaNacimiento: '29/06/1999',
     telefono: '099985648',
-    metodoPago: 'Cobradora',
+    metodoPago: MetodoPago.Cobradora,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -40,7 +42,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Activo,
     fechaNacimiento: '15/04/1985',
     telefono: '099123456',
-    metodoPago: 'Caja',
+    metodoPago: MetodoPago.Caja,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -61,7 +63,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Activo,
     fechaNacimiento: '20/08/1990',
     telefono: '098456789',
-    metodoPago: 'Débito automático',
+    metodoPago: MetodoPago.DebitoAutomatico,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -82,7 +84,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Inactivo,
     fechaNacimiento: '03/11/1982',
     telefono: '097654321',
-    metodoPago: 'Cobradora',
+    metodoPago: MetodoPago.Cobradora,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -103,7 +105,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Activo,
     fechaNacimiento: '12/02/1988',
     telefono: '096789123',
-    metodoPago: 'Transferencia',
+    metodoPago: MetodoPago.Transferencia,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -124,7 +126,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Baja,
     fechaNacimiento: '09/09/1980',
     telefono: '095321654',
-    metodoPago: 'Caja',
+    metodoPago: MetodoPago.Caja,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -145,7 +147,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Activo,
     fechaNacimiento: '18/07/1992',
     telefono: '094987654',
-    metodoPago: 'Efectivo',
+    metodoPago: MetodoPago.Efectivo,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -166,7 +168,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoCliente.Inactivo,
     fechaNacimiento: '25/12/1987',
     telefono: '093147258',
-    metodoPago: 'Cobradora',
+    metodoPago: MetodoPago.Cobradora,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -229,5 +231,31 @@ export class ClientesService {
 
   getById(id: number): Observable<ClienteDetalleRespuestaDto | undefined> {
     return of(PLACEHOLDER_CLIENTES.find((cliente) => cliente.id === id));
+  }
+
+  create(dto: Partial<ClienteCrearDto>): Observable<ClienteDetalleRespuestaDto> {
+    console.log('Crear cliente', dto);
+
+    return of({
+      id: PLACEHOLDER_CLIENTES.length + 1,
+      nombre: dto.nombre ?? '',
+      tipoCliente: TipoCliente.Socio,
+      numeroSocio: String(PLACEHOLDER_CLIENTES.length + 1).padStart(3, '0'),
+      cedula: dto.cedula ?? '',
+      email: dto.email ?? '',
+      estado: EstadoCliente.Activo,
+      fechaNacimiento: dto.fechaNacimiento ?? '',
+      telefono: dto.telefono ?? '',
+      metodoPago: dto.metodoPago ?? MetodoPago.Cobradora,
+      pais: dto.pais ?? '',
+      departamento: dto.departamento ?? '',
+      ciudad: dto.ciudad ?? '',
+      direccion: dto.direccion ?? '',
+      observaciones: dto.observaciones ?? '',
+      createdAt: new Date().toISOString(),
+      createdBy: 'Juan Pérez',
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'Juan Pérez',
+    });
   }
 }
