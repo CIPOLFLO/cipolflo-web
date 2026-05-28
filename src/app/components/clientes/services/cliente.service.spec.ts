@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ClientesService } from './clientes.service';
+import { ClientesService } from './cliente.service';
 import { environment } from '@env/environment';
 
 const BASE = `${environment.apiUrl}/clientes`;

@@ -7,6 +7,9 @@
   [class.button--success]="intent() === 'success'"
   [class.button--danger]="intent() === 'danger'"
   [class.button--warning]="intent() === 'warning'"
+  [pTooltip]="tooltip()"
+  [tooltipDisabled]="!disabled() || !tooltip()"
+  tooltipPosition="top"
   (click)="handleClick($event)"
 >
   @if (icon()) {

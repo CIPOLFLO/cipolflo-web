@@ -1,9 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
+import {
+  ClienteDetalleRespuestaDto,
+  EstadoSocio,
+  MetodoPago,
+  TipoCliente,
+} from '../models/cliente.model';
+import { ClientesService } from '../services/cliente.service';
 import { DetalleCliente } from './detalle-cliente';
-import { ClientesService } from '../services/clientes.service';
-import { ClienteDetalleRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -15,15 +20,15 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   estado: EstadoSocio.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
-  metodoPago: 'Cobradora',
+  metodoPago: MetodoPago.Cobradora,
   pais: 'Uruguay',
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
   observaciones: 'Socia Nueva',
-  createdAt: '15 mar 2026, 14:30',
+  createdAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',
-  updatedAt: '15 mar 2026, 14:30',
+  updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
 };
 

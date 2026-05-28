@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import { FormField } from '../form-field/form-field';
 import { FormFieldConfig } from '../../models/form-field.model';
 
@@ -16,11 +16,26 @@ export class FormSection {
   errors = input<Record<string, string | undefined>>({});
 
   readonly valuesChange = output<Record<string, string | null>>();
+  readonly fieldBlur = output<string>();
 
   private readonly currentValues: Record<string, string | null> = {};
+
+  constructor() {
+    effect(() => {
+      for (const field of this.fields()) {
+        if (!(field.key in this.currentValues) && field.defaultValue !== undefined) {
+          this.currentValues[field.key] = field.defaultValue;
+        }
+      }
+    });
+  }
 
   protected onFieldValueChange(key: string, value: string | null): void {
     this.currentValues[key] = value;
     this.valuesChange.emit({ ...this.currentValues });
+  }
+
+  protected onFieldBlur(key: string): void {
+    this.fieldBlur.emit(key);
   }
 }
