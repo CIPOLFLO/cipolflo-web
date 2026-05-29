@@ -64,7 +64,7 @@ export class PagoCuota {
       cantidadCuotas: this.form.controls.cantidadCuotas.value,
       formaPago: this.form.controls.formaPago.value,
       fechaPago: this.form.controls.fechaPago.value,
-      total: this.total(),
+      total: this.form.controls.cantidadCuotas.value * this.costoCuota,
     });
   }
 

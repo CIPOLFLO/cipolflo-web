@@ -144,6 +144,59 @@ describe('ListadoClientes', () => {
     expect(labels).toContain('Email');
     expect(labels).toContain('Estado');
   });
+  it('onNuevoCliente navega a clientes/nuevo', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+
+    component['onNuevoCliente']();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
+  });
+
+  it('onPagoCuota selecciona el cliente para pagar cuota', () => {
+    const row = mockPageResponse.content[0];
+
+    component['onPagoCuota'](row);
+
+    expect(component['clientePagoSeleccionado']()).toEqual(row);
+  });
+
+  it('onCancelarPagoCuota limpia el cliente seleccionado', () => {
+    const row = mockPageResponse.content[0];
+
+    component['onPagoCuota'](row);
+    component['onCancelarPagoCuota']();
+
+    expect(component['clientePagoSeleccionado']()).toBeNull();
+  });
+
+  it('onConfirmarPagoCuota limpia el cliente seleccionado y guarda pago confirmado', () => {
+    const dto = {
+      clienteId: 1,
+      cantidadCuotas: 1,
+      formaPago: 'EFECTIVO',
+      fechaPago: '2026-03-27',
+      total: 5000,
+    };
+
+    component['onConfirmarPagoCuota'](dto);
+
+    expect(component['clientePagoSeleccionado']()).toBeNull();
+    expect(component['pagoConfirmado']()).toEqual(dto);
+  });
+
+  it('cerrarPagoConfirmado limpia el pago confirmado', () => {
+    component['pagoConfirmado'].set({
+      clienteId: 1,
+      cantidadCuotas: 1,
+      formaPago: 'EFECTIVO',
+      fechaPago: '2026-03-27',
+      total: 5000,
+    });
+
+    component['cerrarPagoConfirmado']();
+
+    expect(component['pagoConfirmado']()).toBeNull();
+  });
 });
 
 describe('ListadoClientes sin filtros por defecto', () => {
