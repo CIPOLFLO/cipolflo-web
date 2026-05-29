@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -23,6 +23,7 @@ export class FormField {
   value = model<string | null>(null);
   displayOnly = input<boolean>(false);
   error = input<string | null>(null);
+  readonly blurred = output<void>();
 
   protected get numericValue(): number | null {
     const v = this.value();

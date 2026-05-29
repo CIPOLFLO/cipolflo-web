@@ -61,6 +61,7 @@ export class NuevoServicio {
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
+  private readonly touchCount = signal(0);
 
   protected readonly confirmDisabled = computed(() => {
     this.formEvents();
@@ -125,11 +126,13 @@ export class NuevoServicio {
 
   protected readonly infoErrors = computed<Record<string, string>>(() => {
     this.formEvents();
+    this.touchCount();
     return this.validaciones.getInfoErrors(this.form, this.submitted());
   });
 
   protected readonly preciosErrors = computed<Record<string, string>>(() => {
     this.formEvents();
+    this.touchCount();
     return this.validaciones.getPreciosErrors(this.form, this.submitted());
   });
 
@@ -147,9 +150,6 @@ export class NuevoServicio {
       capacidad: toOptionalInt(values['capacidad']),
     });
     this.form.markAsDirty();
-    for (const key of Object.keys(values)) {
-      this.form.get(key)?.markAsTouched();
-    }
   }
 
   protected onPreciosChange(values: Record<string, string | null>): void {
@@ -164,9 +164,11 @@ export class NuevoServicio {
       modalidadPrecio: values['modalidadPrecio'] ?? null,
     });
     this.form.markAsDirty();
-    for (const key of Object.keys(values)) {
-      this.form.get(key)?.markAsTouched();
-    }
+  }
+
+  protected onFieldBlur(key: string): void {
+    this.form.get(key)?.markAsTouched();
+    this.touchCount.update((n) => n + 1);
   }
 
   protected onCancelar(): void {

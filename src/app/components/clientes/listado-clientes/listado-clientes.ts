@@ -9,9 +9,9 @@ import {
   RowAction,
   TableStateService,
 } from '../../../shared';
-import { ClientesColumnsService } from '../services/clientes-columns.service';
-import { ClientesFilterService } from '../services/clientes-filter.service';
-import { ClientesService } from '../services/clientes.service';
+import { ClientesColumnsService } from '../services/cliente-columns.service';
+import { ClientesFilterService } from '../services/cliente-filter.service';
+import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto } from '../models/cliente.model';
 import { Router } from '@angular/router';
 
@@ -72,5 +72,9 @@ export class ListadoClientes {
 
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
+  }
+
+  protected onNuevoCliente(): void {
+    this.router.navigate(['/clientes/nuevo']);
   }
 }
