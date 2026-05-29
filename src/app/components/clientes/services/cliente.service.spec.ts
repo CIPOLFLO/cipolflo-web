@@ -4,8 +4,36 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ClientesService } from './cliente.service';
 import { environment } from '@env/environment';
+import {
+  ClienteDetalleRespuestaDto,
+  EstadoSocio,
+  MetodoCobro,
+  TipoCliente,
+} from '../models/cliente.model';
 
 const BASE = `${environment.apiUrl}/clientes`;
+
+const mockDetalle: ClienteDetalleRespuestaDto = {
+  id: 1,
+  nombre: 'Lucía Rodríguez',
+  tipoCliente: TipoCliente.Socio,
+  numeroSocio: 123,
+  cedula: '5.191.926-8',
+  email: 'lucia.rodriguez@example.com',
+  estado: EstadoSocio.Activo,
+  fechaNacimiento: '29/06/1999',
+  telefono: '099985648',
+  metodoCobro: MetodoCobro.Cobradora,
+  pais: 'Uruguay',
+  departamento: 'Flores',
+  ciudad: 'Trinidad',
+  direccion: 'Luis Alberto de Herrera 123',
+  observaciones: 'Socia nueva',
+  createdAt: '2026-03-15T14:30:00Z',
+  createdBy: 'Pedro Aguirre',
+  updatedAt: '2026-03-18T09:15:00Z',
+  updatedBy: 'Mariana Silva',
+};
 
 const emptyPage = {
   content: [],
@@ -61,5 +89,52 @@ describe('ClientesService', () => {
     const req = httpMock.expectOne((r) => r.url === BASE);
     expect(req.request.params.has('nombre')).toBe(false);
     req.flush(emptyPage);
+  });
+
+  describe('getById', () => {
+    it('hace GET a /clientes/:id y retorna el detalle del cliente', () => {
+      service.getById(1).subscribe((result) => {
+        expect(result).toEqual(mockDetalle);
+      });
+      const req = httpMock.expectOne(`${BASE}/1`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockDetalle);
+    });
+
+    it('propaga error 404 cuando el id no existe', () => {
+      let errorStatus = 0;
+      service.getById(9999).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/9999`)
+        .flush(
+          { codigo: 'NOT_FOUND', descripcion: 'Cliente no encontrado' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 401 cuando el usuario no está autenticado', () => {
+      let errorStatus = 0;
+      service.getById(1).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/1`)
+        .flush(
+          { codigo: 'UNAUTHORIZED', descripcion: 'Token inválido' },
+          { status: 401, statusText: 'Unauthorized' },
+        );
+      expect(errorStatus).toBe(401);
+    });
+
+    it('propaga error 400 cuando el id es inválido (-1)', () => {
+      let errorStatus = 0;
+      service.getById(-1).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/-1`)
+        .flush(
+          { codigo: 'BAD_REQUEST', descripcion: 'Parámetro inválido' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
   });
 });

@@ -132,6 +132,12 @@ describe('ListadoClientes', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
   });
 
+  it('onNuevoCliente navega a /clientes/nuevo', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    component['onNuevoCliente']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
+  });
+
   it('debe renderizar los encabezados de columna en la tabla', async () => {
     const headers: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('th');
     const labels = Array.from(headers).map((h) => h.textContent?.trim());
@@ -140,6 +146,44 @@ describe('ListadoClientes', () => {
     expect(labels).toContain('Cédula');
     expect(labels).toContain('Email');
     expect(labels).toContain('Estado');
+  });
+});
+
+describe('ListadoClientes con filtros por defecto', () => {
+  it('constructor aplica defaultValues al tableState', async () => {
+    class ConDefaultsFilterService extends FilterConfigProvider {
+      readonly filterFields = signal<FormFieldConfig[]>([
+        { key: 'estado', label: 'Estado', type: 'select', defaultValue: 'ACTIVO' },
+      ]);
+    }
+
+    await TestBed.configureTestingModule({
+      imports: [ListadoClientes],
+      providers: [
+        {
+          provide: ClientesService,
+          useValue: { getAll: vi.fn().mockReturnValue(of(mockPageResponse)) },
+        },
+      ],
+    })
+      .overrideComponent(ListadoClientes, {
+        set: {
+          providers: [
+            TableStateService,
+            ClientesColumnsService,
+            { provide: FilterConfigProvider, useClass: ConDefaultsFilterService },
+          ],
+        },
+      })
+      .compileComponents();
+
+    const fixture = TestBed.createComponent(ListadoClientes);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance['tableState'].queryParams().filters).toEqual({
+      estado: 'ACTIVO',
+    });
   });
 });
 

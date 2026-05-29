@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach } from 'vitest';
-import { MetodoPago } from '../models/cliente.model';
+import { MetodoCobro } from '../models/cliente.model';
 import { ClienteOptionsService } from './cliente-options.service';
 
 describe('ClienteOptionsService', () => {
@@ -28,6 +28,6 @@ describe('ClienteOptionsService', () => {
 
     service.getMetodosPago().subscribe((options) => (result = options));
 
-    expect(result.some((option) => option.value === MetodoPago.Cobradora)).toBe(true);
+    expect(result.some((option) => option.value === MetodoCobro.Cobradora)).toBe(true);
   });
 });
