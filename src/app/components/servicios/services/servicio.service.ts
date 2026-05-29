@@ -37,7 +37,10 @@ export class ServicioService extends BaseHttpService {
     return this.get<ReservaProximaDto[]>(`servicios/${id}/reservas-proximas`);
   }
 
-  actualizarHabilitacion(id: number, dto: HabilitacionServicioDto): Observable<ServicioDetalleRespuestaDto> {
+  actualizarHabilitacion(
+    id: number,
+    dto: HabilitacionServicioDto,
+  ): Observable<ServicioDetalleRespuestaDto> {
     return this.patch<ServicioDetalleRespuestaDto>(`servicios/${id}/habilitacion`, dto);
   }
 }

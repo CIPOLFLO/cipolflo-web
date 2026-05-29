@@ -30,7 +30,10 @@ const mockReservas = [reservaNoPaga, reservaPaga];
 describe('ReservasActivasDialog', () => {
   let fixture: ComponentFixture<ReservasActivasDialog>;
   let component: ReservasActivasDialog;
-  let mockRouter: { serializeUrl: ReturnType<typeof vi.fn>; createUrlTree: ReturnType<typeof vi.fn> };
+  let mockRouter: {
+    serializeUrl: ReturnType<typeof vi.fn>;
+    createUrlTree: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     mockRouter = {

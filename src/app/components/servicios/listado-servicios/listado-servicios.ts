@@ -103,7 +103,13 @@ export class ListadoServicios {
     },
     ...(row.estado === EstadoServicio.Deshabilitado
       ? [{ label: 'Habilitar', icon: 'pi pi-check-circle', command: () => this.habilitar(row) }]
-      : [{ label: 'Deshabilitar', icon: 'pi pi-ban', command: () => this.iniciarDeshabilitacion(row) }]),
+      : [
+          {
+            label: 'Deshabilitar',
+            icon: 'pi pi-ban',
+            command: () => this.iniciarDeshabilitacion(row),
+          },
+        ]),
     // { separator: true },
     // { label: 'Eliminar', icon: 'pi pi-trash', command: () => ... },
   ];
@@ -133,15 +139,13 @@ export class ListadoServicios {
   }
 
   private habilitar(row: ServicioRow): void {
-    this.servicioService
-      .actualizarHabilitacion(row.id, { habilitado: true })
-      .subscribe({
-        next: () => this.recargarTabla(),
-        error: (e) => {
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al habilitar servicio', e);
-        },
-      });
+    this.servicioService.actualizarHabilitacion(row.id, { habilitado: true }).subscribe({
+      next: () => this.recargarTabla(),
+      error: (e) => {
+        // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
+        console.error('Error al habilitar servicio', e);
+      },
+    });
   }
 
   private iniciarDeshabilitacion(row: ServicioRow): void {
@@ -181,17 +185,15 @@ export class ListadoServicios {
   private deshabilitar(dto: HabilitacionServicioDto): void {
     const id = this.servicioSeleccionado()?.id;
     if (!id) return;
-    this.servicioService
-      .actualizarHabilitacion(id, dto)
-      .subscribe({
-        next: () => this.recargarTabla(),
-        error: (e) => {
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al deshabilitar servicio', e);
-          this.servicioSeleccionado.set(null);
-          this.reservasProximas.set([]);
-        },
-      });
+    this.servicioService.actualizarHabilitacion(id, dto).subscribe({
+      next: () => this.recargarTabla(),
+      error: (e) => {
+        // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
+        console.error('Error al deshabilitar servicio', e);
+        this.servicioSeleccionado.set(null);
+        this.reservasProximas.set([]);
+      },
+    });
   }
 
   private recargarTabla(): void {
