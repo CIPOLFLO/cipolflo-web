@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PagoCuota } from './pago-cuota';
-import { ClienteRespuestaDto, EstadoCliente, TipoCliente } from '../models/cliente.model';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 
 const mockCliente: ClienteRespuestaDto = {
   id: 1,
-  nombre: 'Lucía Rodríguez',
+  nombreCompleto: 'Lucía Rodríguez',
   tipoCliente: TipoCliente.Socio,
-  numeroSocio: '123',
+  numeroSocio: 123,
   cedula: '5.191.926-8',
   email: 'lucia@example.com',
-  estado: EstadoCliente.Activo,
+  estado: EstadoSocio.Activo,
   fechaNacimiento: '1990-01-01',
   telefono: '099123456',
   metodoPago: 'COBRADORA',

@@ -5,8 +5,8 @@
   </header>
 
   <section class="pago-cuota__socio">
-    <p>Socio: {{ cliente().nombre }}</p>
-    <p>N° de Socio: {{ cliente().numeroSocio }}</p>
+    <p>Socio: {{ cliente()['nombre'] }}</p>
+    <p>N° de Socio: {{ cliente()['numeroSocio'] }}</p>
     <p>Costo por Cuota: {{ formatMoney(1000) }}</p>
   </section>
 
