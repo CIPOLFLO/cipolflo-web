@@ -35,7 +35,11 @@
           [binary]="true"
           [ngModel]="isSelected(reserva.id)"
           (ngModelChange)="toggleReserva(reserva.id, $event)"
-          [ariaLabel]="'Seleccionar reserva #' + reserva.id + (reserva.nombreCliente ? ' de ' + reserva.nombreCliente : '')"
+          [ariaLabel]="
+            'Seleccionar reserva #' +
+            reserva.id +
+            (reserva.nombreCliente ? ' de ' + reserva.nombreCliente : '')
+          "
         />
         <a
           [href]="getReservaUrl(reserva.id)"
@@ -59,7 +63,7 @@
     }
   </div>
 
-  @if (tieneReservasPagas())  {
+  @if (tieneReservasPagas()) {
     <p class="warning-pagas">
       <i class="pi pi-info-circle"></i>
       Debe realizar la devolución de las reservas pagas antes de cancelarlas.
