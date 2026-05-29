@@ -23,10 +23,12 @@ import {
   type DetailRegistroData,
   type FormFieldConfig,
 } from '../../../shared';
-import { ClientesService } from '../services/clientes.service';
+import { ClientesService } from '../services/cliente.service';
 import {
   ClienteDetalleRespuestaDto,
   TipoCliente,
+  MetodoPago,
+  METODO_PAGO_OPTIONS,
 } from '../models/cliente.model';
 
 @Component({
@@ -58,20 +60,17 @@ export class ModificarCliente implements OnInit {
   protected readonly esSocio = computed(() => this.clienteTipo() === TipoCliente.Socio);
 
   protected readonly form = new FormGroup({
-    // No editable en ningún caso
     numeroSocio:     new FormControl<string | null>({ value: null, disabled: true }),
     cedula:          new FormControl<string | null>({ value: null, disabled: true }),
-    // Comunes editables
     nombre:          new FormControl<string | null>(null, Validators.required),
     telefono:        new FormControl<string | null>(null, Validators.required),
     email:           new FormControl<string | null>(null, [Validators.required, Validators.email]),
     departamento:    new FormControl<string | null>(null),
     direccion:       new FormControl<string | null>(null),
     observaciones:   new FormControl<string | null>(null),
-    // Solo Socio
     fechaNacimiento: new FormControl<string | null>({ value: null, disabled: true }),
     estado:          new FormControl<string | null>(null),
-    metodoPago:      new FormControl<string | null>(null),
+    metodoPago:      new FormControl<MetodoPago | null>(null),
   });
 
   private readonly formEvents = toSignal(this.form.events);
@@ -83,7 +82,7 @@ export class ModificarCliente implements OnInit {
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
   protected readonly confirmDisabled = computed(
-    () => (this.form.dirty && this.form.invalid) || this.loading(),
+    () => { this.formEvents(); return (this.form.dirty && this.form.invalid) || this.loading(); },
   );
 
   constructor() {
@@ -127,24 +126,17 @@ export class ModificarCliente implements OnInit {
 
     const campos: FormFieldConfig[] = [
       { key: 'nombre',   label: 'Nombre',   type: 'text', defaultValue: c.nombre,   required: true },
-      { key: 'cedula',   label: 'Cédula',   type: 'text', defaultValue: c.cedula,   disabled: true },
+      { key: 'cedula',   label: 'Cédula',   type: 'text', defaultValue: c.cedula,   disabled: true, locked: true },
       { key: 'telefono', label: 'Teléfono', type: 'text', defaultValue: c.telefono, required: true },
       { key: 'email',    label: 'Email',    type: 'text', defaultValue: c.email,    required: true },
     ];
 
     if (this.esSocio()) {
       campos.push(
-        { key: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'text', defaultValue: c.fechaNacimiento, disabled: true },
-        { key: 'numeroSocio',     label: 'Nro de socio',        type: 'text', defaultValue: c.numeroSocio,     disabled: true },
-        { key: 'estado',          label: 'Estado',              type: 'text', defaultValue: c.estado },
-        {
-          key: 'metodoPago', label: 'Método de pago', type: 'select', defaultValue: c.metodoPago,
-          options: [
-            { label: 'Cobradora',     value: 'COBRADORA' },
-            { label: 'Transferencia', value: 'TRANSFERENCIA' },
-            { label: 'Efectivo',      value: 'EFECTIVO' },
-          ],
-        },
+        { key: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'text',   defaultValue: c.fechaNacimiento, disabled: true, locked: true },
+        { key: 'numeroSocio',     label: 'Nro de socio',        type: 'text',   defaultValue: c.numeroSocio,     disabled: true, locked: true },
+        { key: 'estado',          label: 'Estado',              type: 'text',   defaultValue: c.estado },
+        { key: 'metodoPago',      label: 'Método de pago',      type: 'select', defaultValue: c.metodoPago, options: METODO_PAGO_OPTIONS },
       );
     }
 
@@ -155,8 +147,8 @@ export class ModificarCliente implements OnInit {
     const c = this.cliente();
     if (!c) return [];
     return [
-      { key: 'departamento', label: 'Departamento', type: 'text', value: c.departamento },
-      { key: 'direccion',    label: 'Dirección',    type: 'text', value: c.direccion    },
+      { key: 'departamento', label: 'Departamento', type: 'text', defaultValue: c.departamento },
+      { key: 'direccion',    label: 'Dirección',    type: 'text', defaultValue: c.direccion    },
     ];
   });
 
@@ -164,7 +156,7 @@ export class ModificarCliente implements OnInit {
     const c = this.cliente();
     if (!c) return [];
     return [
-      { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea', value: c.observaciones },
+      { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea', defaultValue: c.observaciones },
     ];
   });
 
@@ -196,7 +188,7 @@ export class ModificarCliente implements OnInit {
   });
 
   protected onInfoChange(values: Record<string, string | null>): void {
-    this.form.patchValue(values);
+    this.form.patchValue(values as any);
     this.form.markAsDirty();
     for (const key of Object.keys(values)) {
       this.form.get(key)?.markAsTouched();

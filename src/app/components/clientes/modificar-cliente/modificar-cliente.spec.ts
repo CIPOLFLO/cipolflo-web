@@ -4,8 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ModificarCliente } from './modificar-cliente';
-import { ClientesService } from '../services/clientes.service';
-import { ClienteDetalleRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
+import { ClientesService } from '../services/cliente.service';
+import { ClienteDetalleRespuestaDto, TipoCliente, EstadoSocio, MetodoPago } from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -15,7 +15,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   cedula: '1.234.567-8',
   email: 'juan@example.com',
   telefono: '099958654',
-  metodoPago: 'COBRADORA',
+  metodoPago: MetodoPago.Cobradora,
   departamento: 'FLORES',
   direccion: 'Calle A 123',
   observaciones: 'Socio nuevo',

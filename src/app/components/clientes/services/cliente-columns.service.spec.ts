@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ClientesColumnsService } from './clientes-columns.service';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { EstadoSocio } from '../models/cliente.model';
+import { ClientesColumnsService } from './cliente-columns.service';
 
 describe('ClientesColumnsService', () => {
   let service: ClientesColumnsService;

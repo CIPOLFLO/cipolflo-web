@@ -1,32 +1,34 @@
 <app-page-layout
-  pageTitle="Nuevo Servicio"
-  pageDescription="Complete los datos para crear un nuevo servicio"
+  pageTitle="Nuevo Socio"
+  pageDescription="Complete los datos para registrar un nuevo socio"
   [showBackButton]="true"
-  backButtonLink="/servicios"
+  backButtonLink="/clientes"
 >
   <app-form-layout>
     <app-form-section
-      title="Información General"
-      [fields]="infoFields()"
-      [errors]="infoErrors()"
-      (valuesChange)="onInfoChange($event)"
+      title="Información del socio"
+      [fields]="clienteFields()"
+      [errors]="clienteErrors()"
+      (valuesChange)="onClienteChange($event)"
       (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-section
-      title="Precios"
-      [fields]="preciosFields()"
-      [errors]="preciosErrors()"
-      (valuesChange)="onPreciosChange($event)"
+      title="Información de Ubicación"
+      [fields]="ubicacionFields()"
+      [errors]="ubicacionErrors()"
+      (valuesChange)="onUbicacionChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-section
+      title="Información Adicional"
+      [fields]="adicionalFields()"
+      (valuesChange)="onAdicionalChange($event)"
       (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-actions actions>
-      <p class="nuevo-servicio__info">
-        El servicio se creará en estado
-        <strong class="nuevo-servicio__info-estado">Habilitado</strong> y estará disponible
-        inmediatamente.
-      </p>
       <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
       <app-button
         label="Confirmar"

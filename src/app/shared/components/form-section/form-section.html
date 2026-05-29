@@ -9,6 +9,7 @@
         [config]="field"
         [error]="errors()[field.key] ?? null"
         (valueChange)="onFieldValueChange(field.key, $event)"
+        (blurred)="onFieldBlur(field.key)"
       />
     }
     <ng-content />

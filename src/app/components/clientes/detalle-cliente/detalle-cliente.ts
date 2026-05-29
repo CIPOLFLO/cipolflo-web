@@ -4,29 +4,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
-  AppButton,
   DetailRegistroSection,
   DetailSection,
-  FormActions,
   FormLayout,
   PageLayout,
   type DetailFieldConfig,
   type DetailRegistroData,
 } from '../../../shared';
-import { ClientesService } from '../services/clientes.service';
+import { ClientesService } from '../services/cliente.service';
+import { METODO_PAGO_LABEL } from '../models/cliente.model';
 
 @Component({
   standalone: true,
   selector: 'app-detalle-cliente',
-  imports: [
-    CommonModule,
-    PageLayout,
-    FormLayout,
-    FormActions,
-    AppButton,
-    DetailSection,
-    DetailRegistroSection,
-  ],
+  imports: [CommonModule, PageLayout, FormLayout, DetailSection, DetailRegistroSection],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +25,7 @@ import { ClientesService } from '../services/clientes.service';
 export class DetalleCliente {
   private readonly route = inject(ActivatedRoute);
   private readonly clientesService = inject(ClientesService);
+  protected readonly metodoPagoLabel = METODO_PAGO_LABEL;
 
   protected readonly clienteId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
@@ -66,14 +58,10 @@ protected onEditar(): void {
     return [
       { key: 'nombre', label: 'Nombre', value: c.nombre },
       { key: 'cedula', label: 'Cédula', value: c.cedula },
-      {
-        key: 'fechaNacimiento',
-        label: 'Fecha de nacimiento',
-        value: c.fechaNacimiento,
-      },
+      { key: 'fechaNacimiento', label: 'Fecha de nacimiento', value: c.fechaNacimiento },
       { key: 'telefono', label: 'Teléfono', value: c.telefono },
       { key: 'email', label: 'Email', value: c.email },
-      { key: 'metodoPago', label: 'Método de pago', value: c.metodoPago },
+      { key: 'metodoPago', label: 'Método de pago', value: METODO_PAGO_LABEL[c.metodoPago] },
       { key: 'pais', label: 'País', value: c.pais },
       { key: 'departamento', label: 'Departamento', value: c.departamento },
       { key: 'ciudad', label: 'Ciudad', value: c.ciudad },

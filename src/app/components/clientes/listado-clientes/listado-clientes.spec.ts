@@ -1,19 +1,19 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ListadoClientes } from './listado-clientes';
-import { ClientesService } from '../services/clientes.service';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   FilterConfigProvider,
   FormFieldConfig,
   PageResponse,
   TableStateService,
 } from '../../../shared';
-import { ClientesColumnsService } from '../services/clientes-columns.service';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
-import { Router } from '@angular/router';
+import { ClientesService } from '../services/cliente.service';
+import { ClientesColumnsService } from '../services/cliente-columns.service';
+import { ListadoClientes } from './listado-clientes';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
