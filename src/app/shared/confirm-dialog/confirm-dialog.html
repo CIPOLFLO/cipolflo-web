@@ -8,8 +8,11 @@
   [header]="config.title"
   [style]="{ width: config.width ?? '420px' }"
 >
-  <p class="confirm-dialog__message">{{ config.message }}</p>
+  @if (config.message) {
+    <p class="confirm-dialog__message">{{ config.message }}</p>
+  }
 
+  <ng-content />
   <ng-template #footer>
     <div class="confirm-dialog__actions">
       @if (config.showCancelButton !== false) {

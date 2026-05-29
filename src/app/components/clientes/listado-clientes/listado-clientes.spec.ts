@@ -120,6 +120,9 @@ describe('ListadoClientes', () => {
     const verDetalle = actions.find((a) => a.label === 'Ver detalle');
     expect(verDetalle).toBeDefined();
     expect(verDetalle!.icon).toBe('pi pi-eye');
+    expect(actions.length).toBeGreaterThanOrEqual(1);
+    expect(actions[0].label).toBe('Ver detalle');
+    expect(actions[0].icon).toBe('pi pi-eye');
   });
 
   it('el comando de "Ver detalle" navega correctamente', () => {
