@@ -227,7 +227,7 @@ export class ModificarCliente implements OnInit {
   });
 
   protected onInfoChange(values: Record<string, string | null>): void {
-    this.form.patchValue(values as any);
+   this.form.patchValue(values as Record<string, string | MetodoPago | null>);
     this.form.markAsDirty();
     for (const key of Object.keys(values)) {
       this.form.get(key)?.markAsTouched();

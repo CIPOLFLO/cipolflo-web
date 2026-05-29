@@ -177,7 +177,7 @@ describe('ModificarCliente', () => {
   });
 
   it('debe mostrar error en consola si falla la carga del cliente', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
     mockClientesService.getById.mockReturnValue(throwError(() => new Error('Error al cargar')));
 
     fixture = TestBed.createComponent(ModificarCliente);
