@@ -35,6 +35,7 @@
           [binary]="true"
           [ngModel]="isSelected(reserva.id)"
           (ngModelChange)="toggleReserva(reserva.id, $event)"
+          [ariaLabel]="'Seleccionar reserva #' + reserva.id + (reserva.nombreCliente ? ' de ' + reserva.nombreCliente : '')"
         />
         <a
           [href]="getReservaUrl(reserva.id)"
