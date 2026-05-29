@@ -57,12 +57,16 @@ export class DetalleCliente {
       { key: 'fechaNacimiento', label: 'Fecha de nacimiento', value: c.fechaNacimiento },
       { key: 'telefono', label: 'Teléfono', value: c.telefono },
       { key: 'email', label: 'Email', value: c.email },
-      { key: 'metodoCobro', label: 'Método de pago', value: METODO_COBRO_LABEL[c.metodoCobro] },
+      {
+        key: 'metodoCobro',
+        label: 'Método de cobro',
+        value: c.metodoCobro ? METODO_COBRO_LABEL[c.metodoCobro] : null,
+      },
       { key: 'pais', label: 'País', value: c.pais },
       { key: 'departamento', label: 'Departamento', value: c.departamento },
       { key: 'ciudad', label: 'Ciudad', value: c.ciudad },
       { key: 'direccion', label: 'Dirección', value: c.direccion },
-      { key: 'numeroSocio', label: 'Nro de socio', value: c.numeroSocio },
+      { key: 'numeroSocio', label: 'Nro de socio', value: c.numeroSocio?.toString() ?? null },
       { key: 'tipoCliente', label: 'Tipo de cliente', value: c.tipoCliente },
       { key: 'estado', label: 'Estado', value: c.estado },
       {

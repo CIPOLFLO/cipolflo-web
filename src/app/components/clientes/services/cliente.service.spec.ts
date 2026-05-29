@@ -4,7 +4,12 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ClientesService } from './cliente.service';
 import { environment } from '@env/environment';
-import { ClienteDetalleRespuestaDto, EstadoSocio, MetodoCobro, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteDetalleRespuestaDto,
+  EstadoSocio,
+  MetodoCobro,
+  TipoCliente,
+} from '../models/cliente.model';
 
 const BASE = `${environment.apiUrl}/clientes`;
 
@@ -12,7 +17,7 @@ const mockDetalle: ClienteDetalleRespuestaDto = {
   id: 1,
   nombre: 'Lucía Rodríguez',
   tipoCliente: TipoCliente.Socio,
-  numeroSocio: '123',
+  numeroSocio: 123,
   cedula: '5.191.926-8',
   email: 'lucia.rodriguez@example.com',
   estado: EstadoSocio.Activo,

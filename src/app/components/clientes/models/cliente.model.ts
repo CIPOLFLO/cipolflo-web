@@ -68,18 +68,18 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   id: number;
   nombre: string;
   tipoCliente: TipoCliente;
-  numeroSocio: string;
+  numeroSocio: number | null;
   cedula: string;
-  email: string;
-  estado: EstadoSocio;
-  fechaNacimiento: string;
+  email: string | null;
+  estado: EstadoSocio | null;
+  fechaNacimiento: string | null;
   telefono: string;
-  metodoCobro: MetodoCobro;
-  pais: string;
-  departamento: string;
-  ciudad: string;
-  direccion: string;
-  observaciones: string;
+  metodoCobro: MetodoCobro | null;
+  pais: string | null;
+  departamento: string | null;
+  ciudad: string | null;
+  direccion: string | null;
+  observaciones: string | null;
 }
 export interface ClienteCrearDto {
   tipoCliente: TipoCliente;
