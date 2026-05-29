@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteOptionsService } from '../services/cliente-options.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
-import { ClienteCrearDto, MetodoPago, TipoCliente } from '../models/cliente.model';
+import { ClienteCrearDto, MetodoCobro, TipoCliente } from '../models/cliente.model';
 import {
   AppButton,
   FormActions,
@@ -50,7 +50,7 @@ export class NuevoCliente {
     email: new FormControl<string | null>(null, [
       (control) => this.validaciones.emailValido(control),
     ]),
-    metodoPago: new FormControl<MetodoPago | null>(MetodoPago.Cobradora, Validators.required),
+    metodoCobro: new FormControl<MetodoCobro | null>(MetodoCobro.Cobradora, Validators.required),
     pais: new FormControl<string | null>('Uruguay', Validators.required),
     departamento: new FormControl<string | null>(null, Validators.required),
     ciudad: new FormControl<string | null>(null, Validators.required),
@@ -103,11 +103,11 @@ export class NuevoCliente {
       placeholder: 'correo@ejemplo.com',
     },
     {
-      key: 'metodoPago',
+      key: 'metodoCobro',
       label: 'Método de pago',
       type: 'select',
       options: this.metodosPago(),
-      defaultValue: MetodoPago.Cobradora,
+      defaultValue: MetodoCobro.Cobradora,
     },
   ]);
 
@@ -176,7 +176,7 @@ export class NuevoCliente {
       fechaNacimiento: string | null;
       telefono: string | null;
       email: string | null;
-      metodoPago: MetodoPago | null;
+      metodoCobro: MetodoCobro | null;
     }>,
   ): void {
     this.form.patchValue({
@@ -185,7 +185,7 @@ export class NuevoCliente {
       fechaNacimiento: values['fechaNacimiento'] ?? null,
       telefono: values['telefono'] ?? null,
       email: values['email'] ?? null,
-      metodoPago: values['metodoPago'] ?? null,
+      metodoCobro: values['metodoCobro'] ?? null,
     });
     this.form.markAsDirty();
   }
@@ -226,7 +226,7 @@ export class NuevoCliente {
       fechaNacimiento,
       telefono,
       email,
-      metodoPago,
+      metodoCobro,
       pais,
       departamento,
       ciudad,
@@ -241,7 +241,7 @@ export class NuevoCliente {
       fechaNacimiento: fechaNacimiento!,
       telefono: telefono!.trim(),
       email: email?.trim() ?? null,
-      metodoPago: metodoPago!,
+      metodoCobro: metodoCobro!,
       pais: pais!.trim(),
       departamento: departamento!.trim(),
       ciudad: ciudad!.trim(),

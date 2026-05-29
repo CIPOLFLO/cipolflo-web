@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
-import { MetodoPago, TipoCliente } from '../models/cliente.model';
+import { MetodoCobro, TipoCliente } from '../models/cliente.model';
 import { of } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
 
@@ -112,7 +112,7 @@ describe('NuevoCliente', () => {
       fechaNacimiento: '1999-06-29',
       telefono: '099985648',
       email: 'email-invalido',
-      metodoPago: MetodoPago.Cobradora,
+      metodoCobro: MetodoCobro.Cobradora,
       pais: 'Uruguay',
       departamento: 'Flores',
       ciudad: 'Trinidad',
@@ -153,7 +153,7 @@ describe('NuevoCliente', () => {
       fechaNacimiento: '1985-04-15',
       telefono: '099123456',
       email: 'martin.gonzalez@example.com',
-      metodoPago: MetodoPago.Caja,
+      metodoCobro: MetodoCobro.EnSede,
     });
 
     expect(component['form'].get('nombre')?.value).toBe('Martín González');
@@ -161,7 +161,7 @@ describe('NuevoCliente', () => {
     expect(component['form'].get('fechaNacimiento')?.value).toBe('1985-04-15');
     expect(component['form'].get('telefono')?.value).toBe('099123456');
     expect(component['form'].get('email')?.value).toBe('martin.gonzalez@example.com');
-    expect(component['form'].get('metodoPago')?.value).toBe('CAJA');
+    expect(component['form'].get('metodoCobro')?.value).toBe('EN_SEDE');
   });
 
   it('onUbicacionChange debería patchear los datos de ubicación en el form', () => {
@@ -212,7 +212,7 @@ describe('NuevoCliente', () => {
       fechaNacimiento: '1999-06-29',
       telefono: '099985648',
       email: 'lucia.rodriguez@example.com',
-      metodoPago: MetodoPago.Cobradora,
+      metodoCobro: MetodoCobro.Cobradora,
       pais: 'Uruguay',
       departamento: 'Flores',
       ciudad: 'Trinidad',
@@ -226,7 +226,7 @@ describe('NuevoCliente', () => {
       expect.objectContaining({
         nombre: 'Lucía Rodríguez',
         cedula: '5.191.926-8',
-        metodoPago: MetodoPago.Cobradora,
+        metodoCobro: MetodoCobro.Cobradora,
       }),
     );
   });
@@ -238,7 +238,7 @@ describe('NuevoCliente', () => {
       fechaNacimiento: '1990-01-01',
       telefono: '099123456',
       email: 'lucia@test.com',
-      metodoPago: MetodoPago.Cobradora,
+      metodoCobro: MetodoCobro.Cobradora,
       pais: 'Uruguay',
       departamento: 'Flores',
       ciudad: 'Trinidad',

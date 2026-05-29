@@ -2,8 +2,14 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
-import { ClienteDetalleRespuestaDto, ClienteRespuestaDto } from '../models/cliente.model';
-import { ClienteCrearDto, EstadoSocio, MetodoPago, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteCrearDto,
+  ClienteDetalleRespuestaDto,
+  ClienteRespuestaDto,
+  EstadoSocio,
+  MetodoCobro,
+  TipoCliente,
+} from '../models/cliente.model';
 
 const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
   {
@@ -16,7 +22,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Activo,
     fechaNacimiento: '29/06/1999',
     telefono: '099985648',
-    metodoPago: MetodoPago.Cobradora,
+    metodoCobro: MetodoCobro.Cobradora,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -37,7 +43,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Activo,
     fechaNacimiento: '15/04/1985',
     telefono: '099123456',
-    metodoPago: MetodoPago.Caja,
+    metodoCobro: MetodoCobro.EnSede,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -58,7 +64,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Activo,
     fechaNacimiento: '20/08/1990',
     telefono: '098456789',
-    metodoPago: MetodoPago.DebitoAutomatico,
+    metodoCobro: MetodoCobro.DescuentoSalarial,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -79,7 +85,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Inactivo,
     fechaNacimiento: '03/11/1982',
     telefono: '097654321',
-    metodoPago: MetodoPago.Cobradora,
+    metodoCobro: MetodoCobro.Cobradora,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -100,7 +106,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Activo,
     fechaNacimiento: '12/02/1988',
     telefono: '096789123',
-    metodoPago: MetodoPago.Transferencia,
+    metodoCobro: MetodoCobro.Transferencia,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -121,7 +127,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Baja,
     fechaNacimiento: '09/09/1980',
     telefono: '095321654',
-    metodoPago: MetodoPago.Caja,
+    metodoCobro: MetodoCobro.EnSede,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -142,7 +148,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Activo,
     fechaNacimiento: '18/07/1992',
     telefono: '094987654',
-    metodoPago: MetodoPago.Efectivo,
+    metodoCobro: MetodoCobro.Efectivo,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -163,7 +169,7 @@ const PLACEHOLDER_CLIENTES: ClienteDetalleRespuestaDto[] = [
     estado: EstadoSocio.Inactivo,
     fechaNacimiento: '25/12/1987',
     telefono: '093147258',
-    metodoPago: MetodoPago.Cobradora,
+    metodoCobro: MetodoCobro.Cobradora,
     pais: 'Uruguay',
     departamento: 'Flores',
     ciudad: 'Trinidad',
@@ -181,10 +187,8 @@ export class ClientesService extends BaseHttpService {
     return this.get<PageResponse<ClienteRespuestaDto>>('clientes', { page, size, ...filters });
   }
 
-  getById(id: number): Observable<ClienteDetalleRespuestaDto | undefined> {
-    // TODO: reemplazar cuando el endpoint de detalle esté disponible
-    console.log('id', id);
-    return of(undefined);
+  getById(id: number): Observable<ClienteDetalleRespuestaDto> {
+    return this.get<ClienteDetalleRespuestaDto>(`clientes/${id}`);
   }
 
   create(dto: Partial<ClienteCrearDto>): Observable<ClienteDetalleRespuestaDto> {
@@ -200,7 +204,7 @@ export class ClientesService extends BaseHttpService {
       estado: EstadoSocio.Activo,
       fechaNacimiento: dto.fechaNacimiento ?? '',
       telefono: dto.telefono ?? '',
-      metodoPago: dto.metodoPago ?? MetodoPago.Cobradora,
+      metodoCobro: dto.metodoCobro ?? MetodoCobro.Cobradora,
       pais: dto.pais ?? '',
       departamento: dto.departamento ?? '',
       ciudad: dto.ciudad ?? '',

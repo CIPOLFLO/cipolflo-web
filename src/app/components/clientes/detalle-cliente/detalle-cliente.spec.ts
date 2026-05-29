@@ -4,7 +4,7 @@ import { of } from 'rxjs';
 import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
-  MetodoPago,
+  MetodoCobro,
   TipoCliente,
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
@@ -20,7 +20,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   estado: EstadoSocio.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
-  metodoPago: MetodoPago.Cobradora,
+  metodoCobro: MetodoCobro.Cobradora,
   pais: 'Uruguay',
   departamento: 'Flores',
   ciudad: 'Trinidad',

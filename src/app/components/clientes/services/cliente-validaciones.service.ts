@@ -80,7 +80,7 @@ export class ClienteValidacionesService {
       errors,
       form,
       submitted,
-      'metodoPago',
+      'metodoCobro',
       'El método de pago es obligatorio.',
     );
     const cedula = form.get('cedula');
