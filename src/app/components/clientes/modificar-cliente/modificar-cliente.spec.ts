@@ -5,7 +5,12 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ModificarCliente } from './modificar-cliente';
 import { ClientesService } from '../services/cliente.service';
-import { ClienteDetalleRespuestaDto, TipoCliente, EstadoSocio, MetodoPago } from '../models/cliente.model';
+import {
+  ClienteDetalleRespuestaDto,
+  TipoCliente,
+  EstadoSocio,
+  MetodoPago,
+} from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -26,7 +31,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   updatedAt: '',
   updatedBy: '',
   pais: '',
-  ciudad: ''
+  ciudad: '',
 };
 
 describe('ModificarCliente', () => {
@@ -153,12 +158,12 @@ describe('ModificarCliente', () => {
   });
 
   it('confirmDisabled debe ser true si el formulario está sucio e inválido', () => {
-  component['form'].get('email')?.setValue('');
-  component['form'].get('email')?.markAsDirty();
-  expect(component['form'].dirty).toBe(true);
-  expect(component['form'].invalid).toBe(true);
-  expect(component['confirmDisabled']()).toBe(true);
-});
+    component['form'].get('email')?.setValue('');
+    component['form'].get('email')?.markAsDirty();
+    expect(component['form'].dirty).toBe(true);
+    expect(component['form'].invalid).toBe(true);
+    expect(component['confirmDisabled']()).toBe(true);
+  });
 
   it('onConfirmar no debe navegar si el formulario es inválido', () => {
     component['form'].get('email')?.setValue('');

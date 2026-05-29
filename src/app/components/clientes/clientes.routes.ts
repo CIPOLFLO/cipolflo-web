@@ -13,7 +13,6 @@ export const CLIENTES_ROUTES: Routes = [
   },
   {
     path: ':id',
-    loadComponent: () =>
-      import('./detalle-cliente/detalle-cliente').then((m) => m.DetalleCliente),
+    loadComponent: () => import('./detalle-cliente/detalle-cliente').then((m) => m.DetalleCliente),
   },
 ];

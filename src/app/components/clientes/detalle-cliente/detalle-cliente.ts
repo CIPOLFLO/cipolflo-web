@@ -46,11 +46,13 @@ export class DetalleCliente {
     ),
     { initialValue: undefined },
   );
-private readonly router = inject(Router);
+  private readonly router = inject(Router);
 
-protected onEditar(): void {
-  this.router.navigate(['/clientes', this.clienteId(), 'editar'], { queryParams: { from: 'detalle' } });
-}
+  protected onEditar(): void {
+    this.router.navigate(['/clientes', this.clienteId(), 'editar'], {
+      queryParams: { from: 'detalle' },
+    });
+  }
   protected readonly infoFields = computed<DetailFieldConfig[]>(() => {
     const c = this.cliente();
     if (!c) return [];
