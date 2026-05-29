@@ -2,18 +2,20 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ListadoServicios } from './listado-servicios';
 import { ServicioService } from '../services/servicio.service';
 import { ServiciosColumnsService } from '../services/servicios-columns.service';
 import {
+  ConfirmDialogService,
+  EstadoReserva,
   FilterConfigProvider,
   FormFieldConfig,
   PageResponse,
   TableStateService,
 } from '../../../shared';
-import { EstadoServicio, ServicioRow } from '../models/servicio.model';
+import { EstadoServicio, ReservaProximaDto, ServicioRow } from '../models/servicio.model';
 
 interface ServicioRespuestaDtoMock {
   id: number;
@@ -54,23 +56,80 @@ const mockPageResponse: PageResponse<ServicioRespuestaDtoMock> = {
   last: true,
 };
 
+const mockReservas: ReservaProximaDto[] = [
+  {
+    id: 12,
+    clienteId: 5,
+    nombreCliente: 'María González',
+    fechaEntrada: '2026-06-01T14:00:00Z',
+    fechaSalida: '2026-06-03T12:00:00Z',
+    pago: false,
+    estado: EstadoReserva.Confirmada,
+  },
+  {
+    id: 45,
+    clienteId: 8,
+    nombreCliente: 'Carlos Rodríguez',
+    fechaEntrada: '2026-06-24T14:00:00Z',
+    fechaSalida: '2026-06-27T12:00:00Z',
+    pago: true,
+    estado: EstadoReserva.Pendiente,
+  },
+];
+
+const rowHabilitado: ServicioRow = {
+  id: 1,
+  nombre: 'Cabaña 1',
+  procedencia: 'Camping',
+  precioSocio: 800,
+  precioParticular: 1200,
+  unidad: 'p/día',
+  estado: EstadoServicio.Habilitado,
+};
+
+const rowDeshabilitado: ServicioRow = {
+  id: 2,
+  nombre: 'Salón',
+  procedencia: 'Sede',
+  precioSocio: 100,
+  precioParticular: 180,
+  unidad: 'p/hora',
+  estado: EstadoServicio.Deshabilitado,
+};
+
 describe('ListadoServicios', () => {
   let fixture: ComponentFixture<ListadoServicios>;
   let component: ListadoServicios;
-  let mockServicioService: { getAll: ReturnType<typeof vi.fn> };
+  let mockServicioService: {
+    getAll: ReturnType<typeof vi.fn>;
+    getReservasProximas: ReturnType<typeof vi.fn>;
+    actualizarHabilitacion: ReturnType<typeof vi.fn>;
+  };
+  let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     mockServicioService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+      getReservasProximas: vi.fn().mockReturnValue(of([])),
+      actualizarHabilitacion: vi.fn().mockReturnValue(of({})),
     };
+    mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [ListadoServicios],
       providers: [
         { provide: ServicioService, useValue: mockServicioService },
-        { provide: Router, useValue: { navigate: navigateSpy } },
+        { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
+        {
+          provide: Router,
+          useValue: {
+            navigate: navigateSpy,
+            serializeUrl: vi.fn().mockReturnValue('/reservas/1'),
+            createUrlTree: vi.fn().mockReturnValue({}),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -144,83 +203,6 @@ describe('ListadoServicios', () => {
     expect(component['tableState'].queryParams().filters).toEqual({ procedencia: 'CAMPING' });
   });
 
-  it('rowActions debe ser una función', () => {
-    expect(typeof component['rowActions']).toBe('function');
-  });
-
-  it('rowActions debe retornar la acción "Ver detalle"', () => {
-    const row: ServicioRow = {
-      id: 1,
-      nombre: 'Cabaña 1',
-      procedencia: 'Camping',
-      precioSocio: 800,
-      precioParticular: 1200,
-      unidad: 'p/día',
-      estado: EstadoServicio.Habilitado,
-    };
-    const actions = component['rowActions'](row);
-    expect(actions).toHaveLength(2);
-    expect(actions[0].label).toBe('Ver detalle');
-    expect(actions[0].icon).toBe('pi pi-eye');
-  });
-
-  it('el comando de "Ver detalle" navega a /servicios/{id}', () => {
-    const row: ServicioRow = {
-      id: 1,
-      nombre: 'Cabaña 1',
-      procedencia: 'Camping',
-      precioSocio: 800,
-      precioParticular: 1200,
-      unidad: 'p/día',
-      estado: EstadoServicio.Habilitado,
-    };
-    const actions = component['rowActions'](row);
-    actions[0].command?.(row);
-    expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1]);
-  });
-
-  it('rowActions debe retornar la acción "Editar"', () => {
-    const row: ServicioRow = {
-      id: 1,
-      nombre: 'Cabaña 1',
-      procedencia: 'Camping',
-      precioSocio: 800,
-      precioParticular: 1200,
-      unidad: 'p/día',
-      estado: EstadoServicio.Habilitado,
-    };
-    const actions = component['rowActions'](row);
-    expect(actions[1].label).toBe('Editar');
-    expect(actions[1].icon).toBe('pi pi-pencil');
-  });
-
-  it('el comando de "Editar" navega a /servicios/{id}/editar con from=listado', () => {
-    const row: ServicioRow = {
-      id: 1,
-      nombre: 'Cabaña 1',
-      procedencia: 'Camping',
-      precioSocio: 800,
-      precioParticular: 1200,
-      unidad: 'p/día',
-      estado: EstadoServicio.Habilitado,
-    };
-    const actions = component['rowActions'](row);
-    actions[1].command?.(row);
-    expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1, 'editar'], {
-      queryParams: { from: 'listado' },
-    });
-  });
-
-  it('debe renderizar los encabezados de columna en la tabla', async () => {
-    const headers: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('th');
-    const labels = Array.from(headers).map((h) => h.textContent?.trim());
-    expect(labels).toContain('Procedencia');
-    expect(labels).toContain('Nombre');
-    expect(labels).toContain('Precio Socio');
-    expect(labels).toContain('Precio Particular');
-    expect(labels).toContain('Estado');
-  });
-
   it('onNuevoServicio navega a /servicios/nuevo', () => {
     component['onNuevoServicio']();
     expect(navigateSpy).toHaveBeenCalledWith(['/servicios/nuevo']);
@@ -244,6 +226,226 @@ describe('ListadoServicios', () => {
     expect(result.content[0].unidad).toBe('DESCONOCIDA');
     expect(result.content[0].procedencia).toBe('DESCONOCIDA');
   });
+
+  describe('rowActions', () => {
+    it('debe retornar 3 acciones para un servicio habilitado', () => {
+      expect(component['rowActions'](rowHabilitado)).toHaveLength(3);
+    });
+
+    it('debe retornar 3 acciones para un servicio deshabilitado', () => {
+      expect(component['rowActions'](rowDeshabilitado)).toHaveLength(3);
+    });
+
+    it('la primera acción es "Ver detalle" con icono pi-eye', () => {
+      const actions = component['rowActions'](rowHabilitado);
+      expect(actions[0].label).toBe('Ver detalle');
+      expect(actions[0].icon).toBe('pi pi-eye');
+    });
+
+    it('"Ver detalle" navega a /servicios/{id}', () => {
+      component['rowActions'](rowHabilitado)[0].command?.(rowHabilitado);
+      expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1]);
+    });
+
+    it('la segunda acción es "Editar" con icono pi-pencil', () => {
+      const actions = component['rowActions'](rowHabilitado);
+      expect(actions[1].label).toBe('Editar');
+      expect(actions[1].icon).toBe('pi pi-pencil');
+    });
+
+    it('"Editar" navega a /servicios/{id}/editar con from=listado', () => {
+      component['rowActions'](rowHabilitado)[1].command?.(rowHabilitado);
+      expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1, 'editar'], {
+        queryParams: { from: 'listado' },
+      });
+    });
+
+    it('la tercera acción es "Deshabilitar" cuando el servicio está habilitado', () => {
+      const actions = component['rowActions'](rowHabilitado);
+      expect(actions[2].label).toBe('Deshabilitar');
+      expect(actions[2].icon).toBe('pi pi-ban');
+    });
+
+    it('la tercera acción es "Habilitar" cuando el servicio está deshabilitado', () => {
+      const actions = component['rowActions'](rowDeshabilitado);
+      expect(actions[2].label).toBe('Habilitar');
+      expect(actions[2].icon).toBe('pi pi-check-circle');
+    });
+
+    it('debe renderizar los encabezados de columna en la tabla', async () => {
+      const headers: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('th');
+      const labels = Array.from(headers).map((h) => h.textContent?.trim());
+      expect(labels).toContain('Procedencia');
+      expect(labels).toContain('Nombre');
+      expect(labels).toContain('Precio Socio');
+      expect(labels).toContain('Precio Particular');
+      expect(labels).toContain('Estado');
+    });
+  });
+
+  describe('habilitar', () => {
+    it('llama a actualizarHabilitacion con habilitado=true', () => {
+      component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
+      expect(mockServicioService.actualizarHabilitacion).toHaveBeenCalledWith(2, {
+        habilitado: true,
+      });
+    });
+
+    it('llama a updateFilters para recargar la tabla tras habilitar', () => {
+      const spy = vi.spyOn(component['tableState'], 'updateFilters');
+      component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  describe('iniciarDeshabilitacion', () => {
+    it('muestra el diálogo de verificación al iniciar', () => {
+      const pending$ = new Subject<ReservaProximaDto[]>();
+      mockServicioService.getReservasProximas.mockReturnValue(pending$.asObservable());
+      component['iniciarDeshabilitacion'](rowHabilitado);
+      expect(component['verificandoVisible']()).toBe(true);
+      pending$.complete();
+    });
+
+    it('llama a getReservasProximas con el id del servicio', () => {
+      mockServicioService.getReservasProximas.mockReturnValue(of([]));
+      component['iniciarDeshabilitacion'](rowHabilitado);
+      expect(mockServicioService.getReservasProximas).toHaveBeenCalledWith(1);
+    });
+
+    it('oculta el diálogo de verificación tras recibir respuesta', () => {
+      mockServicioService.getReservasProximas.mockReturnValue(of([]));
+      component['iniciarDeshabilitacion'](rowHabilitado);
+      expect(component['verificandoVisible']()).toBe(false);
+    });
+
+    describe('sin reservas activas', () => {
+      beforeEach(() => {
+        mockServicioService.getReservasProximas.mockReturnValue(of([]));
+      });
+
+      it('abre el diálogo de confirmación', () => {
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(mockConfirmDialogService.open).toHaveBeenCalledWith(
+          expect.objectContaining({ variant: 'warning' }),
+        );
+      });
+
+      it('al confirmar llama a actualizarHabilitacion con habilitado=false y reservasACancelar vacío', () => {
+        mockConfirmDialogService.open.mockReturnValue(of(true));
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(mockServicioService.actualizarHabilitacion).toHaveBeenCalledWith(1, {
+          habilitado: false,
+          reservasACancelar: [],
+        });
+      });
+
+      it('al cancelar no llama a actualizarHabilitacion', () => {
+        mockConfirmDialogService.open.mockReturnValue(of(false));
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(mockServicioService.actualizarHabilitacion).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('con reservas activas', () => {
+      beforeEach(() => {
+        mockServicioService.getReservasProximas.mockReturnValue(of(mockReservas));
+      });
+
+      it('no abre el diálogo de confirmación', () => {
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(mockConfirmDialogService.open).not.toHaveBeenCalled();
+      });
+
+      it('muestra el diálogo de reservas activas', () => {
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(component['reservasActivasVisible']()).toBe(true);
+      });
+
+      it('carga las reservas en el signal', () => {
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(component['reservasProximas']()).toEqual(mockReservas);
+      });
+    });
+
+    describe('error en getReservasProximas', () => {
+      it('oculta el diálogo de verificación y limpia el servicio seleccionado', () => {
+        mockServicioService.getReservasProximas.mockReturnValue(
+          throwError(() => new Error('Error de red')),
+        );
+        component['iniciarDeshabilitacion'](rowHabilitado);
+        expect(component['verificandoVisible']()).toBe(false);
+        expect(component['servicioSeleccionado']()).toBeNull();
+      });
+    });
+  });
+
+  describe('onDeshabilitarSinCancelar', () => {
+    beforeEach(() => {
+      mockServicioService.getReservasProximas.mockReturnValue(of(mockReservas));
+      component['iniciarDeshabilitacion'](rowHabilitado);
+    });
+
+    it('oculta el diálogo de reservas activas', () => {
+      component['onDeshabilitarSinCancelar']();
+      expect(component['reservasActivasVisible']()).toBe(false);
+    });
+
+    it('llama a actualizarHabilitacion con reservasACancelar vacío', () => {
+      component['onDeshabilitarSinCancelar']();
+      expect(mockServicioService.actualizarHabilitacion).toHaveBeenCalledWith(1, {
+        habilitado: false,
+        reservasACancelar: [],
+      });
+    });
+  });
+
+  describe('onDeshabilitarYCancelar', () => {
+    beforeEach(() => {
+      mockServicioService.getReservasProximas.mockReturnValue(of(mockReservas));
+      component['iniciarDeshabilitacion'](rowHabilitado);
+    });
+
+    it('oculta el diálogo de reservas activas', () => {
+      component['onDeshabilitarYCancelar']([12]);
+      expect(component['reservasActivasVisible']()).toBe(false);
+    });
+
+    it('llama a actualizarHabilitacion con los ids seleccionados', () => {
+      component['onDeshabilitarYCancelar']([12, 45]);
+      expect(mockServicioService.actualizarHabilitacion).toHaveBeenCalledWith(1, {
+        habilitado: false,
+        reservasACancelar: [12, 45],
+      });
+    });
+  });
+
+  describe('onCancelarDialog', () => {
+    beforeEach(() => {
+      mockServicioService.getReservasProximas.mockReturnValue(of(mockReservas));
+      component['iniciarDeshabilitacion'](rowHabilitado);
+    });
+
+    it('oculta el diálogo de reservas activas', () => {
+      component['onCancelarDialog']();
+      expect(component['reservasActivasVisible']()).toBe(false);
+    });
+
+    it('limpia el servicio seleccionado', () => {
+      component['onCancelarDialog']();
+      expect(component['servicioSeleccionado']()).toBeNull();
+    });
+
+    it('limpia las reservas próximas', () => {
+      component['onCancelarDialog']();
+      expect(component['reservasProximas']()).toEqual([]);
+    });
+
+    it('no llama a actualizarHabilitacion', () => {
+      component['onCancelarDialog']();
+      expect(mockServicioService.actualizarHabilitacion).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe('ListadoServicios sin filtros por defecto', () => {
@@ -259,7 +461,19 @@ describe('ListadoServicios sin filtros por defecto', () => {
       providers: [
         {
           provide: ServicioService,
-          useValue: { getAll: vi.fn().mockReturnValue(of(mockPageResponse)) },
+          useValue: {
+            getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+            getReservasProximas: vi.fn().mockReturnValue(of([])),
+            actualizarHabilitacion: vi.fn().mockReturnValue(of({})),
+          },
+        },
+        {
+          provide: Router,
+          useValue: {
+            navigate: vi.fn(),
+            serializeUrl: vi.fn().mockReturnValue('/reservas/1'),
+            createUrlTree: vi.fn().mockReturnValue({}),
+          },
         },
       ],
     })

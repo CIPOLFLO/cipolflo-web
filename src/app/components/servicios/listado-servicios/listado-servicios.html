@@ -11,3 +11,17 @@
 
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
 </app-page-layout>
+
+<app-verificando-reservas-dialog
+  [visible]="verificandoVisible()"
+  [nombreServicio]="servicioSeleccionado()?.nombre ?? ''"
+/>
+
+<app-reservas-activas-dialog
+  [visible]="reservasActivasVisible()"
+  [nombreServicio]="servicioSeleccionado()?.nombre ?? ''"
+  [reservas]="reservasProximas()"
+  (cancelar)="onCancelarDialog()"
+  (deshabilitarSinCancelar)="onDeshabilitarSinCancelar()"
+  (deshabilitarYCancelar)="onDeshabilitarYCancelar($event)"
+/>
