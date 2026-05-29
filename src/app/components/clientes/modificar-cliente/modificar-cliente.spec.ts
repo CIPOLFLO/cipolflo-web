@@ -61,6 +61,7 @@ describe('ModificarCliente', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(ModificarCliente);
+    fixture.componentRef.setInput('id', '1');
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
@@ -152,10 +153,12 @@ describe('ModificarCliente', () => {
   });
 
   it('confirmDisabled debe ser true si el formulario está sucio e inválido', () => {
-    component['form'].get('email')?.setValue('');
-    component['form'].markAsDirty();
-    expect(component['confirmDisabled']()).toBe(true);
-  });
+  component['form'].get('email')?.setValue('');
+  component['form'].get('email')?.markAsDirty();
+  expect(component['form'].dirty).toBe(true);
+  expect(component['form'].invalid).toBe(true);
+  expect(component['confirmDisabled']()).toBe(true);
+});
 
   it('onConfirmar no debe navegar si el formulario es inválido', () => {
     component['form'].get('email')?.setValue('');
