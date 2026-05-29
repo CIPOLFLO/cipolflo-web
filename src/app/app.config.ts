@@ -6,7 +6,7 @@ import Aura from '@primeng/themes/aura';
 import { definePreset } from '@primeng/themes';
 import { authHttpInterceptorFn, provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
-import { environment } from '../environments/environment';
+import { environment } from '../environments/environment.development';
 
 const CipolfloPreset = definePreset(Aura, {
   semantic: {

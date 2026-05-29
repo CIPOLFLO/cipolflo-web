@@ -1,0 +1,46 @@
+<app-page-layout
+  pageTitle="Editar Cliente"
+  pageDescription="Modifique los datos del Cliente"
+  [showBackButton]="true"
+  [backButtonLink]="backLink()"
+>
+  <app-form-layout>
+
+    <app-form-section
+      title="Información del Cliente"
+      [fields]="infoFields()"
+      [errors]="infoErrors()"
+      (valuesChange)="onInfoChange($event)"
+    />
+
+    <app-form-section
+      title="Información de Ubicación"
+      [fields]="ubicacionFields()"
+      [errors]="ubicacionErrors()"
+      (valuesChange)="onUbicacionChange($event)"
+    />
+
+    <app-form-section
+      title="Información Adicional"
+      [fields]="adicionalFields()"
+      [errors]="adicionalErrors()"
+      (valuesChange)="onAdicionalChange($event)"
+    />
+
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Confirmar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+
+  </app-form-layout>
+</app-page-layout>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
@@ -54,7 +54,11 @@ export class DetalleCliente {
     ),
     { initialValue: undefined },
   );
+private readonly router = inject(Router);
 
+protected onEditar(): void {
+  this.router.navigate(['/clientes', this.clienteId(), 'editar'], { queryParams: { from: 'detalle' } });
+}
   protected readonly infoFields = computed<DetailFieldConfig[]>(() => {
     const c = this.cliente();
     if (!c) return [];

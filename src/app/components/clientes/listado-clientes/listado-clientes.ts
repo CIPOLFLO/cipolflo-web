@@ -57,8 +57,11 @@ export class ListadoClientes {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
     },
-    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
-
+     { 
+  label: 'Modificar', 
+  icon: 'pi pi-pencil', 
+  command: () => this.router.navigate(['/clientes', row.id, 'modificar']) 
+},
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
     //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
