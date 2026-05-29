@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
 import { MetodoCobro, TipoCliente } from '../models/cliente.model';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
 
 describe('NuevoCliente', () => {
@@ -184,6 +184,41 @@ describe('NuevoCliente', () => {
     });
 
     expect(component['form'].get('observaciones')?.value).toBe('Socia nueva');
+  });
+
+  it('onConfirmar con form válido navega a /clientes al completar', () => {
+    component['form'].patchValue({
+      nombre: 'Lucía Rodríguez',
+      cedula: '5.191.926-8',
+      fechaNacimiento: '1999-06-29',
+      telefono: '099985648',
+      metodoCobro: MetodoCobro.Cobradora,
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+    });
+
+    component['onConfirmar']();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes']);
+  });
+
+  it('onConfirmar desactiva loading ante un error del servidor', () => {
+    createSpy.mockReturnValue(throwError(() => new Error('server error')));
+    component['form'].patchValue({
+      nombre: 'Lucía Rodríguez',
+      cedula: '5.191.926-8',
+      fechaNacimiento: '1999-06-29',
+      telefono: '099985648',
+      metodoCobro: MetodoCobro.Cobradora,
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+    });
+
+    component['onConfirmar']();
+
+    expect(component['loading']()).toBe(false);
   });
 
   it('onCancelar debería navegar a /clientes', () => {

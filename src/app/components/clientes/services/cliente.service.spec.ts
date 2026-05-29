@@ -62,4 +62,22 @@ describe('ClientesService', () => {
     expect(req.request.params.has('nombre')).toBe(false);
     req.flush(emptyPage);
   });
+
+  it('getById realiza GET a /clientes/:id', () => {
+    service.getById(7).subscribe();
+
+    const req = httpMock.expectOne(`${BASE}/7`);
+    expect(req.request.method).toBe('GET');
+    req.flush({});
+  });
+
+  it('getById retorna la respuesta del servidor', () => {
+    const mockDetalle = { id: 7, nombre: 'Lucía Rodríguez' };
+    let result: unknown;
+
+    service.getById(7).subscribe((r) => (result = r));
+
+    httpMock.expectOne(`${BASE}/7`).flush(mockDetalle);
+    expect(result).toEqual(mockDetalle);
+  });
 });
