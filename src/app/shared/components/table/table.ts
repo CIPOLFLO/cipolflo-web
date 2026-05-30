@@ -2,7 +2,10 @@ import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } fro
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { finalize, switchMap } from 'rxjs';
 import { TableModule } from 'primeng/table';
+import { Skeleton } from 'primeng/skeleton';
 import { SortEvent } from 'primeng/api';
+
+const SKELETON_ROW_COUNT = 10;
 import {
   ColumnConfig,
   EMPTY_PAGE,
@@ -23,6 +26,7 @@ import { DateFormatPipe } from './pipes/date-format.pipe';
   selector: 'app-table',
   imports: [
     TableModule,
+    Skeleton,
     TagCellComponent,
     AmountCellComponent,
     PriceCellComponent,
@@ -43,6 +47,7 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
   protected readonly tableState = inject(TableStateService);
   protected readonly loading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: SKELETON_ROW_COUNT }, (_, i) => i);
 
   private readonly params$ = toObservable(this.tableState.queryParams);
 

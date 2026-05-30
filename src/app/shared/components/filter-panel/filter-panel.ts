@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, output, signal } from '@ang
 import { FormField } from '../form-field/form-field';
 import { AppButton } from '../button/button';
 import { FilterConfigProvider } from '../../services/filter-config.provider';
+import { FILTER_DEBOUNCE_MS } from '../../config/filter.config';
 
 @Component({
   selector: 'app-filter-panel',
@@ -24,6 +25,9 @@ export class FilterPanel {
     ),
   );
 
+  private readonly debounceMs = inject(FILTER_DEBOUNCE_MS);
+  private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   protected toggle(): void {
     this.isExpanded.update((v) => !v);
   }
@@ -37,9 +41,22 @@ export class FilterPanel {
 
   protected updateValue(key: string, value: string | null): void {
     this.filterValues.update((prev) => ({ ...prev, [key]: value }));
+
+    const field = this.filterFields().find((f) => f.key === key);
+    if (field?.type === 'select') {
+      this.emitFilters();
+    } else {
+      if (this._debounceTimer !== null) {
+        clearTimeout(this._debounceTimer);
+      }
+      this._debounceTimer = setTimeout(() => {
+        this._debounceTimer = null;
+        this.emitFilters();
+      }, this.debounceMs);
+    }
   }
 
-  protected onSearch(): void {
+  protected emitFilters(): void {
     const active = Object.fromEntries(
       Object.entries(this.filterValues()).filter(
         (entry): entry is [string, string] => entry[1] !== null && entry[1] !== '',
@@ -49,6 +66,10 @@ export class FilterPanel {
   }
 
   protected onClear(): void {
+    if (this._debounceTimer !== null) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = null;
+    }
     this.filterValues.set({});
     this.filterChange.emit({});
   }
