@@ -38,7 +38,7 @@ import { Dialog } from 'primeng/dialog';
 export class PagoCuota {
   readonly cliente = input<ClienteRespuestaDto | null>(null);
   readonly cerrado = output<void>();
-  protected readonly visible = computed(() => this.cliente() !== null);
+  protected readonly visible = signal(true);
   protected readonly pagoConfirmado = signal<PagoCuotaDto | null>(null);
   private readonly clientesService = inject(ClientesService);
   private readonly touched = signal(false);
@@ -60,6 +60,11 @@ export class PagoCuota {
       validators: [Validators.required],
     }),
   });
+
+  protected getTotal(): number {
+    return this.form.controls.cantidadCuotas.value * this.costoCuota;
+  }
+
   private readonly formStatus = toSignal(this.form.statusChanges, {
     initialValue: this.form.status,
   });
@@ -75,10 +80,6 @@ export class PagoCuota {
   protected readonly fechaPago = toSignal(this.form.controls.fechaPago.valueChanges, {
     initialValue: this.form.controls.fechaPago.value,
   });
-
-  protected getTotal(): number {
-    return this.form.controls.cantidadCuotas.value * this.costoCuota;
-  }
 
   protected onCancelar(): void {
     this.cerrar();
