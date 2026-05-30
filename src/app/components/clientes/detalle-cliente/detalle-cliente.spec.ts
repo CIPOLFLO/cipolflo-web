@@ -4,7 +4,7 @@ import { of } from 'rxjs';
 import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
-  MetodoPago,
+  MetodoCobro,
   TipoCliente,
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
@@ -14,13 +14,13 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
   nombre: 'Camila Ayuto',
   tipoCliente: TipoCliente.Socio,
-  numeroSocio: '123',
+  numeroSocio: 123,
   cedula: '5.191.926-8',
   email: 'email@example.com',
   estado: EstadoSocio.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
-  metodoPago: MetodoPago.Cobradora,
+  metodoCobro: MetodoCobro.Cobradora,
   pais: 'Uruguay',
   departamento: 'Flores',
   ciudad: 'Trinidad',
@@ -95,5 +95,51 @@ describe('DetalleCliente', () => {
 
   it('debería mostrar las observaciones', () => {
     expect(fixture.nativeElement.textContent).toContain('Socia Nueva');
+  });
+});
+
+describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
+  let fixture: ComponentFixture<DetalleCliente>;
+  let component: DetalleCliente;
+
+  const mockParticular: ClienteDetalleRespuestaDto = {
+    ...mockCliente,
+    tipoCliente: TipoCliente.Particular,
+    numeroSocio: null,
+    estado: null,
+    metodoCobro: null,
+  };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DetalleCliente],
+      providers: [
+        {
+          provide: ClientesService,
+          useValue: { getById: vi.fn().mockReturnValue(of(mockParticular)) },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: of(convertToParamMap({ id: '1' })) },
+        },
+        {
+          provide: Router,
+          useValue: { navigate: vi.fn() },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(DetalleCliente);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('debería crear el componente sin errores', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('el campo metodoCobro tiene value null', () => {
+    const field = component['infoFields']().find((f) => f.key === 'metodoCobro');
+    expect(field?.value).toBeNull();
   });
 });
