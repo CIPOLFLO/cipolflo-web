@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import {
   AppButton,
   AppTable,
@@ -12,12 +12,13 @@ import {
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
-import { ClienteRespuestaDto } from '../models/cliente.model';
+import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
+import { PagoCuota } from '../pago-cuota/pago-cuota';
 
 @Component({
   selector: 'app-listado-clientes',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable],
+  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota],
   providers: [
     TableStateService,
     ClientesColumnsService,
@@ -33,6 +34,7 @@ export class ListadoClientes {
   private readonly filterConfigProvider = inject(FilterConfigProvider);
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
+  protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -57,11 +59,19 @@ export class ListadoClientes {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
     },
-    {
-      label: 'Modificar',
-      icon: 'pi pi-pencil',
-      command: () => this.router.navigate(['/clientes', row.id, 'modificar']),
-    },
+    ...(row.tipoCliente === TipoCliente.Socio &&
+    row.estado !== null &&
+    row.estado !== EstadoSocio.Baja
+      ? [
+          {
+            label: 'Pago de cuota',
+            icon: 'pi pi-dollar',
+            command: () => this.onPagoCuota(row),
+          },
+        ]
+      : []),
+    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
+
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
     //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
@@ -76,5 +86,13 @@ export class ListadoClientes {
 
   protected onNuevoCliente(): void {
     this.router.navigate(['/clientes/nuevo']);
+  }
+
+  protected onPagoCuota(cliente: ClienteRespuestaDto): void {
+    this.clientePagoSeleccionado.set(cliente);
+  }
+
+  protected onCerrarPagoCuota(): void {
+    this.clientePagoSeleccionado.set(null);
   }
 }

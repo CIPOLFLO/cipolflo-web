@@ -1,4 +1,4 @@
-import type { AuditInfoDto, FormFieldOption } from '../../../shared';
+import { type AuditInfoDto, type FormFieldOption, EstadoReserva } from '../../../shared';
 
 export const MODALIDAD_PRECIO_OPTIONS: FormFieldOption[] = [
   { label: 'Por día', value: 'POR_DIA' },
@@ -75,6 +75,22 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
   capacidad: number | null;
   estado: EstadoServicio;
   modalidadPrecio: string;
+}
+
+export interface ReservaProximaDto {
+  id: number;
+  clienteId: number;
+  nombreCliente?: string;
+  fechaEntrada: string;
+  fechaSalida: string;
+  pago: boolean;
+  estado: EstadoReserva;
+}
+
+export interface HabilitacionServicioDto {
+  habilitado: boolean;
+  reservasACancelar?: number[];
+  confirmarDevolucion?: boolean;
 }
 
 export interface ServicioRow extends Record<string, unknown> {

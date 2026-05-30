@@ -10,6 +10,7 @@
 >
   <p class="confirm-dialog__message">{{ config.message }}</p>
 
+  <ng-content />
   <ng-template #footer>
     <div class="confirm-dialog__actions">
       @if (config.showCancelButton !== false) {

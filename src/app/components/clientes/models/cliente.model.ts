@@ -10,27 +10,28 @@ export enum TipoCliente {
   Socio = 'SOCIO',
   Particular = 'PARTICULAR',
 }
-export enum MetodoPago {
+export enum MetodoCobro {
   Cobradora = 'COBRADORA',
-  Caja = 'CAJA',
+  DescuentoSalarial = 'DESCUENTO_SALARIAL',
   Transferencia = 'TRANSFERENCIA',
+  EnSede = 'EN_SEDE',
   Efectivo = 'EFECTIVO',
-  DebitoAutomatico = 'DEBITO_AUTOMATICO',
 }
 
-export const METODO_PAGO_OPTIONS: FormFieldOption[] = [
-  { label: 'Cobradora', value: MetodoPago.Cobradora },
-  { label: 'Caja', value: MetodoPago.Caja },
-  { label: 'Transferencia', value: MetodoPago.Transferencia },
-  { label: 'Efectivo', value: MetodoPago.Efectivo },
-  { label: 'Débito automático', value: MetodoPago.DebitoAutomatico },
+export const METODO_COBRO_OPTIONS: FormFieldOption[] = [
+  { label: 'Cobradora', value: MetodoCobro.Cobradora },
+  { label: 'Descuento salarial', value: MetodoCobro.DescuentoSalarial },
+  { label: 'Transferencia', value: MetodoCobro.Transferencia },
+  { label: 'En sede', value: MetodoCobro.EnSede },
+  { label: 'Efectivo', value: MetodoCobro.Efectivo },
 ];
-export const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
-  [MetodoPago.Cobradora]: 'Cobradora',
-  [MetodoPago.Caja]: 'Caja',
-  [MetodoPago.Transferencia]: 'Transferencia',
-  [MetodoPago.Efectivo]: 'Efectivo',
-  [MetodoPago.DebitoAutomatico]: 'Débito automático',
+
+export const METODO_COBRO_LABEL: Record<MetodoCobro, string> = {
+  [MetodoCobro.Cobradora]: 'Cobradora',
+  [MetodoCobro.DescuentoSalarial]: 'Descuento salarial',
+  [MetodoCobro.Transferencia]: 'Transferencia',
+  [MetodoCobro.EnSede]: 'En sede',
+  [MetodoCobro.Efectivo]: 'Efectivo',
 };
 
 export const ESTADO_SOCIO_OPTIONS = [
@@ -67,18 +68,18 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   id: number;
   nombre: string;
   tipoCliente: TipoCliente;
-  numeroSocio: string;
+  numeroSocio: number | null;
   cedula: string;
-  email: string;
-  estado: EstadoSocio;
-  fechaNacimiento: string;
+  email: string | null;
+  estado: EstadoSocio | null;
+  fechaNacimiento: string | null;
   telefono: string;
-  metodoPago: MetodoPago;
-  pais: string;
-  departamento: string;
-  ciudad: string;
-  direccion: string;
-  observaciones: string;
+  metodoCobro: MetodoCobro | null;
+  pais: string | null;
+  departamento: string | null;
+  ciudad: string | null;
+  direccion: string | null;
+  observaciones: string | null;
 }
 export interface ClienteCrearDto {
   tipoCliente: TipoCliente;
@@ -87,7 +88,7 @@ export interface ClienteCrearDto {
   fechaNacimiento: string;
   telefono: string;
   email: string | null;
-  metodoPago: MetodoPago;
+  metodoCobro: MetodoCobro;
   pais: string;
   departamento: string;
   ciudad: string;

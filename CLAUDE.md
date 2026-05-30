@@ -129,6 +129,28 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
 - Reusable components (used across more than one module) go in `shared/components/` — their names must not reference any specific module.
 - Business logic lives in services; components only coordinate the view.
 
+### Select options convention
+
+- **Filtros** (`FilterConfigProvider`): todo select debe incluir como primera opción `{ label: 'Todos', value: '' }`. Esto permite limpiar el filtro seleccionando "Todos" además del botón "Limpiar Filtros".
+- **Formularios** (campos no obligatorios): todo select cuyo `required` sea `false` o esté ausente debe incluir como primera opción `{ label: '', value: '' }` (opción vacía), para que el usuario pueda dejar el campo sin selección.
+- Los campos con `required: true` en formularios no llevan opción vacía.
+
+```typescript
+// Filtro
+options: [
+  { label: 'Todos', value: '' },
+  { label: 'Habilitado', value: 'HABILITADO' },
+  { label: 'Deshabilitado', value: 'DESHABILITADO' },
+];
+
+// Formulario — campo no obligatorio
+options: [
+  { label: '', value: '' },
+  { label: 'Opción A', value: 'A' },
+  { label: 'Opción B', value: 'B' },
+];
+```
+
 ### PrimeNG
 
 Import only the specific modules needed (`primeng/button`, not `PrimeNGModule`). Use PrimeIcons (`pi pi-*`) — no additional icon libraries. Never override PrimeNG theme variables in individual components; all theme config is in `app.config.ts`.

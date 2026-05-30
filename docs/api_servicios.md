@@ -56,6 +56,12 @@ SOCIO | PARTICULAR
 ACTIVO | INACTIVO | DE_BAJA
 ```
 
+### `MetodoCobro`
+
+```
+COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
+```
+
 ---
 
 ## DTOs Compartidos
@@ -437,6 +443,42 @@ Retorna el listado paginado de clientes con filtros opcionales.
 
 ---
 
+### `GET /api/v1/clientes/{id}`
+
+Retorna el detalle completo de un cliente.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:**
+
+```json
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "cedula": "12345678",
+  "fechaNacimiento": "1990-01-01",
+  "telefono": "099111111",
+  "email": "juan@mail.com",
+  "metodoCobro": "EN_SEDE",
+  "pais": "Uruguay",
+  "departamento": "Montevideo",
+  "ciudad": "Montevideo",
+  "direccion": "Av. 18 de Julio 100",
+  "numeroSocio": 5,
+  "tipoCliente": "SOCIO",
+  "estado": "ACTIVO",
+  "observaciones": null,
+  "createdAt": "2024-03-01T10:00:00Z",
+  "updatedAt": "2024-03-15T14:00:00Z",
+  "createdBy": "admin@cipolflo.com",
+  "updatedBy": "admin@cipolflo.com"
+}
+```
+
+> Los campos `fechaNacimiento`, `metodoCobro`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+
+---
+
 ## Clientes — DTOs
 
 ### Request DTOs
@@ -453,6 +495,32 @@ Retorna el listado paginado de clientes con filtros opcionales.
 ```
 
 ### Response DTOs
+
+#### `ClienteResponseDto` — respuesta de detalle
+
+```typescript
+{
+  id: number;
+  nombre: string;
+  cedula: string;
+  fechaNacimiento: string | null; // LocalDate ISO-8601 (yyyy-MM-dd), null para Particulares
+  telefono: string;
+  email: string | null;
+  metodoCobro: MetodoCobro | null; // null para Particulares
+  pais: string | null; // null para Particulares
+  departamento: string | null; // null para Particulares
+  ciudad: string | null; // null para Particulares
+  direccion: string | null; // null para Particulares
+  numeroSocio: number | null; // null para Particulares
+  tipoCliente: TipoCliente;
+  estado: EstadoSocio | null; // null para Particulares
+  observaciones: string | null;
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
+  createdBy: string;
+  updatedBy: string;
+}
+```
 
 #### `ListadoClientesResponseDto` — ítem dentro del listado paginado
 
