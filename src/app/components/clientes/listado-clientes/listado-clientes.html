@@ -13,4 +13,7 @@
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+  @if (clientePagoSeleccionado(); as clientePago) {
+    <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
+  }
 </app-page-layout>

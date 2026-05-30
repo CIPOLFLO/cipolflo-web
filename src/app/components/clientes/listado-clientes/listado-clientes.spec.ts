@@ -47,11 +47,14 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
 describe('ListadoClientes', () => {
   let fixture: ComponentFixture<ListadoClientes>;
   let component: ListadoClientes;
-  let mockClientesService: { getAll: ReturnType<typeof vi.fn> };
-
+  let mockClientesService: {
+    getAll: ReturnType<typeof vi.fn>;
+    getCostoCuota: ReturnType<typeof vi.fn>;
+  };
   beforeEach(async () => {
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+      getCostoCuota: vi.fn().mockReturnValue(5000),
     };
 
     await TestBed.configureTestingModule({
@@ -120,6 +123,29 @@ describe('ListadoClientes', () => {
     const verDetalle = actions.find((a) => a.label === 'Ver detalle');
     expect(verDetalle).toBeDefined();
     expect(verDetalle!.icon).toBe('pi pi-eye');
+    expect(actions.length).toBeGreaterThanOrEqual(1);
+    expect(actions[0].label).toBe('Ver detalle');
+    expect(actions[0].icon).toBe('pi pi-eye');
+  });
+
+  it('rowActions incluye "Pago de cuota" cuando el cliente es socio', () => {
+    const socio = mockPageResponse.content.find(
+      (cliente) => cliente.tipoCliente === TipoCliente.Socio,
+    )!;
+
+    const actions = component['rowActions'](socio);
+
+    expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(true);
+  });
+
+  it('rowActions no incluye "Pago de cuota" cuando el cliente es particular', () => {
+    const particular = mockPageResponse.content.find(
+      (cliente) => cliente.tipoCliente === TipoCliente.Particular,
+    )!;
+
+    const actions = component['rowActions'](particular);
+
+    expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(false);
   });
 
   it('el comando de "Ver detalle" navega correctamente', () => {
@@ -146,6 +172,21 @@ describe('ListadoClientes', () => {
     expect(labels).toContain('Cédula');
     expect(labels).toContain('Email');
     expect(labels).toContain('Estado');
+  });
+  it('onNuevoCliente navega a clientes/nuevo', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+
+    component['onNuevoCliente']();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
+  });
+
+  it('onPagoCuota selecciona el cliente para pagar cuota', () => {
+    const row = mockPageResponse.content[0];
+
+    component['onPagoCuota'](row);
+
+    expect(component['clientePagoSeleccionado']()).toEqual(row);
   });
 });
 
@@ -200,7 +241,10 @@ describe('ListadoClientes sin filtros por defecto', () => {
       providers: [
         {
           provide: ClientesService,
-          useValue: { getAll: vi.fn().mockReturnValue(of(mockPageResponse)) },
+          useValue: {
+            getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+            getCostoCuota: vi.fn().mockReturnValue(5000),
+          },
         },
       ],
     })
@@ -209,6 +253,13 @@ describe('ListadoClientes sin filtros por defecto', () => {
           providers: [
             TableStateService,
             ClientesColumnsService,
+            {
+              provide: ClientesService,
+              useValue: {
+                getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+                getCostoCuota: vi.fn().mockReturnValue(5000),
+              },
+            },
             { provide: FilterConfigProvider, useClass: SinDefaultsFilterService },
           ],
         },

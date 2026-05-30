@@ -1,0 +1,111 @@
+<p-dialog
+  [visible]="true"
+  [modal]="true"
+  [closable]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [style]="{ width: '520px', minHeight: '560px' }"
+>
+  @if (cliente(); as cliente) {
+    <div class="pago-cuota">
+      <header class="pago-cuota__header">
+        <h2>Pago de Cuota</h2>
+        <p>Registre el pago de cuotas del socio</p>
+      </header>
+
+      <section class="pago-cuota__socio">
+        <p>Socio: {{ cliente['nombreCompleto'] }}</p>
+        <p>N° de Socio: {{ cliente['numeroSocio'] }}</p>
+        <p>Costo por Cuota: {{ costoCuota | currencyFormat }}</p>
+      </section>
+
+      <form [formGroup]="form" class="pago-cuota__form">
+        <label for="cantidadCuotas">Cantidad de Cuotas a Pagar *</label>
+        <p-inputnumber
+          inputId="cantidadCuotas"
+          formControlName="cantidadCuotas"
+          [showButtons]="true"
+        />
+
+        @if (cantidadInvalida()) {
+          <small class="pago-cuota__error">La cantidad debe ser mayor o igual a 1.</small>
+        }
+
+        <label for="formaPago">Forma de Pago *</label>
+        <p-select
+          inputId="formaPago"
+          formControlName="formaPago"
+          [options]="formasPago"
+          optionLabel="label"
+          optionValue="value"
+        />
+
+        <label for="fechaPago">Fecha de Pago</label>
+        <p-datepicker
+          inputId="fechaPago"
+          formControlName="fechaPago"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
+
+        @if (fechaEsFutura()) {
+          <small class="pago-cuota__error">La fecha de pago no puede ser posterior a hoy.</small>
+        }
+      </form>
+
+      <section class="pago-cuota__resumen">
+        <div>
+          <span>Cuotas a pagar:</span>
+          <strong>
+            {{ cantidadCuotas() }}
+            {{ cantidadCuotas() === 1 ? 'cuota' : 'cuotas' }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Costo por cuota:</span>
+          <strong>{{ costoCuota | currencyFormat }}</strong>
+        </div>
+
+        <div class="pago-cuota__total">
+          <span>Total a Pagar:</span>
+          <strong>{{ getTotal() | currencyFormat }}</strong>
+        </div>
+      </section>
+
+      <footer class="pago-cuota__actions">
+        <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
+        <app-button
+          label="Confirmar Pago"
+          intent="primary"
+          [disabled]="confirmDisabled()"
+          [tooltip]="confirmDisabled() ? 'Complete todos los campos correctamente' : ''"
+          (clicked)="onConfirmar()"
+        />
+      </footer>
+    </div>
+  }
+</p-dialog>
+
+<p-dialog
+  [visible]="pagoConfirmado() !== null"
+  [modal]="true"
+  [closable]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [style]="{ width: '360px' }"
+>
+  @if (pagoConfirmado(); as pago) {
+    <div class="pago-confirmado">
+      <div class="pago-confirmado__icon">
+        <i class="pi pi-check-circle"></i>
+      </div>
+
+      <h3>Pago registrado</h3>
+      <p>El pago de cuota fue registrado correctamente.</p>
+      <p><strong>Total:</strong> {{ pago.total | currencyFormat }}</p>
+
+      <app-button label="Aceptar" intent="primary" (clicked)="cerrarConfirmacion()" />
+    </div>
+  }
+</p-dialog>

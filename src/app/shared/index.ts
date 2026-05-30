@@ -49,6 +49,7 @@ export { MESES_ABREVIADOS } from './models/fecha.constants';
 
 // Pipes
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
+export { CurrencyFormatPipe } from './pipes/currency-format.pipe';
 export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
