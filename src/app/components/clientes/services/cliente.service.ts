@@ -19,7 +19,7 @@ export class ClientesService extends BaseHttpService {
   }
   getCostoCuota(): number {
     return 5000;
-
+  }
   create(dto: ClienteCrearDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
   }
