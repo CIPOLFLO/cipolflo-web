@@ -12,7 +12,7 @@ import {
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
-import { ClienteRespuestaDto, TipoCliente } from '../models/cliente.model';
+import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 
@@ -59,7 +59,7 @@ export class ListadoClientes {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
     },
-    ...(row.tipoCliente === TipoCliente.Socio
+    ...(row.tipoCliente === TipoCliente.Socio && row.estado != EstadoSocio.Baja
       ? [
           {
             label: 'Pago de cuota',

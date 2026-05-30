@@ -209,6 +209,13 @@ describe('ListadoClientes sin filtros por defecto', () => {
           providers: [
             TableStateService,
             ClientesColumnsService,
+            {
+              provide: ClientesService,
+              useValue: {
+                getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+                getCostoCuota: vi.fn().mockReturnValue(5000),
+              },
+            },
             { provide: FilterConfigProvider, useClass: SinDefaultsFilterService },
           ],
         },
