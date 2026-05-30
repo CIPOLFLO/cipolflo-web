@@ -13,40 +13,5 @@
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
-
-  <p-dialog
-    [visible]="clientePagoSeleccionado() !== null"
-    [modal]="true"
-    [closable]="false"
-    [resizable]="false"
-    [draggable]="false"
-    [style]="{ width: '520px' }"
-  >
-    @if (clientePagoSeleccionado(); as clientePago) {
-      <app-pago-cuota
-        [cliente]="clientePago"
-        (cancelado)="onCancelarPagoCuota()"
-        (confirmado)="onConfirmarPagoCuota($event)"
-      />
-    }
-  </p-dialog>
-
-  <p-dialog
-    [visible]="pagoConfirmado() !== null"
-    [modal]="true"
-    [closable]="false"
-    [resizable]="false"
-    [draggable]="false"
-    [style]="{ width: '360px' }"
-  >
-    @if (pagoConfirmado(); as pago) {
-      <div class="pago-confirmado">
-        <h3>Pago registrado</h3>
-        <p>El pago de cuota fue registrado correctamente.</p>
-        <p><strong>Total:</strong> $ {{ pago.total }}</p>
-
-        <app-button label="Aceptar" intent="primary" (clicked)="cerrarPagoConfirmado()" />
-      </div>
-    }
-  </p-dialog>
+  <app-pago-cuota [cliente]="clientePagoSeleccionado()" (cerrado)="onCerrarPagoCuota()" />
 </app-page-layout>

@@ -186,6 +186,9 @@ export class ClientesService extends BaseHttpService {
     console.log('id', id);
     return of(undefined);
   }
+  getCostoCuota(): number {
+    return 5000;
+  }
 
   create(dto: Partial<ClienteCrearDto>): Observable<ClienteDetalleRespuestaDto> {
     console.log('Crear cliente', dto);

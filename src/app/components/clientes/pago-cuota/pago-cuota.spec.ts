@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PagoCuota } from './pago-cuota';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { FormaPago } from 'src/app/shared/models/forma-pago.model';
 
 const mockCliente: ClienteRespuestaDto = {
   id: 1,
@@ -34,48 +35,61 @@ describe('PagoCuota', () => {
     expect(component).toBeTruthy();
   });
   it('onCancelar emite cancelado', () => {
-    const canceladoSpy = vi.spyOn(component.cancelado, 'emit');
+    const canceladoSpy = vi.spyOn(component.cerrado, 'emit');
 
     component['onCancelar']();
 
     expect(canceladoSpy).toHaveBeenCalled();
   });
 
-  it('onConfirmar no emite si el formulario es inválido', () => {
-    const confirmadoSpy = vi.spyOn(component.confirmado, 'emit');
-
+  it('onConfirmar no confirma si el formulario es inválido', () => {
     component['form'].controls.cantidadCuotas.setValue(0);
+
     component['onConfirmar']();
 
-    expect(confirmadoSpy).not.toHaveBeenCalled();
+    expect(component['pagoConfirmado']()).toBeNull();
   });
 
-  it('onConfirmar no emite si la fecha es futura', () => {
-    const confirmadoSpy = vi.spyOn(component.confirmado, 'emit');
+  it('onConfirmar no confirma si la fecha es futura', () => {
+    component['form'].controls.fechaPago.setValue(new Date(2999, 0, 1));
 
-    component['form'].controls.fechaPago.setValue('2999-01-01');
     component['onConfirmar']();
 
-    expect(confirmadoSpy).not.toHaveBeenCalled();
+    expect(component['pagoConfirmado']()).toBeNull();
   });
 
-  it('onConfirmar emite los datos del pago si el formulario es válido', () => {
-    const confirmadoSpy = vi.spyOn(component.confirmado, 'emit');
-
+  it('onConfirmar guarda el pago confirmado si el formulario es válido', () => {
     component['form'].patchValue({
       cantidadCuotas: 2,
-      formaPago: 'EFECTIVO',
-      fechaPago: '2026-03-27',
+      formaPago: FormaPago.Efectivo,
+      fechaPago: new Date(2026, 2, 27),
     });
 
     component['onConfirmar']();
 
-    expect(confirmadoSpy).toHaveBeenCalledWith({
+    expect(component['pagoConfirmado']()).toEqual({
       clienteId: mockCliente.id,
       cantidadCuotas: 2,
-      formaPago: 'EFECTIVO',
+      formaPago: FormaPago.Efectivo,
       fechaPago: '2026-03-27',
       total: 10000,
     });
+  });
+
+  it('cerrarConfirmacion limpia el pago confirmado y emite cerrado', () => {
+    const cerradoSpy = vi.spyOn(component.cerrado, 'emit');
+
+    component['pagoConfirmado'].set({
+      clienteId: mockCliente.id,
+      cantidadCuotas: 1,
+      formaPago: FormaPago.Efectivo,
+      fechaPago: '2026-03-27',
+      total: 5000,
+    });
+
+    component['cerrarConfirmacion']();
+
+    expect(component['pagoConfirmado']()).toBeNull();
+    expect(cerradoSpy).toHaveBeenCalled();
   });
 });

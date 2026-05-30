@@ -1,92 +1,142 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  computed,
+  inject,
+  Component,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppButton } from '../../../shared';
+import { AppButton, CurrencyFormatPipe, DateTimeFormatPipe } from '../../../shared';
 import { ClienteRespuestaDto } from '../models/cliente.model';
-
-export interface PagoCuotaDto {
-  clienteId: number;
-  cantidadCuotas: number;
-  formaPago: string;
-  fechaPago: string;
-  total: number;
-}
+import { ClientesService } from '../services/cliente.service';
+import { PagoCuotaDto } from '../models/pago-cuota.model';
+import { FormaPago } from '../../../shared/models/forma-pago.model';
+import { InputNumber } from 'primeng/inputnumber';
+import { Select } from 'primeng/select';
+import { DatePicker } from 'primeng/datepicker';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Dialog } from 'primeng/dialog';
 
 @Component({
   selector: 'app-pago-cuota',
   standalone: true,
-  imports: [ReactiveFormsModule, AppButton],
+  imports: [
+    ReactiveFormsModule,
+    CurrencyFormatPipe,
+    DateTimeFormatPipe,
+    AppButton,
+    InputNumber,
+    Select,
+    DatePicker,
+    Dialog,
+  ],
   templateUrl: './pago-cuota.html',
   styleUrl: './pago-cuota.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PagoCuota {
-  readonly cliente = input.required<ClienteRespuestaDto>();
-  readonly cancelado = output<void>();
-  readonly confirmado = output<PagoCuotaDto>();
+  readonly cliente = input<ClienteRespuestaDto | null>(null);
+  readonly cerrado = output<void>();
+  protected readonly visible = computed(() => this.cliente() !== null);
+  protected readonly pagoConfirmado = signal<PagoCuotaDto | null>(null);
+  private readonly clientesService = inject(ClientesService);
+  private readonly touched = signal(false);
 
-  private readonly costoCuota = 5000;
+  protected readonly FormaPago = FormaPago;
+  protected readonly costoCuota = this.clientesService.getCostoCuota();
 
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
       nonNullable: true,
       validators: [Validators.required, Validators.min(1)],
     }),
-    formaPago: new FormControl<string>('EFECTIVO', {
+    formaPago: new FormControl<FormaPago>(FormaPago.Efectivo, {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    fechaPago: new FormControl<string>(this.today(), {
+    fechaPago: new FormControl<Date>(new Date(), {
       nonNullable: true,
       validators: [Validators.required],
     }),
   });
-
-  protected readonly total = computed(() => {
-    const cantidad = this.form.controls.cantidadCuotas.value;
-    return cantidad * this.costoCuota;
+  private readonly formStatus = toSignal(this.form.statusChanges, {
+    initialValue: this.form.status,
   });
 
-  protected readonly fechaSeleccionada = computed(() =>
-    this.formatFecha(this.form.controls.fechaPago.value),
+  protected readonly confirmDisabled = computed(
+    () => this.formStatus() === 'INVALID' || this.fechaEsFutura(),
   );
 
+  protected readonly cantidadCuotas = toSignal(this.form.controls.cantidadCuotas.valueChanges, {
+    initialValue: this.form.controls.cantidadCuotas.value,
+  });
+
+  protected readonly fechaPago = toSignal(this.form.controls.fechaPago.valueChanges, {
+    initialValue: this.form.controls.fechaPago.value,
+  });
+
+  protected getTotal(): number {
+    return this.form.controls.cantidadCuotas.value * this.costoCuota;
+  }
+
   protected onCancelar(): void {
-    this.cancelado.emit();
+    this.cerrar();
   }
 
   protected onConfirmar(): void {
+    this.touched.set(true);
     this.form.markAllAsTouched();
 
     if (this.form.invalid || this.fechaEsFutura()) return;
 
-    this.confirmado.emit({
-      clienteId: this.cliente().id,
+    this.pagoConfirmado.set({
+      clienteId: this.cliente()!.id,
       cantidadCuotas: this.form.controls.cantidadCuotas.value,
       formaPago: this.form.controls.formaPago.value,
-      fechaPago: this.form.controls.fechaPago.value,
-      total: this.form.controls.cantidadCuotas.value * this.costoCuota,
+      fechaPago: this.toDateString(this.form.controls.fechaPago.value),
+      total: this.getTotal(),
     });
   }
 
   protected fechaEsFutura(): boolean {
-    return this.form.controls.fechaPago.value > this.today();
+    const fechaPago = this.form.controls.fechaPago.value;
+    const hoy = new Date();
+
+    fechaPago.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+
+    return fechaPago > hoy;
   }
 
-  protected cantidadInvalida(): boolean {
-    const control = this.form.controls.cantidadCuotas;
-    return control.touched && control.invalid;
+  protected readonly cantidadInvalida = computed(() => this.touched() && this.cantidadCuotas() < 1);
+
+  protected readonly formasPago = [
+    { label: 'Efectivo', value: FormaPago.Efectivo },
+    { label: 'Tarjeta', value: FormaPago.Tarjeta },
+    { label: 'Transferencia', value: FormaPago.Transferencia },
+    { label: 'Débito automático', value: FormaPago.DebitoAutomatico },
+    { label: 'Cobradora', value: FormaPago.Cobradora },
+  ];
+
+  private toDateString(date: Date): string {
+    return date.toISOString().slice(0, 10);
   }
 
-  private today(): string {
-    return new Date().toISOString().slice(0, 10);
+  protected cerrarConfirmacion(): void {
+    this.pagoConfirmado.set(null);
+    this.cerrar();
   }
 
-  private formatFecha(value: string): string {
-    const [year, month, day] = value.split('-');
-    return `${day}/${month}/${year}`;
-  }
-
-  protected formatMoney(value: number): string {
-    return `$ ${value.toLocaleString('es-UY')},00`;
+  private cerrar(): void {
+    this.pagoConfirmado.set(null);
+    this.form.reset({
+      cantidadCuotas: 1,
+      formaPago: FormaPago.Efectivo,
+      fechaPago: new Date(),
+    });
+    this.touched.set(false);
+    this.cerrado.emit();
   }
 }

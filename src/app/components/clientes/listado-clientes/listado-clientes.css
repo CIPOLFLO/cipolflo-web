@@ -17,7 +17,7 @@
 
 .pago-confirmado__icon {
   font-size: 3rem;
-  color: #22c55e;
+  color: var(--color-success);
 }
 
 .pago-confirmado h3 {

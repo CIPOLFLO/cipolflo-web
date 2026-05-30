@@ -47,6 +47,7 @@ export type { AuditInfoDto } from './models/audit.model';
 
 // Pipes
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
+export { CurrencyFormatPipe } from './pipes/currency-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';

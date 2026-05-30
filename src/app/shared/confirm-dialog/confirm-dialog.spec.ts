@@ -51,7 +51,7 @@ describe('ConfirmDialogComponent', () => {
 
     it('should start with empty config', () => {
       expect(component.config.title).toBe('');
-      expect(component.config.message).toBeUndefined();
+      expect(component.config.message).toBe('');
     });
   });
 

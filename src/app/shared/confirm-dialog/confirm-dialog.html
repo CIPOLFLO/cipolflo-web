@@ -8,9 +8,7 @@
   [header]="config.title"
   [style]="{ width: config.width ?? '420px' }"
 >
-  @if (config.message) {
-    <p class="confirm-dialog__message">{{ config.message }}</p>
-  }
+  <p class="confirm-dialog__message">{{ config.message }}</p>
 
   <ng-content />
   <ng-template #footer>

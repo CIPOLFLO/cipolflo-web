@@ -14,7 +14,7 @@ import { AppButton } from '../components/button/button';
 })
 export class ConfirmDialogComponent implements OnInit, OnDestroy {
   visible = false;
-  config: ConfirmDialogData = { title: '' };
+  config: ConfirmDialogData = { title: '', message: '' };
 
   protected subscription: Subscription = new Subscription();
 

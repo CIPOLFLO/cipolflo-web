@@ -47,11 +47,14 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
 describe('ListadoClientes', () => {
   let fixture: ComponentFixture<ListadoClientes>;
   let component: ListadoClientes;
-  let mockClientesService: { getAll: ReturnType<typeof vi.fn> };
-
+  let mockClientesService: {
+    getAll: ReturnType<typeof vi.fn>;
+    getCostoCuota: ReturnType<typeof vi.fn>;
+  };
   beforeEach(async () => {
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+      getCostoCuota: vi.fn().mockReturnValue(5000),
     };
 
     await TestBed.configureTestingModule({
@@ -125,6 +128,26 @@ describe('ListadoClientes', () => {
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
+  it('rowActions incluye "Pago de cuota" cuando el cliente es socio', () => {
+    const socio = mockPageResponse.content.find(
+      (cliente) => cliente.tipoCliente === TipoCliente.Socio,
+    )!;
+
+    const actions = component['rowActions'](socio);
+
+    expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(true);
+  });
+
+  it('rowActions no incluye "Pago de cuota" cuando el cliente es particular', () => {
+    const particular = mockPageResponse.content.find(
+      (cliente) => cliente.tipoCliente === TipoCliente.Particular,
+    )!;
+
+    const actions = component['rowActions'](particular);
+
+    expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(false);
+  });
+
   it('el comando de "Ver detalle" navega correctamente', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     const row = {
@@ -159,44 +182,6 @@ describe('ListadoClientes', () => {
 
     expect(component['clientePagoSeleccionado']()).toEqual(row);
   });
-
-  it('onCancelarPagoCuota limpia el cliente seleccionado', () => {
-    const row = mockPageResponse.content[0];
-
-    component['onPagoCuota'](row);
-    component['onCancelarPagoCuota']();
-
-    expect(component['clientePagoSeleccionado']()).toBeNull();
-  });
-
-  it('onConfirmarPagoCuota limpia el cliente seleccionado y guarda pago confirmado', () => {
-    const dto = {
-      clienteId: 1,
-      cantidadCuotas: 1,
-      formaPago: 'EFECTIVO',
-      fechaPago: '2026-03-27',
-      total: 5000,
-    };
-
-    component['onConfirmarPagoCuota'](dto);
-
-    expect(component['clientePagoSeleccionado']()).toBeNull();
-    expect(component['pagoConfirmado']()).toEqual(dto);
-  });
-
-  it('cerrarPagoConfirmado limpia el pago confirmado', () => {
-    component['pagoConfirmado'].set({
-      clienteId: 1,
-      cantidadCuotas: 1,
-      formaPago: 'EFECTIVO',
-      fechaPago: '2026-03-27',
-      total: 5000,
-    });
-
-    component['cerrarPagoConfirmado']();
-
-    expect(component['pagoConfirmado']()).toBeNull();
-  });
 });
 
 describe('ListadoClientes sin filtros por defecto', () => {
@@ -212,7 +197,10 @@ describe('ListadoClientes sin filtros por defecto', () => {
       providers: [
         {
           provide: ClientesService,
-          useValue: { getAll: vi.fn().mockReturnValue(of(mockPageResponse)) },
+          useValue: {
+            getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+            getCostoCuota: vi.fn().mockReturnValue(5000),
+          },
         },
       ],
     })
