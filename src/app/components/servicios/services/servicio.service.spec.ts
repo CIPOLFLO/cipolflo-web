@@ -6,10 +6,13 @@ import { ServicioService } from './servicio.service';
 import { environment } from '@env/environment';
 import {
   EstadoServicio,
+  HabilitacionServicioDto,
+  ReservaProximaDto,
   ServicioActualizarDto,
   ServicioCrearDto,
   ServicioDetalleRespuestaDto,
 } from '../models/servicio.model';
+import { EstadoReserva } from '../../../shared';
 
 const emptyPage = {
   content: [],
@@ -231,6 +234,149 @@ describe('ServicioService', () => {
           { status: 404, statusText: 'Not Found' },
         );
       expect(errorStatus).toBe(404);
+    });
+  });
+
+  describe('getReservasProximas', () => {
+    const mockReservas: ReservaProximaDto[] = [
+      {
+        id: 12,
+        clienteId: 5,
+        fechaEntrada: '2026-06-01T14:00:00Z',
+        fechaSalida: '2026-06-03T12:00:00Z',
+        pago: true,
+        estado: EstadoReserva.Confirmada,
+      },
+      {
+        id: 45,
+        clienteId: 8,
+        fechaEntrada: '2026-06-24T14:00:00Z',
+        fechaSalida: '2026-06-27T12:00:00Z',
+        pago: false,
+        estado: EstadoReserva.Pendiente,
+      },
+    ];
+
+    it('hace GET a /servicios/{id}/reservas-proximas', () => {
+      service.getReservasProximas(1).subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1/reservas-proximas`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockReservas);
+    });
+
+    it('retorna la lista de reservas próximas', () => {
+      let resultado: ReservaProximaDto[] | undefined;
+      service.getReservasProximas(1).subscribe((r) => (resultado = r));
+      httpMock.expectOne(`${environment.apiUrl}/servicios/1/reservas-proximas`).flush(mockReservas);
+      expect(resultado).toEqual(mockReservas);
+    });
+
+    it('retorna array vacío cuando no hay reservas próximas', () => {
+      let resultado: ReservaProximaDto[] | undefined;
+      service.getReservasProximas(1).subscribe((r) => (resultado = r));
+      httpMock.expectOne(`${environment.apiUrl}/servicios/1/reservas-proximas`).flush([]);
+      expect(resultado).toEqual([]);
+    });
+
+    it('propaga error 404 cuando el servicio no existe', () => {
+      let errorStatus = 0;
+      service.getReservasProximas(9999).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${environment.apiUrl}/servicios/9999/reservas-proximas`)
+        .flush(
+          { codigo: 'NOT_FOUND', descripcion: 'Servicio no encontrado' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+  });
+
+  describe('actualizarHabilitacion', () => {
+    const urlHabilitacion = (id: number) => `${environment.apiUrl}/servicios/${id}/habilitacion`;
+
+    it('hace PATCH a /servicios/{id}/habilitacion', () => {
+      service.actualizarHabilitacion(1, { habilitado: true }).subscribe();
+      const req = httpMock.expectOne(urlHabilitacion(1));
+      expect(req.request.method).toBe('PATCH');
+      req.flush(mockDetalle);
+    });
+
+    it('habilitar: envía habilitado=true sin reservas', () => {
+      const dto: HabilitacionServicioDto = { habilitado: true };
+      service.actualizarHabilitacion(1, dto).subscribe();
+      const req = httpMock.expectOne(urlHabilitacion(1));
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockDetalle);
+    });
+
+    it('deshabilitar sin cancelar reservas: envía habilitado=false y reservasACancelar vacío', () => {
+      const dto: HabilitacionServicioDto = { habilitado: false, reservasACancelar: [] };
+      service.actualizarHabilitacion(1, dto).subscribe();
+      const req = httpMock.expectOne(urlHabilitacion(1));
+      expect(req.request.body).toEqual(dto);
+      req.flush({ ...mockDetalle, estado: EstadoServicio.Deshabilitado });
+    });
+
+    it('deshabilitar y cancelar reservas sin devolución: envía ids y confirmarDevolucion=false', () => {
+      const dto: HabilitacionServicioDto = {
+        habilitado: false,
+        reservasACancelar: [12, 45],
+        confirmarDevolucion: false,
+      };
+      service.actualizarHabilitacion(1, dto).subscribe();
+      const req = httpMock.expectOne(urlHabilitacion(1));
+      expect(req.request.body).toEqual(dto);
+      req.flush({ ...mockDetalle, estado: EstadoServicio.Deshabilitado });
+    });
+
+    it('deshabilitar y cancelar con devolución: envía confirmarDevolucion=true', () => {
+      const dto: HabilitacionServicioDto = {
+        habilitado: false,
+        reservasACancelar: [12],
+        confirmarDevolucion: true,
+      };
+      service.actualizarHabilitacion(1, dto).subscribe();
+      const req = httpMock.expectOne(urlHabilitacion(1));
+      expect(req.request.body).toEqual(dto);
+      req.flush({ ...mockDetalle, estado: EstadoServicio.Deshabilitado });
+    });
+
+    it('retorna el servicio con el estado actualizado', () => {
+      const servicioDeshabilitado = { ...mockDetalle, estado: EstadoServicio.Deshabilitado };
+      let resultado: ServicioDetalleRespuestaDto | undefined;
+      service
+        .actualizarHabilitacion(1, { habilitado: false, reservasACancelar: [] })
+        .subscribe((r) => (resultado = r));
+      httpMock.expectOne(urlHabilitacion(1)).flush(servicioDeshabilitado);
+      expect(resultado?.estado).toBe(EstadoServicio.Deshabilitado);
+    });
+
+    it('propaga error 404 cuando el servicio no existe', () => {
+      let errorStatus = 0;
+      service
+        .actualizarHabilitacion(9999, { habilitado: false })
+        .subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(urlHabilitacion(9999))
+        .flush(
+          { codigo: 'NOT_FOUND', descripcion: 'Servicio no encontrado' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 409 cuando hay conflicto de negocio', () => {
+      let errorStatus = 0;
+      service
+        .actualizarHabilitacion(1, { habilitado: false })
+        .subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(urlHabilitacion(1))
+        .flush(
+          { codigo: 'CONFLICT', descripcion: 'El servicio tiene reservas activas sin confirmar' },
+          { status: 409, statusText: 'Conflict' },
+        );
+      expect(errorStatus).toBe(409);
     });
   });
 });

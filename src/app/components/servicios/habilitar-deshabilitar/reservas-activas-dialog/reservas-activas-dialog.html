@@ -1,0 +1,91 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="'Deshabilitar Servicio: ' + nombreServicio()"
+  [style]="{ width: '560px' }"
+>
+  <div class="alert-warning">
+    <div class="alert-warning__header">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>Reservas Activas Encontradas</span>
+    </div>
+    <p class="alert-warning__text">
+      Este servicio tiene {{ reservas().length }} reservas activas en los próximos 2 meses.
+    </p>
+  </div>
+
+  <div class="seleccionar-todas">
+    <p-checkbox
+      [binary]="true"
+      [ngModel]="todasSeleccionadas()"
+      (ngModelChange)="toggleTodas($event)"
+      inputId="sel-todas"
+    />
+    <label for="sel-todas" class="seleccionar-todas__label">Seleccionar todas</label>
+  </div>
+
+  <div class="reservas-list">
+    @for (reserva of reservas(); track reserva.id) {
+      <div class="reserva-row">
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="isSelected(reserva.id)"
+          (ngModelChange)="toggleReserva(reserva.id, $event)"
+          [ariaLabel]="
+            'Seleccionar reserva #' +
+            reserva.id +
+            (reserva.nombreCliente ? ' de ' + reserva.nombreCliente : '')
+          "
+        />
+        <a
+          [href]="getReservaUrl(reserva.id)"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="reserva-row__link"
+        >
+          #{{ reserva.id }}
+          <i class="pi pi-external-link"></i>
+        </a>
+        <span class="app-tag" [class.tag--green]="reserva.pago" [class.tag--gray]="!reserva.pago">
+          {{ reserva.pago ? 'Paga' : 'No paga' }}
+        </span>
+        @if (reserva.nombreCliente) {
+          <span class="reserva-row__cliente">{{ reserva.nombreCliente }}</span>
+        }
+        <span class="reserva-row__fechas">
+          {{ reserva.fechaEntrada | dateShortFormat }} - {{ reserva.fechaSalida | dateShortFormat }}
+        </span>
+      </div>
+    }
+  </div>
+
+  @if (tieneReservasPagas()) {
+    <p class="warning-pagas">
+      <i class="pi pi-info-circle"></i>
+      Debe realizar la devolución de las reservas pagas antes de cancelarlas.
+    </p>
+  }
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <app-button intent="secondary" label="Cancelar" (clicked)="cancelar.emit()" />
+      <div class="dialog-footer__actions">
+        <app-button
+          intent="warning"
+          label="Deshabilitar sin cancelar"
+          (clicked)="deshabilitarSinCancelar.emit()"
+        />
+        <app-button
+          intent="primary"
+          [label]="'Deshabilitar y cancelar (' + seleccionadas().length + ')'"
+          [disabled]="!puedeDeshabilitarYCancelar()"
+          (clicked)="onDeshabilitarYCancelar()"
+        />
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

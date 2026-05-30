@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Signal, signal } from '@angular/core';
+import { WritableSignal, signal } from '@angular/core';
 import { FilterPanel } from './filter-panel';
 import { FilterConfigProvider } from '../../services/filter-config.provider';
 import { FormFieldConfig } from '../../models/form-field.model';
 
 interface FilterPanelTestApi {
   updateValue(key: string, value: string | null): void;
-  onSearch(): void;
+  emitFilters(): void;
   onClear(): void;
-  filterValues: Signal<Record<string, string | null>>;
+  filterValues: WritableSignal<Record<string, string | null>>;
 }
 
 const mockFields: FormFieldConfig[] = [
@@ -93,15 +93,22 @@ describe('FilterPanel', () => {
     expect(api.filterValues()).toEqual({});
   });
 
-  it('debe emitir solo los valores no vacíos ni nulos al llamar a onSearch()', () => {
+  it('debe emitir solo los valores no vacíos ni nulos al llamar a emitFilters()', () => {
     const emitted: Record<string, string>[] = [];
+    // Set state directly to avoid reactive emissions from updateValue
+    api.filterValues.set({ nombre: 'Juan', estado: null, servicio: '' });
     component.filterChange.subscribe((v) => emitted.push(v));
-    api.updateValue('nombre', 'Juan');
-    api.updateValue('estado', null);
-    api.updateValue('servicio', '');
-    api.onSearch();
+    api.emitFilters();
     expect(emitted.length).toBe(1);
     expect(emitted[0]).toEqual({ nombre: 'Juan' });
+  });
+
+  it('debe emitir filterChange inmediatamente al cambiar un campo select', () => {
+    const emitted: Record<string, string>[] = [];
+    component.filterChange.subscribe((v) => emitted.push(v));
+    api.updateValue('estado', 'ACTIVO');
+    expect(emitted.length).toBe(1);
+    expect(emitted[0]).toEqual({ estado: 'ACTIVO' });
   });
 
   it('debe emitir un objeto vacío al llamar a onClear()', () => {
@@ -118,13 +125,6 @@ describe('FilterPanel', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(api.filterValues()['nombre']).toBe('Juan');
-  });
-
-  it('debe llamar a onSearch al hacer click en el botón Buscar', () => {
-    const emitted: Record<string, string>[] = [];
-    component.filterChange.subscribe((v) => emitted.push(v));
-    fixture.nativeElement.querySelector('.filter-panel__actions .button--primary').click();
-    expect(emitted.length).toBe(1);
   });
 
   it('debe llamar a onClear al hacer click en el botón Limpiar Filtros', () => {
@@ -162,10 +162,10 @@ describe('FilterPanel con campos que tienen defaultValue', () => {
     expect(api.filterValues()).toEqual({ estado: 'HABILITADO' });
   });
 
-  it('onSearch debe incluir el defaultValue en la emisión inicial', () => {
+  it('emitFilters debe incluir el defaultValue en la emisión inicial', () => {
     const emitted: Record<string, string>[] = [];
     fixture.componentInstance.filterChange.subscribe((v) => emitted.push(v));
-    api.onSearch();
+    api.emitFilters();
     expect(emitted[0]).toEqual({ estado: 'HABILITADO' });
   });
 });

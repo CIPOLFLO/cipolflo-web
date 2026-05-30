@@ -1,7 +1,6 @@
 <p-table
-  [value]="tableData().content"
+  [value]="loading() ? $any(skeletonRows) : tableData().content"
   [lazy]="true"
-  [loading]="loading()"
   [sortField]="sortFieldOrDefault"
   [sortOrder]="
     tableState.queryParams().sortField
@@ -29,41 +28,52 @@
   </ng-template>
 
   <ng-template pTemplate="body" let-row>
-    <tr>
-      @for (col of columns(); track col.key) {
-        <td>
-          @switch (col.cellType) {
-            @case ('tag') {
-              <app-tag-cell
-                [value]="getTagCellValue(col, row[col.key])"
-                [tagMap]="getTagMap(col)"
-              />
+    @if (loading()) {
+      <tr>
+        @for (col of columns(); track col.key) {
+          <td><p-skeleton height="1.5rem" /></td>
+        }
+        @if (getRowActions()) {
+          <td><p-skeleton height="1.5rem" /></td>
+        }
+      </tr>
+    } @else {
+      <tr>
+        @for (col of columns(); track col.key) {
+          <td>
+            @switch (col.cellType) {
+              @case ('tag') {
+                <app-tag-cell
+                  [value]="getTagCellValue(col, row[col.key])"
+                  [tagMap]="getTagMap(col)"
+                />
+              }
+              @case ('amount') {
+                <app-amount-cell [value]="getNumber(row[col.key])" />
+              }
+              @case ('price') {
+                <app-price-cell
+                  [value]="getNumber(row[col.key])"
+                  [unit]="getString(row[col.unitKey ?? ''])"
+                  [colorVariant]="getPriceColorVariant(col)"
+                />
+              }
+              @case ('date') {
+                {{ getString(row[col.key]) | dateFormat }}
+              }
+              @default {
+                {{ getTextValue(col, row[col.key]) }}
+              }
             }
-            @case ('amount') {
-              <app-amount-cell [value]="getNumber(row[col.key])" />
-            }
-            @case ('price') {
-              <app-price-cell
-                [value]="getNumber(row[col.key])"
-                [unit]="getString(row[col.unitKey ?? ''])"
-                [colorVariant]="getPriceColorVariant(col)"
-              />
-            }
-            @case ('date') {
-              {{ getString(row[col.key]) | dateFormat }}
-            }
-            @default {
-              {{ getTextValue(col, row[col.key]) }}
-            }
-          }
-        </td>
-      }
-      @if (getRowActions()) {
-        <td>
-          <app-row-actions [actions]="getRowActionsForRow(row)" [row]="row" />
-        </td>
-      }
-    </tr>
+          </td>
+        }
+        @if (getRowActions()) {
+          <td>
+            <app-row-actions [actions]="getRowActionsForRow(row)" [row]="row" />
+          </td>
+        }
+      </tr>
+    }
   </ng-template>
 
   <ng-template pTemplate="emptymessage">
