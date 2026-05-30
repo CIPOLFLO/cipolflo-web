@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppButton, CurrencyFormatPipe, DateTimeFormatPipe } from '../../../shared';
+import { AppButton, CurrencyFormatPipe } from '../../../shared';
 import { ClienteRespuestaDto } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { PagoCuotaDto } from '../models/pago-cuota.model';
@@ -25,7 +25,6 @@ import { Dialog } from 'primeng/dialog';
   imports: [
     ReactiveFormsModule,
     CurrencyFormatPipe,
-    DateTimeFormatPipe,
     AppButton,
     InputNumber,
     Select,

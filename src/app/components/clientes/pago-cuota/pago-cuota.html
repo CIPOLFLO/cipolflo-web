@@ -20,29 +20,34 @@
       </section>
 
       <form [formGroup]="form" class="pago-cuota__form">
-        <label>
-          Cantidad de Cuotas a Pagar *
-          <p-inputnumber formControlName="cantidadCuotas" [min]="1" [showButtons]="true" />
-        </label>
+        <label for="cantidadCuotas">Cantidad de Cuotas a Pagar *</label>
+        <p-inputnumber
+          inputId="cantidadCuotas"
+          formControlName="cantidadCuotas"
+          [min]="1"
+          [showButtons]="true"
+        />
 
         @if (cantidadInvalida()) {
           <small class="pago-cuota__error">La cantidad debe ser mayor o igual a 1.</small>
         }
 
-        <label>
-          Forma de Pago *
-          <p-select
-            formControlName="formaPago"
-            [options]="formasPago"
-            optionLabel="label"
-            optionValue="value"
-          />
-        </label>
+        <label for="formaPago">Forma de Pago *</label>
+        <p-select
+          inputId="formaPago"
+          formControlName="formaPago"
+          [options]="formasPago"
+          optionLabel="label"
+          optionValue="value"
+        />
 
-        <label>
-          Fecha de Pago
-          <p-datepicker formControlName="fechaPago" dateFormat="dd/mm/yy" [showIcon]="true" />
-        </label>
+        <label for="fechaPago">Fecha de Pago</label>
+        <p-datepicker
+          inputId="fechaPago"
+          formControlName="fechaPago"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+        />
 
         @if (fechaEsFutura()) {
           <small class="pago-cuota__error">La fecha de pago no puede ser posterior a hoy.</small>
