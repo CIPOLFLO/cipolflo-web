@@ -185,31 +185,7 @@ export class ClientesService extends BaseHttpService {
     // TODO: reemplazar cuando el endpoint de detalle esté disponible
     console.log('id', id);
     return of(undefined);
-  }
-  create(dto: Partial<ClienteCrearDto>): Observable<ClienteDetalleRespuestaDto> {
-    console.log('Crear cliente', dto);
 
-    return of({
-      id: PLACEHOLDER_CLIENTES.length + 1,
-      nombre: dto.nombre ?? '',
-      tipoCliente: TipoCliente.Socio,
-      numeroSocio: String(PLACEHOLDER_CLIENTES.length + 1).padStart(3, '0'),
-      cedula: dto.cedula ?? '',
-      email: dto.email ?? '',
-      estado: EstadoSocio.Activo,
-      fechaNacimiento: dto.fechaNacimiento ?? '',
-      telefono: dto.telefono ?? '',
-      metodoPago: dto.metodoPago ?? MetodoPago.Cobradora,
-      pais: dto.pais ?? '',
-      departamento: dto.departamento ?? '',
-      ciudad: dto.ciudad ?? '',
-      direccion: dto.direccion ?? '',
-      observaciones: dto.observaciones ?? '',
-      createdAt: new Date().toISOString(),
-      createdBy: 'Juan Pérez',
-      updatedAt: new Date().toISOString(),
-      updatedBy: 'Juan Pérez',
-    });
   }
   getCostoCuota(): number {
     return 5000;
