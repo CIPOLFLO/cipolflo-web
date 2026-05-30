@@ -1,5 +1,5 @@
 <p-dialog
-  [visible]="visible()"
+  [visible]="true"
   [modal]="true"
   [closable]="false"
   [resizable]="false"
@@ -24,7 +24,6 @@
         <p-inputnumber
           inputId="cantidadCuotas"
           formControlName="cantidadCuotas"
-          [min]="1"
           [showButtons]="true"
         />
 
@@ -80,7 +79,7 @@
           label="Confirmar Pago"
           intent="primary"
           [disabled]="confirmDisabled()"
-          [tooltip]="confirmDisabled() ? 'Completá todos los campos correctamente' : ''"
+          [tooltip]="confirmDisabled() ? 'Complete todos los campos correctamente' : ''"
           (clicked)="onConfirmar()"
         />
       </footer>

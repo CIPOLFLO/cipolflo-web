@@ -4,32 +4,3 @@
   flex: 1;
   gap: 1rem;
 }
-
-.pago-confirmado {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-  padding: 16px;
-}
-
-.pago-confirmado__icon {
-  font-size: 3rem;
-  color: var(--color-success);
-}
-
-.pago-confirmado h3 {
-  margin: 0;
-  text-align: center;
-}
-
-.pago-confirmado p {
-  margin: 0;
-  text-align: center;
-}
-
-.pago-confirmado app-button {
-  margin-top: 12px;
-}

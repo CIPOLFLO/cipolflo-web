@@ -11,9 +11,6 @@ const mockCliente: ClienteRespuestaDto = {
   cedula: '5.191.926-8',
   email: 'lucia@example.com',
   estado: EstadoSocio.Activo,
-  fechaNacimiento: '1990-01-01',
-  telefono: '099123456',
-  metodoPago: 'COBRADORA',
 };
 
 describe('PagoCuota', () => {

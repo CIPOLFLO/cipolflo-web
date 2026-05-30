@@ -38,10 +38,8 @@ import { Dialog } from 'primeng/dialog';
 export class PagoCuota {
   readonly cliente = input<ClienteRespuestaDto | null>(null);
   readonly cerrado = output<void>();
-  protected readonly visible = signal(true);
   protected readonly pagoConfirmado = signal<PagoCuotaDto | null>(null);
   private readonly clientesService = inject(ClientesService);
-  private readonly touched = signal(false);
 
   protected readonly FormaPago = FormaPago;
   protected readonly costoCuota = this.clientesService.getCostoCuota();
@@ -86,7 +84,6 @@ export class PagoCuota {
   }
 
   protected onConfirmar(): void {
-    this.touched.set(true);
     this.form.markAllAsTouched();
 
     if (this.form.invalid || this.fechaEsFutura()) return;
@@ -101,7 +98,7 @@ export class PagoCuota {
   }
 
   protected fechaEsFutura(): boolean {
-    const fechaPago = this.form.controls.fechaPago.value;
+    const fechaPago = new Date(this.fechaPago());
     const hoy = new Date();
 
     fechaPago.setHours(0, 0, 0, 0);
@@ -110,7 +107,7 @@ export class PagoCuota {
     return fechaPago > hoy;
   }
 
-  protected readonly cantidadInvalida = computed(() => this.touched() && this.cantidadCuotas() < 1);
+  protected readonly cantidadInvalida = computed(() => this.cantidadCuotas() < 1);
 
   protected readonly formasPago = [
     { label: 'Efectivo', value: FormaPago.Efectivo },
@@ -121,11 +118,13 @@ export class PagoCuota {
   ];
 
   private toDateString(date: Date): string {
-    return date.toISOString().slice(0, 10);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   protected cerrarConfirmacion(): void {
-    this.pagoConfirmado.set(null);
     this.cerrar();
   }
 
@@ -136,7 +135,6 @@ export class PagoCuota {
       formaPago: FormaPago.Efectivo,
       fechaPago: new Date(),
     });
-    this.touched.set(false);
     this.cerrado.emit();
   }
 }

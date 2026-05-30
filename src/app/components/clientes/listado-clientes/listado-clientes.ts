@@ -59,7 +59,9 @@ export class ListadoClientes {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
     },
-    ...(row.tipoCliente === TipoCliente.Socio && row.estado != EstadoSocio.Baja
+    ...(row.tipoCliente === TipoCliente.Socio &&
+    row.estado !== null &&
+    row.estado !== EstadoSocio.Baja
       ? [
           {
             label: 'Pago de cuota',
