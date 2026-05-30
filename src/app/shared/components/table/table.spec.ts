@@ -11,6 +11,7 @@ import { AmountCellComponent } from './cells/amount-cell/amount-cell';
 import { PriceCellComponent } from './cells/price-cell/price-cell';
 import { TagCellComponent } from './cells/tag-cell/tag-cell';
 import { RowActionsComponent } from './cells/row-actions/row-actions';
+import { TABLE_MIN_LOADING_MS } from '../../config/table.config';
 
 // --- DateFormatPipe ---
 
@@ -149,7 +150,7 @@ describe('AppTable', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppTable],
-      providers: [TableStateService],
+      providers: [TableStateService, { provide: TABLE_MIN_LOADING_MS, useValue: 0 }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppTable<TestRow>);

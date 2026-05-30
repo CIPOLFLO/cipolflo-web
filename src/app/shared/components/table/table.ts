@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { finalize, switchMap } from 'rxjs';
+import { finalize, forkJoin, map, switchMap, timer } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { Skeleton } from 'primeng/skeleton';
 import { SortEvent } from 'primeng/api';
 
-const SKELETON_ROW_COUNT = 10;
 import {
   ColumnConfig,
   EMPTY_PAGE,
@@ -15,6 +14,7 @@ import {
   TagStyle,
 } from './table.models';
 import { TableStateService } from './table-state.service';
+import { TABLE_MIN_LOADING_MS, TABLE_SKELETON_ROW_COUNT } from '../../config/table.config';
 import { TagCellComponent } from './cells/tag-cell/tag-cell';
 import { AmountCellComponent } from './cells/amount-cell/amount-cell';
 import { PriceCellComponent } from './cells/price-cell/price-cell';
@@ -47,15 +47,22 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
   protected readonly tableState = inject(TableStateService);
   protected readonly loading = signal(false);
-  protected readonly skeletonRows = Array.from({ length: SKELETON_ROW_COUNT }, (_, i) => i);
 
+  private readonly minLoadingMs = inject(TABLE_MIN_LOADING_MS);
+  private readonly skeletonRowCount = inject(TABLE_SKELETON_ROW_COUNT);
+  protected readonly skeletonRows = Array.from({ length: this.skeletonRowCount }, (_, i) => i);
   private readonly params$ = toObservable(this.tableState.queryParams);
 
   protected readonly tableData = toSignal(
     this.params$.pipe(
       switchMap((params) => {
         this.loading.set(true);
-        return this.loadDataFn()(params).pipe(finalize(() => this.loading.set(false)));
+        const data$ = this.loadDataFn()(params);
+        const bounded$ =
+          this.minLoadingMs > 0
+            ? forkJoin([data$, timer(this.minLoadingMs)]).pipe(map(([data]) => data))
+            : data$;
+        return bounded$.pipe(finalize(() => this.loading.set(false)));
       }),
     ),
     { initialValue: EMPTY_PAGE as PageResponse<T> },
