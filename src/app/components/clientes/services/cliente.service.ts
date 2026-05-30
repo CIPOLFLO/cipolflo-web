@@ -186,11 +186,6 @@ export class ClientesService extends BaseHttpService {
     console.log('id', id);
     return of(undefined);
   }
-
-  getCostoCuota(): number {
-    return 5000;
-  }
-
   create(dto: Partial<ClienteCrearDto>): Observable<ClienteDetalleRespuestaDto> {
     console.log('Crear cliente', dto);
 
@@ -215,5 +210,8 @@ export class ClientesService extends BaseHttpService {
       updatedAt: new Date().toISOString(),
       updatedBy: 'Juan Pérez',
     });
+  }
+  getCostoCuota(): number {
+    return 5000;
   }
 }
