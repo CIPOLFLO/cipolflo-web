@@ -9,9 +9,7 @@ import {
   ClienteDetalleRespuestaDto,
   TipoCliente,
   EstadoSocio,
-  
-   ESTADO_SOCIO_OPTIONS,
-   MetodoCobro,
+  MetodoCobro,
 } from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
@@ -60,8 +58,14 @@ describe('ModificarCliente', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { paramMap: { get: vi.fn().mockReturnValue('1') } },
-            paramMap: of({ get: () => '1' }),
+            snapshot: {
+              paramMap: {
+                get: vi.fn().mockReturnValue('1'),
+              },
+              queryParamMap: {
+                get: vi.fn().mockReturnValue(null),
+              },
+            },
           },
         },
       ],
@@ -131,7 +135,7 @@ describe('ModificarCliente', () => {
     expect(keys).toContain('cedula');
     expect(keys).toContain('fechaNacimiento');
     expect(keys).toContain('numeroSocio');
-    expect(keys).toContain('metodoPago');
+    expect(keys).toContain('metodoCobro');
   });
 
   it('infoFields debe retornar campos sin socio cuando el tipo es Particular', async () => {
@@ -148,7 +152,7 @@ describe('ModificarCliente', () => {
     const keys = fields.map((f) => f.key);
     expect(keys).not.toContain('fechaNacimiento');
     expect(keys).not.toContain('numeroSocio');
-    expect(keys).not.toContain('metodoPago');
+    expect(keys).not.toContain('metodoCobro');
   });
 
   it('registroData debe construir el entityId con el id del cliente', () => {
@@ -207,43 +211,58 @@ describe('ModificarCliente', () => {
 describe('ModificarCliente - backLink', () => {
   let fixture: ComponentFixture<ModificarCliente>;
 
-  beforeEach(async () => {
+  const crearComponente = async (from: string | null) => {
+    TestBed.resetTestingModule();
+
     await TestBed.configureTestingModule({
       imports: [ModificarCliente, ReactiveFormsModule],
       providers: [
         {
           provide: ClientesService,
-          useValue: { getById: vi.fn().mockReturnValue(of(mockCliente)) },
+          useValue: {
+            getById: vi.fn().mockReturnValue(of(mockCliente)),
+          },
         },
-        { provide: Router, useValue: { navigate: vi.fn(), navigateByUrl: vi.fn() } },
+        {
+          provide: Router,
+          useValue: {
+            navigate: vi.fn(),
+            navigateByUrl: vi.fn(),
+          },
+        },
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { paramMap: { get: vi.fn().mockReturnValue('1') } },
-            paramMap: of({ get: () => '1' }),
+            snapshot: {
+              paramMap: {
+                get: vi.fn().mockReturnValue('1'),
+              },
+              queryParamMap: {
+                get: vi.fn().mockReturnValue(from),
+              },
+            },
           },
         },
       ],
     }).compileComponents();
-  });
 
-  it('backLink debe ser /clientes cuando from es listado', async () => {
     fixture = TestBed.createComponent(ModificarCliente);
     fixture.componentRef.setInput('id', '1');
-    fixture.componentRef.setInput('from', 'listado');
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance['backLink']()).toBe('/clientes');
+    return fixture.componentInstance;
+  };
+
+  it('backLink debe ser /clientes cuando from es listado', async () => {
+    const component = await crearComponente('listado');
+
+    expect(component['backLink']()).toBe('/clientes');
   });
 
   it('backLink debe ser /clientes/:id cuando from no es listado', async () => {
-    fixture = TestBed.createComponent(ModificarCliente);
-    fixture.componentRef.setInput('id', '1');
-    fixture.componentRef.setInput('from', 'detalle');
-    fixture.detectChanges();
-    await fixture.whenStable();
+    const component = await crearComponente('detalle');
 
-    expect(fixture.componentInstance['backLink']()).toBe('/clientes/1');
+    expect(component['backLink']()).toBe('/clientes/1');
   });
 });

@@ -15,7 +15,6 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY } from 'rxjs';
 import {
   AppButton,
-  DetailRegistroSection,
   FormActions,
   FormLayout,
   FormSection,
@@ -36,15 +35,7 @@ import { ClienteValidacionesService } from '../services/cliente-validaciones.ser
 @Component({
   standalone: true,
   selector: 'app-modificar-cliente',
-  imports: [
-    ReactiveFormsModule,
-    PageLayout,
-    FormLayout,
-    FormSection,
-    FormActions,
-    AppButton,
-    DetailRegistroSection,
-  ],
+  imports: [ReactiveFormsModule, PageLayout, FormLayout, FormSection, FormActions, AppButton],
   templateUrl: './nuevo-cliente.html',
   styleUrl: './nuevo-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,19 +54,19 @@ export class ModificarCliente implements OnInit {
   protected readonly esSocio = computed(() => this.clienteTipo() === TipoCliente.Socio);
 
   protected readonly form = new FormGroup({
-    numeroSocio:     new FormControl<string | null>({ value: null, disabled: true }),
-    cedula:          new FormControl<string | null>(null),
-    nombre:          new FormControl<string | null>(null, Validators.required),
-    telefono:        new FormControl<string | null>(null, Validators.required),
-    email:           new FormControl<string | null>(null, [Validators.required, Validators.email]),
-    pais:            new FormControl<string | null>(null, Validators.required),
-    departamento:    new FormControl<string | null>(null),
-    ciudad:          new FormControl<string | null>(null),
-    direccion:       new FormControl<string | null>(null),
-    observaciones:   new FormControl<string | null>(null),
+    numeroSocio: new FormControl<string | null>({ value: null, disabled: true }),
+    cedula: new FormControl<string | null>(null),
+    nombre: new FormControl<string | null>(null, Validators.required),
+    telefono: new FormControl<string | null>(null, Validators.required),
+    email: new FormControl<string | null>(null, [Validators.required, Validators.email]),
+    pais: new FormControl<string | null>(null, Validators.required),
+    departamento: new FormControl<string | null>(null),
+    ciudad: new FormControl<string | null>(null),
+    direccion: new FormControl<string | null>(null),
+    observaciones: new FormControl<string | null>(null),
     fechaNacimiento: new FormControl<string | null>(null),
-    estado:          new FormControl<string | null>(null),
-    metodoCobro:     new FormControl<MetodoCobro | null>(null),
+    estado: new FormControl<string | null>(null),
+    metodoCobro: new FormControl<MetodoCobro | null>(null),
   });
 
   private readonly formEvents = toSignal(this.form.events);
@@ -97,19 +88,19 @@ export class ModificarCliente implements OnInit {
       const c = this.cliente();
       if (!c) return;
       this.form.patchValue({
-        numeroSocio:     c.numeroSocio != null ? String(c.numeroSocio) : null,
-        cedula:          c.cedula          ?? null,
-        nombre:          c.nombre          ?? null,
-        telefono:        c.telefono        ?? null,
-        email:           c.email           ?? null,
-        pais:            c.pais            ?? null,
-        departamento:    c.departamento    ?? null,
-        ciudad:          c.ciudad          ?? null,
-        direccion:       c.direccion       ?? null,
-        observaciones:   c.observaciones   ?? null,
+        numeroSocio: c.numeroSocio != null ? String(c.numeroSocio) : null,
+        cedula: c.cedula ?? null,
+        nombre: c.nombre ?? null,
+        telefono: c.telefono ?? null,
+        email: c.email ?? null,
+        pais: c.pais ?? null,
+        departamento: c.departamento ?? null,
+        ciudad: c.ciudad ?? null,
+        direccion: c.direccion ?? null,
+        observaciones: c.observaciones ?? null,
         fechaNacimiento: c.fechaNacimiento ?? null,
-        estado:          c.estado          ?? null,
-        metodoCobro:      c.metodoCobro      ?? null,
+        estado: c.estado ?? null,
+        metodoCobro: c.metodoCobro ?? null,
       });
     });
   }
@@ -141,18 +132,60 @@ export class ModificarCliente implements OnInit {
     if (!c) return [];
 
     const campos: FormFieldConfig[] = [
-      { key: 'nombre',   label: 'Nombre',   type: 'text', defaultValue: c.nombre   ?? undefined, required: true },
-      { key: 'cedula',   label: 'Cédula',   type: 'text', defaultValue: c.cedula   ?? undefined },
-      { key: 'telefono', label: 'Teléfono', type: 'text', defaultValue: c.telefono ?? undefined, required: true },
-      { key: 'email',    label: 'Email',    type: 'text', defaultValue: c.email    ?? undefined, required: true },
+      {
+        key: 'nombre',
+        label: 'Nombre',
+        type: 'text',
+        defaultValue: c.nombre ?? undefined,
+        required: true,
+      },
+      { key: 'cedula', label: 'Cédula', type: 'text', defaultValue: c.cedula ?? undefined },
+      {
+        key: 'telefono',
+        label: 'Teléfono',
+        type: 'text',
+        defaultValue: c.telefono ?? undefined,
+        required: true,
+      },
+      {
+        key: 'email',
+        label: 'Email',
+        type: 'text',
+        defaultValue: c.email ?? undefined,
+        required: true,
+      },
     ];
 
     if (this.esSocio()) {
       campos.push(
-        { key: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'text',   defaultValue: c.fechaNacimiento                        ?? undefined },
-        { key: 'numeroSocio',     label: 'Nro de socio',        type: 'text',   defaultValue: c.numeroSocio ? String(c.numeroSocio) : undefined, disabled: true, locked: true },
-        { key: 'estado',          label: 'Estado',              type: 'select', defaultValue: c.estado      ?? undefined, options: ESTADO_SOCIO_OPTIONS },
-        { key: 'metodoCobro',     label: 'Método de cobro',     type: 'select', defaultValue: c.metodoCobro ?? undefined, options: METODO_COBRO_OPTIONS },
+        {
+          key: 'fechaNacimiento',
+          label: 'Fecha de nacimiento',
+          type: 'text',
+          defaultValue: c.fechaNacimiento ?? undefined,
+        },
+        {
+          key: 'numeroSocio',
+          label: 'Nro de socio',
+          type: 'text',
+          defaultValue: c.numeroSocio ? String(c.numeroSocio) : undefined,
+          disabled: true,
+          locked: true,
+        },
+        {
+          key: 'estado',
+          label: 'Estado',
+          type: 'select',
+          defaultValue: c.estado ?? undefined,
+          options: ESTADO_SOCIO_OPTIONS,
+        },
+        {
+          key: 'metodoCobro',
+          label: 'Método de cobro',
+          type: 'select',
+          defaultValue: c.metodoCobro ?? undefined,
+          options: METODO_COBRO_OPTIONS,
+        },
       );
     }
 
@@ -163,10 +196,26 @@ export class ModificarCliente implements OnInit {
     const c = this.cliente();
     if (!c) return [];
     return [
-      { key: 'pais',         label: 'País',         type: 'text', defaultValue: c.pais         ?? undefined, required: true },
-      { key: 'departamento', label: 'Departamento', type: 'text', defaultValue: c.departamento ?? undefined },
-      { key: 'ciudad',       label: 'Ciudad',       type: 'text', defaultValue: c.ciudad       ?? undefined },
-      { key: 'direccion',    label: 'Dirección',    type: 'text', defaultValue: c.direccion    ?? undefined },
+      {
+        key: 'pais',
+        label: 'País',
+        type: 'text',
+        defaultValue: c.pais ?? undefined,
+        required: true,
+      },
+      {
+        key: 'departamento',
+        label: 'Departamento',
+        type: 'text',
+        defaultValue: c.departamento ?? undefined,
+      },
+      { key: 'ciudad', label: 'Ciudad', type: 'text', defaultValue: c.ciudad ?? undefined },
+      {
+        key: 'direccion',
+        label: 'Dirección',
+        type: 'text',
+        defaultValue: c.direccion ?? undefined,
+      },
     ];
   });
 
@@ -174,7 +223,12 @@ export class ModificarCliente implements OnInit {
     const c = this.cliente();
     if (!c) return [];
     return [
-      { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea', defaultValue: c.observaciones ?? undefined },
+      {
+        key: 'observaciones',
+        label: 'Notas / Observaciones',
+        type: 'textarea',
+        defaultValue: c.observaciones ?? undefined,
+      },
     ];
   });
 
@@ -194,7 +248,7 @@ export class ModificarCliente implements OnInit {
     const c = this.cliente();
     if (!c) return null;
     return {
-      entityId:      `CLI-${String(c.id).padStart(3, '0')}`,
+      entityId: `CLI-${String(c.id).padStart(3, '0')}`,
       entityIdLabel: 'ID del Cliente',
       fechaRegistro: c.createdAt,
       registradoPor: c.createdBy,
@@ -224,9 +278,9 @@ export class ModificarCliente implements OnInit {
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());
   }
-protected onFieldBlur(key: string): void {
-  this.form.get(key)?.markAsTouched();
-}
+  protected onFieldBlur(key: string): void {
+    this.form.get(key)?.markAsTouched();
+  }
   protected onConfirmar(): void {
     this.submitted.set(true);
     if (this.form.invalid) return;

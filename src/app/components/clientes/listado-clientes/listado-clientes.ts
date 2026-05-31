@@ -70,11 +70,14 @@ export class ListadoClientes {
           },
         ]
       : []),
-     {
-  label: 'Modificar',
-  icon: 'pi pi-pencil',
-  command: () => this.router.navigate(['/clientes', row.id, 'modificar'], { queryParams: { from: 'listado' } }),
-},
+    {
+      label: 'Modificar',
+      icon: 'pi pi-pencil',
+      command: () =>
+        this.router.navigate(['/clientes', row.id, 'modificar'], {
+          queryParams: { from: 'listado' },
+        }),
+    },
 
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]

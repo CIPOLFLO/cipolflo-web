@@ -1,4 +1,3 @@
-
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ModificarCliente } from './nuevo-cliente';
@@ -33,26 +32,31 @@ describe('ModificarCliente', () => {
   let component: ModificarCliente;
   let navigateSpy: ReturnType<typeof vi.fn>;
   let navigateByUrlSpy: ReturnType<typeof vi.fn>;
-  let getByIdSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     navigateSpy = vi.fn();
     navigateByUrlSpy = vi.fn();
-    getByIdSpy = vi.fn().mockReturnValue(of(clienteMock));
 
     await TestBed.configureTestingModule({
       imports: [ModificarCliente],
       providers: [
-        { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateByUrlSpy } },
+        {
+          provide: Router,
+          useValue: { navigate: navigateSpy, navigateByUrl: navigateByUrlSpy },
+        },
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { queryParamMap: { get: () => null } },
+            snapshot: {
+              paramMap: { get: vi.fn().mockReturnValue('1') },
+              queryParamMap: { get: vi.fn().mockReturnValue(null) },
+            },
+            paramMap: of({ get: () => '1' }),
           },
         },
         {
           provide: ClientesService,
-          useValue: { getById: getByIdSpy },
+          useValue: { getById: vi.fn().mockReturnValue(of(clienteMock)) },
         },
         ClienteValidacionesService,
       ],
@@ -62,6 +66,7 @@ describe('ModificarCliente', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('id', '1');
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('debería crear el componente', () => {
@@ -108,10 +113,18 @@ describe('ModificarCliente', () => {
   });
 
   it('infoErrors[email] debería mostrar error con email inválido', () => {
-    component['form'].get('email')?.setValue('email-invalido');
+    const email = component['form'].get('email');
+
+    email?.setValue('email-invalido');
+    email?.markAsTouched();
+    email?.updateValueAndValidity();
+
     component['submitted'].set(true);
+
     fixture.detectChanges();
-    expect(component['infoErrors']()['email']).toBeTruthy();
+
+    expect(email?.hasError('email')).toBe(true);
+    expect(component['infoErrors']()['email']).toBe('El email no es válido.');
   });
 
   it('infoErrors[telefono] debería mostrar error cuando submitted y campo vacío', () => {
@@ -172,7 +185,6 @@ describe('ModificarCliente', () => {
   });
 
   it('onConfirmar con form válido no debería navegar (update pendiente)', () => {
-    // El update aún no está implementado, solo loguea
     component['onConfirmar']();
     expect(navigateSpy).not.toHaveBeenCalled();
   });
