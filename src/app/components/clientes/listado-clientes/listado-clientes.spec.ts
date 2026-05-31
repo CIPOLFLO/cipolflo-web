@@ -2,9 +2,10 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  ConfirmDialogService,
   FilterConfigProvider,
   FormFieldConfig,
   PageResponse,
@@ -14,7 +15,6 @@ import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ListadoClientes } from './listado-clientes';
-import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
@@ -199,12 +199,31 @@ describe('ListadoClientes', () => {
     expect(component['clientePagoSeleccionado']()).toEqual(row);
   });
 
-  it('rowActions debe retornar la acción "Eliminar"', () => {
-    const row = mockPageResponse.content[0];
+  it('rowActions incluye "Dar de baja" para socio con estado distinto de Baja', () => {
+    const socio = mockPageResponse.content[0]; // TipoCliente.Socio, EstadoSocio.Activo
 
-    const actions = component['rowActions'](row);
+    const actions = component['rowActions'](socio);
 
-    expect(actions.some((action) => action.label === 'Dar de baja')).toBe(true);
+    expect(actions.some((a) => a.label === 'Dar de baja')).toBe(true);
+  });
+
+  it('rowActions no incluye "Dar de baja" para cliente particular', () => {
+    const particular = mockPageResponse.content[1]; // TipoCliente.Particular
+
+    const actions = component['rowActions'](particular);
+
+    expect(actions.some((a) => a.label === 'Dar de baja')).toBe(false);
+  });
+
+  it('rowActions no incluye "Dar de baja" para socio con estado Baja', () => {
+    const socioDeBaja: ClienteRespuestaDto = {
+      ...mockPageResponse.content[0],
+      estado: EstadoSocio.Baja,
+    };
+
+    const actions = component['rowActions'](socioDeBaja);
+
+    expect(actions.some((a) => a.label === 'Dar de baja')).toBe(false);
   });
 
   it('onEliminarCliente abre el diálogo de confirmación', () => {
@@ -215,7 +234,7 @@ describe('ListadoClientes', () => {
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
       title: 'Dar de baja cliente',
       message:
-        '¿Confirmás que querés dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+        '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
       confirmButtonLabel: 'Dar de baja',
       cancelButtonLabel: 'Cancelar',
       variant: 'danger',
@@ -241,6 +260,56 @@ describe('ListadoClientes', () => {
     component['onDarDeBajaCliente'](row);
 
     expect(mockClientesService.darDeBaja).not.toHaveBeenCalled();
+  });
+
+  it('onDarDeBajaCliente recarga la tabla tras confirmar la baja', () => {
+    const row = mockPageResponse.content[0];
+    mockConfirmDialogService.open.mockReturnValue(of(true));
+    const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+    component['onDarDeBajaCliente'](row);
+
+    expect(updateFiltersSpy).toHaveBeenCalled();
+  });
+
+  it('el comando de "Pago de cuota" en rowActions llama a onPagoCuota (línea 73)', () => {
+    const socio = mockPageResponse.content[0];
+    const actions = component['rowActions'](socio);
+    const pagoCuota = actions.find((a) => a.label === 'Pago de cuota')!;
+
+    pagoCuota.command?.(socio);
+
+    expect(component['clientePagoSeleccionado']()).toEqual(socio);
+  });
+
+  it('el comando de "Dar de baja" en rowActions abre el diálogo (línea 84)', () => {
+    const socio = mockPageResponse.content[0];
+    const actions = component['rowActions'](socio);
+    const darDeBaja = actions.find((a) => a.label === 'Dar de baja')!;
+
+    darDeBaja.command?.(socio);
+
+    expect(mockConfirmDialogService.open).toHaveBeenCalled();
+  });
+
+  it('onCerrarPagoCuota limpia el cliente seleccionado para pago (línea 101)', () => {
+    component['clientePagoSeleccionado'].set(mockPageResponse.content[0]);
+
+    component['onCerrarPagoCuota']();
+
+    expect(component['clientePagoSeleccionado']()).toBeNull();
+  });
+
+  it('onDarDeBajaCliente llama a console.error cuando darDeBaja falla (línea 122)', () => {
+    const row = mockPageResponse.content[0];
+    mockConfirmDialogService.open.mockReturnValue(of(true));
+    mockClientesService.darDeBaja.mockReturnValue(throwError(() => new Error('Error de red')));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    component['onDarDeBajaCliente'](row);
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error al dar de baja cliente', expect.any(Error));
+    consoleSpy.mockRestore();
   });
 });
 

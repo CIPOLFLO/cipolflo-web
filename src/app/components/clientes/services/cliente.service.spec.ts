@@ -136,7 +136,10 @@ describe('ClientesService', () => {
         );
       expect(errorStatus).toBe(400);
     });
-    it('eliminar retorna void al dar de baja un cliente', () => {
+  });
+
+  describe('darDeBaja', () => {
+    it('retorna void (stub — reemplazar con expectOne cuando se conecte el backend)', () => {
       const dto = { clienteId: 1 };
 
       service.darDeBaja(dto).subscribe((response) => {

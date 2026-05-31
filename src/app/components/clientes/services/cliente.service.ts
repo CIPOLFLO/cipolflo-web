@@ -18,14 +18,16 @@ export class ClientesService extends BaseHttpService {
     return this.get<ClienteDetalleRespuestaDto>(`clientes/${id}`);
   }
 
+  // TODO: reemplazar cuando el backend esté disponible
   getCostoCuota(): number {
     return 5000;
   }
   create(dto: ClienteCrearDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
   }
+  // TODO: reemplazar cuando el backend esté disponible
+  // return this.post<void>('clientes/baja', dto);
   darDeBaja(dto: BajaClienteDto): Observable<void> {
-    console.log('Baja cliente', dto);
     return of(void 0);
   }
 }

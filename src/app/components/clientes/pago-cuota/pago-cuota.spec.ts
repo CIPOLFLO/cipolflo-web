@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { PagoCuota } from './pago-cuota';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { FormaPago } from 'src/app/shared/models/forma-pago.model';
@@ -88,5 +89,49 @@ describe('PagoCuota', () => {
 
     expect(component['pagoConfirmado']()).toBeNull();
     expect(cerradoSpy).toHaveBeenCalled();
+  });
+
+  it('muestra el error de cantidad inválida cuando cantidadCuotas < 1 (línea 31)', async () => {
+    component['form'].controls.cantidadCuotas.setValue(0);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component['cantidadInvalida']()).toBe(true);
+  });
+
+  it('muestra el error de fecha futura cuando fechaPago es posterior a hoy (línea 52)', async () => {
+    component['form'].controls.fechaPago.setValue(new Date(2999, 0, 1));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component['fechaEsFutura']()).toBe(true);
+  });
+
+  it('el botón "Confirmar Pago" llama a onConfirmar al hacer click (línea 83)', async () => {
+    const confirmarSpy = vi.spyOn(component as any, 'onConfirmar');
+
+    // p-dialog porta su contenido a document.body; buscar el botón nativo por texto
+    const nativeButtons = Array.from(document.querySelectorAll('button'));
+    const confirmBtn = nativeButtons.find((b) => b.textContent?.trim().includes('Confirmar Pago'));
+    confirmBtn?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(confirmarSpy).toHaveBeenCalled();
+  });
+
+  it('renderiza el bloque de confirmación cuando pagoConfirmado no es null (líneas 99-108)', async () => {
+    const pago = {
+      clienteId: mockCliente.id,
+      cantidadCuotas: 2,
+      formaPago: FormaPago.Efectivo,
+      fechaPago: '2026-03-27',
+      total: 10000,
+    };
+    component['pagoConfirmado'].set(pago);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component['pagoConfirmado']()).toEqual(pago);
   });
 });
