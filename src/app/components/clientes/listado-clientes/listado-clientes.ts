@@ -63,9 +63,9 @@ export class ListadoClientes {
       command: () => this.router.navigate(['/clientes', row.id]),
     },
     {
-      label: 'Eliminar',
+      label: 'Dar de baja',
       icon: 'pi pi-trash',
-      command: () => this.onEliminarCliente(row),
+      command: () => this.onDarDeBajaCliente(row),
     },
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&
@@ -103,24 +103,22 @@ export class ListadoClientes {
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
   }
-  protected onEliminarCliente(cliente: ClienteRespuestaDto): void {
+  protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
     this.confirmDialogService
       .open({
-        title: 'Eliminar cliente',
+        title: 'Dar de baja cliente',
         message:
           '¿Confirmás que querés dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
-        confirmButtonLabel: 'Eliminar',
+        confirmButtonLabel: 'Dar de baja',
         cancelButtonLabel: 'Cancelar',
         variant: 'danger',
       })
       .subscribe((confirmed) => {
         if (!confirmed) return;
-
         const dto: BajaClienteDto = {
           clienteId: cliente.id,
         };
-
-        this.clientesService.eliminar(dto).subscribe();
+        this.clientesService.darDeBaja(dto).subscribe();
       });
   }
 }

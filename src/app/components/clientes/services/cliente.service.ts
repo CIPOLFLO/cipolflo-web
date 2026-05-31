@@ -24,7 +24,7 @@ export class ClientesService extends BaseHttpService {
   create(dto: ClienteCrearDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
   }
-  eliminar(dto: BajaClienteDto): Observable<void> {
+  darDeBaja(dto: BajaClienteDto): Observable<void> {
     console.log('Baja cliente', dto);
     return of(void 0);
   }

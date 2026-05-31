@@ -51,7 +51,7 @@ describe('ListadoClientes', () => {
   let mockClientesService: {
     getAll: ReturnType<typeof vi.fn>;
     getCostoCuota: ReturnType<typeof vi.fn>;
-    eliminar: ReturnType<typeof vi.fn>;
+    darDeBaja: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: {
     open: ReturnType<typeof vi.fn>;
@@ -60,7 +60,7 @@ describe('ListadoClientes', () => {
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
       getCostoCuota: vi.fn().mockReturnValue(5000),
-      eliminar: vi.fn().mockReturnValue(of(void 0)),
+      darDeBaja: vi.fn().mockReturnValue(of(void 0)),
     };
     mockConfirmDialogService = {
       open: vi.fn().mockReturnValue(of(false)),
@@ -204,31 +204,31 @@ describe('ListadoClientes', () => {
 
     const actions = component['rowActions'](row);
 
-    expect(actions.some((action) => action.label === 'Eliminar')).toBe(true);
+    expect(actions.some((action) => action.label === 'Dar de baja')).toBe(true);
   });
 
   it('onEliminarCliente abre el diálogo de confirmación', () => {
     const row = mockPageResponse.content[0];
 
-    component['onEliminarCliente'](row);
+    component['onDarDeBajaCliente'](row);
 
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
-      title: 'Eliminar cliente',
+      title: 'Dar de baja cliente',
       message:
         '¿Confirmás que querés dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
-      confirmButtonLabel: 'Eliminar',
+      confirmButtonLabel: 'Dar de baja',
       cancelButtonLabel: 'Cancelar',
       variant: 'danger',
     });
   });
-  it('onEliminarCliente llama a eliminar si se confirma la baja', () => {
+  it('onEliminarCliente llama a dar de baja si se confirma la baja', () => {
     const row = mockPageResponse.content[0];
 
     mockConfirmDialogService.open.mockReturnValue(of(true));
 
-    component['onEliminarCliente'](row);
+    component['onDarDeBajaCliente'](row);
 
-    expect(mockClientesService.eliminar).toHaveBeenCalledWith({
+    expect(mockClientesService.darDeBaja).toHaveBeenCalledWith({
       clienteId: row.id,
     });
   });
@@ -238,9 +238,9 @@ describe('ListadoClientes', () => {
 
     mockConfirmDialogService.open.mockReturnValue(of(false));
 
-    component['onEliminarCliente'](row);
+    component['onDarDeBajaCliente'](row);
 
-    expect(mockClientesService.eliminar).not.toHaveBeenCalled();
+    expect(mockClientesService.darDeBaja).not.toHaveBeenCalled();
   });
 });
 
