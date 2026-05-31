@@ -49,7 +49,7 @@ export class DetalleCliente {
   private readonly router = inject(Router);
 
   protected onEditar(): void {
-    this.router.navigate(['/clientes', this.clienteId(), 'editar'], {
+    this.router.navigate(['/clientes', this.clienteId(), 'modificar'], {
       queryParams: { from: 'detalle' },
     });
   }

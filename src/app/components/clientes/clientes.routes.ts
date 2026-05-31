@@ -7,6 +7,10 @@ export const CLIENTES_ROUTES: Routes = [
       import('./listado-clientes/listado-clientes').then((m) => m.ListadoClientes),
   },
   {
+     path: 'nuevo',
+     loadComponent: () => import('./nuevo-cliente/nuevo-cliente').then((m) => m.NuevoCliente),
+   },
+  {
     path: ':id/modificar',
     loadComponent: () =>
       import('./modificar-cliente/modificar-cliente').then((m) => m.ModificarCliente),

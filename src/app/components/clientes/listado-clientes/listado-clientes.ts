@@ -57,7 +57,7 @@ export class ListadoClientes {
     {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
-      command: () => this.router.navigate(['/clientes', row.id]),
+      command: () => this.router.navigate(['/clientes', row.id, 'detalle']),
     },
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&
@@ -70,7 +70,11 @@ export class ListadoClientes {
           },
         ]
       : []),
-    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
+     {
+  label: 'Modificar',
+  icon: 'pi pi-pencil',
+  command: () => this.router.navigate(['/clientes', row.id, 'modificar'], { queryParams: { from: 'listado' } }),
+},
 
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]

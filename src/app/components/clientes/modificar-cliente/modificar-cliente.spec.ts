@@ -9,18 +9,20 @@ import {
   ClienteDetalleRespuestaDto,
   TipoCliente,
   EstadoSocio,
-  MetodoPago,
+  
+   ESTADO_SOCIO_OPTIONS,
+   MetodoCobro,
 } from '../models/cliente.model';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
-  numeroSocio: '123',
+  numeroSocio: 123,
   tipoCliente: TipoCliente.Socio,
   nombre: 'Juan Pérez',
   cedula: '1.234.567-8',
   email: 'juan@example.com',
   telefono: '099958654',
-  metodoPago: MetodoPago.Cobradora,
+  metodoCobro: MetodoCobro.Cobradora,
   departamento: 'FLORES',
   direccion: 'Calle A 123',
   observaciones: 'Socio nuevo',
@@ -137,6 +139,7 @@ describe('ModificarCliente', () => {
       of({ ...mockCliente, tipoCliente: TipoCliente.Particular, numeroSocio: null }),
     );
     fixture = TestBed.createComponent(ModificarCliente);
+    fixture.componentRef.setInput('id', '1');
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
@@ -176,11 +179,22 @@ describe('ModificarCliente', () => {
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith(`/clientes/1`);
   });
 
+  it('debe navegar al listado si el id no es válido', async () => {
+    fixture = TestBed.createComponent(ModificarCliente);
+    fixture.componentRef.setInput('id', '');
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/clientes']);
+  });
+
   it('debe mostrar error en consola si falla la carga del cliente', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
     mockClientesService.getById.mockReturnValue(throwError(() => new Error('Error al cargar')));
 
     fixture = TestBed.createComponent(ModificarCliente);
+    fixture.componentRef.setInput('id', '1');
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
@@ -191,7 +205,9 @@ describe('ModificarCliente', () => {
 });
 
 describe('ModificarCliente - backLink', () => {
-  it('backLink debe ser /clientes cuando from es listado', async () => {
+  let fixture: ComponentFixture<ModificarCliente>;
+
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ModificarCliente, ReactiveFormsModule],
       providers: [
@@ -209,8 +225,10 @@ describe('ModificarCliente - backLink', () => {
         },
       ],
     }).compileComponents();
+  });
 
-    const fixture = TestBed.createComponent(ModificarCliente);
+  it('backLink debe ser /clientes cuando from es listado', async () => {
+    fixture = TestBed.createComponent(ModificarCliente);
     fixture.componentRef.setInput('id', '1');
     fixture.componentRef.setInput('from', 'listado');
     fixture.detectChanges();
@@ -220,7 +238,7 @@ describe('ModificarCliente - backLink', () => {
   });
 
   it('backLink debe ser /clientes/:id cuando from no es listado', async () => {
-    const fixture = TestBed.createComponent(ModificarCliente);
+    fixture = TestBed.createComponent(ModificarCliente);
     fixture.componentRef.setInput('id', '1');
     fixture.componentRef.setInput('from', 'detalle');
     fixture.detectChanges();

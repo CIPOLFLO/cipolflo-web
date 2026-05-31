@@ -1,263 +1,235 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ClientesService } from '../services/cliente.service';
-import { ClienteOptionsService } from '../services/cliente-options.service';
-import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
-import { ClienteCrearDto, MetodoCobro, TipoCliente } from '../models/cliente.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY } from 'rxjs';
 import {
   AppButton,
+  DetailRegistroSection,
   FormActions,
   FormLayout,
   FormSection,
   PageLayout,
+  type DetailRegistroData,
   type FormFieldConfig,
 } from '../../../shared';
+import { ClientesService } from '../services/cliente.service';
+import {
+  ClienteDetalleRespuestaDto,
+  TipoCliente,
+  MetodoCobro,
+  METODO_COBRO_OPTIONS,
+  ESTADO_SOCIO_OPTIONS,
+} from '../models/cliente.model';
+import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
 
 @Component({
-  selector: 'app-nuevo-cliente',
   standalone: true,
-  imports: [ReactiveFormsModule, PageLayout, FormLayout, FormSection, FormActions, AppButton],
+  selector: 'app-modificar-cliente',
+  imports: [
+    ReactiveFormsModule,
+    PageLayout,
+    FormLayout,
+    FormSection,
+    FormActions,
+    AppButton,
+    DetailRegistroSection,
+  ],
   templateUrl: './nuevo-cliente.html',
   styleUrl: './nuevo-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NuevoCliente {
+export class ModificarCliente implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly clienteService = inject(ClientesService);
-  private readonly optionsService = inject(ClienteOptionsService);
+  private readonly clientesService = inject(ClientesService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly validaciones = inject(ClienteValidacionesService);
+
+  readonly id = input<string>('');
+
+  protected readonly cliente = signal<ClienteDetalleRespuestaDto | null>(null);
+  protected readonly clienteTipo = computed(() => this.cliente()?.tipoCliente);
+  protected readonly esSocio = computed(() => this.clienteTipo() === TipoCliente.Socio);
+
+  protected readonly form = new FormGroup({
+    numeroSocio:     new FormControl<string | null>({ value: null, disabled: true }),
+    cedula:          new FormControl<string | null>(null),
+    nombre:          new FormControl<string | null>(null, Validators.required),
+    telefono:        new FormControl<string | null>(null, Validators.required),
+    email:           new FormControl<string | null>(null, [Validators.required, Validators.email]),
+    pais:            new FormControl<string | null>(null, Validators.required),
+    departamento:    new FormControl<string | null>(null),
+    ciudad:          new FormControl<string | null>(null),
+    direccion:       new FormControl<string | null>(null),
+    observaciones:   new FormControl<string | null>(null),
+    fechaNacimiento: new FormControl<string | null>(null),
+    estado:          new FormControl<string | null>(null),
+    metodoCobro:     new FormControl<MetodoCobro | null>(null),
+  });
+
+  private readonly formEvents = toSignal(this.form.events);
+
+  protected readonly backLink = computed<string>(() => {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    return from === 'listado' ? '/clientes' : `/clientes/${this.id()}`;
+  });
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
-  private readonly touchCount = signal(0);
-
-  protected readonly form = new FormGroup({
-    tipoCliente: new FormControl<TipoCliente>(TipoCliente.Socio, {
-      nonNullable: true,
-    }),
-    nombre: new FormControl<string | null>(null, Validators.required),
-    cedula: new FormControl<string | null>(null, [
-      Validators.required,
-      (control) => this.validaciones.cedulaValida(control),
-    ]),
-    fechaNacimiento: new FormControl<string | null>(null, [
-      Validators.required,
-      (control) => this.validaciones.mayorDeEdad(control),
-    ]),
-    telefono: new FormControl<string | null>(null, Validators.required),
-    email: new FormControl<string | null>(null, [
-      (control) => this.validaciones.emailValido(control),
-    ]),
-    metodoCobro: new FormControl<MetodoCobro | null>(MetodoCobro.Cobradora, Validators.required),
-    pais: new FormControl<string | null>('Uruguay', Validators.required),
-    departamento: new FormControl<string | null>(null, Validators.required),
-    ciudad: new FormControl<string | null>(null, Validators.required),
-    direccion: new FormControl<string | null>(null),
-    observaciones: new FormControl<string | null>(null),
-  });
-
-  private readonly formEvents = toSignal(this.form.events, {
-    initialValue: null,
-  });
-
   protected readonly confirmDisabled = computed(() => {
     this.formEvents();
-
-    return this.form.invalid || this.loading();
+    return (this.form.dirty && this.form.invalid) || this.loading();
   });
 
-  protected readonly clienteFields = computed<FormFieldConfig[]>(() => [
-    {
-      key: 'nombre',
-      label: 'Nombre',
-      type: 'text',
-      required: true,
-      placeholder: 'Ingrese el nombre completo',
-    },
-    {
-      key: 'cedula',
-      label: 'Cédula',
-      type: 'text',
-      required: true,
-      placeholder: 'Ej: 5.123.456-7',
-    },
-    {
-      key: 'fechaNacimiento',
-      label: 'Fecha de nacimiento',
-      type: 'date',
-      required: true,
-    },
-    {
-      key: 'telefono',
-      label: 'Teléfono',
-      type: 'text',
-      required: true,
-      placeholder: '099123456',
-    },
-    {
-      key: 'email',
-      label: 'Email',
-      type: 'email',
-      placeholder: 'correo@ejemplo.com',
-    },
-    {
-      key: 'metodoCobro',
-      label: 'Método de pago',
-      type: 'select',
-      options: this.metodosPago(),
-      defaultValue: MetodoCobro.Cobradora,
-    },
-  ]);
+  constructor() {
+    effect(() => {
+      const c = this.cliente();
+      if (!c) return;
+      this.form.patchValue({
+        numeroSocio:     c.numeroSocio != null ? String(c.numeroSocio) : null,
+        cedula:          c.cedula          ?? null,
+        nombre:          c.nombre          ?? null,
+        telefono:        c.telefono        ?? null,
+        email:           c.email           ?? null,
+        pais:            c.pais            ?? null,
+        departamento:    c.departamento    ?? null,
+        ciudad:          c.ciudad          ?? null,
+        direccion:       c.direccion       ?? null,
+        observaciones:   c.observaciones   ?? null,
+        fechaNacimiento: c.fechaNacimiento ?? null,
+        estado:          c.estado          ?? null,
+        metodoCobro:      c.metodoCobro      ?? null,
+      });
+    });
+  }
 
-  protected readonly ubicacionFields = computed<FormFieldConfig[]>(() => [
-    {
-      key: 'pais',
-      label: 'País',
-      type: 'text',
-      required: true,
-      defaultValue: 'Uruguay',
-    },
-    {
-      key: 'departamento',
-      label: 'Departamento',
-      type: 'text',
-      required: true,
-      placeholder: 'Seleccionar un departamento',
-    },
-    {
-      key: 'ciudad',
-      label: 'Ciudad',
-      type: 'text',
-      required: true,
-      placeholder: 'Seleccionar una ciudad',
-    },
-    {
-      key: 'direccion',
-      label: 'Dirección',
-      type: 'text',
-      placeholder: 'Ingrese la dirección',
-    },
-  ]);
+  ngOnInit(): void {
+    const id = Number(this.id());
 
-  protected readonly adicionalFields = computed<FormFieldConfig[]>(() => [
-    {
-      key: 'observaciones',
-      label: 'Notas / Observaciones',
-      type: 'textarea',
-      placeholder: 'Ingrese observaciones adicionales',
-    },
-  ]);
+    if (!id || isNaN(id)) {
+      this.router.navigate(['/clientes']);
+      return;
+    }
 
-  protected readonly clienteErrors = computed<Record<string, string>>(() => {
+    this.clientesService
+      .getById(id)
+      .pipe(
+        catchError((err) => {
+          console.error('Error al cargar el cliente', err);
+          return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((c) => {
+        if (c) this.cliente.set(c);
+      });
+  }
+
+  protected readonly infoFields = computed<FormFieldConfig[]>(() => {
+    const c = this.cliente();
+    if (!c) return [];
+
+    const campos: FormFieldConfig[] = [
+      { key: 'nombre',   label: 'Nombre',   type: 'text', defaultValue: c.nombre   ?? undefined, required: true },
+      { key: 'cedula',   label: 'Cédula',   type: 'text', defaultValue: c.cedula   ?? undefined },
+      { key: 'telefono', label: 'Teléfono', type: 'text', defaultValue: c.telefono ?? undefined, required: true },
+      { key: 'email',    label: 'Email',    type: 'text', defaultValue: c.email    ?? undefined, required: true },
+    ];
+
+    if (this.esSocio()) {
+      campos.push(
+        { key: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'text',   defaultValue: c.fechaNacimiento                        ?? undefined },
+        { key: 'numeroSocio',     label: 'Nro de socio',        type: 'text',   defaultValue: c.numeroSocio ? String(c.numeroSocio) : undefined, disabled: true, locked: true },
+        { key: 'estado',          label: 'Estado',              type: 'select', defaultValue: c.estado      ?? undefined, options: ESTADO_SOCIO_OPTIONS },
+        { key: 'metodoCobro',     label: 'Método de cobro',     type: 'select', defaultValue: c.metodoCobro ?? undefined, options: METODO_COBRO_OPTIONS },
+      );
+    }
+
+    return campos;
+  });
+
+  protected readonly ubicacionFields = computed<FormFieldConfig[]>(() => {
+    const c = this.cliente();
+    if (!c) return [];
+    return [
+      { key: 'pais',         label: 'País',         type: 'text', defaultValue: c.pais         ?? undefined, required: true },
+      { key: 'departamento', label: 'Departamento', type: 'text', defaultValue: c.departamento ?? undefined },
+      { key: 'ciudad',       label: 'Ciudad',       type: 'text', defaultValue: c.ciudad       ?? undefined },
+      { key: 'direccion',    label: 'Dirección',    type: 'text', defaultValue: c.direccion    ?? undefined },
+    ];
+  });
+
+  protected readonly adicionalFields = computed<FormFieldConfig[]>(() => {
+    const c = this.cliente();
+    if (!c) return [];
+    return [
+      { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea', defaultValue: c.observaciones ?? undefined },
+    ];
+  });
+
+  protected readonly infoErrors = computed<Record<string, string>>(() => {
     this.formEvents();
-    this.touchCount();
-
     return this.validaciones.getClienteErrors(this.form, this.submitted());
   });
 
   protected readonly ubicacionErrors = computed<Record<string, string>>(() => {
     this.formEvents();
-    this.touchCount();
-
     return this.validaciones.getUbicacionErrors(this.form, this.submitted());
   });
 
-  protected readonly metodosPago = toSignal(this.optionsService.getMetodosPago(), {
-    initialValue: [],
+  protected readonly adicionalErrors = computed<Record<string, string>>(() => ({}));
+
+  protected readonly registroData = computed<DetailRegistroData | null>(() => {
+    const c = this.cliente();
+    if (!c) return null;
+    return {
+      entityId:      `CLI-${String(c.id).padStart(3, '0')}`,
+      entityIdLabel: 'ID del Cliente',
+      fechaRegistro: c.createdAt,
+      registradoPor: c.createdBy,
+    };
   });
 
-  protected onClienteChange(
-    values: Partial<{
-      tipoCliente: TipoCliente;
-      nombre: string | null;
-      cedula: string | null;
-      fechaNacimiento: string | null;
-      telefono: string | null;
-      email: string | null;
-      metodoCobro: MetodoCobro | null;
-    }>,
-  ): void {
-    this.form.patchValue({
-      nombre: values['nombre'] ?? null,
-      cedula: values['cedula'] ?? null,
-      fechaNacimiento: values['fechaNacimiento'] ?? null,
-      telefono: values['telefono'] ?? null,
-      email: values['email'] ?? null,
-      metodoCobro: values['metodoCobro'] ?? null,
-    });
+  private applySectionChange(values: Record<string, string | MetodoCobro | null>): void {
+    this.form.patchValue(values as Record<string, string | MetodoCobro | null>);
     this.form.markAsDirty();
+    for (const key of Object.keys(values)) {
+      this.form.get(key)?.markAsTouched();
+    }
+  }
+
+  protected onInfoChange(values: Record<string, string | null>): void {
+    this.applySectionChange(values);
   }
 
   protected onUbicacionChange(values: Record<string, string | null>): void {
-    this.form.patchValue({
-      pais: values['pais'] ?? null,
-      departamento: values['departamento'] ?? null,
-      ciudad: values['ciudad'] ?? null,
-      direccion: values['direccion'] ?? null,
-    });
-    this.form.markAsDirty();
+    this.applySectionChange(values);
   }
 
   protected onAdicionalChange(values: Record<string, string | null>): void {
-    this.form.patchValue({
-      observaciones: values['observaciones'] ?? null,
-    });
-    this.form.markAsDirty();
-  }
-
-  protected onFieldBlur(key: string): void {
-    this.form.get(key)?.markAsTouched();
-    this.touchCount.update((n) => n + 1);
+    this.applySectionChange(values);
   }
 
   protected onCancelar(): void {
-    this.router.navigate(['/clientes']);
+    this.router.navigateByUrl(this.backLink());
   }
 
   protected onConfirmar(): void {
     this.submitted.set(true);
     if (this.form.invalid) return;
-    this.loading.set(true);
-    const {
-      nombre,
-      cedula,
-      fechaNacimiento,
-      telefono,
-      email,
-      metodoCobro,
-      pais,
-      departamento,
-      ciudad,
-      direccion,
-      observaciones,
-    } = this.form.getRawValue();
 
-    const dto: ClienteCrearDto = {
-      tipoCliente: TipoCliente.Socio,
-      nombre: nombre!.trim(),
-      cedula: cedula!.trim(),
-      fechaNacimiento: fechaNacimiento!,
-      telefono: telefono!.trim(),
-      email: email?.trim() ?? null,
-      metodoCobro: metodoCobro!,
-      pais: pais!.trim(),
-      departamento: departamento!.trim(),
-      ciudad: ciudad!.trim(),
-      direccion: direccion?.trim() ?? null,
-      observaciones: observaciones?.trim() ?? null,
-    };
-
-    this.clienteService.create(dto).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.router.navigate(['/clientes']);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        console.error('Error al crear el cliente', err);
-      },
-    });
+    // TODO: reemplazar con this.clientesService.update() cuando el endpoint esté disponible
+    console.log('Actualizar cliente:', this.form.getRawValue());
   }
 }
