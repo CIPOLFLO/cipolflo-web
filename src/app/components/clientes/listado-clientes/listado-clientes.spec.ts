@@ -14,6 +14,7 @@ import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ListadoClientes } from './listado-clientes';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
@@ -50,17 +51,26 @@ describe('ListadoClientes', () => {
   let mockClientesService: {
     getAll: ReturnType<typeof vi.fn>;
     getCostoCuota: ReturnType<typeof vi.fn>;
+    eliminar: ReturnType<typeof vi.fn>;
+  };
+  let mockConfirmDialogService: {
+    open: ReturnType<typeof vi.fn>;
   };
   beforeEach(async () => {
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
       getCostoCuota: vi.fn().mockReturnValue(5000),
+      eliminar: vi.fn().mockReturnValue(of(void 0)),
+    };
+    mockConfirmDialogService = {
+      open: vi.fn().mockReturnValue(of(false)),
     };
 
     await TestBed.configureTestingModule({
       imports: [ListadoClientes],
       providers: [
         { provide: ClientesService, useValue: mockClientesService },
+        { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
         { provide: Router, useValue: { navigate: vi.fn() } },
       ],
     }).compileComponents();
@@ -187,6 +197,50 @@ describe('ListadoClientes', () => {
     component['onPagoCuota'](row);
 
     expect(component['clientePagoSeleccionado']()).toEqual(row);
+  });
+
+  it('rowActions debe retornar la acción "Eliminar"', () => {
+    const row = mockPageResponse.content[0];
+
+    const actions = component['rowActions'](row);
+
+    expect(actions.some((action) => action.label === 'Eliminar')).toBe(true);
+  });
+
+  it('onEliminarCliente abre el diálogo de confirmación', () => {
+    const row = mockPageResponse.content[0];
+
+    component['onEliminarCliente'](row);
+
+    expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+      title: 'Eliminar cliente',
+      message:
+        '¿Confirmás que querés dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+      confirmButtonLabel: 'Eliminar',
+      cancelButtonLabel: 'Cancelar',
+      variant: 'danger',
+    });
+  });
+  it('onEliminarCliente llama a eliminar si se confirma la baja', () => {
+    const row = mockPageResponse.content[0];
+
+    mockConfirmDialogService.open.mockReturnValue(of(true));
+
+    component['onEliminarCliente'](row);
+
+    expect(mockClientesService.eliminar).toHaveBeenCalledWith({
+      clienteId: row.id,
+    });
+  });
+
+  it('onEliminarCliente no llama a eliminar si se cancela la baja', () => {
+    const row = mockPageResponse.content[0];
+
+    mockConfirmDialogService.open.mockReturnValue(of(false));
+
+    component['onEliminarCliente'](row);
+
+    expect(mockClientesService.eliminar).not.toHaveBeenCalled();
   });
 });
 
