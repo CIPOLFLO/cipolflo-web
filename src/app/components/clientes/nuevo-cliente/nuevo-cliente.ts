@@ -224,7 +224,9 @@ export class ModificarCliente implements OnInit {
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());
   }
-
+protected onFieldBlur(key: string): void {
+  this.form.get(key)?.markAsTouched();
+}
   protected onConfirmar(): void {
     this.submitted.set(true);
     if (this.form.invalid) return;

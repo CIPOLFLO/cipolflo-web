@@ -6,12 +6,12 @@
 >
   <app-form-layout>
     <app-form-section
-      title="Información del socio"
-      [fields]="clienteFields()"
-      [errors]="clienteErrors()"
-      (valuesChange)="onClienteChange($event)"
-      (fieldBlur)="onFieldBlur($event)"
-    />
+  title="Información del socio"
+  [fields]="infoFields()"
+  [errors]="infoErrors()"
+  (valuesChange)="onInfoChange($event)"
+  (fieldBlur)="onFieldBlur($event)"
+/>
 
     <app-form-section
       title="Información de Ubicación"
