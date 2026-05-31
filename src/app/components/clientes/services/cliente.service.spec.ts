@@ -136,5 +136,12 @@ describe('ClientesService', () => {
         );
       expect(errorStatus).toBe(400);
     });
+    it('eliminar retorna void al dar de baja un cliente', () => {
+      const dto = { clienteId: 1 };
+
+      service.eliminar(dto).subscribe((response) => {
+        expect(response).toBeUndefined();
+      });
+    });
   });
 });
