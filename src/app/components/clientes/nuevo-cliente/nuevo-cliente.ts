@@ -40,7 +40,7 @@ import { ClienteValidacionesService } from '../services/cliente-validaciones.ser
   styleUrl: './nuevo-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ModificarCliente implements OnInit {
+export class NuevoCliente implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly clientesService = inject(ClientesService);
@@ -88,7 +88,7 @@ export class ModificarCliente implements OnInit {
       const c = this.cliente();
       if (!c) return;
       this.form.patchValue({
-        numeroSocio: c.numeroSocio != null ? String(c.numeroSocio) : null,
+        numeroSocio: c.numeroSocio === null ? null : String(c.numeroSocio),
         cedula: c.cedula ?? null,
         nombre: c.nombre ?? null,
         telefono: c.telefono ?? null,
@@ -108,11 +108,10 @@ export class ModificarCliente implements OnInit {
   ngOnInit(): void {
     const id = Number(this.id());
 
-    if (!id || isNaN(id)) {
+    if (Number.isNaN(id) || id <= 0) {
       this.router.navigate(['/clientes']);
       return;
     }
-
     this.clientesService
       .getById(id)
       .pipe(
@@ -256,8 +255,9 @@ export class ModificarCliente implements OnInit {
   });
 
   private applySectionChange(values: Record<string, string | MetodoCobro | null>): void {
-    this.form.patchValue(values as Record<string, string | MetodoCobro | null>);
+    this.form.patchValue(values);
     this.form.markAsDirty();
+
     for (const key of Object.keys(values)) {
       this.form.get(key)?.markAsTouched();
     }

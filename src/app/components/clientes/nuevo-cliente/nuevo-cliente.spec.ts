@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ModificarCliente } from './nuevo-cliente';
+import { NuevoCliente } from './nuevo-cliente';
 import { MetodoCobro, TipoCliente } from '../models/cliente.model';
 import { of } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
@@ -27,9 +27,9 @@ const clienteMock = {
   createdBy: 'admin',
 };
 
-describe('ModificarCliente', () => {
-  let fixture: ComponentFixture<ModificarCliente>;
-  let component: ModificarCliente;
+describe('NuevoCliente', () => {
+  let fixture: ComponentFixture<NuevoCliente>;
+  let component: NuevoCliente;
   let navigateSpy: ReturnType<typeof vi.fn>;
   let navigateByUrlSpy: ReturnType<typeof vi.fn>;
 
@@ -38,7 +38,7 @@ describe('ModificarCliente', () => {
     navigateByUrlSpy = vi.fn();
 
     await TestBed.configureTestingModule({
-      imports: [ModificarCliente],
+      imports: [NuevoCliente],
       providers: [
         {
           provide: Router,
@@ -62,7 +62,7 @@ describe('ModificarCliente', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ModificarCliente);
+    fixture = TestBed.createComponent(NuevoCliente);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('id', '1');
     fixture.detectChanges();

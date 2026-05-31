@@ -116,7 +116,7 @@ export class ModificarCliente implements OnInit {
   ngOnInit(): void {
     const id = Number(this.id());
 
-    if (!id || isNaN(id)) {
+    if (Number.isNaN(id) || id <= 0) {
       this.router.navigate(['/clientes']);
       return;
     }
@@ -281,8 +281,5 @@ export class ModificarCliente implements OnInit {
   protected onConfirmar(): void {
     this.submitted.set(true);
     if (this.form.invalid) return;
-
-    // TODO: reemplazar con this.clientesService.update() cuando el endpoint esté disponible
-    console.log('Actualizar cliente:', this.form.getRawValue());
   }
 }

@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
       domain: environment.auth0.domain,
       clientId: environment.auth0.clientId,
       authorizationParams: {
-        redirect_uri: window.location.origin,
+        redirect_uri: globalThis.location.origin,
         audience: environment.auth0.audience,
       },
       cacheLocation: 'localstorage',
