@@ -15,6 +15,8 @@ import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
+import { BajaClienteDto } from '../models/baja-cliente.model';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -32,6 +34,7 @@ export class ListadoClientes {
   private readonly clientesService = inject(ClientesService);
   private readonly columnsService = inject(ClientesColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
@@ -58,6 +61,11 @@ export class ListadoClientes {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/clientes', row.id]),
+    },
+    {
+      label: 'Eliminar',
+      icon: 'pi pi-trash',
+      command: () => this.onEliminarCliente(row),
     },
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&
@@ -94,5 +102,25 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+  }
+  protected onEliminarCliente(cliente: ClienteRespuestaDto): void {
+    this.confirmDialogService
+      .open({
+        title: 'Eliminar cliente',
+        message:
+          '¿Confirmás que querés dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+        confirmButtonLabel: 'Eliminar',
+        cancelButtonLabel: 'Cancelar',
+        variant: 'danger',
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+
+        const dto: BajaClienteDto = {
+          clienteId: cliente.id,
+        };
+
+        this.clientesService.eliminar(dto).subscribe();
+      });
   }
 }
