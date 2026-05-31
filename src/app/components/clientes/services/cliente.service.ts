@@ -17,7 +17,7 @@ export class ClientesService extends BaseHttpService {
   getById(id: number): Observable<ClienteDetalleRespuestaDto> {
     return this.get<ClienteDetalleRespuestaDto>(`clientes/${id}`);
   }
-  
+
   getCostoCuota(): number {
     return 5000;
   }
