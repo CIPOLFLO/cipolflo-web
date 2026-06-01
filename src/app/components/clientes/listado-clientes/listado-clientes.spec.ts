@@ -247,9 +247,7 @@ describe('ListadoClientes', () => {
 
     component['onDarDeBajaCliente'](row);
 
-    expect(mockClientesService.darDeBaja).toHaveBeenCalledWith({
-      clienteId: row.id,
-    });
+    expect(mockClientesService.darDeBaja).toHaveBeenCalledWith(row.id);
   });
 
   it('onEliminarCliente no llama a eliminar si se cancela la baja', () => {
@@ -304,7 +302,7 @@ describe('ListadoClientes', () => {
     const row = mockPageResponse.content[0];
     mockConfirmDialogService.open.mockReturnValue(of(true));
     mockClientesService.darDeBaja.mockReturnValue(throwError(() => new Error('Error de red')));
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
 
     component['onDarDeBajaCliente'](row);
 

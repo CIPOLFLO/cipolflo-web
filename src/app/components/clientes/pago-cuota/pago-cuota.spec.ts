@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+
 import { PagoCuota } from './pago-cuota';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { FormaPago } from 'src/app/shared/models/forma-pago.model';
@@ -108,7 +108,7 @@ describe('PagoCuota', () => {
   });
 
   it('el botón "Confirmar Pago" llama a onConfirmar al hacer click (línea 83)', async () => {
-    const confirmarSpy = vi.spyOn(component as any, 'onConfirmar');
+    const confirmarSpy = vi.spyOn(component as PagoCuota & { onConfirmar(): void }, 'onConfirmar');
 
     // p-dialog porta su contenido a document.body; buscar el botón nativo por texto
     const nativeButtons = Array.from(document.querySelectorAll('button'));

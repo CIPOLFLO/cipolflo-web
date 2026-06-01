@@ -140,9 +140,7 @@ describe('ClientesService', () => {
 
   describe('darDeBaja', () => {
     it('retorna void (stub — reemplazar con expectOne cuando se conecte el backend)', () => {
-      const dto = { clienteId: 1 };
-
-      service.darDeBaja(dto).subscribe((response) => {
+      service.darDeBaja(1).subscribe((response) => {
         expect(response).toBeUndefined();
       });
     });

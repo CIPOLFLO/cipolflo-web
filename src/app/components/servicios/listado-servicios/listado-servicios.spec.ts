@@ -267,7 +267,10 @@ describe('ListadoServicios', () => {
     });
 
     it('el comando "Deshabilitar" en rowActions desencadena iniciarDeshabilitacion (línea 110)', () => {
-      const spy = vi.spyOn(component as any, 'iniciarDeshabilitacion');
+      const spy = vi.spyOn(
+        component as ListadoServicios & { iniciarDeshabilitacion(r: ServicioRow): void },
+        'iniciarDeshabilitacion',
+      );
       component['rowActions'](rowHabilitado)[2].command?.(rowHabilitado);
       expect(spy).toHaveBeenCalledWith(rowHabilitado);
     });
@@ -307,7 +310,7 @@ describe('ListadoServicios', () => {
       mockServicioService.actualizarHabilitacion.mockReturnValue(
         throwError(() => new Error('Error de red')),
       );
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
 
       component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
 
@@ -472,7 +475,7 @@ describe('ListadoServicios', () => {
       mockServicioService.actualizarHabilitacion.mockReturnValue(
         throwError(() => new Error('Error de red')),
       );
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
 
       component['deshabilitar']({ habilitado: false, reservasACancelar: [] });
 

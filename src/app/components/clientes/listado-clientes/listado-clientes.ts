@@ -17,7 +17,6 @@ import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
-import { BajaClienteDto } from '../models/baja-cliente.model';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -101,7 +100,6 @@ export class ListadoClientes {
     this.clientePagoSeleccionado.set(null);
   }
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
-    const dto: BajaClienteDto = { clienteId: cliente.id };
     this.confirmDialogService
       .open({
         title: 'Dar de baja cliente',
@@ -113,7 +111,7 @@ export class ListadoClientes {
       })
       .pipe(
         filter(Boolean),
-        switchMap(() => this.clientesService.darDeBaja(dto)),
+        switchMap(() => this.clientesService.darDeBaja(cliente.id)),
       )
       .subscribe({
         next: () => this.recargarTabla(),

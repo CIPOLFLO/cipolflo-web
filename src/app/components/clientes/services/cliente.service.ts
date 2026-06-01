@@ -7,8 +7,6 @@ import {
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
 } from '../models/cliente.model';
-import { BajaClienteDto } from '../models/baja-cliente.model';
-
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
   getAll({ page, size, filters }: TableQueryParams): Observable<PageResponse<ClienteRespuestaDto>> {
@@ -26,8 +24,9 @@ export class ClientesService extends BaseHttpService {
     return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
   }
   // TODO: reemplazar cuando el backend esté disponible
-  // return this.post<void>('clientes/baja', dto);
-  darDeBaja(dto: BajaClienteDto): Observable<void> {
+  // return this.patch<void>(`clientes/${id}/baja`, {});
+  darDeBaja(id: number): Observable<void> {
+    console.log('id: ', id);
     return of(void 0);
   }
 }
