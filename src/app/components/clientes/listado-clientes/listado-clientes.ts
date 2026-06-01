@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
+  ConfirmDialogService,
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
@@ -32,6 +34,7 @@ export class ListadoClientes {
   private readonly clientesService = inject(ClientesService);
   private readonly columnsService = inject(ClientesColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
@@ -70,14 +73,15 @@ export class ListadoClientes {
           },
         ]
       : []),
-    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => console.log('modificar', row.id) },
-
+    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => ... },
     // ...(row.estado !== 'ACTIVO'
-    //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => console.log('activar', row.id) }]
-    //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => console.log('desactivar', row.id) }]),
-    // { label: 'Pago de cuota', icon: 'pi pi-dollar',       command: () => console.log('pago cuota', row.id) },
-    // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => console.log('nueva reserva', row.id) },
-    // { label: 'Eliminar',      icon: 'pi pi-trash',        command: () => console.log('eliminar', row.id) },
+    //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => ... }]
+    //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => ... }]),
+    // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => ... },
+    // { separator: true },
+    ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
+      ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
+      : []),
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -94,5 +98,31 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+  }
+  protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
+    this.confirmDialogService
+      .open({
+        title: 'Dar de baja cliente',
+        message:
+          '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+        confirmButtonLabel: 'Dar de baja',
+        cancelButtonLabel: 'Cancelar',
+        variant: 'danger',
+      })
+      .pipe(
+        filter(Boolean),
+        switchMap(() => this.clientesService.darDeBaja(cliente.id)),
+      )
+      .subscribe({
+        next: () => this.recargarTabla(),
+        error: (e) => {
+          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
+          console.error('Error al dar de baja cliente', e);
+        },
+      });
+  }
+
+  private recargarTabla(): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
 }

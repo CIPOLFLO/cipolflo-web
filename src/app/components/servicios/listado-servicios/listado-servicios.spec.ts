@@ -266,6 +266,15 @@ describe('ListadoServicios', () => {
       expect(actions[2].icon).toBe('pi pi-ban');
     });
 
+    it('el comando "Deshabilitar" en rowActions desencadena iniciarDeshabilitacion (línea 110)', () => {
+      const spy = vi.spyOn(
+        component as ListadoServicios & { iniciarDeshabilitacion(r: ServicioRow): void },
+        'iniciarDeshabilitacion',
+      );
+      component['rowActions'](rowHabilitado)[2].command?.(rowHabilitado);
+      expect(spy).toHaveBeenCalledWith(rowHabilitado);
+    });
+
     it('la tercera acción es "Habilitar" cuando el servicio está deshabilitado', () => {
       const actions = component['rowActions'](rowDeshabilitado);
       expect(actions[2].label).toBe('Habilitar');
@@ -295,6 +304,18 @@ describe('ListadoServicios', () => {
       const spy = vi.spyOn(component['tableState'], 'updateFilters');
       component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
       expect(spy).toHaveBeenCalled();
+    });
+
+    it('llama a console.error cuando actualizarHabilitacion falla (línea 146)', () => {
+      mockServicioService.actualizarHabilitacion.mockReturnValue(
+        throwError(() => new Error('Error de red')),
+      );
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+
+      component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
+
+      expect(consoleSpy).toHaveBeenCalledWith('Error al habilitar servicio', expect.any(Error));
+      consoleSpy.mockRestore();
     });
   });
 
@@ -444,6 +465,24 @@ describe('ListadoServicios', () => {
     it('no llama a actualizarHabilitacion', () => {
       component['onCancelarDialog']();
       expect(mockServicioService.actualizarHabilitacion).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deshabilitar — error path', () => {
+    it('llama a console.error y limpia el estado cuando actualizarHabilitacion falla (líneas 192-194)', () => {
+      component['servicioSeleccionado'].set(rowHabilitado);
+      component['reservasProximas'].set(mockReservas);
+      mockServicioService.actualizarHabilitacion.mockReturnValue(
+        throwError(() => new Error('Error de red')),
+      );
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+
+      component['deshabilitar']({ habilitado: false, reservasACancelar: [] });
+
+      expect(consoleSpy).toHaveBeenCalledWith('Error al deshabilitar servicio', expect.any(Error));
+      expect(component['servicioSeleccionado']()).toBeNull();
+      expect(component['reservasProximas']()).toEqual([]);
+      consoleSpy.mockRestore();
     });
   });
 });
