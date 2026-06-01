@@ -137,4 +137,12 @@ describe('ClientesService', () => {
       expect(errorStatus).toBe(400);
     });
   });
+
+  describe('darDeBaja', () => {
+    it('retorna void (stub — reemplazar con expectOne cuando se conecte el backend)', () => {
+      service.darDeBaja(1).subscribe((response) => {
+        expect(response).toBeUndefined();
+      });
+    });
+  });
 });
