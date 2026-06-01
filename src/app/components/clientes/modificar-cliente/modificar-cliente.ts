@@ -9,6 +9,10 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import {
+  patchClienteForm,
+  applySectionChange,
+} from '../helpers/cliente-form.helper';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -93,26 +97,14 @@ export class ModificarCliente implements OnInit {
   });
 
   constructor() {
-    effect(() => {
-      const c = this.cliente();
-      if (!c) return;
-      this.form.patchValue({
-        numeroSocio: c.numeroSocio ? String(c.numeroSocio) : null,
-        cedula: c.cedula ?? null,
-        nombre: c.nombre ?? null,
-        telefono: c.telefono ?? null,
-        email: c.email ?? null,
-        pais: c.pais ?? null,
-        departamento: c.departamento ?? null,
-        ciudad: c.ciudad ?? null,
-        direccion: c.direccion ?? null,
-        observaciones: c.observaciones ?? null,
-        fechaNacimiento: c.fechaNacimiento ?? null,
-        estado: c.estado ?? null,
-        metodoCobro: c.metodoCobro ?? null,
-      });
-    });
-  }
+  effect(() => {
+    const c = this.cliente();
+
+    if (!c) return;
+
+    patchClienteForm(this.form, c);
+  });
+}
   ngOnInit(): void {
     const id = Number(this.id());
 
@@ -254,25 +246,19 @@ export class ModificarCliente implements OnInit {
     };
   });
 
-  private applySectionChange(values: Record<string, string | MetodoCobro | null>): void {
-    this.form.patchValue(values as Record<string, string | MetodoCobro | null>);
-    this.form.markAsDirty();
-    for (const key of Object.keys(values)) {
-      this.form.get(key)?.markAsTouched();
-    }
-  }
+ 
 
   protected onInfoChange(values: Record<string, string | null>): void {
-    this.applySectionChange(values);
-  }
+  applySectionChange(this.form, values);
+}
 
-  protected onUbicacionChange(values: Record<string, string | null>): void {
-    this.applySectionChange(values);
-  }
+protected onUbicacionChange(values: Record<string, string | null>): void {
+  applySectionChange(this.form, values);
+}
 
-  protected onAdicionalChange(values: Record<string, string | null>): void {
-    this.applySectionChange(values);
-  }
+protected onAdicionalChange(values: Record<string, string | null>): void {
+  applySectionChange(this.form, values);
+}
 
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());

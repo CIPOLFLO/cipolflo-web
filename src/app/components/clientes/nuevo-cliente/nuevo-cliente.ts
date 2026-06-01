@@ -24,6 +24,10 @@ import {
 } from '../../../shared';
 import { ClientesService } from '../services/cliente.service';
 import {
+  patchClienteForm,
+  applySectionChange,
+} from '../helpers/cliente-form.helper';
+import {
   ClienteDetalleRespuestaDto,
   TipoCliente,
   MetodoCobro,
@@ -84,26 +88,14 @@ export class NuevoCliente implements OnInit {
   });
 
   constructor() {
-    effect(() => {
-      const c = this.cliente();
-      if (!c) return;
-      this.form.patchValue({
-        numeroSocio: c.numeroSocio === null ? null : String(c.numeroSocio),
-        cedula: c.cedula ?? null,
-        nombre: c.nombre ?? null,
-        telefono: c.telefono ?? null,
-        email: c.email ?? null,
-        pais: c.pais ?? null,
-        departamento: c.departamento ?? null,
-        ciudad: c.ciudad ?? null,
-        direccion: c.direccion ?? null,
-        observaciones: c.observaciones ?? null,
-        fechaNacimiento: c.fechaNacimiento ?? null,
-        estado: c.estado ?? null,
-        metodoCobro: c.metodoCobro ?? null,
-      });
-    });
-  }
+  effect(() => {
+    const c = this.cliente();
+
+    if (!c) return;
+
+    patchClienteForm(this.form, c);
+  });
+}
 
   ngOnInit(): void {
     const id = Number(this.id());
@@ -254,26 +246,19 @@ export class NuevoCliente implements OnInit {
     };
   });
 
-  private applySectionChange(values: Record<string, string | MetodoCobro | null>): void {
-    this.form.patchValue(values);
-    this.form.markAsDirty();
+  
 
-    for (const key of Object.keys(values)) {
-      this.form.get(key)?.markAsTouched();
-    }
-  }
+protected onInfoChange(values: Record<string, string | null>): void {
+  applySectionChange(this.form, values);
+}
 
-  protected onInfoChange(values: Record<string, string | null>): void {
-    this.applySectionChange(values);
-  }
+protected onUbicacionChange(values: Record<string, string | null>): void {
+  applySectionChange(this.form, values);
+}
 
-  protected onUbicacionChange(values: Record<string, string | null>): void {
-    this.applySectionChange(values);
-  }
-
-  protected onAdicionalChange(values: Record<string, string | null>): void {
-    this.applySectionChange(values);
-  }
+protected onAdicionalChange(values: Record<string, string | null>): void {
+  applySectionChange(this.form, values);
+}
 
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());
@@ -285,7 +270,7 @@ export class NuevoCliente implements OnInit {
     this.submitted.set(true);
     if (this.form.invalid) return;
 
-    // TODO: reemplazar con this.clientesService.update() cuando el endpoint esté disponible
-    console.log('Actualizar cliente:', this.form.getRawValue());
-  }
+  
+
+}
 }
