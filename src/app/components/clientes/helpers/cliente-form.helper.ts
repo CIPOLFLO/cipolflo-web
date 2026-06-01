@@ -44,3 +44,10 @@ export function applySectionChange(
     form.get(key)?.markAsTouched();
   });
 }
+
+export function markFieldAsTouched(
+  form: FormGroup,
+  key: string,
+): void {
+  form.get(key)?.markAsTouched();
+}

@@ -26,6 +26,7 @@ import { ClientesService } from '../services/cliente.service';
 import {
   patchClienteForm,
   applySectionChange,
+  markFieldAsTouched,
 } from '../helpers/cliente-form.helper';
 import {
   ClienteDetalleRespuestaDto,
@@ -263,9 +264,9 @@ protected onAdicionalChange(values: Record<string, string | null>): void {
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());
   }
-  protected onFieldBlur(key: string): void {
-    this.form.get(key)?.markAsTouched();
-  }
+ protected onFieldBlur(key: string): void {
+  markFieldAsTouched(this.form, key);
+}
   protected onConfirmar(): void {
     this.submitted.set(true);
     if (this.form.invalid) return;
