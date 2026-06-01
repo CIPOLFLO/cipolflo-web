@@ -9,10 +9,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import {
-  patchClienteForm,
-  applySectionChange,
-} from '../helpers/cliente-form.helper';
+import { patchClienteForm, applySectionChange } from '../helpers/cliente-form.helper';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -97,14 +94,14 @@ export class ModificarCliente implements OnInit {
   });
 
   constructor() {
-  effect(() => {
-    const c = this.cliente();
+    effect(() => {
+      const c = this.cliente();
 
-    if (!c) return;
+      if (!c) return;
 
-    patchClienteForm(this.form, c);
-  });
-}
+      patchClienteForm(this.form, c);
+    });
+  }
   ngOnInit(): void {
     const id = Number(this.id());
 
@@ -246,19 +243,17 @@ export class ModificarCliente implements OnInit {
     };
   });
 
- 
-
   protected onInfoChange(values: Record<string, string | null>): void {
-  applySectionChange(this.form, values);
-}
+    applySectionChange(this.form, values);
+  }
 
-protected onUbicacionChange(values: Record<string, string | null>): void {
-  applySectionChange(this.form, values);
-}
+  protected onUbicacionChange(values: Record<string, string | null>): void {
+    applySectionChange(this.form, values);
+  }
 
-protected onAdicionalChange(values: Record<string, string | null>): void {
-  applySectionChange(this.form, values);
-}
+  protected onAdicionalChange(values: Record<string, string | null>): void {
+    applySectionChange(this.form, values);
+  }
 
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());

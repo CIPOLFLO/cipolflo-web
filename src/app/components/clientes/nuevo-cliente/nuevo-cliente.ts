@@ -89,14 +89,14 @@ export class NuevoCliente implements OnInit {
   });
 
   constructor() {
-  effect(() => {
-    const c = this.cliente();
+    effect(() => {
+      const c = this.cliente();
 
-    if (!c) return;
+      if (!c) return;
 
-    patchClienteForm(this.form, c);
-  });
-}
+      patchClienteForm(this.form, c);
+    });
+  }
 
   ngOnInit(): void {
     const id = Number(this.id());
@@ -247,31 +247,26 @@ export class NuevoCliente implements OnInit {
     };
   });
 
-  
+  protected onInfoChange(values: Record<string, string | null>): void {
+    applySectionChange(this.form, values);
+  }
 
-protected onInfoChange(values: Record<string, string | null>): void {
-  applySectionChange(this.form, values);
-}
+  protected onUbicacionChange(values: Record<string, string | null>): void {
+    applySectionChange(this.form, values);
+  }
 
-protected onUbicacionChange(values: Record<string, string | null>): void {
-  applySectionChange(this.form, values);
-}
-
-protected onAdicionalChange(values: Record<string, string | null>): void {
-  applySectionChange(this.form, values);
-}
+  protected onAdicionalChange(values: Record<string, string | null>): void {
+    applySectionChange(this.form, values);
+  }
 
   protected onCancelar(): void {
     this.router.navigateByUrl(this.backLink());
   }
- protected onFieldBlur(key: string): void {
-  markFieldAsTouched(this.form, key);
-}
+  protected onFieldBlur(key: string): void {
+    markFieldAsTouched(this.form, key);
+  }
   protected onConfirmar(): void {
     this.submitted.set(true);
     if (this.form.invalid) return;
-
-  
-
-}
+  }
 }

@@ -1,18 +1,9 @@
 import { FormGroup } from '@angular/forms';
-import {
-  ClienteDetalleRespuestaDto,
-  MetodoCobro,
-} from '../models/cliente.model';
+import { ClienteDetalleRespuestaDto, MetodoCobro } from '../models/cliente.model';
 
-export function patchClienteForm(
-  form: FormGroup,
-  cliente: ClienteDetalleRespuestaDto,
-): void {
+export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespuestaDto): void {
   form.patchValue({
-    numeroSocio:
-      cliente.numeroSocio === null
-        ? null
-        : String(cliente.numeroSocio),
+    numeroSocio: cliente.numeroSocio === null ? null : String(cliente.numeroSocio),
 
     cedula: cliente.cedula ?? null,
     nombre: cliente.nombre ?? null,
@@ -45,9 +36,6 @@ export function applySectionChange(
   });
 }
 
-export function markFieldAsTouched(
-  form: FormGroup,
-  key: string,
-): void {
+export function markFieldAsTouched(form: FormGroup, key: string): void {
   form.get(key)?.markAsTouched();
 }
