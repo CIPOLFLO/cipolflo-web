@@ -73,14 +73,9 @@ describe('NuevoCliente', () => {
     expect(component).toBeTruthy();
   });
 
-  it('debería cargar los datos del cliente al inicializar', () => {
-    expect(component['form'].get('nombre')?.value).toBe('Lucía Rodríguez');
-    expect(component['form'].get('email')?.value).toBe('lucia@example.com');
-  });
-
-  it('debería patchear el form con los datos del cliente', () => {
-    expect(component['form'].get('cedula')?.value).toBe('5.191.926-8');
-    expect(component['form'].get('telefono')?.value).toBe('099985648');
+  it('debería inicializar con el formulario vacío excepto pais', () => {
+    expect(component['form'].get('nombre')?.value).toBeNull();
+    expect(component['form'].get('email')?.value).toBeNull();
     expect(component['form'].get('pais')?.value).toBe('Uruguay');
   });
 
@@ -92,6 +87,16 @@ describe('NuevoCliente', () => {
   });
 
   it('confirmDisabled debería ser false cuando el form es válido', () => {
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      email: 'a@b.com',
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
     component['form'].markAsDirty();
     fixture.detectChanges();
     expect(component['confirmDisabled']()).toBe(false);
@@ -184,8 +189,18 @@ describe('NuevoCliente', () => {
     expect(component['submitted']()).toBe(true);
   });
 
-  it('onConfirmar con form válido no debería navegar (update pendiente)', () => {
+  it('onConfirmar con form válido marca submitted y no retorna temprano', () => {
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    fixture.detectChanges();
     component['onConfirmar']();
+    expect(component['submitted']()).toBe(true);
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 });

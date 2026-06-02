@@ -4,8 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
+  AppButton,
   DetailRegistroSection,
   DetailSection,
+  FormActions,
   FormLayout,
   PageLayout,
   type DetailFieldConfig,
@@ -17,7 +19,15 @@ import { METODO_COBRO_LABEL } from '../models/cliente.model';
 @Component({
   standalone: true,
   selector: 'app-detalle-cliente',
-  imports: [CommonModule, PageLayout, FormLayout, DetailSection, DetailRegistroSection],
+  imports: [
+    CommonModule,
+    PageLayout,
+    FormLayout,
+    DetailSection,
+    DetailRegistroSection,
+    AppButton,
+    FormActions,
+  ],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

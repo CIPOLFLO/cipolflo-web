@@ -60,7 +60,7 @@ export class ListadoClientes {
     {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
-      command: () => this.router.navigate(['/clientes', row.id, 'detalle']),
+      command: () => this.router.navigate(['/clientes', row.id]),
     },
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&

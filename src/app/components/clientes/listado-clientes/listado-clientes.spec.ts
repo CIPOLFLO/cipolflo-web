@@ -170,7 +170,21 @@ describe('ListadoClientes', () => {
 
     verDetalle!.command?.(cliente);
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1, 'detalle']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
+  });
+
+  it('el comando "Modificar" en rowActions navega con queryParam from=listado', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    const cliente = mockPageResponse.content[0];
+    const actions = component['rowActions'](cliente);
+    const modificar = actions.find((a) => a.label === 'Modificar');
+
+    expect(modificar).toBeDefined();
+    modificar!.command?.(cliente);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', cliente.id, 'modificar'], {
+      queryParams: { from: 'listado' },
+    });
   });
 
   it('onNuevoCliente navega a /clientes/nuevo', () => {
