@@ -139,10 +139,37 @@ describe('ClientesService', () => {
   });
 
   describe('darDeBaja', () => {
-    it('retorna void (stub — reemplazar con expectOne cuando se conecte el backend)', () => {
+    it('realiza PATCH a /clientes/socios/:id/baja y retorna void', () => {
       service.darDeBaja(1).subscribe((response) => {
-        expect(response).toBeUndefined();
+        expect(response).toBeNull();
       });
+      const req = httpMock.expectOne(`${BASE}/socios/1/baja`);
+      expect(req.request.method).toBe('PATCH');
+      req.flush(null, { status: 204, statusText: 'No Content' });
+    });
+
+    it('propaga error 404 cuando el socio no existe', () => {
+      let errorStatus = 0;
+      service.darDeBaja(9999).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/9999/baja`)
+        .flush(
+          { codigo: 'SOCIO_NO_ENCONTRADO', descripcion: 'No existe un socio con ese id' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 400 cuando el id es inválido', () => {
+      let errorStatus = 0;
+      service.darDeBaja(-1).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/-1/baja`)
+        .flush(
+          { codigo: 'ID_INVALIDO', descripcion: 'El id no es un número positivo' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
     });
   });
 });

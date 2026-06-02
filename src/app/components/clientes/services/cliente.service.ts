@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
@@ -23,10 +23,7 @@ export class ClientesService extends BaseHttpService {
   create(dto: ClienteCrearDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
   }
-  // TODO: reemplazar cuando el backend esté disponible
-  // return this.patch<void>(`clientes/${id}/baja`, {});
   darDeBaja(id: number): Observable<void> {
-    console.log('id: ', id);
-    return of(void 0);
+    return this.patch<void>(`clientes/socios/${id}/baja`, {});
   }
 }
