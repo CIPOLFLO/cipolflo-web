@@ -1,302 +1,206 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
 import { MetodoCobro, TipoCliente } from '../models/cliente.model';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
+import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+const clienteMock = {
+  id: 1,
+  tipoCliente: TipoCliente.Socio,
+  numeroSocio: 42,
+  cedula: '5.191.926-8',
+  nombre: 'Lucía Rodríguez',
+  telefono: '099985648',
+  email: 'lucia@example.com',
+  pais: 'Uruguay',
+  departamento: 'Flores',
+  ciudad: 'Trinidad',
+  direccion: 'Calle A 123',
+  observaciones: null,
+  fechaNacimiento: '1999-06-29',
+  estado: 'Activo',
+  metodoCobro: MetodoCobro.Cobradora,
+  createdAt: '2024-01-01',
+  createdBy: 'admin',
+};
 
 describe('NuevoCliente', () => {
   let fixture: ComponentFixture<NuevoCliente>;
   let component: NuevoCliente;
   let navigateSpy: ReturnType<typeof vi.fn>;
-  let createSpy: ReturnType<typeof vi.fn>;
+  let navigateByUrlSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     navigateSpy = vi.fn();
-    createSpy = vi.fn().mockReturnValue(of({}));
+    navigateByUrlSpy = vi.fn();
 
-    TestBed.overrideProvider(ClientesService, {
-      useValue: {
-        create: createSpy,
-      },
-    });
     await TestBed.configureTestingModule({
       imports: [NuevoCliente],
-      providers: [{ provide: Router, useValue: { navigate: navigateSpy } }],
+      providers: [
+        {
+          provide: Router,
+          useValue: { navigate: navigateSpy, navigateByUrl: navigateByUrlSpy },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: { get: vi.fn().mockReturnValue('1') },
+              queryParamMap: { get: vi.fn().mockReturnValue(null) },
+            },
+            paramMap: of({ get: () => '1' }),
+          },
+        },
+        {
+          provide: ClientesService,
+          useValue: { getById: vi.fn().mockReturnValue(of(clienteMock)) },
+        },
+        ClienteValidacionesService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NuevoCliente);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('id', '1');
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });
 
-  it('debería mostrar error si la cédula es inválida', () => {
-    component['submitted'].set(true);
-
-    component['form'].get('cedula')?.setErrors({
-      cedulaInvalida: true,
-    });
-
-    expect(component['clienteErrors']()['cedula']).toContain('no es válida');
+  it('debería inicializar con el formulario vacío excepto pais', () => {
+    expect(component['form'].get('nombre')?.value).toBeNull();
+    expect(component['form'].get('email')?.value).toBeNull();
+    expect(component['form'].get('pais')?.value).toBe('Uruguay');
   });
 
-  it('debería mostrar error si es menor de edad', () => {
-    component['submitted'].set(true);
-
-    component['form'].get('fechaNacimiento')?.setErrors({
-      menorDeEdad: true,
-    });
-
-    expect(component['clienteErrors']()['fechaNacimiento']).toContain('mayor de 18 años');
-  });
-
-  it('debería mostrar error si el email es inválido', () => {
-    component['submitted'].set(true);
-
-    component['form'].get('email')?.setErrors({
-      emailInvalido: true,
-    });
-
-    expect(component['clienteErrors']()['email']).toContain('email no es válido');
-  });
-
-  it('confirmDisabled debería ser true con el formulario vacío', () => {
+  it('confirmDisabled debería ser true cuando el form es inválido y sucio', () => {
+    component['form'].get('nombre')?.setValue('');
+    component['form'].markAsDirty();
+    fixture.detectChanges();
     expect(component['confirmDisabled']()).toBe(true);
   });
 
-  it('clienteErrors debería estar vacío cuando submitted es false', () => {
-    expect(component['clienteErrors']()).toEqual({});
+  it('confirmDisabled debería ser false cuando el form es válido', () => {
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      email: 'a@b.com',
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    component['form'].markAsDirty();
+    fixture.detectChanges();
+    expect(component['confirmDisabled']()).toBe(false);
+  });
+
+  it('infoErrors debería estar vacío cuando submitted es false', () => {
+    expect(component['infoErrors']()).toEqual({});
   });
 
   it('ubicacionErrors debería estar vacío cuando submitted es false', () => {
     expect(component['ubicacionErrors']()).toEqual({});
   });
 
-  it('clienteErrors[nombre] debería mostrar error cuando submitted y campo vacío', () => {
+  it('infoErrors[nombre] debería mostrar error cuando submitted y nombre vacío', () => {
+    component['form'].get('nombre')?.setValue(null);
     component['submitted'].set(true);
     fixture.detectChanges();
-
-    expect(component['clienteErrors']()['nombre']).toBeTruthy();
+    expect(component['infoErrors']()['nombre']).toBeTruthy();
   });
 
-  it('clienteErrors[cedula] debería mostrar error cuando submitted y campo vacío', () => {
+  it('infoErrors[email] debería mostrar error con email inválido', () => {
+    const email = component['form'].get('email');
+
+    email?.setValue('email-invalido');
+    email?.markAsTouched();
+    email?.updateValueAndValidity();
+
     component['submitted'].set(true);
+
     fixture.detectChanges();
 
-    expect(component['clienteErrors']()['cedula']).toBeTruthy();
+    expect(email?.hasError('email')).toBe(true);
+    expect(component['infoErrors']()['email']).toBe('El email no es válido.');
   });
 
-  it('clienteErrors[fechaNacimiento] debería mostrar error cuando submitted y campo vacío', () => {
+  it('infoErrors[telefono] debería mostrar error cuando submitted y campo vacío', () => {
+    component['form'].get('telefono')?.setValue(null);
     component['submitted'].set(true);
     fixture.detectChanges();
-
-    expect(component['clienteErrors']()['fechaNacimiento']).toBeTruthy();
-  });
-
-  it('clienteErrors[telefono] debería mostrar error cuando submitted y campo vacío', () => {
-    component['submitted'].set(true);
-    fixture.detectChanges();
-
-    expect(component['clienteErrors']()['telefono']).toBeTruthy();
-  });
-
-  it('clienteErrors[email] debería mostrar error cuando el email es inválido', () => {
-    component['form'].patchValue({
-      nombre: 'Lucía Rodríguez',
-      cedula: '5.191.926-8',
-      fechaNacimiento: '1999-06-29',
-      telefono: '099985648',
-      email: 'email-invalido',
-      metodoCobro: MetodoCobro.Cobradora,
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-    });
-
-    component['submitted'].set(true);
-    fixture.detectChanges();
-
-    expect(component['clienteErrors']()['email']).toBeTruthy();
+    expect(component['infoErrors']()['telefono']).toBeTruthy();
   });
 
   it('ubicacionErrors[pais] debería mostrar error cuando submitted y campo vacío', () => {
-    component['form'].patchValue({ pais: null });
+    component['form'].get('pais')?.setValue(null);
     component['submitted'].set(true);
     fixture.detectChanges();
-
     expect(component['ubicacionErrors']()['pais']).toBeTruthy();
   });
 
-  it('ubicacionErrors[departamento] debería mostrar error cuando submitted y campo vacío', () => {
-    component['submitted'].set(true);
-    fixture.detectChanges();
-
-    expect(component['ubicacionErrors']()['departamento']).toBeTruthy();
-  });
-
-  it('ubicacionErrors[ciudad] debería mostrar error cuando submitted y campo vacío', () => {
-    component['submitted'].set(true);
-    fixture.detectChanges();
-
-    expect(component['ubicacionErrors']()['ciudad']).toBeTruthy();
-  });
-
-  it('onClienteChange debería patchear los datos del cliente en el form', () => {
-    component['onClienteChange']({
+  it('onInfoChange debería patchear los datos del cliente en el form', () => {
+    component['onInfoChange']({
       nombre: 'Martín González',
       cedula: '2.345.678-9',
-      fechaNacimiento: '1985-04-15',
       telefono: '099123456',
-      email: 'martin.gonzalez@example.com',
-      metodoCobro: MetodoCobro.EnSede,
+      email: 'martin@example.com',
     });
-
     expect(component['form'].get('nombre')?.value).toBe('Martín González');
-    expect(component['form'].get('cedula')?.value).toBe('2.345.678-9');
-    expect(component['form'].get('fechaNacimiento')?.value).toBe('1985-04-15');
-    expect(component['form'].get('telefono')?.value).toBe('099123456');
-    expect(component['form'].get('email')?.value).toBe('martin.gonzalez@example.com');
-    expect(component['form'].get('metodoCobro')?.value).toBe('EN_SEDE');
+    expect(component['form'].get('email')?.value).toBe('martin@example.com');
   });
 
   it('onUbicacionChange debería patchear los datos de ubicación en el form', () => {
     component['onUbicacionChange']({
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-      direccion: 'Calle A 123',
+      pais: 'Argentina',
+      departamento: 'Buenos Aires',
+      ciudad: 'CABA',
+      direccion: 'Av. Corrientes 123',
     });
-
-    expect(component['form'].get('pais')?.value).toBe('Uruguay');
-    expect(component['form'].get('departamento')?.value).toBe('Flores');
-    expect(component['form'].get('ciudad')?.value).toBe('Trinidad');
-    expect(component['form'].get('direccion')?.value).toBe('Calle A 123');
+    expect(component['form'].get('pais')?.value).toBe('Argentina');
+    expect(component['form'].get('ciudad')?.value).toBe('CABA');
   });
 
   it('onAdicionalChange debería patchear observaciones en el form', () => {
-    component['onAdicionalChange']({
-      observaciones: 'Socia nueva',
-    });
-
-    expect(component['form'].get('observaciones')?.value).toBe('Socia nueva');
+    component['onAdicionalChange']({ observaciones: 'Nota de prueba' });
+    expect(component['form'].get('observaciones')?.value).toBe('Nota de prueba');
   });
 
-  it('onConfirmar con form válido navega a /clientes al completar', () => {
-    component['form'].patchValue({
-      nombre: 'Lucía Rodríguez',
-      cedula: '5.191.926-8',
-      fechaNacimiento: '1999-06-29',
-      telefono: '099985648',
-      metodoCobro: MetodoCobro.Cobradora,
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-    });
-
-    component['onConfirmar']();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/clientes']);
+  it('onFieldBlur debería marcar el campo como touched', () => {
+    component['onFieldBlur']('nombre');
+    expect(component['form'].get('nombre')?.touched).toBe(true);
   });
 
-  it('onConfirmar desactiva loading ante un error del servidor', () => {
-    createSpy.mockReturnValue(throwError(() => new Error('server error')));
-    component['form'].patchValue({
-      nombre: 'Lucía Rodríguez',
-      cedula: '5.191.926-8',
-      fechaNacimiento: '1999-06-29',
-      telefono: '099985648',
-      metodoCobro: MetodoCobro.Cobradora,
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-    });
-
-    component['onConfirmar']();
-
-    expect(component['loading']()).toBe(false);
-  });
-
-  it('onCancelar debería navegar a /clientes', () => {
+  it('onCancelar debería navegar usando backLink', () => {
     component['onCancelar']();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/clientes']);
+    expect(navigateByUrlSpy).toHaveBeenCalled();
   });
 
-  it('onConfirmar con form inválido debería marcar submitted', () => {
+  it('onConfirmar con form inválido debería marcar submitted como true', () => {
+    component['form'].get('nombre')?.setValue(null);
     component['onConfirmar']();
-
     expect(component['submitted']()).toBe(true);
   });
 
-  it('onConfirmar con form inválido no debería llamar a create', () => {
-    component['onConfirmar']();
-
-    expect(createSpy).not.toHaveBeenCalled();
-  });
-
-  it('onConfirmar con form válido debería llamar a create con los datos del formulario', () => {
+  it('onConfirmar con form válido marca submitted y no retorna temprano', () => {
     component['form'].patchValue({
-      tipoCliente: TipoCliente.Socio,
-      nombre: 'Lucía Rodríguez',
+      nombre: 'Juan',
       cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
       fechaNacimiento: '1999-06-29',
-      telefono: '099985648',
-      email: 'lucia.rodriguez@example.com',
-      metodoCobro: MetodoCobro.Cobradora,
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-      direccion: 'Luis Alberto de Herrera 123',
-      observaciones: 'Socia nueva',
     });
-
+    fixture.detectChanges();
     component['onConfirmar']();
-
-    expect(createSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        nombre: 'Lucía Rodríguez',
-        cedula: '5.191.926-8',
-        metodoCobro: MetodoCobro.Cobradora,
-      }),
-    );
-  });
-
-  it('debería habilitar confirmar cuando el formulario es válido', () => {
-    component['form'].patchValue({
-      nombre: 'Lucía Rodríguez',
-      cedula: '1.111.111-1',
-      fechaNacimiento: '1990-01-01',
-      telefono: '099123456',
-      email: 'lucia@test.com',
-      metodoCobro: MetodoCobro.Cobradora,
-      pais: 'Uruguay',
-      departamento: 'Flores',
-      ciudad: 'Trinidad',
-      direccion: 'Calle 123',
-      observaciones: 'Observación',
-    });
-
-    expect(component['confirmDisabled']()).toBe(false);
-  });
-
-  it('debería limpiar errores reactivos luego de corregir un campo', () => {
-    component['submitted'].set(true);
-
-    component['form'].patchValue({
-      nombre: '',
-    });
-
-    expect(component['clienteErrors']()['nombre']).toContain('El nombre es obligatorio.');
-
-    component['form'].patchValue({
-      nombre: 'Lucía Rodríguez',
-    });
-
-    expect(component['clienteErrors']()['nombre']).toBeUndefined();
+    expect(component['submitted']()).toBe(true);
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 });

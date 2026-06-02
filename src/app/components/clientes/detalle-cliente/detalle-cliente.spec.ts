@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
@@ -95,6 +95,38 @@ describe('DetalleCliente', () => {
 
   it('debería mostrar las observaciones', () => {
     expect(fixture.nativeElement.textContent).toContain('Socia Nueva');
+  });
+
+  it('onEditar debe navegar a la pantalla de modificación con queryParam from=detalle', () => {
+    const navigateSpy = component['router'].navigate as ReturnType<typeof vi.fn>;
+    component['onEditar']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', '1', 'modificar'], {
+      queryParams: { from: 'detalle' },
+    });
+  });
+
+  it('debe registrar error en consola si falla la carga del cliente', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [DetalleCliente],
+      providers: [
+        {
+          provide: ClientesService,
+          useValue: { getById: vi.fn().mockReturnValue(throwError(() => new Error('fallo'))) },
+        },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+      ],
+    }).compileComponents();
+
+    const errFixture = TestBed.createComponent(DetalleCliente);
+    errFixture.detectChanges();
+    await errFixture.whenStable();
+
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });
 

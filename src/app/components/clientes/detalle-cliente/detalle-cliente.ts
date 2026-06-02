@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
+  AppButton,
   DetailRegistroSection,
   DetailSection,
+  FormActions,
   FormLayout,
   PageLayout,
   type DetailFieldConfig,
@@ -17,7 +19,15 @@ import { METODO_COBRO_LABEL } from '../models/cliente.model';
 @Component({
   standalone: true,
   selector: 'app-detalle-cliente',
-  imports: [CommonModule, PageLayout, FormLayout, DetailSection, DetailRegistroSection],
+  imports: [
+    CommonModule,
+    PageLayout,
+    FormLayout,
+    DetailSection,
+    DetailRegistroSection,
+    AppButton,
+    FormActions,
+  ],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,7 +56,13 @@ export class DetalleCliente {
     ),
     { initialValue: undefined },
   );
+  private readonly router = inject(Router);
 
+  protected onEditar(): void {
+    this.router.navigate(['/clientes', this.clienteId(), 'modificar'], {
+      queryParams: { from: 'detalle' },
+    });
+  }
   protected readonly infoFields = computed<DetailFieldConfig[]>(() => {
     const c = this.cliente();
     if (!c) return [];

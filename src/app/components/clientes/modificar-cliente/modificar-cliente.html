@@ -1,16 +1,15 @@
 <app-page-layout
-  pageTitle="Nuevo Socio"
-  pageDescription="Complete los datos para registrar un nuevo socio"
+  pageTitle="Modificar Cliente"
+  pageDescription="Modifique los datos del Cliente"
   [showBackButton]="true"
   [backButtonLink]="backLink()"
 >
   <app-form-layout>
     <app-form-section
-      title="Información del socio"
+      title="Información del Cliente"
       [fields]="infoFields()"
       [errors]="infoErrors()"
       (valuesChange)="onInfoChange($event)"
-      (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-section
@@ -18,15 +17,18 @@
       [fields]="ubicacionFields()"
       [errors]="ubicacionErrors()"
       (valuesChange)="onUbicacionChange($event)"
-      (fieldBlur)="onFieldBlur($event)"
     />
 
     <app-form-section
       title="Información Adicional"
       [fields]="adicionalFields()"
+      [errors]="adicionalErrors()"
       (valuesChange)="onAdicionalChange($event)"
-      (fieldBlur)="onFieldBlur($event)"
     />
+
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
 
     <app-form-actions actions>
       <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
@@ -35,7 +37,6 @@
         intent="primary"
         icon="pi-save"
         [disabled]="confirmDisabled()"
-        tooltip="Complete con valores válidos el formulario para continuar"
         (clicked)="onConfirmar()"
       />
     </app-form-actions>
