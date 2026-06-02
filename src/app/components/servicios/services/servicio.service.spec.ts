@@ -79,6 +79,32 @@ describe('ServicioService', () => {
     req.flush(emptyPage);
   });
 
+  it('getAll envía sortField y sortOrder en mayúsculas cuando se proporcionan', () => {
+    service
+      .getAll({ page: 0, size: 10, filters: {}, sortField: 'nombre', sortOrder: 'desc' })
+      .subscribe();
+    const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/servicios`);
+    expect(req.request.params.get('sortField')).toBe('nombre');
+    expect(req.request.params.get('sortOrder')).toBe('DESC');
+    req.flush(emptyPage);
+  });
+
+  it('getAll envía sortField solo cuando sortOrder no se proporciona', () => {
+    service.getAll({ page: 0, size: 10, filters: {}, sortField: 'precioParticular' }).subscribe();
+    const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/servicios`);
+    expect(req.request.params.get('sortField')).toBe('precioParticular');
+    expect(req.request.params.has('sortOrder')).toBe(false);
+    req.flush(emptyPage);
+  });
+
+  it('getAll omite sortField y sortOrder cuando no se proporcionan', () => {
+    service.getAll({ page: 0, size: 10, filters: {} }).subscribe();
+    const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/servicios`);
+    expect(req.request.params.has('sortField')).toBe(false);
+    expect(req.request.params.has('sortOrder')).toBe(false);
+    req.flush(emptyPage);
+  });
+
   describe('getById', () => {
     it('hace GET a /servicios/{id} y retorna el detalle del servicio', () => {
       service.getById(1).subscribe((result) => {

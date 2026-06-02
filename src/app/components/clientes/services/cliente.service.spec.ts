@@ -91,6 +91,35 @@ describe('ClientesService', () => {
     req.flush(emptyPage);
   });
 
+  it('getAll envía sortField y sortOrder en mayúsculas cuando se proporcionan', () => {
+    service
+      .getAll({ page: 0, size: 10, filters: {}, sortField: 'nombreCompleto', sortOrder: 'asc' })
+      .subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === BASE);
+    expect(req.request.params.get('sortField')).toBe('nombreCompleto');
+    expect(req.request.params.get('sortOrder')).toBe('ASC');
+    req.flush(emptyPage);
+  });
+
+  it('getAll envía sortField solo cuando sortOrder no se proporciona', () => {
+    service.getAll({ page: 0, size: 10, filters: {}, sortField: 'cedula' }).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === BASE);
+    expect(req.request.params.get('sortField')).toBe('cedula');
+    expect(req.request.params.has('sortOrder')).toBe(false);
+    req.flush(emptyPage);
+  });
+
+  it('getAll omite sortField y sortOrder cuando no se proporcionan', () => {
+    service.getAll({ page: 0, size: 10, filters: {} }).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === BASE);
+    expect(req.request.params.has('sortField')).toBe(false);
+    expect(req.request.params.has('sortOrder')).toBe(false);
+    req.flush(emptyPage);
+  });
+
   describe('getById', () => {
     it('hace GET a /clientes/:id y retorna el detalle del cliente', () => {
       service.getById(1).subscribe((result) => {
