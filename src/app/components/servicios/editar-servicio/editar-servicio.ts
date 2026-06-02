@@ -136,6 +136,7 @@ export class EditarServicio implements OnInit {
       .pipe(
         catchError((err) => {
           this.errorHandler.handle(err);
+          this.router.navigate(['/servicios']);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef),
