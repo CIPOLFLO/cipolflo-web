@@ -60,15 +60,12 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
       }),
     );
 
+    const mayorDeEdad = this.validaciones.mayorDeEdad.bind(this.validaciones);
+
     effect(() => {
       if (!this.clienteTipo()) return;
       if (this.esSocio()) {
-        this.form
-          .get('fechaNacimiento')
-          ?.addValidators([
-            Validators.required,
-            this.validaciones.mayorDeEdad.bind(this.validaciones),
-          ]);
+        this.form.get('fechaNacimiento')?.addValidators([Validators.required, mayorDeEdad]);
         this.form.get('metodoCobro')?.addValidators(Validators.required);
         this.form.get('pais')?.addValidators(Validators.required);
         this.form.get('departamento')?.addValidators(Validators.required);
