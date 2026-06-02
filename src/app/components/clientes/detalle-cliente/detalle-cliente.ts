@@ -14,6 +14,7 @@ import {
 import { ClientesService } from '../services/cliente.service';
 import { METODO_COBRO_LABEL } from '../models/cliente.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -24,6 +25,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalleCliente {
+  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly clientesService = inject(ClientesService);
   protected readonly metodoCobroLabel = METODO_COBRO_LABEL;
@@ -40,6 +42,7 @@ export class DetalleCliente {
         this.clientesService.getById(Number(id)).pipe(
           catchError((err) => {
             this.errorHandler.handle(err);
+            this.router.navigate(['/clientes']);
             return EMPTY;
           }),
         ),

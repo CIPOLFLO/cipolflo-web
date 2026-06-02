@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { map } from 'rxjs';
+import { map,catchError, of} from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -87,6 +87,19 @@ export class ListadoServicios {
           procedencia: PROCEDENCIA_LABEL[dto.procedencia] ?? dto.procedencia,
         })),
       })),
+       catchError((err) => {
+      this.errorHandler.handle(err);
+
+      return of({
+        content: [],
+        page: params.page,
+        size: params.size,
+        totalElements: 0,
+        totalPages: 0,
+        first: true,
+        last: true,
+      });
+    }),
     );
 
   protected readonly rowActions = (row: ServicioRow): RowAction<ServicioRow>[] => [
