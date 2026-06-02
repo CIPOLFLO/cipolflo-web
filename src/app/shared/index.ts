@@ -46,6 +46,7 @@ export { Procedencia, PROCEDENCIA_LABEL, PROCEDENCIA_OPTIONS } from './models/pr
 export type { AuditInfoDto } from './models/audit.model';
 export { EstadoReserva } from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
+export type { ErrorResponse } from './models/error-response.model';
 
 // Pipes
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';

@@ -17,6 +17,7 @@ import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -38,6 +39,7 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -115,9 +117,8 @@ export class ListadoClientes {
       )
       .subscribe({
         next: () => this.recargarTabla(),
-        error: (e) => {
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al dar de baja cliente', e);
+        error: (err) => {
+          this.errorHandler.handle(err);
         },
       });
   }
