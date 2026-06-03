@@ -19,9 +19,9 @@ export class ClientesService extends BaseHttpService {
     return this.get<PageResponse<ClienteRespuestaDto>>('clientes', {
       page,
       size,
-      sortField,
-      sortOrder: sortOrder?.toUpperCase(),
       ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
     });
   }
   getById(id: number): Observable<ClienteDetalleRespuestaDto> {
