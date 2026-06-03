@@ -25,6 +25,11 @@ export class ErrorDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.errorDialogService.dialogState$.subscribe((config) => {
+      if (!config) {
+        this.visible.set(false);
+        return;
+      }
+
       this.config.set({
         title: config.title ?? 'Error',
         message: config.message,

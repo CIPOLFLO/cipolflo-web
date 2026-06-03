@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { ConfirmDialogService } from '../../shared';
+import { ErrorDialogService } from '../../shared';
 import { ErrorResponse } from '../models/error-response.model';
 import { ERROR_CODES } from '../config/error-codes';
 
@@ -9,14 +9,12 @@ import { ERROR_CODES } from '../config/error-codes';
   providedIn: 'root',
 })
 export class ErrorHandlerService {
-  private readonly dialog = inject(ConfirmDialogService);
+  private readonly dialog = inject(ErrorDialogService);
 
   handle(error: unknown): void {
     this.dialog.open({
       title: 'Error',
       message: this.resolveMessage(error),
-      variant: 'danger',
-      showCancelButton: false,
       confirmButtonLabel: 'Cerrar',
     });
   }

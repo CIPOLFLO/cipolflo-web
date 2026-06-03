@@ -1,22 +1,22 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
-import { ConfirmDialogService } from '../../shared';
+import { ErrorDialogService } from '../../shared';
 import { ErrorHandlerService } from './error-handler.service';
 
 describe('ErrorHandlerService', () => {
   let service: ErrorHandlerService;
-  let mockConfirmDialogService: {
+  let mockErrorDialogService: {
     open: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
-    mockConfirmDialogService = {
+    mockErrorDialogService = {
       open: vi.fn(),
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ConfirmDialogService, useValue: mockConfirmDialogService }],
+      providers: [{ provide: ErrorDialogService, useValue: mockErrorDialogService }],
     });
 
     service = TestBed.inject(ErrorHandlerService);
@@ -32,11 +32,9 @@ describe('ErrorHandlerService', () => {
 
     service.handle(error);
 
-    expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+    expect(mockErrorDialogService.open).toHaveBeenCalledWith({
       title: 'Error',
       message: 'El servicio tiene reservas activas y no puede ser deshabilitado.',
-      variant: 'danger',
-      showCancelButton: false,
       confirmButtonLabel: 'Cerrar',
     });
   });
@@ -51,11 +49,9 @@ describe('ErrorHandlerService', () => {
 
     service.handle(error);
 
-    expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+    expect(mockErrorDialogService.open).toHaveBeenCalledWith({
       title: 'Error',
       message: 'Mensaje del back',
-      variant: 'danger',
-      showCancelButton: false,
       confirmButtonLabel: 'Cerrar',
     });
   });
@@ -67,11 +63,9 @@ describe('ErrorHandlerService', () => {
 
     service.handle(error);
 
-    expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+    expect(mockErrorDialogService.open).toHaveBeenCalledWith({
       title: 'Error',
       message: 'Ocurrió un error inesperado. Por favor, intentá de nuevo.',
-      variant: 'danger',
-      showCancelButton: false,
       confirmButtonLabel: 'Cerrar',
     });
   });
@@ -81,11 +75,9 @@ describe('ErrorHandlerService', () => {
 
     service.handle(error);
 
-    expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+    expect(mockErrorDialogService.open).toHaveBeenCalledWith({
       title: 'Error',
       message: 'Ocurrió un error inesperado. Por favor, intentá de nuevo.',
-      variant: 'danger',
-      showCancelButton: false,
       confirmButtonLabel: 'Cerrar',
     });
   });
