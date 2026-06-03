@@ -23,9 +23,9 @@ export class ServicioService extends BaseHttpService {
     return this.get<PageResponse<ServicioRespuestaDto>>('servicios', {
       page,
       size,
-      sortField,
-      sortOrder: sortOrder?.toUpperCase(),
       ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
     });
   }
 
