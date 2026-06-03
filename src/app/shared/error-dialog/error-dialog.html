@@ -1,0 +1,23 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="config().title"
+  [style]="{ width: config().width ?? '420px' }"
+>
+  <p class="error-dialog__message">{{ config().message }}</p>
+
+  <ng-template #footer>
+    <div class="error-dialog__actions">
+      <app-button
+        intent="danger"
+        [label]="config().confirmButtonLabel ?? 'Cerrar'"
+        (clicked)="onClose()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

@@ -6,7 +6,7 @@ import { NuevoServicio } from './nuevo-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { EstadoServicio } from '../models/servicio.model';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { ErrorHandlerService } from '../../../shared';
 
 describe('NuevoServicio', () => {
   let fixture: ComponentFixture<NuevoServicio>;

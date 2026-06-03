@@ -9,7 +9,7 @@ import {
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { DetalleCliente } from './detalle-cliente';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { ErrorHandlerService } from '../../../shared';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -102,6 +102,14 @@ describe('DetalleCliente', () => {
     fixture.detectChanges();
 
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+  });
+
+  it('onEditar debe navegar a la pantalla de modificación con queryParam from=detalle', () => {
+    const navigateSpy = component['router'].navigate as ReturnType<typeof vi.fn>;
+    component['onEditar']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', '1', 'modificar'], {
+      queryParams: { from: 'detalle' },
+    });
   });
 });
 

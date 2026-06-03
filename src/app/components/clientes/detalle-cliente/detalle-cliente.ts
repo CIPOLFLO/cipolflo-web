@@ -1,25 +1,34 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
+  AppButton,
   DetailRegistroSection,
   DetailSection,
+  FormActions,
   FormLayout,
   PageLayout,
+  ErrorHandlerService,
   type DetailFieldConfig,
   type DetailRegistroData,
 } from '../../../shared';
 import { ClientesService } from '../services/cliente.service';
 import { METODO_COBRO_LABEL } from '../models/cliente.model';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-detalle-cliente',
-  imports: [CommonModule, PageLayout, FormLayout, DetailSection, DetailRegistroSection],
+  imports: [
+    CommonModule,
+    PageLayout,
+    FormLayout,
+    AppButton,
+    FormActions,
+    DetailSection,
+    DetailRegistroSection,
+  ],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,6 +60,11 @@ export class DetalleCliente {
     { initialValue: undefined },
   );
 
+  protected onEditar(): void {
+    this.router.navigate(['/clientes', this.clienteId(), 'modificar'], {
+      queryParams: { from: 'detalle' },
+    });
+  }
   protected readonly infoFields = computed<DetailFieldConfig[]>(() => {
     const c = this.cliente();
     if (!c) return [];

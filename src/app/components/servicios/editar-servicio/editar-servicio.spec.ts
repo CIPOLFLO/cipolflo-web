@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EditarServicio } from './editar-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { ErrorHandlerService } from '../../../shared';
 
 const mockServicio: ServicioDetalleRespuestaDto = {
   id: 1,

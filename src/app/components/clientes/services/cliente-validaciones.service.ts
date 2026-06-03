@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AbstractControl, ValidationErrors } from '@angular/forms';
-import { FormGroup } from '@angular/forms';
+import { AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteValidacionesService {
@@ -98,7 +97,10 @@ export class ClienteValidacionesService {
       errors['fechaNacimiento'] = 'El cliente debe ser mayor de 18 años.';
     }
 
-    if (this.shouldShowError(email, submitted) && email?.hasError('emailInvalido')) {
+    if (
+      this.shouldShowError(email, submitted) &&
+      (email?.hasError('emailInvalido') || email?.hasError('email'))
+    ) {
       errors['email'] = 'El email no es válido.';
     }
 

@@ -20,6 +20,7 @@ import {
   FormLayout,
   FormSection,
   PageLayout,
+  ErrorHandlerService,
   type DetailRegistroData,
   type FormFieldConfig,
 } from '../../../shared';
@@ -28,7 +29,6 @@ import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { ServicioValidacionesService } from '../services/servicio-validaciones.service';
 import { ServicioPresentacionService } from '../services/servicio-presentacion.service';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   standalone: true,

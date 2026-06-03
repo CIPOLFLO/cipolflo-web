@@ -10,12 +10,12 @@ import {
   FormFieldConfig,
   PageResponse,
   TableStateService,
+  ErrorHandlerService,
 } from '../../../shared';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ListadoClientes } from './listado-clientes';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
@@ -159,15 +159,34 @@ describe('ListadoClientes', () => {
 
     expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(false);
   });
-
   it('el comando de "Ver detalle" navega correctamente', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
-    const row = {
-      id: 1,
-    } as ClienteRespuestaDto;
-    const actions = component['rowActions'](row);
-    actions[0].command?.(row);
+
+    const cliente: ClienteRespuestaDto = mockPageResponse.content[0];
+
+    const actions = component['rowActions'](cliente);
+
+    const verDetalle = actions.find((a) => a.label === 'Ver detalle');
+
+    expect(verDetalle).toBeDefined();
+
+    verDetalle!.command?.(cliente);
+
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
+  });
+
+  it('el comando "Modificar" en rowActions navega con queryParam from=listado', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    const cliente = mockPageResponse.content[0];
+    const actions = component['rowActions'](cliente);
+    const modificar = actions.find((a) => a.label === 'Modificar');
+
+    expect(modificar).toBeDefined();
+    modificar!.command?.(cliente);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', cliente.id, 'modificar'], {
+      queryParams: { from: 'listado' },
+    });
   });
 
   it('onNuevoCliente navega a /clientes/nuevo', () => {

@@ -8,6 +8,7 @@ import {
   FilterPanel,
   LoadDataFn,
   PageLayout,
+  ErrorHandlerService,
   RowAction,
   TableStateService,
 } from '../../../shared';
@@ -17,7 +18,6 @@ import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -75,6 +75,15 @@ export class ListadoClientes {
           },
         ]
       : []),
+    {
+      label: 'Modificar',
+      icon: 'pi pi-pencil',
+      command: () =>
+        this.router.navigate(['/clientes', row.id, 'modificar'], {
+          queryParams: { from: 'listado' },
+        }),
+    },
+
     // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => ... },
     // ...(row.estado !== 'ACTIVO'
     //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => ... }]

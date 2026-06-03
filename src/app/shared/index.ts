@@ -39,6 +39,11 @@ export type {
   ConfirmDialogVariant,
 } from './confirm-dialog/confirm-dialog.model';
 
+// error-dialog
+export { ErrorDialogComponent } from './error-dialog/error-dialog';
+export { ErrorDialogService } from './error-dialog/error-dialog.service';
+export type { ErrorDialogData } from './error-dialog/error-dialog.model';
+
 // Models
 export type { FormFieldConfig, FormFieldOption } from './models/form-field.model';
 export type { DetailFieldConfig, DetailRegistroData } from './models/detail-field.model';
@@ -46,7 +51,6 @@ export { Procedencia, PROCEDENCIA_LABEL, PROCEDENCIA_OPTIONS } from './models/pr
 export type { AuditInfoDto } from './models/audit.model';
 export { EstadoReserva } from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
-export type { ErrorResponse } from './models/error-response.model';
 
 // Pipes
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
@@ -55,3 +59,5 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
+
+export { ErrorHandlerService } from '../core/services/error-handler.service';

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { map,catchError, of} from 'rxjs';
+import { map, catchError, of } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -87,19 +87,19 @@ export class ListadoServicios {
           procedencia: PROCEDENCIA_LABEL[dto.procedencia] ?? dto.procedencia,
         })),
       })),
-       catchError((err) => {
-      this.errorHandler.handle(err);
+      catchError((err) => {
+        this.errorHandler.handle(err);
 
-      return of({
-        content: [],
-        page: params.page,
-        size: params.size,
-        totalElements: 0,
-        totalPages: 0,
-        first: true,
-        last: true,
-      });
-    }),
+        return of({
+          content: [],
+          page: params.page,
+          size: params.size,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        });
+      }),
     );
 
   protected readonly rowActions = (row: ServicioRow): RowAction<ServicioRow>[] => [
@@ -189,9 +189,10 @@ export class ListadoServicios {
           this.reservasActivasVisible.set(true);
         }
       },
-      error: () => {
+      error: (err) => {
         this.verificandoVisible.set(false);
         this.servicioSeleccionado.set(null);
+        this.errorHandler.handle(err);
       },
     });
   }

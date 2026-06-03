@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ConfirmDialogService } from '../../shared';
-import { ErrorResponse } from '../../shared';
+import { ErrorResponse } from '../models/error-response.model';
 import { ERROR_CODES } from '../config/error-codes';
 
 @Injectable({

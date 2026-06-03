@@ -6,7 +6,7 @@ import Aura from '@primeng/themes/aura';
 import { definePreset } from '@primeng/themes';
 import { authHttpInterceptorFn, provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
-import { environment } from '../environments/environment';
+import { environment } from '@env/environment';
 
 const CipolfloPreset = definePreset(Aura, {
   semantic: {
@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
       domain: environment.auth0.domain,
       clientId: environment.auth0.clientId,
       authorizationParams: {
-        redirect_uri: window.location.origin,
+        redirect_uri: globalThis.location.origin,
         audience: environment.auth0.audience,
       },
       cacheLocation: 'localstorage',
