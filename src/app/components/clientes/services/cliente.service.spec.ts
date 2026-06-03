@@ -139,7 +139,7 @@ describe('ClientesService', () => {
   });
 
   describe('darDeBaja', () => {
-    it('realiza PATCH a /clientes/socios/:id/baja y retorna void', () => {
+    it('realiza PATCH a /clientes/socios/:id/baja (204 No Content)', () => {
       service.darDeBaja(1).subscribe((response) => {
         expect(response).toBeNull();
       });
