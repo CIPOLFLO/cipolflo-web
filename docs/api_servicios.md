@@ -475,7 +475,7 @@ Retorna el detalle completo de un cliente.
 }
 ```
 
-> Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+> Los campos `fechaNacimiento`, `metodoCobro`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
 
 ---
 
