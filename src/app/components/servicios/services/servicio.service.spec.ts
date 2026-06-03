@@ -97,8 +97,8 @@ describe('ServicioService', () => {
     req.flush(emptyPage);
   });
 
-  it('getAll omite sortField y sortOrder cuando no se proporcionan', () => {
-    service.getAll({ page: 0, size: 10, filters: {} }).subscribe();
+  it('getAll omite sortField y sortOrder cuando sortField no se proporciona', () => {
+    service.getAll({ page: 0, size: 10, filters: {}, sortOrder: 'asc' }).subscribe();
     const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/servicios`);
     expect(req.request.params.has('sortField')).toBe(false);
     expect(req.request.params.has('sortOrder')).toBe(false);
