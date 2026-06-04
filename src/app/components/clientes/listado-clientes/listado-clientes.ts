@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { filter, switchMap } from 'rxjs';
+import { catchError, filter, of, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -56,7 +56,20 @@ export class ListadoClientes {
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params);
+    this.clientesService.getAll(params).pipe(
+      catchError((err) => {
+        this.errorHandler.handle(err);
+        return of({
+          content: [],
+          page: params.page,
+          size: params.size,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        });
+      }),
+    );
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
