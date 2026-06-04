@@ -17,8 +17,16 @@ export class ServicioService extends BaseHttpService {
     page,
     size,
     filters,
+    sortField,
+    sortOrder,
   }: TableQueryParams): Observable<PageResponse<ServicioRespuestaDto>> {
-    return this.get<PageResponse<ServicioRespuestaDto>>('servicios', { page, size, ...filters });
+    return this.get<PageResponse<ServicioRespuestaDto>>('servicios', {
+      page,
+      size,
+      ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
+    });
   }
 
   getById(id: number): Observable<ServicioDetalleRespuestaDto> {

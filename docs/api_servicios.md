@@ -68,10 +68,14 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 
 ### `PageRequestDto` — query params de paginación
 
-| Campo  | Tipo    | Obligatorio | Validación      | Default |
-| ------ | ------- | ----------- | --------------- | ------- |
-| `page` | integer | No          | >= 0            | 0       |
-| `size` | integer | No          | > 0, máximo 100 | 1       |
+| Campo       | Tipo    | Obligatorio | Validación                      | Default |
+| ----------- | ------- | ----------- | ------------------------------- | ------- |
+| `page`      | integer | No          | >= 0                            | 0       |
+| `size`      | integer | No          | > 0, máximo 100                 | 1       |
+| `sortField` | string  | No          | Valores permitidos por endpoint | —       |
+| `sortOrder` | string  | No          | `ASC` o `DESC`                  | —       |
+
+> Si `sortField` es `null` o está ausente, el endpoint retorna el orden por defecto. `sortOrder` con un valor distinto de `ASC`/`DESC` retorna `400 Bad Request`. `sortField` con un valor no permitido para el endpoint también retorna `400 Bad Request`.
 
 ### `PageResponse<T>` — respuesta paginada
 
@@ -99,13 +103,15 @@ Retorna el listado paginado de servicios con filtros opcionales.
 
 **Query params** (todos opcionales):
 
-| Param         | Tipo             | Validación         |
-| ------------- | ---------------- | ------------------ |
-| `nombre`      | string           | máx 100 caracteres |
-| `procedencia` | `Procedencia`    | —                  |
-| `estado`      | `EstadoServicio` | —                  |
-| `page`        | integer          | >= 0, default 0    |
-| `size`        | integer          | 1–100, default 1   |
+| Param         | Tipo             | Validación                                  |
+| ------------- | ---------------- | ------------------------------------------- |
+| `nombre`      | string           | máx 100 caracteres                          |
+| `procedencia` | `Procedencia`    | —                                           |
+| `estado`      | `EstadoServicio` | —                                           |
+| `page`        | integer          | >= 0, default 0                             |
+| `size`        | integer          | 1–100, default 1                            |
+| `sortField`   | string           | `nombre`, `precioParticular`, `precioSocio` |
+| `sortOrder`   | string           | `ASC` o `DESC`                              |
 
 **Respuesta 200:**
 
@@ -405,6 +411,8 @@ Retorna el listado paginado de clientes con filtros opcionales.
 | `estado`        | `EstadoSocio` | Solo aplica a socios; combinarlo con `tipoCliente=PARTICULAR` devuelve resultado vacío                                           |
 | `page`          | integer       | >= 0, default 0                                                                                                                  |
 | `size`          | integer       | 1–100, default 1                                                                                                                 |
+| `sortField`     | string        | `nombreCompleto`, `cedula`, `numeroSocio`                                                                                        |
+| `sortOrder`     | string        | `ASC` o `DESC`                                                                                                                   |
 
 > El campo `identificador` busca por cédula o por número de socio usando el prefijo del valor ingresado (ej: `123` devuelve clientes cuya cédula o nro de socio comience con `123`). Los puntos y guiones del formato de cédula se normalizan automáticamente antes de la búsqueda.
 

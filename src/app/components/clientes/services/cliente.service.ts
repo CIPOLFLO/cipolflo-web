@@ -9,8 +9,20 @@ import {
 } from '../models/cliente.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
-  getAll({ page, size, filters }: TableQueryParams): Observable<PageResponse<ClienteRespuestaDto>> {
-    return this.get<PageResponse<ClienteRespuestaDto>>('clientes', { page, size, ...filters });
+  getAll({
+    page,
+    size,
+    filters,
+    sortField,
+    sortOrder,
+  }: TableQueryParams): Observable<PageResponse<ClienteRespuestaDto>> {
+    return this.get<PageResponse<ClienteRespuestaDto>>('clientes', {
+      page,
+      size,
+      ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
+    });
   }
   getById(id: number): Observable<ClienteDetalleRespuestaDto> {
     return this.get<ClienteDetalleRespuestaDto>(`clientes/${id}`);
