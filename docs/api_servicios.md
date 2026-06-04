@@ -487,6 +487,23 @@ Retorna el detalle completo de un cliente.
 
 ---
 
+### `PATCH /api/v1/clientes/socios/{id}/baja`
+
+Da de baja a un socio y cancela automáticamente todas sus reservas futuras en estado `PENDIENTE` o `CONFIRMADA` (incluso las pagas).
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 204:** No Content
+
+**Errores:**
+
+| HTTP Status | Código                | Cuándo ocurre                    |
+| ----------- | --------------------- | -------------------------------- |
+| 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
+| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
+
+---
+
 ## Clientes — DTOs
 
 ### Request DTOs

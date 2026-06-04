@@ -255,7 +255,7 @@ describe('ListadoClientes', () => {
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
       title: 'Dar de baja cliente',
       message:
-        '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+        '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán, incluso las que ya están pagas.',
       confirmButtonLabel: 'Dar de baja',
       cancelButtonLabel: 'Cancelar',
       variant: 'danger',
