@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { map } from 'rxjs';
+import { map, catchError, of } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -26,6 +26,7 @@ import {
 } from '../models/servicio.model';
 import { VerificandoReservasDialog } from '../habilitar-deshabilitar/verificando-reservas-dialog/verificando-reservas-dialog';
 import { ReservasActivasDialog } from '../habilitar-deshabilitar/reservas-activas-dialog/reservas-activas-dialog';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -54,8 +55,9 @@ export class ListadoServicios {
   private readonly columnsService = inject(ServiciosColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
   private readonly confirmDialogService = inject(ConfirmDialogService);
-  protected readonly tableState = inject(TableStateService);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
+  protected readonly tableState = inject(TableStateService);
   protected readonly verificandoVisible = signal(false);
   protected readonly reservasActivasVisible = signal(false);
   protected readonly servicioSeleccionado = signal<ServicioRow | null>(null);
@@ -85,6 +87,19 @@ export class ListadoServicios {
           procedencia: PROCEDENCIA_LABEL[dto.procedencia] ?? dto.procedencia,
         })),
       })),
+      catchError((err) => {
+        this.errorHandler.handle(err);
+
+        return of({
+          content: [],
+          page: params.page,
+          size: params.size,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        });
+      }),
     );
 
   protected readonly rowActions = (row: ServicioRow): RowAction<ServicioRow>[] => [
@@ -141,9 +156,8 @@ export class ListadoServicios {
   private habilitar(row: ServicioRow): void {
     this.servicioService.actualizarHabilitacion(row.id, { habilitado: true }).subscribe({
       next: () => this.recargarTabla(),
-      error: (e) => {
-        // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-        console.error('Error al habilitar servicio', e);
+      error: (err) => {
+        this.errorHandler.handle(err);
       },
     });
   }
@@ -175,9 +189,10 @@ export class ListadoServicios {
           this.reservasActivasVisible.set(true);
         }
       },
-      error: () => {
+      error: (err) => {
         this.verificandoVisible.set(false);
         this.servicioSeleccionado.set(null);
+        this.errorHandler.handle(err);
       },
     });
   }
@@ -187,9 +202,8 @@ export class ListadoServicios {
     if (!id) return;
     this.servicioService.actualizarHabilitacion(id, dto).subscribe({
       next: () => this.recargarTabla(),
-      error: (e) => {
-        // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-        console.error('Error al deshabilitar servicio', e);
+      error: (err) => {
+        this.errorHandler.handle(err);
         this.servicioSeleccionado.set(null);
         this.reservasProximas.set([]);
       },

@@ -6,6 +6,7 @@ import { NuevoServicio } from './nuevo-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { EstadoServicio } from '../models/servicio.model';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 describe('NuevoServicio', () => {
   let fixture: ComponentFixture<NuevoServicio>;
@@ -16,6 +17,9 @@ describe('NuevoServicio', () => {
     getModalidades: ReturnType<typeof vi.fn>;
   };
   let navigateSpy: ReturnType<typeof vi.fn>;
+  let mockErrorHandler: {
+    handle: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     mockServicioService = { create: vi.fn() };
@@ -24,6 +28,7 @@ describe('NuevoServicio', () => {
       getModalidades: vi.fn().mockReturnValue(of([])),
     };
     navigateSpy = vi.fn();
+    mockErrorHandler = { handle: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [NuevoServicio],
@@ -31,6 +36,7 @@ describe('NuevoServicio', () => {
         { provide: ServicioService, useValue: mockServicioService },
         { provide: ServicioOptionsService, useValue: mockOptionsService },
         { provide: Router, useValue: { navigate: navigateSpy } },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
       ],
     }).compileComponents();
 
@@ -242,13 +248,15 @@ describe('NuevoServicio', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/servicios']);
   });
 
-  it('onConfirmar debería hacer console.error y no navegar si el servicio falla', () => {
+  it('onConfirmar debería manejar el error y no navegar si el servicio falla', () => {
+    const error = new Error('Error de servidor');
+
     fillValidForm();
-    mockServicioService.create.mockReturnValue(throwError(() => new Error('Error de servidor')));
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockServicioService.create.mockReturnValue(throwError(() => error));
+
     component['onConfirmar']();
-    expect(consoleSpy).toHaveBeenCalled();
+
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
     expect(navigateSpy).not.toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 });

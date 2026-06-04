@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { filter, switchMap } from 'rxjs';
+import { catchError, filter, of, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -11,6 +11,7 @@ import {
   RowAction,
   TableStateService,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
@@ -38,6 +39,7 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -54,7 +56,20 @@ export class ListadoClientes {
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params);
+    this.clientesService.getAll(params).pipe(
+      catchError((err) => {
+        this.errorHandler.handle(err);
+        return of({
+          content: [],
+          page: params.page,
+          size: params.size,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        });
+      }),
+    );
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
@@ -124,9 +139,8 @@ export class ListadoClientes {
       )
       .subscribe({
         next: () => this.recargarTabla(),
-        error: (e) => {
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al dar de baja cliente', e);
+        error: (err) => {
+          this.errorHandler.handle(err);
         },
       });
   }

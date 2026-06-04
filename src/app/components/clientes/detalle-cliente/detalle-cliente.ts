@@ -13,6 +13,7 @@ import {
   type DetailFieldConfig,
   type DetailRegistroData,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesService } from '../services/cliente.service';
 import { METODO_COBRO_LABEL } from '../models/cliente.model';
 
@@ -23,19 +24,21 @@ import { METODO_COBRO_LABEL } from '../models/cliente.model';
     CommonModule,
     PageLayout,
     FormLayout,
-    DetailSection,
-    DetailRegistroSection,
     AppButton,
     FormActions,
+    DetailSection,
+    DetailRegistroSection,
   ],
   templateUrl: './detalle-cliente.html',
   styleUrl: './detalle-cliente.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalleCliente {
+  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly clientesService = inject(ClientesService);
   protected readonly metodoCobroLabel = METODO_COBRO_LABEL;
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly clienteId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
@@ -46,9 +49,9 @@ export class DetalleCliente {
       filter((id) => /^\d+$/.test(id)),
       switchMap((id) =>
         this.clientesService.getById(Number(id)).pipe(
-          // TODO: reemplazar con manejo de errores real (toast/error state) cuando esté implementado
           catchError((err) => {
-            console.error('Error al cargar el detalle del cliente:', err);
+            this.errorHandler.handle(err);
+            this.router.navigate(['/clientes']);
             return EMPTY;
           }),
         ),
@@ -56,7 +59,6 @@ export class DetalleCliente {
     ),
     { initialValue: undefined },
   );
-  private readonly router = inject(Router);
 
   protected onEditar(): void {
     this.router.navigate(['/clientes', this.clienteId(), 'modificar'], {

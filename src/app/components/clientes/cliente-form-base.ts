@@ -13,6 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, filter, map } from 'rxjs';
 import { type DetailRegistroData, type FormFieldConfig } from '../../shared';
+import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { ClientesService } from './services/cliente.service';
 import {
   patchClienteForm,
@@ -29,6 +30,7 @@ export abstract class ClienteFormBase {
   protected readonly clientesService = inject(ClientesService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly validaciones = inject(ClienteValidacionesService);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   readonly id = input<string>('');
 
@@ -138,7 +140,8 @@ export abstract class ClienteFormBase {
       .getById(id)
       .pipe(
         catchError((err) => {
-          console.error('Error al cargar el cliente', err);
+          this.errorHandler.handle(err);
+          this.router.navigate(['/clientes']);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef),

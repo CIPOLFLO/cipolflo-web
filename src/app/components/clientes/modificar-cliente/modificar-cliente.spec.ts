@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ModificarCliente } from './modificar-cliente';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import {
   ClienteDetalleRespuestaDto,
   TipoCliente,
@@ -40,6 +41,7 @@ describe('ModificarCliente', () => {
   let component: ModificarCliente;
   let mockClientesService: { getById: ReturnType<typeof vi.fn> };
   let mockRouter: { navigate: ReturnType<typeof vi.fn>; navigateByUrl: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockClientesService = {
@@ -51,11 +53,14 @@ describe('ModificarCliente', () => {
       navigateByUrl: vi.fn(),
     };
 
+    mockErrorHandler = { handle: vi.fn() };
+
     await TestBed.configureTestingModule({
       imports: [ModificarCliente, ReactiveFormsModule],
       providers: [
         { provide: ClientesService, useValue: mockClientesService },
         { provide: Router, useValue: mockRouter },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
         ClienteValidacionesService,
         {
           provide: ActivatedRoute,
@@ -247,9 +252,9 @@ describe('ModificarCliente', () => {
     expect(component['cliente']()).toBeNull();
   });
 
-  it('debe mostrar error en consola si falla la carga del cliente', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
-    mockClientesService.getById.mockReturnValue(throwError(() => new Error('Error al cargar')));
+  it('debe llamar a errorHandler.handle si falla la carga del cliente', async () => {
+    const error = new Error('Error al cargar');
+    mockClientesService.getById.mockReturnValue(throwError(() => error));
 
     fixture = TestBed.createComponent(ModificarCliente);
     fixture.componentRef.setInput('id', '1');
@@ -257,8 +262,7 @@ describe('ModificarCliente', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
   });
 });
 

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EditarServicio } from './editar-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const mockServicio: ServicioDetalleRespuestaDto = {
   id: 1,
@@ -67,7 +68,12 @@ function setup(
 }
 
 describe('EditarServicio', () => {
+  let mockErrorHandler: {
+    handle: ReturnType<typeof vi.fn>;
+  };
+
   beforeEach(async () => {
+    mockErrorHandler = { handle: vi.fn() };
     await TestBed.configureTestingModule({
       imports: [EditarServicio],
       providers: [
@@ -79,6 +85,7 @@ describe('EditarServicio', () => {
           },
         },
         { provide: Router, useValue: { navigate: vi.fn(), navigateByUrl: vi.fn() } },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
       ],
     }).compileComponents();
   });
@@ -331,15 +338,17 @@ describe('EditarServicio', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/servicios', '1']);
   });
 
-  it('onConfirmar hace console.error y no navega si update falla', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  it('onConfirmar maneja el error y no navega si update falla', () => {
+    const error = new Error('fail');
+
     const { component, navigateSpy } = setup({
-      update: vi.fn().mockReturnValue(throwError(() => new Error('fail'))),
+      update: vi.fn().mockReturnValue(throwError(() => error)),
     });
+
     component['onConfirmar']();
-    expect(consoleSpy).toHaveBeenCalled();
+
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
     expect(navigateSpy).not.toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 
   // ── confirmDisabled ──────────────────────────────────────────────────────────
