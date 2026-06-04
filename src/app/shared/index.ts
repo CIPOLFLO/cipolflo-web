@@ -59,5 +59,3 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
-
-export { ErrorHandlerService } from '../core/services/error-handler.service';

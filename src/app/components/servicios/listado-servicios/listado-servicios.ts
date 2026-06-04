@@ -88,7 +88,6 @@ export class ListadoServicios {
         })),
       })),
       catchError((err) => {
-        console.log('ERROR EN LOAD DATA FN', err);
         this.errorHandler.handle(err);
 
         return of({

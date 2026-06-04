@@ -20,10 +20,10 @@ import {
   FormLayout,
   FormSection,
   PageLayout,
-  ErrorHandlerService,
   type DetailRegistroData,
   type FormFieldConfig,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { EstadoServicio, type ServicioDetalleRespuestaDto } from '../models/servicio.model';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';

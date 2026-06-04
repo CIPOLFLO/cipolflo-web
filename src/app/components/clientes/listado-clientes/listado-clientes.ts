@@ -8,10 +8,10 @@ import {
   FilterPanel,
   LoadDataFn,
   PageLayout,
-  ErrorHandlerService,
   RowAction,
   TableStateService,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';

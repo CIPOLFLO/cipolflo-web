@@ -10,10 +10,10 @@ import {
   FormActions,
   FormLayout,
   PageLayout,
-  ErrorHandlerService,
   type DetailFieldConfig,
   type DetailRegistroData,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesService } from '../services/cliente.service';
 import { METODO_COBRO_LABEL } from '../models/cliente.model';
 

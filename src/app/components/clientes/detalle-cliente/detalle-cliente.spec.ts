@@ -9,7 +9,7 @@ import {
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { DetalleCliente } from './detalle-cliente';
-import { ErrorHandlerService } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,

@@ -10,8 +10,8 @@ import {
   FormFieldConfig,
   PageResponse,
   TableStateService,
-  ErrorHandlerService,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';

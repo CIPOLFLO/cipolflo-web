@@ -12,7 +12,8 @@ import { FormGroup, PristineChangeEvent } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, filter, map } from 'rxjs';
-import { ErrorHandlerService, type DetailRegistroData, type FormFieldConfig } from '../../shared';
+import { type DetailRegistroData, type FormFieldConfig } from '../../shared';
+import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { ClientesService } from './services/cliente.service';
 import {
   patchClienteForm,
