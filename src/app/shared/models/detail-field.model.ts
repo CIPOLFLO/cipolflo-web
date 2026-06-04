@@ -4,6 +4,7 @@ export interface DetailFieldConfig {
   value: string | null;
   fullWidth?: boolean;
   multiline?: boolean;
+  valueClass?: string;
 }
 
 export interface DetailRegistroData {
@@ -11,4 +12,5 @@ export interface DetailRegistroData {
   entityIdLabel?: string;
   fechaRegistro: string;
   registradoPor: string;
+  valueClass?: string;
 }
