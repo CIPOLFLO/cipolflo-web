@@ -12,6 +12,8 @@
   <span
     class="form-field__value"
     [class.form-field__value--multiline]="config().type === 'textarea'"
+    [class.form-field__value--success]="config().valueClass === 'success'"
+    [class.form-field__value--danger]="config().valueClass === 'danger'"
   >
     {{ value() ?? config().defaultValue ?? '-' }}
   </span>

@@ -24,6 +24,7 @@ export class DetailSection {
       type: f.multiline ? 'textarea' : 'text',
       defaultValue: f.value ?? undefined,
       fullWidth: f.fullWidth,
+      valueClass: f.valueClass,
     })),
   );
 }

@@ -62,3 +62,12 @@
   color: var(--color-danger);
   line-height: 1.4;
 }
+.form-field__value--success {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.form-field__value--danger {
+  color: var(--color-danger);
+  font-weight: 700;
+}

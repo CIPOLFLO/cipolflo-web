@@ -4,6 +4,7 @@ export interface DetailFieldConfig {
   value: string | null;
   fullWidth?: boolean;
   multiline?: boolean;
+  valueClass?: string;
 }
 
 export interface DetailRegistroData {
