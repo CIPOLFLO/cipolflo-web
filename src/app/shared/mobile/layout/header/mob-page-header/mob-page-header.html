@@ -1,0 +1,15 @@
+<header class="mob-header">
+  <button class="mob-header__menu-btn" (click)="onMenuClick()">
+    <i class="pi pi-bars"></i>
+  </button>
+  <div class="mob-header__title-block">
+    <span class="mob-header__title">{{ title() }}</span>
+    @if (subtitle()) {
+      <span class="mob-header__subtitle">{{ subtitle() }}</span>
+    }
+  </div>
+
+  <div class="mob-header__avatar">
+    <span>{{ userInitials() }}</span>
+  </div>
+</header>

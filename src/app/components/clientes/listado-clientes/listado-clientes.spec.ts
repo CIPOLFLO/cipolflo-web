@@ -15,6 +15,9 @@ import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ListadoClientes } from './listado-clientes';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { AuthService } from '@auth0/auth0-angular';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
@@ -45,6 +48,10 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   last: true,
 };
 
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+};
+
 describe('ListadoClientes', () => {
   let fixture: ComponentFixture<ListadoClientes>;
   let component: ListadoClientes;
@@ -56,6 +63,7 @@ describe('ListadoClientes', () => {
   let mockConfirmDialogService: {
     open: ReturnType<typeof vi.fn>;
   };
+
   beforeEach(async () => {
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
@@ -72,6 +80,9 @@ describe('ListadoClientes', () => {
         { provide: ClientesService, useValue: mockClientesService },
         { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
         { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: BreakpointObserver, useValue: { observe: () => of({ matches: false }) } },
+        { provide: AuthService, useValue: mockAuthService },
+        BreakpointService,
       ],
     }).compileComponents();
 
@@ -142,9 +153,7 @@ describe('ListadoClientes', () => {
     const socio = mockPageResponse.content.find(
       (cliente) => cliente.tipoCliente === TipoCliente.Socio,
     )!;
-
     const actions = component['rowActions'](socio);
-
     expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(true);
   });
 
@@ -152,24 +161,17 @@ describe('ListadoClientes', () => {
     const particular = mockPageResponse.content.find(
       (cliente) => cliente.tipoCliente === TipoCliente.Particular,
     )!;
-
     const actions = component['rowActions'](particular);
-
     expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(false);
   });
+
   it('el comando de "Ver detalle" navega correctamente', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
-
     const cliente: ClienteRespuestaDto = mockPageResponse.content[0];
-
     const actions = component['rowActions'](cliente);
-
     const verDetalle = actions.find((a) => a.label === 'Ver detalle');
-
     expect(verDetalle).toBeDefined();
-
     verDetalle!.command?.(cliente);
-
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
   });
 
@@ -178,10 +180,8 @@ describe('ListadoClientes', () => {
     const cliente = mockPageResponse.content[0];
     const actions = component['rowActions'](cliente);
     const modificar = actions.find((a) => a.label === 'Modificar');
-
     expect(modificar).toBeDefined();
     modificar!.command?.(cliente);
-
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', cliente.id, 'modificar'], {
       queryParams: { from: 'listado' },
     });
@@ -202,35 +202,28 @@ describe('ListadoClientes', () => {
     expect(labels).toContain('Email');
     expect(labels).toContain('Estado');
   });
+
   it('onNuevoCliente navega a clientes/nuevo', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
-
     component['onNuevoCliente']();
-
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
   });
 
   it('onPagoCuota selecciona el cliente para pagar cuota', () => {
     const row = mockPageResponse.content[0];
-
     component['onPagoCuota'](row);
-
     expect(component['clientePagoSeleccionado']()).toEqual(row);
   });
 
   it('rowActions incluye "Dar de baja" para socio con estado distinto de Baja', () => {
-    const socio = mockPageResponse.content[0]; // TipoCliente.Socio, EstadoSocio.Activo
-
+    const socio = mockPageResponse.content[0];
     const actions = component['rowActions'](socio);
-
     expect(actions.some((a) => a.label === 'Dar de baja')).toBe(true);
   });
 
   it('rowActions no incluye "Dar de baja" para cliente particular', () => {
-    const particular = mockPageResponse.content[1]; // TipoCliente.Particular
-
+    const particular = mockPageResponse.content[1];
     const actions = component['rowActions'](particular);
-
     expect(actions.some((a) => a.label === 'Dar de baja')).toBe(false);
   });
 
@@ -239,17 +232,13 @@ describe('ListadoClientes', () => {
       ...mockPageResponse.content[0],
       estado: EstadoSocio.Baja,
     };
-
     const actions = component['rowActions'](socioDeBaja);
-
     expect(actions.some((a) => a.label === 'Dar de baja')).toBe(false);
   });
 
   it('onEliminarCliente abre el diálogo de confirmación', () => {
     const row = mockPageResponse.content[0];
-
     component['onDarDeBajaCliente'](row);
-
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
       title: 'Dar de baja cliente',
       message:
@@ -259,23 +248,18 @@ describe('ListadoClientes', () => {
       variant: 'danger',
     });
   });
+
   it('onEliminarCliente llama a dar de baja si se confirma la baja', () => {
     const row = mockPageResponse.content[0];
-
     mockConfirmDialogService.open.mockReturnValue(of(true));
-
     component['onDarDeBajaCliente'](row);
-
     expect(mockClientesService.darDeBaja).toHaveBeenCalledWith(row.id);
   });
 
   it('onEliminarCliente no llama a eliminar si se cancela la baja', () => {
     const row = mockPageResponse.content[0];
-
     mockConfirmDialogService.open.mockReturnValue(of(false));
-
     component['onDarDeBajaCliente'](row);
-
     expect(mockClientesService.darDeBaja).not.toHaveBeenCalled();
   });
 
@@ -283,9 +267,7 @@ describe('ListadoClientes', () => {
     const row = mockPageResponse.content[0];
     mockConfirmDialogService.open.mockReturnValue(of(true));
     const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
-
     component['onDarDeBajaCliente'](row);
-
     expect(updateFiltersSpy).toHaveBeenCalled();
   });
 
@@ -293,9 +275,7 @@ describe('ListadoClientes', () => {
     const socio = mockPageResponse.content[0];
     const actions = component['rowActions'](socio);
     const pagoCuota = actions.find((a) => a.label === 'Pago de cuota')!;
-
     pagoCuota.command?.(socio);
-
     expect(component['clientePagoSeleccionado']()).toEqual(socio);
   });
 
@@ -303,17 +283,13 @@ describe('ListadoClientes', () => {
     const socio = mockPageResponse.content[0];
     const actions = component['rowActions'](socio);
     const darDeBaja = actions.find((a) => a.label === 'Dar de baja')!;
-
     darDeBaja.command?.(socio);
-
     expect(mockConfirmDialogService.open).toHaveBeenCalled();
   });
 
   it('onCerrarPagoCuota limpia el cliente seleccionado para pago (línea 101)', () => {
     component['clientePagoSeleccionado'].set(mockPageResponse.content[0]);
-
     component['onCerrarPagoCuota']();
-
     expect(component['clientePagoSeleccionado']()).toBeNull();
   });
 
@@ -322,9 +298,7 @@ describe('ListadoClientes', () => {
     mockConfirmDialogService.open.mockReturnValue(of(true));
     mockClientesService.darDeBaja.mockReturnValue(throwError(() => new Error('Error de red')));
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
-
     component['onDarDeBajaCliente'](row);
-
     expect(consoleSpy).toHaveBeenCalledWith('Error al dar de baja cliente', expect.any(Error));
     consoleSpy.mockRestore();
   });
@@ -345,6 +319,9 @@ describe('ListadoClientes con filtros por defecto', () => {
           provide: ClientesService,
           useValue: { getAll: vi.fn().mockReturnValue(of(mockPageResponse)) },
         },
+        { provide: BreakpointObserver, useValue: { observe: () => of({ matches: false }) } },
+        { provide: AuthService, useValue: mockAuthService },
+        BreakpointService,
       ],
     })
       .overrideComponent(ListadoClientes, {
@@ -386,6 +363,9 @@ describe('ListadoClientes sin filtros por defecto', () => {
             getCostoCuota: vi.fn().mockReturnValue(5000),
           },
         },
+        { provide: BreakpointObserver, useValue: { observe: () => of({ matches: false }) } },
+        { provide: AuthService, useValue: mockAuthService },
+        BreakpointService,
       ],
     })
       .overrideComponent(ListadoClientes, {

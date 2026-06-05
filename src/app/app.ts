@@ -5,6 +5,7 @@ import { Footer } from './shared/layout/footer/footer';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
+import { BreakpointService } from './core/services/breakpoint.service';
 
 @Component({
   selector: 'app-root',
@@ -15,4 +16,5 @@ import { AuthService } from '@auth0/auth0-angular';
 export class App {
   protected readonly window = window;
   protected auth = inject(AuthService);
+  protected readonly breakpoint = inject(BreakpointService);
 }
