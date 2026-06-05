@@ -6,6 +6,8 @@ import {
   ClienteCrearDto,
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
+  ModificacionParticularRequestDto,
+  ModificacionSocioRequestDto,
 } from '../models/cliente.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
@@ -35,6 +37,20 @@ export class ClientesService extends BaseHttpService {
   create(dto: ClienteCrearDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
   }
+  modificarParticular(
+    id: number,
+    dto: ModificacionParticularRequestDto,
+  ): Observable<ClienteDetalleRespuestaDto> {
+    return this.put<ClienteDetalleRespuestaDto>(`clientes/particulares/${id}`, dto);
+  }
+
+  modificarSocio(
+    id: number,
+    dto: ModificacionSocioRequestDto,
+  ): Observable<ClienteDetalleRespuestaDto> {
+    return this.put<ClienteDetalleRespuestaDto>(`clientes/socios/${id}`, dto);
+  }
+
   darDeBaja(id: number): Observable<void> {
     return this.patch<void>(`clientes/socios/${id}/baja`, {});
   }
