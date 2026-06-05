@@ -16,6 +16,8 @@
 6. [Clientes — DTOs](#clientes--dtos)
 7. [Manejo de errores](#manejo-de-errores)
 
+> **Nuevos endpoints (DEV-76):** `PUT /api/v1/clientes/particulares/{id}` y `PUT /api/v1/clientes/socios/{id}`
+
 ---
 
 ## Enums
@@ -68,14 +70,10 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 
 ### `PageRequestDto` — query params de paginación
 
-| Campo       | Tipo    | Obligatorio | Validación                      | Default |
-| ----------- | ------- | ----------- | ------------------------------- | ------- |
-| `page`      | integer | No          | >= 0                            | 0       |
-| `size`      | integer | No          | > 0, máximo 100                 | 1       |
-| `sortField` | string  | No          | Valores permitidos por endpoint | —       |
-| `sortOrder` | string  | No          | `ASC` o `DESC`                  | —       |
-
-> Si `sortField` es `null` o está ausente, el endpoint retorna el orden por defecto. `sortOrder` con un valor distinto de `ASC`/`DESC` retorna `400 Bad Request`. `sortField` con un valor no permitido para el endpoint también retorna `400 Bad Request`.
+| Campo  | Tipo    | Obligatorio | Validación      | Default |
+| ------ | ------- | ----------- | --------------- | ------- |
+| `page` | integer | No          | >= 0            | 0       |
+| `size` | integer | No          | > 0, máximo 100 | 1       |
 
 ### `PageResponse<T>` — respuesta paginada
 
@@ -103,15 +101,13 @@ Retorna el listado paginado de servicios con filtros opcionales.
 
 **Query params** (todos opcionales):
 
-| Param         | Tipo             | Validación                                  |
-| ------------- | ---------------- | ------------------------------------------- |
-| `nombre`      | string           | máx 100 caracteres                          |
-| `procedencia` | `Procedencia`    | —                                           |
-| `estado`      | `EstadoServicio` | —                                           |
-| `page`        | integer          | >= 0, default 0                             |
-| `size`        | integer          | 1–100, default 1                            |
-| `sortField`   | string           | `nombre`, `precioParticular`, `precioSocio` |
-| `sortOrder`   | string           | `ASC` o `DESC`                              |
+| Param         | Tipo             | Validación         |
+| ------------- | ---------------- | ------------------ |
+| `nombre`      | string           | máx 100 caracteres |
+| `procedencia` | `Procedencia`    | —                  |
+| `estado`      | `EstadoServicio` | —                  |
+| `page`        | integer          | >= 0, default 0    |
+| `size`        | integer          | 1–100, default 1   |
 
 **Respuesta 200:**
 
@@ -411,8 +407,6 @@ Retorna el listado paginado de clientes con filtros opcionales.
 | `estado`        | `EstadoSocio` | Solo aplica a socios; combinarlo con `tipoCliente=PARTICULAR` devuelve resultado vacío                                           |
 | `page`          | integer       | >= 0, default 0                                                                                                                  |
 | `size`          | integer       | 1–100, default 1                                                                                                                 |
-| `sortField`     | string        | `nombreCompleto`, `cedula`, `numeroSocio`                                                                                        |
-| `sortOrder`     | string        | `ASC` o `DESC`                                                                                                                   |
 
 > El campo `identificador` busca por cédula o por número de socio usando el prefijo del valor ingresado (ej: `123` devuelve clientes cuya cédula o nro de socio comience con `123`). Los puntos y guiones del formato de cédula se normalizan automáticamente antes de la búsqueda.
 
@@ -483,30 +477,122 @@ Retorna el detalle completo de un cliente.
 }
 ```
 
-> Los campos `fechaNacimiento`, `metodoCobro`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+> Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
 
 ---
 
-### `PATCH /api/v1/clientes/socios/{id}/baja`
+### `PUT /api/v1/clientes/particulares/{id}`
 
-Da de baja a un socio y cancela automáticamente todas sus reservas futuras en estado `PENDIENTE` o `CONFIRMADA` (incluso las pagas).
+Modifica los datos de un cliente particular.
 
-**Path param:** `id` — integer positivo
+**Path param:** `id` — integer positivo. Si no es positivo retorna 400 con código `ID_INVALIDO`.
 
-**Respuesta 204:** No Content
+**Body** (`application/json`):
 
-**Errores:**
+```json
+{
+  "nombreCompleto": "Laura Fernández",
+  "telefono": "099222222",
+  "mail": "laura@mail.com",
+  "notas": "Prefiere contacto por WhatsApp"
+}
+```
 
-| HTTP Status | Código                | Cuándo ocurre                    |
-| ----------- | --------------------- | -------------------------------- |
-| 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
-| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
+| Campo            | Tipo   | Obligatorio | Validación |
+| ---------------- | ------ | ----------- | ---------- |
+| `nombreCompleto` | string | Sí          | no vacío   |
+| `telefono`       | string | Sí          | no vacío   |
+| `mail`           | string | No          | —          |
+| `notas`          | string | No          | —          |
+
+**Respuestas:**
+
+- `200` — cliente modificado; mismo body que `GET /api/v1/clientes/{id}`
+- `400` — campo obligatorio faltante o vacío (código `SOLICITUD_INVALIDA`), o id inválido (código `ID_INVALIDO`)
+- `404` — el id no corresponde a un Particular (no existe o es un Socio) (código `CLIENTE_NO_ENCONTRADO`)
+
+---
+
+### `PUT /api/v1/clientes/socios/{id}`
+
+Modifica los datos de un socio.
+
+**Path param:** `id` — integer positivo. Si no es positivo retorna 400 con código `ID_INVALIDO`.
+
+**Body** (`application/json`):
+
+```json
+{
+  "cedula": "12345678",
+  "nombreCompleto": "Juan Pérez",
+  "telefono": "099111111",
+  "mail": "juan@mail.com",
+  "notas": null,
+  "fechaNacimiento": "1990-01-01",
+  "pais": "Uruguay",
+  "departamento": "Montevideo",
+  "ciudad": "Montevideo",
+  "direccion": "Av. 18 de Julio 100",
+  "metodoCobro": "EN_SEDE"
+}
+```
+
+| Campo             | Tipo          | Obligatorio | Validación   |
+| ----------------- | ------------- | ----------- | ------------ |
+| `cedula`          | string        | Sí          | no vacío     |
+| `nombreCompleto`  | string        | Sí          | no vacío     |
+| `telefono`        | string        | Sí          | no vacío     |
+| `mail`            | string        | No          | —            |
+| `notas`           | string        | No          | —            |
+| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd` |
+| `pais`            | string        | Sí          | no vacío     |
+| `departamento`    | string        | Sí          | no vacío     |
+| `ciudad`          | string        | Sí          | no vacío     |
+| `direccion`       | string        | Sí          | no vacío     |
+| `metodoCobro`     | `MetodoCobro` | Sí          | —            |
+
+> Campos no modificables: `numeroSocio`, `estado`, `fechaIngreso`, `mesesSinPagar`, `fechaUltimoPago`.
+
+**Respuestas:**
+
+- `200` — socio modificado; mismo body que `GET /api/v1/clientes/{id}`
+- `400` — campo obligatorio faltante o vacío (código `SOLICITUD_INVALIDA`), o id inválido (código `ID_INVALIDO`)
+- `404` — el id no corresponde a un Socio (no existe o es un Particular) (código `CLIENTE_NO_ENCONTRADO`)
 
 ---
 
 ## Clientes — DTOs
 
 ### Request DTOs
+
+#### `ModificacionParticularRequestDto` — body en `PUT /api/v1/clientes/particulares/{id}`
+
+```typescript
+{
+  nombreCompleto: string  // obligatorio, no vacío
+  telefono: string        // obligatorio, no vacío
+  mail?: string           // opcional
+  notas?: string          // opcional
+}
+```
+
+#### `ModificacionSocioRequestDto` — body en `PUT /api/v1/clientes/socios/{id}`
+
+```typescript
+{
+  cedula: string              // obligatorio, no vacío
+  nombreCompleto: string      // obligatorio, no vacío
+  telefono: string            // obligatorio, no vacío
+  mail?: string               // opcional
+  notas?: string              // opcional
+  fechaNacimiento: string     // obligatorio, LocalDate yyyy-MM-dd
+  pais: string                // obligatorio, no vacío
+  departamento: string        // obligatorio, no vacío
+  ciudad: string              // obligatorio, no vacío
+  direccion: string           // obligatorio, no vacío
+  metodoCobro: MetodoCobro    // obligatorio
+}
+```
 
 #### `ListadoClientesRequestDto` — query params en `GET /api/v1/clientes`
 

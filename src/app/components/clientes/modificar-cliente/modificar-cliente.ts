@@ -7,6 +7,7 @@ import {
   Signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
   DetailRegistroSection,
@@ -70,11 +71,13 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         this.form.get('pais')?.addValidators(Validators.required);
         this.form.get('departamento')?.addValidators(Validators.required);
         this.form.get('ciudad')?.addValidators(Validators.required);
+        this.form.get('direccion')?.addValidators(Validators.required);
         this.form.get('fechaNacimiento')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('metodoCobro')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('pais')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('departamento')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('ciudad')?.updateValueAndValidity({ emitEvent: false });
+        this.form.get('direccion')?.updateValueAndValidity({ emitEvent: false });
       }
     });
   }
@@ -166,36 +169,78 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
 
   protected readonly ubicacionFields: Signal<FormFieldConfig[]> = computed(() => {
     const c = this.cliente();
-    if (!c) return [];
-    const esSocio = this.esSocio();
+    if (!c || !this.esSocio()) return [];
     return [
       {
         key: 'pais',
         label: 'País',
         type: 'text',
         defaultValue: c.pais ?? undefined,
-        required: esSocio,
+        required: true,
       },
       {
         key: 'departamento',
         label: 'Departamento',
         type: 'text',
         defaultValue: c.departamento ?? undefined,
-        required: esSocio,
+        required: true,
       },
       {
         key: 'ciudad',
         label: 'Ciudad',
         type: 'text',
         defaultValue: c.ciudad ?? undefined,
-        required: esSocio,
+        required: true,
       },
       {
         key: 'direccion',
         label: 'Dirección',
         type: 'text',
         defaultValue: c.direccion ?? undefined,
+        required: true,
       },
     ];
   });
+
+  protected override onConfirmar(): void {
+    this.submitted.set(true);
+    if (this.form.invalid) return;
+
+    const v = this.form.getRawValue();
+    const id = Number(this.id());
+
+    this.loading.set(true);
+
+    const request$ = this.esSocio()
+      ? this.clientesService.modificarSocio(id, {
+          cedula: v['cedula']!,
+          nombreCompleto: v['nombre']!.trim(),
+          telefono: v['telefono']!.trim(),
+          mail: v['email'] || null,
+          notas: v['observaciones'] || null,
+          fechaNacimiento: v['fechaNacimiento']!,
+          pais: v['pais']!.trim(),
+          departamento: v['departamento']!.trim(),
+          ciudad: v['ciudad']!.trim(),
+          direccion: v['direccion']!.trim(),
+          metodoCobro: v['metodoCobro']!,
+        })
+      : this.clientesService.modificarParticular(id, {
+          nombreCompleto: v['nombre']!.trim(),
+          telefono: v['telefono']!.trim(),
+          mail: v['email'] || null,
+          notas: v['observaciones'] || null,
+        });
+
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/clientes', this.id()]);
+      },
+      error: (err: unknown) => {
+        this.loading.set(false);
+        this.errorHandler.handle(err);
+      },
+    });
+  }
 }

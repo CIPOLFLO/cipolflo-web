@@ -12,12 +12,14 @@
       (valuesChange)="onInfoChange($event)"
     />
 
-    <app-form-section
-      title="Información de Ubicación"
-      [fields]="ubicacionFields()"
-      [errors]="ubicacionErrors()"
-      (valuesChange)="onUbicacionChange($event)"
-    />
+    @if (esSocio()) {
+      <app-form-section
+        title="Información de Ubicación"
+        [fields]="ubicacionFields()"
+        [errors]="ubicacionErrors()"
+        (valuesChange)="onUbicacionChange($event)"
+      />
+    }
 
     <app-form-section
       title="Información Adicional"

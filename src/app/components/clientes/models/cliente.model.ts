@@ -81,6 +81,27 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   direccion: string | null;
   observaciones: string | null;
 }
+export interface ModificacionParticularRequestDto {
+  nombreCompleto: string;
+  telefono: string;
+  mail: string | null;
+  notas: string | null;
+}
+
+export interface ModificacionSocioRequestDto {
+  cedula: string;
+  nombreCompleto: string;
+  telefono: string;
+  mail: string | null;
+  notas: string | null;
+  fechaNacimiento: string;
+  pais: string;
+  departamento: string;
+  ciudad: string;
+  direccion: string;
+  metodoCobro: MetodoCobro;
+}
+
 export interface ClienteCrearDto {
   tipoCliente: TipoCliente;
   nombre: string;

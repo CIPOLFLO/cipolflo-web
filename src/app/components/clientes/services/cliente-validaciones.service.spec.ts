@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { ClienteValidacionesService } from './cliente-validaciones.service';
 
@@ -63,6 +63,38 @@ describe('ClienteValidacionesService', () => {
       expect(service.cedulaValida(new FormControl('1.111.111-2'))).toEqual({
         cedulaInvalida: true,
       });
+    });
+  });
+
+  describe('getUbicacionErrors', () => {
+    const buildForm = (direccion: string | null, required = true) =>
+      new FormGroup({
+        pais: new FormControl('Uruguay', Validators.required),
+        departamento: new FormControl('Flores', Validators.required),
+        ciudad: new FormControl('Trinidad', Validators.required),
+        direccion: new FormControl(direccion, required ? Validators.required : null),
+      });
+
+    it('no retorna error de dirección cuando tiene valor', () => {
+      const errors = service.getUbicacionErrors(buildForm('Calle A 123'), false);
+      expect(errors['direccion']).toBeUndefined();
+    });
+
+    it('retorna error de dirección cuando el campo está tocado y vacío', () => {
+      const form = buildForm('');
+      form.get('direccion')?.markAsTouched();
+      const errors = service.getUbicacionErrors(form, false);
+      expect(errors['direccion']).toBeTruthy();
+    });
+
+    it('retorna error de dirección cuando submitted es true y el campo está vacío', () => {
+      const errors = service.getUbicacionErrors(buildForm(''), true);
+      expect(errors['direccion']).toBeTruthy();
+    });
+
+    it('no retorna error de dirección si el control no tiene validador required', () => {
+      const errors = service.getUbicacionErrors(buildForm(null, false), true);
+      expect(errors['direccion']).toBeUndefined();
     });
   });
 });

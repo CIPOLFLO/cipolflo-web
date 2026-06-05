@@ -28,9 +28,9 @@ export abstract class ClienteFormBase {
   protected readonly route = inject(ActivatedRoute);
   protected readonly router = inject(Router);
   protected readonly clientesService = inject(ClientesService);
-  private readonly destroyRef = inject(DestroyRef);
+  protected readonly destroyRef = inject(DestroyRef);
   protected readonly validaciones = inject(ClienteValidacionesService);
-  private readonly errorHandler = inject(ErrorHandlerService);
+  protected readonly errorHandler = inject(ErrorHandlerService);
 
   readonly id = input<string>('');
 

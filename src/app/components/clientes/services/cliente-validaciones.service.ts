@@ -119,6 +119,7 @@ export class ClienteValidacionesService {
       'El departamento es obligatorio.',
     );
     this.addRequiredError(errors, form, submitted, 'ciudad', 'La ciudad es obligatoria.');
+    this.addRequiredError(errors, form, submitted, 'direccion', 'La dirección es obligatoria.');
 
     return errors;
   }
