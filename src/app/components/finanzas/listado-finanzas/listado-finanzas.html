@@ -1,0 +1,7 @@
+<app-page-layout
+  pageTitle="Finanzas"
+  pageDescription="Gestiona y consulta los movimientos financieros del sistema"
+>
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+</app-page-layout>
