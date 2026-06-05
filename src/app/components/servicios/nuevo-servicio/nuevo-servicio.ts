@@ -10,6 +10,7 @@ import {
   PageLayout,
   type FormFieldConfig,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { ServicioValidacionesService } from '../services/servicio-validaciones.service';
@@ -27,6 +28,7 @@ export class NuevoServicio {
   private readonly servicioService = inject(ServicioService);
   private readonly optionsService = inject(ServicioOptionsService);
   private readonly validaciones = inject(ServicioValidacionesService);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly procedencias = toSignal(this.optionsService.getProcedencias(), {
     initialValue: [],
@@ -207,8 +209,7 @@ export class NuevoServicio {
         },
         error: (err) => {
           this.loading.set(false);
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al crear el servicio', err);
+          this.errorHandler.handle(err);
         },
       });
   }

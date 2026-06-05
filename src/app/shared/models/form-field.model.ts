@@ -14,4 +14,5 @@ export interface FormFieldConfig {
   disabled?: boolean;
   locked?: boolean;
   defaultValue?: string;
+  valueClass?: string;
 }

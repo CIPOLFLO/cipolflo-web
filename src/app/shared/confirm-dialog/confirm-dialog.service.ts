@@ -10,6 +10,7 @@ export class ConfirmDialogService {
 
   readonly dialogState$ = this.dialogStateSubject.asObservable();
   open(config: ConfirmDialogData): Observable<boolean> {
+    this.confirmSubject?.next(false);
     this.confirmSubject?.complete();
     this.confirmSubject = new Subject<boolean>();
     this.dialogStateSubject.next(config);

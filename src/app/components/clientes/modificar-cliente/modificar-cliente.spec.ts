@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ModificarCliente } from './modificar-cliente';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import {
   ClienteDetalleRespuestaDto,
   TipoCliente,
@@ -38,12 +39,19 @@ const mockCliente: ClienteDetalleRespuestaDto = {
 describe('ModificarCliente', () => {
   let fixture: ComponentFixture<ModificarCliente>;
   let component: ModificarCliente;
-  let mockClientesService: { getById: ReturnType<typeof vi.fn> };
+  let mockClientesService: {
+    getById: ReturnType<typeof vi.fn>;
+    modificarSocio: ReturnType<typeof vi.fn>;
+    modificarParticular: ReturnType<typeof vi.fn>;
+  };
   let mockRouter: { navigate: ReturnType<typeof vi.fn>; navigateByUrl: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockClientesService = {
       getById: vi.fn().mockReturnValue(of(mockCliente)),
+      modificarSocio: vi.fn().mockReturnValue(of(mockCliente)),
+      modificarParticular: vi.fn().mockReturnValue(of(mockCliente)),
     };
 
     mockRouter = {
@@ -51,11 +59,14 @@ describe('ModificarCliente', () => {
       navigateByUrl: vi.fn(),
     };
 
+    mockErrorHandler = { handle: vi.fn() };
+
     await TestBed.configureTestingModule({
       imports: [ModificarCliente, ReactiveFormsModule],
       providers: [
         { provide: ClientesService, useValue: mockClientesService },
         { provide: Router, useValue: mockRouter },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
         ClienteValidacionesService,
         {
           provide: ActivatedRoute,
@@ -221,6 +232,48 @@ describe('ModificarCliente', () => {
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   });
 
+  it('onConfirmar llama a modificarSocio con el payload correcto', () => {
+    component['onConfirmar']();
+    expect(mockClientesService.modificarSocio).toHaveBeenCalledWith(1, {
+      cedula: '5.191.926-8',
+      nombreCompleto: 'Juan Pérez',
+      telefono: '099958654',
+      mail: 'juan@example.com',
+      notas: 'Socio nuevo',
+      fechaNacimiento: '1999-06-29',
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Calle A 123',
+      metodoCobro: MetodoCobro.Cobradora,
+    });
+  });
+
+  it('onConfirmar navega al detalle del cliente en éxito para socio', () => {
+    component['onConfirmar']();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/clientes', '1']);
+  });
+
+  it('onConfirmar llama a errorHandler.handle si modificarSocio falla', () => {
+    const error = new Error('Error de red');
+    mockClientesService.modificarSocio.mockReturnValue(throwError(() => error));
+    component['onConfirmar']();
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+  });
+
+  it('ubicacionFields retorna campos vacíos para cliente particular', async () => {
+    mockClientesService.getById.mockReturnValue(
+      of({ ...mockCliente, tipoCliente: TipoCliente.Particular, numeroSocio: null }),
+    );
+    fixture = TestBed.createComponent(ModificarCliente);
+    fixture.componentRef.setInput('id', '1');
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component['ubicacionFields']()).toEqual([]);
+  });
+
   it('onCancelar debe navegar al backLink', () => {
     component['onCancelar']();
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith(`/clientes/1`);
@@ -247,9 +300,9 @@ describe('ModificarCliente', () => {
     expect(component['cliente']()).toBeNull();
   });
 
-  it('debe mostrar error en consola si falla la carga del cliente', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
-    mockClientesService.getById.mockReturnValue(throwError(() => new Error('Error al cargar')));
+  it('debe llamar a errorHandler.handle si falla la carga del cliente', async () => {
+    const error = new Error('Error al cargar');
+    mockClientesService.getById.mockReturnValue(throwError(() => error));
 
     fixture = TestBed.createComponent(ModificarCliente);
     fixture.componentRef.setInput('id', '1');
@@ -257,8 +310,89 @@ describe('ModificarCliente', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+  });
+});
+
+describe('ModificarCliente - onConfirmar Particular', () => {
+  let fixture: ComponentFixture<ModificarCliente>;
+  let component: ModificarCliente;
+  let mockClientesService: {
+    getById: ReturnType<typeof vi.fn>;
+    modificarSocio: ReturnType<typeof vi.fn>;
+    modificarParticular: ReturnType<typeof vi.fn>;
+  };
+  let mockRouter: { navigate: ReturnType<typeof vi.fn>; navigateByUrl: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
+
+  const mockParticular: ClienteDetalleRespuestaDto = {
+    ...mockCliente,
+    tipoCliente: TipoCliente.Particular,
+    numeroSocio: null,
+    estado: null,
+    fechaNacimiento: null,
+    metodoCobro: null,
+    pais: null,
+    departamento: null,
+    ciudad: null,
+    direccion: null,
+  };
+
+  beforeEach(async () => {
+    mockClientesService = {
+      getById: vi.fn().mockReturnValue(of(mockParticular)),
+      modificarSocio: vi.fn().mockReturnValue(of(mockParticular)),
+      modificarParticular: vi.fn().mockReturnValue(of(mockParticular)),
+    };
+    mockRouter = { navigate: vi.fn(), navigateByUrl: vi.fn() };
+    mockErrorHandler = { handle: vi.fn() };
+
+    await TestBed.configureTestingModule({
+      imports: [ModificarCliente, ReactiveFormsModule],
+      providers: [
+        { provide: ClientesService, useValue: mockClientesService },
+        { provide: Router, useValue: mockRouter },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        ClienteValidacionesService,
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: { get: vi.fn().mockReturnValue('2') },
+              queryParamMap: { get: vi.fn().mockReturnValue(null) },
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ModificarCliente);
+    fixture.componentRef.setInput('id', '2');
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  it('onConfirmar llama a modificarParticular con el payload correcto', () => {
+    component['onConfirmar']();
+    expect(mockClientesService.modificarParticular).toHaveBeenCalledWith(2, {
+      nombreCompleto: 'Juan Pérez',
+      telefono: '099958654',
+      mail: 'juan@example.com',
+      notas: 'Socio nuevo',
+    });
+  });
+
+  it('onConfirmar navega al detalle del cliente en éxito para particular', () => {
+    component['onConfirmar']();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/clientes', '2']);
+  });
+
+  it('onConfirmar llama a errorHandler.handle si modificarParticular falla', () => {
+    const error = new Error('Error de red');
+    mockClientesService.modificarParticular.mockReturnValue(throwError(() => error));
+    component['onConfirmar']();
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
   });
 });
 

@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { filter, map, switchMap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { catchError, filter, map, of, switchMap } from 'rxjs';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import {
   AppButton,
   AppTable,
@@ -7,20 +12,16 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  MobPageHeader,
   PageLayout,
   RowAction,
   TableStateService,
-  MobPageHeader,
 } from '../../../shared';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
-import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
-import { Router } from '@angular/router';
-import { PagoCuota } from '../pago-cuota/pago-cuota';
-import { BreakpointService } from '../../../core/services/breakpoint.service';
-import { AuthService } from '@auth0/auth0-angular';
-import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-listado-clientes',
   imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota, MobPageHeader],
@@ -42,6 +43,7 @@ export class ListadoClientes {
   private readonly router = inject(Router);
   protected readonly breakpoint = inject(BreakpointService);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -58,7 +60,20 @@ export class ListadoClientes {
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params);
+    this.clientesService.getAll(params).pipe(
+      catchError((err) => {
+        this.errorHandler.handle(err);
+        return of({
+          content: [],
+          page: params.page,
+          size: params.size,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        });
+      }),
+    );
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
@@ -117,7 +132,7 @@ export class ListadoClientes {
       .open({
         title: 'Dar de baja cliente',
         message:
-          '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+          '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán, incluso las que ya están pagas.',
         confirmButtonLabel: 'Dar de baja',
         cancelButtonLabel: 'Cancelar',
         variant: 'danger',
@@ -128,9 +143,8 @@ export class ListadoClientes {
       )
       .subscribe({
         next: () => this.recargarTabla(),
-        error: (e) => {
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al dar de baja cliente', e);
+        error: (err) => {
+          this.errorHandler.handle(err);
         },
       });
   }

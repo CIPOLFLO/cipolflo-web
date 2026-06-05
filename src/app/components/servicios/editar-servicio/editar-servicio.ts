@@ -23,6 +23,7 @@ import {
   type DetailRegistroData,
   type FormFieldConfig,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { EstadoServicio, type ServicioDetalleRespuestaDto } from '../models/servicio.model';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
@@ -52,6 +53,7 @@ export class EditarServicio implements OnInit {
   private readonly validaciones = inject(ServicioValidacionesService);
   private readonly presentacion = inject(ServicioPresentacionService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   readonly id = input<string>('');
   readonly from = input<string>('');
@@ -132,9 +134,9 @@ export class EditarServicio implements OnInit {
     this.servicioService
       .getById(Number(this.id()))
       .pipe(
-        // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
         catchError((err) => {
-          console.error('Error al cargar el servicio', err);
+          this.errorHandler.handle(err);
+          this.router.navigate(['/servicios']);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef),
@@ -251,8 +253,7 @@ export class EditarServicio implements OnInit {
         },
         error: (err) => {
           this.loading.set(false);
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al actualizar el servicio', err);
+          this.errorHandler.handle(err);
         },
       });
   }

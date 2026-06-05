@@ -6,10 +6,18 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
 import { BreakpointService } from './core/services/breakpoint.service';
+import { ErrorDialogComponent } from './shared/error-dialog/error-dialog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, ConfirmDialogComponent, CommonModule],
+  imports: [
+    RouterOutlet,
+    Header,
+    Footer,
+    ErrorDialogComponent,
+    ConfirmDialogComponent,
+    CommonModule,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
