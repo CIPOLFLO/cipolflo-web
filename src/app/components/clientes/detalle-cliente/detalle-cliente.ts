@@ -91,7 +91,8 @@ export class DetalleCliente {
         key: 'observaciones',
         label: 'Notas/Observaciones',
         value: c.observaciones,
-        colSpan: 3,
+        fullWidth: true,
+        multiline: true,
       },
     ];
   });

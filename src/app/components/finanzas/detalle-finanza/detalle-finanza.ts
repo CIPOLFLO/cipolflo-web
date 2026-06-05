@@ -66,20 +66,21 @@ export class DetalleFinanza {
 
     return [
       { key: 'procedencia', label: 'Procedencia', value: f.procedencia },
-      { key: 'servicio', label: 'Servivio', value: f.servicio },
+      { key: 'servicio', label: 'Servicio', value: f.servicio },
       { key: 'fecha', label: 'Fecha', value: f.fecha },
       {
         key: 'importe',
         label: 'Importe',
         value: this.formatImporte(f.importe, f.tipoMovimiento),
-        valueClass: f.tipoMovimiento === TipoMovimiento.Ingreso ? 'success' : 'danger',
+        valueClass: this.tipoMovimientoConfig[f.tipoMovimiento].valueClass,
       },
       { key: 'formaPago', label: 'Forma de Pago', value: f.formaPago },
       {
         key: 'notas',
         label: 'Notas/Observaciones',
         value: f.notas ?? null,
-        colSpan: 3,
+        fullWidth: true,
+        multiline: true,
       },
     ];
   });
@@ -91,8 +92,8 @@ export class DetalleFinanza {
     return {
       entityId: f.codigo,
       entityIdLabel: 'ID del Movimiento',
-      fechaRegistro: f.fechaRegistro,
-      registradoPor: f.registradoPor,
+      fechaRegistro: f.createdAt,
+      registradoPor: f.createdBy,
     };
   });
   protected readonly registroExtraFields = computed<DetailFieldConfig[]>(() => {
@@ -103,19 +104,25 @@ export class DetalleFinanza {
       {
         key: 'tipoMovimiento',
         label: 'Tipo de Movimiento',
-        value: f.tipoMovimiento === TipoMovimiento.Ingreso ? 'Ingreso' : 'Egreso',
+        value: this.tipoMovimientoConfig[f.tipoMovimiento].label,
       },
     ];
   });
 
   protected onEditar(): void {
-    this.router.navigate(['/finanzas', this.finanzaId(), 'editar'], {
-      queryParams: { from: 'detalle' },
-    });
+    this.router.navigate(['/finanzas', this.finanzaId()]);
   }
 
   protected formatImporte(importe: number, tipoMovimiento: TipoMovimiento): string {
-    const signo = tipoMovimiento === TipoMovimiento.Ingreso ? '+' : '-';
+    const { signo } = this.tipoMovimientoConfig[tipoMovimiento];
     return `${signo} $ ${importe.toLocaleString('es-UY')}`;
   }
+
+  private readonly tipoMovimientoConfig: Record<
+    TipoMovimiento,
+    { label: string; signo: string; valueClass: string }
+  > = {
+    [TipoMovimiento.Ingreso]: { label: 'Ingreso', signo: '+', valueClass: 'success' },
+    [TipoMovimiento.Egreso]: { label: 'Egreso', signo: '-', valueClass: 'danger' },
+  };
 }

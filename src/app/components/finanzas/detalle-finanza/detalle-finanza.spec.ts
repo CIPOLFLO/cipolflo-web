@@ -6,7 +6,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { FinanzaDetalleRespuestaDto, TipoMovimiento } from '../models/finanza.model';
 import { FinanzaService } from '../services/finanza.service';
 import { DetalleFinanza } from './detalle-finanza';
-import { Procedencia } from 'src/app/shared';
+import { Procedencia } from '../../../shared';
 
 const mockFinanza: FinanzaDetalleRespuestaDto = {
   id: 1,
@@ -17,8 +17,10 @@ const mockFinanza: FinanzaDetalleRespuestaDto = {
   importe: 15000,
   formaPago: 'Transferencia',
   notas: 'Pago de alquiler de parillero.',
-  fechaRegistro: '15 mar 2026, 14:30',
-  registradoPor: 'Juan Pérez',
+  createdAt: '2026-03-15T14:30:00Z',
+  createdBy: 'Juan Pérez',
+  updatedAt: '2026-03-15T14:30:00Z',
+  updatedBy: 'Juan Pérez',
   tipoMovimiento: TipoMovimiento.Ingreso,
 };
 
@@ -103,12 +105,10 @@ describe('DetalleFinanza', () => {
     );
   });
 
-  it('debería navegar a editar con queryParam from=detalle', () => {
+  it('debería navegar al hacer click en editar', () => {
     component['onEditar']();
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', '1', 'editar'], {
-      queryParams: { from: 'detalle' },
-    });
+    expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', '1']);
   });
 
   it('debería manejar error y navegar a /finanzas si falla la carga', async () => {
