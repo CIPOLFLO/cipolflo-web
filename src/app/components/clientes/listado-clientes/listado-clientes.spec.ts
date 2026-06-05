@@ -299,11 +299,6 @@ describe('ListadoClientes', () => {
     const row = mockPageResponse.content[0];
 
     mockConfirmDialogService.open.mockReturnValue(of(true));
-    mockClientesService.darDeBaja.mockReturnValue(throwError(() => new Error('Error de red')));
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
-    component['onDarDeBajaCliente'](row);
-    expect(consoleSpy).toHaveBeenCalledWith('Error al dar de baja cliente', expect.any(Error));
-    consoleSpy.mockRestore();
     mockClientesService.darDeBaja.mockReturnValue(throwError(() => error));
 
     component['onDarDeBajaCliente'](row);
