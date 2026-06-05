@@ -1,4 +1,5 @@
-import { Procedencia } from 'src/app/shared';
+import { Procedencia } from '../../../shared';
+import { type AuditInfoDto } from '../../../shared';
 
 export enum TipoMovimiento {
   Ingreso = 'INGRESO',
@@ -49,7 +50,7 @@ export interface FinanzaRow extends Record<string, unknown> {
   descripcion?: string | null;
 }
 
-export interface FinanzaDetalleRespuestaDto {
+export interface FinanzaDetalleRespuestaDto extends AuditInfoDto {
   id: number;
   codigo: string;
   procedencia: Procedencia;
@@ -58,7 +59,5 @@ export interface FinanzaDetalleRespuestaDto {
   importe: number;
   formaPago: string;
   notas?: string | null;
-  fechaRegistro: string;
-  registradoPor: string;
   tipoMovimiento: TipoMovimiento;
 }

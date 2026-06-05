@@ -12,5 +12,4 @@ export interface DetailRegistroData {
   entityIdLabel?: string;
   fechaRegistro: string;
   registradoPor: string;
-  valueClass?: string;
 }

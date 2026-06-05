@@ -36,7 +36,9 @@ export class FinanzasFilterService extends FilterConfigProvider {
       .subscribe((opciones) => {
         this.filterFields.update((fields) =>
           fields.map((f) =>
-            f.key === 'concepto' ? { ...f, options: [{ label: 'Todos', value: '' }, ...opciones] } : f,
+            f.key === 'concepto'
+              ? { ...f, options: [{ label: 'Todos', value: '' }, ...opciones] }
+              : f,
           ),
         );
       });
