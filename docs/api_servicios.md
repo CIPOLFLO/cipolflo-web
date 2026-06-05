@@ -70,10 +70,14 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 
 ### `PageRequestDto` — query params de paginación
 
-| Campo  | Tipo    | Obligatorio | Validación      | Default |
-| ------ | ------- | ----------- | --------------- | ------- |
-| `page` | integer | No          | >= 0            | 0       |
-| `size` | integer | No          | > 0, máximo 100 | 1       |
+| Campo       | Tipo            | Obligatorio | Validación         | Default |
+| ----------- | --------------- | ----------- | ------------------ | ------- |
+| `page`      | integer         | No          | >= 0               | 0       |
+| `size`      | integer         | No          | > 0, máximo 100    | 1       |
+| `sortField` | string          | No          | nombre del campo   | —       |
+| `sortOrder` | `ASC` \| `DESC` | No          | solo con sortField | —       |
+
+> El frontend envía `sortOrder` en mayúsculas (`ASC`/`DESC`) y solo lo incluye cuando `sortField` está presente.
 
 ### `PageResponse<T>` — respuesta paginada
 
@@ -477,7 +481,7 @@ Retorna el detalle completo de un cliente.
 }
 ```
 
-> Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+> Los campos `fechaNacimiento`, `metodoCobro`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
 
 ---
 
@@ -558,6 +562,23 @@ Modifica los datos de un socio.
 - `200` — socio modificado; mismo body que `GET /api/v1/clientes/{id}`
 - `400` — campo obligatorio faltante o vacío (código `SOLICITUD_INVALIDA`), o id inválido (código `ID_INVALIDO`)
 - `404` — el id no corresponde a un Socio (no existe o es un Particular) (código `CLIENTE_NO_ENCONTRADO`)
+
+---
+
+### `PATCH /api/v1/clientes/socios/{id}/baja`
+
+Da de baja a un socio y cancela automáticamente todas sus reservas futuras en estado `PENDIENTE` o `CONFIRMADA` (incluso las pagas).
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 204:** No Content
+
+**Errores:**
+
+| HTTP Status | Código                | Cuándo ocurre                    |
+| ----------- | --------------------- | -------------------------------- |
+| 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
+| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
 
 ---
 

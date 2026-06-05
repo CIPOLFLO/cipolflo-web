@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import {
   AppButton,
   DetailRegistroSection,
@@ -203,7 +204,7 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
   });
 
   protected override onConfirmar(): void {
-    this.submitted.set(true);
+    super.onConfirmar();
     if (this.form.invalid) return;
 
     const v = this.form.getRawValue();
@@ -211,13 +212,17 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
 
     this.loading.set(true);
 
+    const base = {
+      nombreCompleto: v['nombre']!.trim(),
+      telefono: v['telefono']!.trim(),
+      mail: v['email']?.trim() || null,
+      notas: v['observaciones']?.trim() || null,
+    };
+
     const request$ = this.esSocio()
       ? this.clientesService.modificarSocio(id, {
-          cedula: v['cedula']!,
-          nombreCompleto: v['nombre']!.trim(),
-          telefono: v['telefono']!.trim(),
-          mail: v['email'] || null,
-          notas: v['observaciones'] || null,
+          ...base,
+          cedula: v['cedula']!.trim(),
           fechaNacimiento: v['fechaNacimiento']!,
           pais: v['pais']!.trim(),
           departamento: v['departamento']!.trim(),
@@ -225,22 +230,20 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
           direccion: v['direccion']!.trim(),
           metodoCobro: v['metodoCobro']!,
         })
-      : this.clientesService.modificarParticular(id, {
-          nombreCompleto: v['nombre']!.trim(),
-          telefono: v['telefono']!.trim(),
-          mail: v['email'] || null,
-          notas: v['observaciones'] || null,
-        });
+      : this.clientesService.modificarParticular(id, base);
 
-    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.router.navigate(['/clientes', this.id()]);
-      },
-      error: (err: unknown) => {
-        this.loading.set(false);
-        this.errorHandler.handle(err);
-      },
-    });
+    request$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/clientes', this.id()]);
+        },
+        error: (err: unknown) => {
+          this.errorHandler.handle(err);
+        },
+      });
   }
 }
