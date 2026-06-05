@@ -4,6 +4,7 @@ import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   Concepto,
+  FinanzaCrearDto,
   FinanzaDetalleRespuestaDto,
   FinanzaRespuestaDto,
   TipoMovimiento,
@@ -21,7 +22,7 @@ export class FinanzaService extends BaseHttpService {
       content: [
         {
           id: 1,
-          concepto: Concepto.PagoCuota,
+          concepto: Concepto.PagoReserva,
           fecha: '14/3/2026',
           importe: 15000,
           descripcion: 'Cuota marzo 2026 - Socio 0042',
@@ -51,6 +52,13 @@ export class FinanzaService extends BaseHttpService {
       first: true,
       last: true,
     });
+  }
+
+  create(dto: FinanzaCrearDto): Observable<void> {
+    // TODO: reemplazar cuando el backend esté disponible
+    // return this.post<void>('finanzas', dto);
+    console.log('[FinanzaService] create:', dto);
+    return of(undefined);
   }
 
   getById(id: number): Observable<FinanzaDetalleRespuestaDto> {

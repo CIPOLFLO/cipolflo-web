@@ -2,6 +2,14 @@
   pageTitle="Finanzas"
   pageDescription="Gestiona y consulta los movimientos financieros del sistema"
 >
+  <app-button
+    actions
+    label="Nuevo Movimiento"
+    intent="primary"
+    icon="pi-plus"
+    (clicked)="onNuevoMovimiento()"
+  />
+
   <app-filter-panel (filterChange)="onFilterChange($event)" />
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
 </app-page-layout>

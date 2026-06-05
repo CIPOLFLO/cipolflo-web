@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import {
+  AppButton,
   AppTable,
   FilterConfigProvider,
   FilterPanel,
@@ -18,7 +19,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-listado-finanzas',
-  imports: [PageLayout, FilterPanel, AppTable],
+  imports: [PageLayout, FilterPanel, AppTable, AppButton],
   providers: [
     TableStateService,
     FinanzasColumnsService,
@@ -83,6 +84,10 @@ export class ListadoFinanzas {
       command: () => this.router.navigate(['/finanzas', row.id]),
     },
   ];
+
+  protected onNuevoMovimiento(): void {
+    this.router.navigate(['/finanzas', 'nuevo']);
+  }
 
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);

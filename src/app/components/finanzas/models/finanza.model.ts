@@ -1,4 +1,4 @@
-import { Procedencia } from '../../../shared';
+import { type FormFieldOption, Procedencia } from '../../../shared';
 import { type AuditInfoDto } from '../../../shared';
 
 export enum TipoMovimiento {
@@ -18,7 +18,6 @@ export const TIPO_MOVIMIENTO_OPTIONS = [
 ];
 
 export enum Concepto {
-  PagoCuota = 'PAGO_CUOTA',
   PagoReserva = 'PAGO_RESERVA',
   Ute = 'UTE',
   Antel = 'ANTEL',
@@ -26,7 +25,6 @@ export enum Concepto {
 }
 
 export const CONCEPTO_LABEL: Record<Concepto, string> = {
-  [Concepto.PagoCuota]: 'Pago de cuota',
   [Concepto.PagoReserva]: 'Pago de reserva',
   [Concepto.Ute]: 'UTE',
   [Concepto.Antel]: 'ANTEL',
@@ -48,6 +46,35 @@ export interface FinanzaRow extends Record<string, unknown> {
   fecha: string;
   importeSignado: number;
   descripcion?: string | null;
+}
+
+export enum FormaPago {
+  Efectivo = 'EFECTIVO',
+  Transferencia = 'TRANSFERENCIA',
+}
+
+export const FORMA_PAGO_OPTIONS: FormFieldOption[] = [
+  { label: 'Efectivo', value: FormaPago.Efectivo },
+  { label: 'Transferencia', value: FormaPago.Transferencia },
+];
+
+export const TIPO_MOVIMIENTO_FORM_OPTIONS: FormFieldOption[] = [
+  { label: 'Ingreso', value: TipoMovimiento.Ingreso },
+  { label: 'Egreso', value: TipoMovimiento.Egreso },
+];
+
+export const CONCEPTO_OPTIONS: FormFieldOption[] = (
+  Object.entries(CONCEPTO_LABEL) as [Concepto, string][]
+).map(([value, label]) => ({ label, value }));
+
+export interface FinanzaCrearDto {
+  tipoMovimiento: TipoMovimiento;
+  procedencia: Procedencia;
+  concepto: Concepto;
+  fecha: string;
+  importe: number;
+  formaPago: FormaPago;
+  notas?: string | null;
 }
 
 export interface FinanzaDetalleRespuestaDto extends AuditInfoDto {
