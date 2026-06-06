@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { filter, map, switchMap } from 'rxjs';
+import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -19,8 +19,8 @@ import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
-import { AuthService } from '@auth0/auth0-angular';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { UserService } from '../../../core/services/user.service';
+
 @Component({
   selector: 'app-listado-clientes',
   imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota, MobPageHeader],
@@ -41,6 +41,7 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   protected readonly breakpoint = inject(BreakpointService);
+  protected readonly userService = inject(UserService);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
   constructor() {
@@ -85,13 +86,6 @@ export class ListadoClientes {
           queryParams: { from: 'listado' },
         }),
     },
-
-    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => ... },
-    // ...(row.estado !== 'ACTIVO'
-    //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => ... }]
-    //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => ... }]),
-    // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => ... },
-    // { separator: true },
     ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
       ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
       : []),
@@ -112,6 +106,7 @@ export class ListadoClientes {
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
   }
+
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
     this.confirmDialogService
       .open({
@@ -138,19 +133,4 @@ export class ListadoClientes {
   private recargarTabla(): void {
     this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
-  private readonly auth = inject(AuthService);
-
-  protected readonly userInitials = toSignal(
-    this.auth.user$.pipe(
-      map((user) => {
-        const name = user?.name ?? '';
-        const parts = name.trim().split(' ');
-        if (parts.length >= 2) {
-          return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
-        }
-        return parts[0].charAt(0).toUpperCase();
-      }),
-    ),
-    { initialValue: '' },
-  );
 }

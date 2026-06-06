@@ -1,5 +1,5 @@
 @if (breakpoint.isMobile()) {
-  <app-mob-page-header title="Clientes" [userInitials]="userInitials()" />
+  <app-mob-page-header title="Clientes" [userInitials]="userService.userInitials()" />
   <div>Mobile view coming soon</div>
 } @else {
   <app-page-layout
