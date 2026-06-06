@@ -110,12 +110,13 @@ export class DetalleFinanza {
   });
 
   protected onEditar(): void {
+    // TODO: navegar a /finanzas/:id/editar cuando se implemente la pantalla de edición
     this.router.navigate(['/finanzas', this.finanzaId()]);
   }
 
   protected formatImporte(importe: number, tipoMovimiento: TipoMovimiento): string {
     const { signo } = this.tipoMovimientoConfig[tipoMovimiento];
-    return `${signo} $ ${importe.toLocaleString('es-UY')}`;
+    return `${signo} $ ${importe.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   private readonly tipoMovimientoConfig: Record<

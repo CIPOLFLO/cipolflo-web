@@ -3,8 +3,13 @@ import { Routes } from '@angular/router';
 export const FINANZAS_ROUTES: Routes = [
   {
     path: '',
-    redirectTo: '1',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./listado-finanzas/listado-finanzas').then((m) => m.ListadoFinanzas),
+  },
+  {
+    path: 'nuevo',
+    loadComponent: () =>
+      import('./nuevo-movimiento/nuevo-movimiento').then((m) => m.NuevoMovimiento),
   },
   {
     path: ':id',

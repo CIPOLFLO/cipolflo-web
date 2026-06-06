@@ -84,7 +84,7 @@ describe('DetalleFinanza', () => {
 
   it('debería mostrar el importe con signo positivo cuando es ingreso', () => {
     expect(component['infoFields']().find((field) => field.key === 'importe')?.value).toBe(
-      '+ $ 15.000',
+      '+ $ 15.000,00',
     );
   });
 
@@ -101,7 +101,7 @@ describe('DetalleFinanza', () => {
     fixture.detectChanges();
 
     expect(component['infoFields']().find((field) => field.key === 'importe')?.value).toBe(
-      '- $ 15.000',
+      '- $ 15.000,00',
     );
   });
 
