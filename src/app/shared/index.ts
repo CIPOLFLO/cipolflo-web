@@ -39,6 +39,11 @@ export type {
   ConfirmDialogVariant,
 } from './confirm-dialog/confirm-dialog.model';
 
+// error-dialog
+export { ErrorDialogComponent } from './error-dialog/error-dialog';
+export { ErrorDialogService } from './error-dialog/error-dialog.service';
+export type { ErrorDialogData } from './error-dialog/error-dialog.model';
+
 // Models
 export type { FormFieldConfig, FormFieldOption } from './models/form-field.model';
 export type { DetailFieldConfig, DetailRegistroData } from './models/detail-field.model';

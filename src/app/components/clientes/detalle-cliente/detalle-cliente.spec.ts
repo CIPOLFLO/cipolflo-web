@@ -9,6 +9,7 @@ import {
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { DetalleCliente } from './detalle-cliente';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -36,27 +37,21 @@ describe('DetalleCliente', () => {
   let fixture: ComponentFixture<DetalleCliente>;
   let component: DetalleCliente;
   let getByIdSpy: ReturnType<typeof vi.fn>;
+  let mockErrorHandler: {
+    handle: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     getByIdSpy = vi.fn().mockReturnValue(of(mockCliente));
+    mockErrorHandler = { handle: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [DetalleCliente],
       providers: [
-        {
-          provide: ClientesService,
-          useValue: { getById: getByIdSpy },
-        },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            paramMap: of(convertToParamMap({ id: '1' })),
-          },
-        },
-        {
-          provide: Router,
-          useValue: { navigate: vi.fn() },
-        },
+        { provide: ClientesService, useValue: { getById: getByIdSpy } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
       ],
     }).compileComponents();
 
@@ -97,36 +92,24 @@ describe('DetalleCliente', () => {
     expect(fixture.nativeElement.textContent).toContain('Socia Nueva');
   });
 
+  it('debería manejar el error cuando falla la carga del detalle del cliente', () => {
+    const error = new Error('Error al cargar cliente');
+
+    getByIdSpy.mockReturnValue(throwError(() => error));
+
+    fixture = TestBed.createComponent(DetalleCliente);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+  });
+
   it('onEditar debe navegar a la pantalla de modificación con queryParam from=detalle', () => {
     const navigateSpy = component['router'].navigate as ReturnType<typeof vi.fn>;
     component['onEditar']();
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', '1', 'modificar'], {
       queryParams: { from: 'detalle' },
     });
-  });
-
-  it('debe registrar error en consola si falla la carga del cliente', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
-
-    TestBed.resetTestingModule();
-    await TestBed.configureTestingModule({
-      imports: [DetalleCliente],
-      providers: [
-        {
-          provide: ClientesService,
-          useValue: { getById: vi.fn().mockReturnValue(throwError(() => new Error('fallo'))) },
-        },
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
-        { provide: Router, useValue: { navigate: vi.fn() } },
-      ],
-    }).compileComponents();
-
-    const errFixture = TestBed.createComponent(DetalleCliente);
-    errFixture.detectChanges();
-    await errFixture.whenStable();
-
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 });
 
@@ -150,14 +133,9 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
           provide: ClientesService,
           useValue: { getById: vi.fn().mockReturnValue(of(mockParticular)) },
         },
-        {
-          provide: ActivatedRoute,
-          useValue: { paramMap: of(convertToParamMap({ id: '1' })) },
-        },
-        {
-          provide: Router,
-          useValue: { navigate: vi.fn() },
-        },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: ErrorHandlerService, useValue: { handle: vi.fn() } },
       ],
     }).compileComponents();
 

@@ -42,6 +42,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./components/clientes/clientes.routes').then((m) => m.CLIENTES_ROUTES),
       },
+      {
+        path: 'finanzas',
+        loadChildren: () =>
+          import('./components/finanzas/finanzas.routes').then((m) => m.FINANZAS_ROUTES),
+      },
     ],
   },
   {

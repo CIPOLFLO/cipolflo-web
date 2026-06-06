@@ -7,11 +7,13 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  MobPageHeader,
   PageLayout,
   RowAction,
   TableStateService,
-  MobPageHeader,
 } from '../../../shared';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
@@ -43,6 +45,7 @@ export class ListadoClientes {
   protected readonly breakpoint = inject(BreakpointService);
   protected readonly userService = inject(UserService);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -59,7 +62,20 @@ export class ListadoClientes {
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params);
+    this.clientesService.getAll(params).pipe(
+      catchError((err) => {
+        this.errorHandler.handle(err);
+        return of({
+          content: [],
+          page: params.page,
+          size: params.size,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        });
+      }),
+    );
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
@@ -112,7 +128,7 @@ export class ListadoClientes {
       .open({
         title: 'Dar de baja cliente',
         message:
-          '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+          '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán, incluso las que ya están pagas.',
         confirmButtonLabel: 'Dar de baja',
         cancelButtonLabel: 'Cancelar',
         variant: 'danger',
@@ -123,9 +139,8 @@ export class ListadoClientes {
       )
       .subscribe({
         next: () => this.recargarTabla(),
-        error: (e) => {
-          // TODO: reemplazar con manejo de errores centralizado cuando se implemente en el front
-          console.error('Error al dar de baja cliente', e);
+        error: (err) => {
+          this.errorHandler.handle(err);
         },
       });
   }

@@ -8,6 +8,8 @@ import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
   MetodoCobro,
+  ModificacionParticularRequestDto,
+  ModificacionSocioRequestDto,
   TipoCliente,
 } from '../models/cliente.model';
 
@@ -91,6 +93,35 @@ describe('ClientesService', () => {
     req.flush(emptyPage);
   });
 
+  it('getAll envía sortField y sortOrder en mayúsculas cuando se proporcionan', () => {
+    service
+      .getAll({ page: 0, size: 10, filters: {}, sortField: 'nombreCompleto', sortOrder: 'asc' })
+      .subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === BASE);
+    expect(req.request.params.get('sortField')).toBe('nombreCompleto');
+    expect(req.request.params.get('sortOrder')).toBe('ASC');
+    req.flush(emptyPage);
+  });
+
+  it('getAll envía sortField solo cuando sortOrder no se proporciona', () => {
+    service.getAll({ page: 0, size: 10, filters: {}, sortField: 'cedula' }).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === BASE);
+    expect(req.request.params.get('sortField')).toBe('cedula');
+    expect(req.request.params.has('sortOrder')).toBe(false);
+    req.flush(emptyPage);
+  });
+
+  it('getAll omite sortField y sortOrder cuando sortField no se proporciona', () => {
+    service.getAll({ page: 0, size: 10, filters: {}, sortOrder: 'asc' }).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === BASE);
+    expect(req.request.params.has('sortField')).toBe(false);
+    expect(req.request.params.has('sortOrder')).toBe(false);
+    req.flush(emptyPage);
+  });
+
   describe('getById', () => {
     it('hace GET a /clientes/:id y retorna el detalle del cliente', () => {
       service.getById(1).subscribe((result) => {
@@ -138,11 +169,131 @@ describe('ClientesService', () => {
     });
   });
 
-  describe('darDeBaja', () => {
-    it('retorna void (stub — reemplazar con expectOne cuando se conecte el backend)', () => {
-      service.darDeBaja(1).subscribe((response) => {
-        expect(response).toBeUndefined();
+  describe('modificarParticular', () => {
+    const dto: ModificacionParticularRequestDto = {
+      nombreCompleto: 'Laura Fernández',
+      telefono: '099222222',
+      mail: 'laura@mail.com',
+      notas: null,
+    };
+
+    it('realiza PUT a /clientes/particulares/:id y retorna el detalle', () => {
+      service.modificarParticular(2, dto).subscribe((result) => {
+        expect(result).toEqual(mockDetalle);
       });
+      const req = httpMock.expectOne(`${BASE}/particulares/2`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockDetalle);
+    });
+
+    it('propaga error 404 cuando el id no corresponde a un Particular', () => {
+      let errorStatus = 0;
+      service.modificarParticular(1, dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/particulares/1`)
+        .flush(
+          { codigo: 'CLIENTE_NO_ENCONTRADO', descripcion: 'No es un particular' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 400 cuando el id es inválido', () => {
+      let errorStatus = 0;
+      service.modificarParticular(-1, dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/particulares/-1`)
+        .flush(
+          { codigo: 'ID_INVALIDO', descripcion: 'El id no es un número positivo' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('modificarSocio', () => {
+    const dto: ModificacionSocioRequestDto = {
+      cedula: '5.191.926-8',
+      nombreCompleto: 'Lucía Rodríguez',
+      telefono: '099985648',
+      mail: 'lucia@mail.com',
+      notas: null,
+      fechaNacimiento: '1999-06-29',
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Luis Alberto de Herrera 123',
+      metodoCobro: MetodoCobro.Cobradora,
+    };
+
+    it('realiza PUT a /clientes/socios/:id y retorna el detalle', () => {
+      service.modificarSocio(1, dto).subscribe((result) => {
+        expect(result).toEqual(mockDetalle);
+      });
+      const req = httpMock.expectOne(`${BASE}/socios/1`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockDetalle);
+    });
+
+    it('propaga error 404 cuando el id no corresponde a un Socio', () => {
+      let errorStatus = 0;
+      service.modificarSocio(2, dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/2`)
+        .flush(
+          { codigo: 'CLIENTE_NO_ENCONTRADO', descripcion: 'No es un socio' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 400 cuando el id es inválido', () => {
+      let errorStatus = 0;
+      service.modificarSocio(-1, dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/-1`)
+        .flush(
+          { codigo: 'ID_INVALIDO', descripcion: 'El id no es un número positivo' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('darDeBaja', () => {
+    it('realiza PATCH a /clientes/socios/:id/baja (204 No Content)', () => {
+      service.darDeBaja(1).subscribe((response) => {
+        expect(response).toBeNull();
+      });
+      const req = httpMock.expectOne(`${BASE}/socios/1/baja`);
+      expect(req.request.method).toBe('PATCH');
+      req.flush(null, { status: 204, statusText: 'No Content' });
+    });
+
+    it('propaga error 404 cuando el socio no existe', () => {
+      let errorStatus = 0;
+      service.darDeBaja(9999).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/9999/baja`)
+        .flush(
+          { codigo: 'SOCIO_NO_ENCONTRADO', descripcion: 'No existe un socio con ese id' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 400 cuando el id es inválido', () => {
+      let errorStatus = 0;
+      service.darDeBaja(-1).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/-1/baja`)
+        .flush(
+          { codigo: 'ID_INVALIDO', descripcion: 'El id no es un número positivo' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
     });
   });
 });

@@ -11,6 +11,7 @@ import {
   PageResponse,
   TableStateService,
 } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
@@ -60,11 +61,10 @@ describe('ListadoClientes', () => {
     getCostoCuota: ReturnType<typeof vi.fn>;
     darDeBaja: ReturnType<typeof vi.fn>;
   };
-  let mockConfirmDialogService: {
-    open: ReturnType<typeof vi.fn>;
-  };
-
+  let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
   beforeEach(async () => {
+    mockErrorHandler = { handle: vi.fn() };
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
       getCostoCuota: vi.fn().mockReturnValue(5000),
@@ -83,6 +83,7 @@ describe('ListadoClientes', () => {
         { provide: BreakpointObserver, useValue: { observe: () => of({ matches: false }) } },
         { provide: AuthService, useValue: mockAuthService },
         BreakpointService,
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
       ],
     }).compileComponents();
 
@@ -242,7 +243,7 @@ describe('ListadoClientes', () => {
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
       title: 'Dar de baja cliente',
       message:
-        '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán.',
+        '¿Confirma que quiere dar de baja este cliente? Si tiene reservas futuras, se cancelarán, incluso las que ya están pagas.',
       confirmButtonLabel: 'Dar de baja',
       cancelButtonLabel: 'Cancelar',
       variant: 'danger',
@@ -293,14 +294,16 @@ describe('ListadoClientes', () => {
     expect(component['clientePagoSeleccionado']()).toBeNull();
   });
 
-  it('onDarDeBajaCliente llama a console.error cuando darDeBaja falla (línea 122)', () => {
+  it('onDarDeBajaCliente llama a errorHandler.handle cuando darDeBaja falla', () => {
+    const error = new Error('Error de red');
     const row = mockPageResponse.content[0];
+
     mockConfirmDialogService.open.mockReturnValue(of(true));
-    mockClientesService.darDeBaja.mockReturnValue(throwError(() => new Error('Error de red')));
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+    mockClientesService.darDeBaja.mockReturnValue(throwError(() => error));
+
     component['onDarDeBajaCliente'](row);
-    expect(consoleSpy).toHaveBeenCalledWith('Error al dar de baja cliente', expect.any(Error));
-    consoleSpy.mockRestore();
+
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
   });
 });
 

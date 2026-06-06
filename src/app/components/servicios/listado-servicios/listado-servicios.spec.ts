@@ -16,6 +16,7 @@ import {
   TableStateService,
 } from '../../../shared';
 import { EstadoServicio, ReservaProximaDto, ServicioRow } from '../models/servicio.model';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 interface ServicioRespuestaDtoMock {
   id: number;
@@ -107,6 +108,9 @@ describe('ListadoServicios', () => {
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
+  let mockErrorHandler: {
+    handle: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     mockServicioService = {
@@ -116,6 +120,7 @@ describe('ListadoServicios', () => {
     };
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
+    mockErrorHandler = { handle: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [ListadoServicios],
@@ -130,6 +135,7 @@ describe('ListadoServicios', () => {
             createUrlTree: vi.fn().mockReturnValue({}),
           },
         },
+        { provide: ErrorHandlerService, useValue: mockErrorHandler },
       ],
     }).compileComponents();
 
@@ -306,16 +312,14 @@ describe('ListadoServicios', () => {
       expect(spy).toHaveBeenCalled();
     });
 
-    it('llama a console.error cuando actualizarHabilitacion falla (línea 146)', () => {
-      mockServicioService.actualizarHabilitacion.mockReturnValue(
-        throwError(() => new Error('Error de red')),
-      );
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+    it('llama a errorHandler.handle cuando actualizarHabilitacion falla al habilitar', () => {
+      const error = new Error('Error de red');
+
+      mockServicioService.actualizarHabilitacion.mockReturnValue(throwError(() => error));
 
       component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error al habilitar servicio', expect.any(Error));
-      consoleSpy.mockRestore();
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
     });
   });
 
@@ -469,20 +473,18 @@ describe('ListadoServicios', () => {
   });
 
   describe('deshabilitar — error path', () => {
-    it('llama a console.error y limpia el estado cuando actualizarHabilitacion falla (líneas 192-194)', () => {
+    it('llama a errorHandler.handle y limpia el estado cuando actualizarHabilitacion falla al deshabilitar', () => {
+      const error = new Error('Error de red');
+
       component['servicioSeleccionado'].set(rowHabilitado);
       component['reservasProximas'].set(mockReservas);
-      mockServicioService.actualizarHabilitacion.mockReturnValue(
-        throwError(() => new Error('Error de red')),
-      );
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+      mockServicioService.actualizarHabilitacion.mockReturnValue(throwError(() => error));
 
       component['deshabilitar']({ habilitado: false, reservasACancelar: [] });
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error al deshabilitar servicio', expect.any(Error));
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
       expect(component['servicioSeleccionado']()).toBeNull();
       expect(component['reservasProximas']()).toEqual([]);
-      consoleSpy.mockRestore();
     });
   });
 });

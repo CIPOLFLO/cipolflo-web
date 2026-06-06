@@ -64,6 +64,12 @@ describe('ConfirmDialogService', () => {
       expect(await promise2).toBe(false);
     });
 
+    it('should emit false on first observable when open() is called again before resolving', async () => {
+      const promise1 = firstValueFrom(service.open(baseConfig));
+      service.open({ title: 'Segundo', message: 'Segundo' });
+      expect(await promise1).toBe(false);
+    });
+
     it('should emit on dialogState$ for each open()', async () => {
       const emissions: ConfirmDialogData[] = [];
       const sub = service.dialogState$.subscribe((c) => emissions.push(c));
