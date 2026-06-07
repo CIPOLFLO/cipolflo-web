@@ -124,7 +124,7 @@ describe('ListadoFinanzas', () => {
 
     it('debería ejecutar onEliminarFinanza al seleccionar Eliminar', () => {
       mockConfirmDialogService.open.mockReturnValue(of(false));
-      const eliminarSpy = vi.spyOn(component as any, 'onEliminarFinanza');
+      const eliminarSpy = vi.spyOn(component, 'onEliminarFinanza' as keyof ListadoFinanzas);
 
       component['rowActions'](mockRow)[1].command?.(mockRow);
 
