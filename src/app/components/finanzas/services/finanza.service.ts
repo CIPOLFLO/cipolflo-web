@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-import { PageResponse, TableQueryParams } from '../../../shared';
+import { PageResponse, TableQueryParams, Procedencia } from '../../../shared';
 import {
   Concepto,
   FinanzaCrearDto,
@@ -9,7 +9,6 @@ import {
   FinanzaRespuestaDto,
   TipoMovimiento,
 } from '../models/finanza.model';
-import { Procedencia } from '../../../shared';
 
 @Injectable({
   providedIn: 'root',

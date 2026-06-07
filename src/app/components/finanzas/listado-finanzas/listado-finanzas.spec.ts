@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, firstValueFrom } from 'rxjs';
 import { Concepto } from '../models/finanza.model';
 import { ConfirmDialogService } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -11,6 +11,14 @@ describe('ListadoFinanzas', () => {
   let component: ListadoFinanzas;
   let fixture: ComponentFixture<ListadoFinanzas>;
   let router: Router;
+
+  const mockRow = {
+    id: 1,
+    concepto: Concepto.PagoReserva,
+    fecha: '14/3/2026',
+    importeSignado: 15000,
+    descripcion: 'Pago de alquiler',
+  };
 
   let mockFinanzaService: {
     getAll: ReturnType<typeof vi.fn>;
@@ -76,87 +84,97 @@ describe('ListadoFinanzas', () => {
 
     expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', 'nuevo']);
   });
-  it('debería incluir la acción Ver detalle', () => {
-    const row = {
-      id: 1,
-      concepto: Concepto.PagoReserva,
-      fecha: '14/3/2026',
-      importeSignado: 15000,
-      descripcion: 'Pago de alquiler',
-    };
 
-    const actions = component['rowActions'](row);
-    expect(actions.some((action) => action.label === 'Ver detalle')).toBe(true);
-  });
-  it('debería incluir la acción Eliminar', () => {
-    const row = {
-      id: 1,
-      concepto: Concepto.PagoReserva,
-      fecha: '14/3/2026',
-      importeSignado: 15000,
-      descripcion: 'Pago de alquiler',
-    };
+  describe('loadDataFn', () => {
+    it('debería manejar error y devolver página vacía', async () => {
+      const error = new Error('Error al cargar finanzas');
 
-    const actions = component['rowActions'](row);
+      mockFinanzaService.getAll.mockReturnValue(throwError(() => error));
 
-    expect(actions.some((action) => action.label === 'Eliminar')).toBe(true);
+      const response = await firstValueFrom(
+        component['loadDataFn']({ page: 0, size: 10, filters: {} }),
+      );
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+      expect(response.content).toEqual([]);
+      expect(response.totalElements).toBe(0);
+    });
   });
 
-  it('onEliminarFinanza debería abrir el diálogo y eliminar si se confirma', () => {
-    const row = {
-      id: 1,
-      concepto: Concepto.PagoReserva,
-      fecha: '14/3/2026',
-      importeSignado: 15000,
-      descripcion: 'Pago de alquiler',
-    };
+  describe('rowActions', () => {
+    it('debería incluir la acción Ver detalle', () => {
+      const actions = component['rowActions'](mockRow);
 
-    mockConfirmDialogService.open.mockReturnValue(of(true));
-
-    component['onEliminarFinanza'](row);
-
-    expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
-      title: 'Eliminar movimiento',
-      message: '¿Confirma que quiere eliminar este movimiento financiero?',
-      confirmButtonLabel: 'Eliminar',
-      cancelButtonLabel: 'Cancelar',
-      variant: 'danger',
+      expect(actions.some((action) => action.label === 'Ver detalle')).toBe(true);
     });
 
-    expect(mockFinanzaService.eliminar).toHaveBeenCalledWith(row.id);
+    it('debería navegar al detalle al ejecutar Ver detalle', () => {
+      const navigateSpy = vi.spyOn(router, 'navigate');
+
+      component['rowActions'](mockRow)[0].command?.(mockRow);
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', mockRow.id]);
+    });
+
+    it('debería incluir la acción Eliminar', () => {
+      const actions = component['rowActions'](mockRow);
+
+      expect(actions.some((action) => action.label === 'Eliminar')).toBe(true);
+    });
+
+    it('debería ejecutar onEliminarFinanza al seleccionar Eliminar', () => {
+      mockConfirmDialogService.open.mockReturnValue(of(false));
+      const eliminarSpy = vi.spyOn(component as any, 'onEliminarFinanza');
+
+      component['rowActions'](mockRow)[1].command?.(mockRow);
+
+      expect(eliminarSpy).toHaveBeenCalledWith(mockRow);
+    });
   });
 
-  it('onEliminarFinanza no debería eliminar si se cancela el diálogo', () => {
-    const row = {
-      id: 1,
-      concepto: Concepto.PagoReserva,
-      fecha: '14/3/2026',
-      importeSignado: 15000,
-      descripcion: 'Pago de alquiler',
-    };
+  describe('onEliminarFinanza', () => {
+    it('debería abrir el diálogo y eliminar si se confirma', () => {
+      mockConfirmDialogService.open.mockReturnValue(of(true));
 
-    mockConfirmDialogService.open.mockReturnValue(of(false));
+      component['onEliminarFinanza'](mockRow);
 
-    component['onEliminarFinanza'](row);
+      expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+        title: 'Eliminar movimiento',
+        message: '¿Confirma que quiere eliminar este movimiento financiero?',
+        confirmButtonLabel: 'Eliminar',
+        cancelButtonLabel: 'Cancelar',
+        variant: 'danger',
+      });
 
-    expect(mockFinanzaService.eliminar).not.toHaveBeenCalled();
+      expect(mockFinanzaService.eliminar).toHaveBeenCalledWith(mockRow.id);
+    });
+
+    it('no debería eliminar si se cancela el diálogo', () => {
+      mockConfirmDialogService.open.mockReturnValue(of(false));
+
+      component['onEliminarFinanza'](mockRow);
+
+      expect(mockFinanzaService.eliminar).not.toHaveBeenCalled();
+    });
+
+    it('debería manejar el error si falla eliminar', () => {
+      const error = new Error('Error al eliminar');
+
+      mockConfirmDialogService.open.mockReturnValue(of(true));
+      mockFinanzaService.eliminar.mockReturnValue(throwError(() => error));
+
+      component['onEliminarFinanza'](mockRow);
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    });
   });
 
-  it('onEliminarFinanza debería manejar el error si falla eliminar', () => {
-    const error = new Error('Error al eliminar');
-    const row = {
-      id: 1,
-      concepto: Concepto.PagoReserva,
-      fecha: '14/3/2026',
-      importeSignado: 15000,
-      descripcion: 'Pago de alquiler',
-    };
+  it('onFilterChange debería actualizar filtros', () => {
+    const tableState = component['tableState'];
+    const updateFiltersSpy = vi.spyOn(tableState, 'updateFilters');
 
-    mockConfirmDialogService.open.mockReturnValue(of(true));
-    mockFinanzaService.eliminar.mockReturnValue(throwError(() => error));
+    component['onFilterChange']({ concepto: 'Servicio' });
 
-    component['onEliminarFinanza'](row);
-
-    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    expect(updateFiltersSpy).toHaveBeenCalledWith({ concepto: 'Servicio' });
   });
 });

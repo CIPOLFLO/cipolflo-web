@@ -9,6 +9,7 @@ import {
   PageLayout,
   RowAction,
   TableStateService,
+  ConfirmDialogService,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { FinanzasColumnsService } from '../services/finanzas-columns.service';
@@ -16,7 +17,6 @@ import { FinanzasFilterService } from '../services/finanzas-filter.service';
 import { FinanzaService } from '../services/finanza.service';
 import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
-import { ConfirmDialogService } from '../../../shared';
 
 @Component({
   selector: 'app-listado-finanzas',
