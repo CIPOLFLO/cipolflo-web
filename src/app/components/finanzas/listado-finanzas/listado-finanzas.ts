@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, filter, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -38,6 +39,7 @@ export class ListadoFinanzas {
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
   private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -112,6 +114,7 @@ export class ListadoFinanzas {
       .pipe(
         filter(Boolean),
         switchMap(() => this.finanzaService.eliminar(finanza.id)),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: () => this.recargarTabla(),
@@ -120,6 +123,7 @@ export class ListadoFinanzas {
         },
       });
   }
+
   private recargarTabla(): void {
     this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
