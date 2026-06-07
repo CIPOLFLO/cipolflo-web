@@ -5,4 +5,4 @@
     auth0ClientId: '${AUTH0_CLIENT_ID}',
     auth0Audience: '${AUTH0_AUDIENCE}',
   };
-}(this));
+})(this);
