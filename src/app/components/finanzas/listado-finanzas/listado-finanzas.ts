@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { catchError, map, of } from 'rxjs';
+import { catchError, map, of, filter, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -16,6 +16,7 @@ import { FinanzasFilterService } from '../services/finanzas-filter.service';
 import { FinanzaService } from '../services/finanza.service';
 import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
+import { ConfirmDialogService } from '../../../shared';
 
 @Component({
   selector: 'app-listado-finanzas',
@@ -36,6 +37,7 @@ export class ListadoFinanzas {
   private readonly errorHandler = inject(ErrorHandlerService);
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -83,6 +85,11 @@ export class ListadoFinanzas {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/finanzas', row.id]),
     },
+    {
+      label: 'Eliminar',
+      icon: 'pi pi-trash',
+      command: () => this.onEliminarFinanza(row),
+    },
   ];
 
   protected onNuevoMovimiento(): void {
@@ -91,5 +98,29 @@ export class ListadoFinanzas {
 
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
+  }
+
+  protected onEliminarFinanza(finanza: FinanzaRow): void {
+    this.confirmDialogService
+      .open({
+        title: 'Eliminar movimiento',
+        message: '¿Confirma que quiere eliminar este movimiento financiero?',
+        confirmButtonLabel: 'Eliminar',
+        cancelButtonLabel: 'Cancelar',
+        variant: 'danger',
+      })
+      .pipe(
+        filter(Boolean),
+        switchMap(() => this.finanzaService.eliminar(finanza.id)),
+      )
+      .subscribe({
+        next: () => this.recargarTabla(),
+        error: (err) => {
+          this.errorHandler.handle(err);
+        },
+      });
+  }
+  private recargarTabla(): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
 }

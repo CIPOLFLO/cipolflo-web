@@ -80,4 +80,10 @@ export class FinanzaService extends BaseHttpService {
       tipoMovimiento: TipoMovimiento.Ingreso,
     });
   }
+
+  eliminar(id: number): Observable<void> {
+    // TODO: reemplazar cuando el backend esté disponible
+    console.log('Eliminar finanza', id);
+    return of(void 0);
+  }
 }
