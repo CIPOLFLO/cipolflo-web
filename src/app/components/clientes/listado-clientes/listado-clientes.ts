@@ -12,8 +12,6 @@ import {
   RowAction,
   TableStateService,
 } from '../../../shared';
-import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
-import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
@@ -22,6 +20,7 @@ import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { UserService } from '../../../core/services/user.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -44,8 +43,8 @@ export class ListadoClientes {
   private readonly router = inject(Router);
   protected readonly breakpoint = inject(BreakpointService);
   protected readonly userService = inject(UserService);
-  protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
   private readonly errorHandler = inject(ErrorHandlerService);
+  protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -62,20 +61,7 @@ export class ListadoClientes {
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params).pipe(
-      catchError((err) => {
-        this.errorHandler.handle(err);
-        return of({
-          content: [],
-          page: params.page,
-          size: params.size,
-          totalElements: 0,
-          totalPages: 0,
-          first: true,
-          last: true,
-        });
-      }),
-    );
+    this.clientesService.getAll(params);
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
