@@ -16,42 +16,48 @@
 6. [Clientes — DTOs](#clientes--dtos)
 7. [Manejo de errores](#manejo-de-errores)
 
-
 ---
 
 ## Enums
 
 ### `Procedencia`
+
 ```
 SEDE | CAMPING
 ```
 
 ### `EstadoServicio`
+
 ```
 HABILITADO | DESHABILITADO
 ```
 
 ### `ModalidadPrecio`
+
 ```
 POR_DIA | POR_PERSONA | POR_DIA_POR_PERSONA | POR_UNIDAD | POR_HORA
 ```
 
 ### `EstadoReserva`
+
 ```
 PENDIENTE | CONFIRMADA | EN_CURSO | FINALIZADA | CANCELADA
 ```
 
 ### `TipoCliente`
+
 ```
 SOCIO | PARTICULAR
 ```
 
 ### `EstadoSocio`
+
 ```
 ACTIVO | INACTIVO | DE_BAJA
 ```
 
 ### `MetodoCobro`
+
 ```
 COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 ```
@@ -61,19 +67,23 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 ## DTOs Compartidos
 
 ### `PageRequestDto` — query params de paginación
-| Campo        | Tipo    | Obligatorio | Validación                        | Default |
-|--------------|---------|-------------|-----------------------------------|---------|
-| `page`       | integer | No          | >= 0                              | 0       |
-| `size`       | integer | No          | > 0, máximo 100                   | 1       |
-| `sortField`  | string  | No          | Valores permitidos según endpoint | —       |
-| `sortOrder`  | string  | No          | `ASC` o `DESC`                    | `ASC`   |
+
+| Campo       | Tipo    | Obligatorio | Validación                        | Default |
+| ----------- | ------- | ----------- | --------------------------------- | ------- |
+| `page`      | integer | No          | >= 0                              | 0       |
+| `size`      | integer | No          | > 0, máximo 100                   | 1       |
+| `sortField` | string  | No          | Valores permitidos según endpoint | —       |
+| `sortOrder` | string  | No          | `ASC` o `DESC`                    | `ASC`   |
 
 > Si `sortField` no se envía o está vacío, los resultados no tienen ordenamiento explícito. Si `sortField` se envía y `sortOrder` se omite, se usa `ASC` por defecto.
 
 ### `PageResponse<T>` — respuesta paginada
+
 ```json
 {
-  "content": [ /* array de T */ ],
+  "content": [
+    /* array de T */
+  ],
   "page": 0,
   "size": 10,
   "totalElements": 42,
@@ -88,21 +98,23 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 ## Servicios — Endpoints
 
 ### `GET /api/v1/servicios`
+
 Retorna el listado paginado de servicios con filtros opcionales.
 
 **Query params** (todos opcionales):
 
-| Param         | Tipo            | Validación                                             |
-|---------------|-----------------|--------------------------------------------------------|
-| `nombre`      | string          | máx 100 caracteres                                     |
-| `procedencia` | `Procedencia`   | —                                                      |
-| `estado`      | `EstadoServicio`| —                                                      |
-| `page`        | integer         | >= 0, default 0                                        |
-| `size`        | integer         | 1–100, default 1                                       |
-| `sortField`   | string          | `nombre`, `precioParticular`, `precioSocio`            |
-| `sortOrder`   | string          | `ASC` o `DESC`, default `ASC`                          |
+| Param         | Tipo             | Validación                                  |
+| ------------- | ---------------- | ------------------------------------------- |
+| `nombre`      | string           | máx 100 caracteres                          |
+| `procedencia` | `Procedencia`    | —                                           |
+| `estado`      | `EstadoServicio` | —                                           |
+| `page`        | integer          | >= 0, default 0                             |
+| `size`        | integer          | 1–100, default 1                            |
+| `sortField`   | string           | `nombre`, `precioParticular`, `precioSocio` |
+| `sortOrder`   | string           | `ASC` o `DESC`, default `ASC`               |
 
 **Respuesta 200:**
+
 ```json
 {
   "content": [
@@ -110,8 +122,8 @@ Retorna el listado paginado de servicios con filtros opcionales.
       "id": 1,
       "nombre": "Cancha de tenis",
       "procedencia": "SEDE",
-      "precioParticular": 5000.00,
-      "precioSocio": 2500.00,
+      "precioParticular": 5000.0,
+      "precioSocio": 2500.0,
       "modalidadPrecio": "POR_HORA",
       "estado": "HABILITADO"
     }
@@ -128,19 +140,21 @@ Retorna el listado paginado de servicios con filtros opcionales.
 ---
 
 ### `GET /api/v1/servicios/{id}`
+
 Retorna el detalle completo de un servicio.
 
 **Path param:** `id` — integer positivo
 
 **Respuesta 200:**
+
 ```json
 {
   "id": 1,
   "nombre": "Cancha de tenis",
   "procedencia": "SEDE",
   "cantidad": null,
-  "precioSocio": 2500.00,
-  "precioParticular": 5000.00,
+  "precioSocio": 2500.0,
+  "precioParticular": 5000.0,
   "capacidad": 4,
   "estado": "HABILITADO",
   "modalidadPrecio": "POR_HORA",
@@ -154,30 +168,32 @@ Retorna el detalle completo de un servicio.
 ---
 
 ### `POST /api/v1/servicios`
+
 Registra un nuevo servicio.
 
 **Body** (`application/json`):
+
 ```json
 {
   "nombre": "Pileta olímpica",
   "procedencia": "CAMPING",
-  "precioSocio": 1000.00,
-  "precioParticular": 2000.00,
+  "precioSocio": 1000.0,
+  "precioParticular": 2000.0,
   "modalidadPrecio": "POR_DIA",
   "capacidad": 50,
   "cantidad": null
 }
 ```
 
-| Campo             | Tipo             | Obligatorio | Validación                   |
-|-------------------|------------------|-------------|------------------------------|
-| `nombre`          | string           | Sí          | no vacío                     |
-| `procedencia`     | `Procedencia`    | Sí          | —                            |
-| `precioSocio`     | number (decimal) | Sí          | > 0                          |
-| `precioParticular`| number (decimal) | Sí          | > 0                          |
-| `modalidadPrecio` | `ModalidadPrecio`| Sí          | —                            |
-| `capacidad`       | integer          | No          | > 0 si se envía              |
-| `cantidad`        | integer          | No          | > 0 si se envía              |
+| Campo              | Tipo              | Obligatorio | Validación      |
+| ------------------ | ----------------- | ----------- | --------------- |
+| `nombre`           | string            | Sí          | no vacío        |
+| `procedencia`      | `Procedencia`     | Sí          | —               |
+| `precioSocio`      | number (decimal)  | Sí          | > 0             |
+| `precioParticular` | number (decimal)  | Sí          | > 0             |
+| `modalidadPrecio`  | `ModalidadPrecio` | Sí          | —               |
+| `capacidad`        | integer           | No          | > 0 si se envía |
+| `cantidad`         | integer           | No          | > 0 si se envía |
 
 > `capacidad` y `cantidad` son mutuamente excluyentes según el tipo de servicio. Enviar `null` o no incluir el campo que no aplica.
 
@@ -186,30 +202,32 @@ Registra un nuevo servicio.
 ---
 
 ### `PUT /api/v1/servicios/{id}`
+
 Reemplaza los datos de un servicio existente.
 
 **Path param:** `id` — integer positivo
 
 **Body** (`application/json`):
+
 ```json
 {
   "nombre": "Pileta olímpica",
-  "precioParticular": 2500.00,
-  "precioSocio": 1200.00,
+  "precioParticular": 2500.0,
+  "precioSocio": 1200.0,
   "modalidadPrecio": "POR_DIA",
   "capacidad": 60,
   "cantidad": null
 }
 ```
 
-| Campo             | Tipo             | Obligatorio | Validación                  |
-|-------------------|------------------|-------------|-----------------------------|
-| `nombre`          | string           | Sí          | no vacío                    |
-| `precioParticular`| number (decimal) | Sí          | > 0                         |
-| `precioSocio`     | number (decimal) | Sí          | > 0                         |
-| `modalidadPrecio` | `ModalidadPrecio`| Sí          | —                           |
-| `capacidad`       | integer          | No          | >= 0 si se envía            |
-| `cantidad`        | integer          | No          | >= 0 si se envía            |
+| Campo              | Tipo              | Obligatorio | Validación       |
+| ------------------ | ----------------- | ----------- | ---------------- |
+| `nombre`           | string            | Sí          | no vacío         |
+| `precioParticular` | number (decimal)  | Sí          | > 0              |
+| `precioSocio`      | number (decimal)  | Sí          | > 0              |
+| `modalidadPrecio`  | `ModalidadPrecio` | Sí          | —                |
+| `capacidad`        | integer           | No          | >= 0 si se envía |
+| `cantidad`         | integer           | No          | >= 0 si se envía |
 
 > `procedencia` no es modificable. `capacidad` y `cantidad` son mutuamente excluyentes; enviar `null` o no incluir el que no aplica.
 
@@ -218,11 +236,13 @@ Reemplaza los datos de un servicio existente.
 ---
 
 ### `PATCH /api/v1/servicios/{id}/habilitacion`
+
 Habilita o deshabilita un servicio. Al deshabilitar puede haber reservas próximas que cancelar.
 
 **Path param:** `id` — integer positivo
 
 **Body** (`application/json`):
+
 ```json
 {
   "habilitado": false,
@@ -231,22 +251,24 @@ Habilita o deshabilita un servicio. Al deshabilitar puede haber reservas próxim
 }
 ```
 
-| Campo                | Tipo       | Obligatorio | Descripción                                                           |
-|----------------------|------------|-------------|-----------------------------------------------------------------------|
-| `habilitado`         | boolean    | Sí          | `true` = habilitar, `false` = deshabilitar                           |
-| `reservasACancelar`  | integer[]  | No          | IDs de reservas a cancelar al deshabilitar (puede ser array vacío)   |
-| `confirmarDevolucion`| boolean    | No          | Confirmar si se realiza devolución de pagos al cancelar reservas     |
+| Campo                 | Tipo      | Obligatorio | Descripción                                                        |
+| --------------------- | --------- | ----------- | ------------------------------------------------------------------ |
+| `habilitado`          | boolean   | Sí          | `true` = habilitar, `false` = deshabilitar                         |
+| `reservasACancelar`   | integer[] | No          | IDs de reservas a cancelar al deshabilitar (puede ser array vacío) |
+| `confirmarDevolucion` | boolean   | No          | Confirmar si se realiza devolución de pagos al cancelar reservas   |
 
 **Respuesta 200:** misma estructura que `GET /api/v1/servicios/{id}`
 
 ---
 
 ### `GET /api/v1/servicios/{id}/reservas-proximas`
+
 Retorna las reservas futuras/activas asociadas al servicio (útil antes de deshabilitarlo).
 
 **Path param:** `id` — integer positivo
 
 **Respuesta 200:**
+
 ```json
 [
   {
@@ -260,14 +282,14 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ]
 ```
 
-| Campo         | Tipo            | Descripción                         |
-|---------------|-----------------|-------------------------------------|
-| `id`          | integer         | ID de la reserva                    |
-| `clienteId`   | integer         | ID del cliente                      |
-| `fechaEntrada`| string (Instant)| Fecha/hora de entrada UTC           |
-| `fechaSalida` | string (Instant)| Fecha/hora de salida UTC            |
-| `pago`        | boolean         | Si la reserva fue pagada            |
-| `estado`      | `EstadoReserva` | Estado actual de la reserva         |
+| Campo          | Tipo             | Descripción                 |
+| -------------- | ---------------- | --------------------------- |
+| `id`           | integer          | ID de la reserva            |
+| `clienteId`    | integer          | ID del cliente              |
+| `fechaEntrada` | string (Instant) | Fecha/hora de entrada UTC   |
+| `fechaSalida`  | string (Instant) | Fecha/hora de salida UTC    |
+| `pago`         | boolean          | Si la reserva fue pagada    |
+| `estado`       | `EstadoReserva`  | Estado actual de la reserva |
 
 ---
 
@@ -276,6 +298,7 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ### Request DTOs
 
 #### `ServicioRegistroRequestDto` — usado en `POST /api/v1/servicios`
+
 ```typescript
 {
   nombre: string           // obligatorio, no vacío
@@ -289,6 +312,7 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ```
 
 #### `ModificacionServicioDto` — usado en `PUT /api/v1/servicios/{id}`
+
 ```typescript
 {
   nombre: string           // obligatorio, no vacío
@@ -301,6 +325,7 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ```
 
 #### `ServicioRequestDto` — usado en `PATCH /api/v1/servicios/{id}/habilitacion`
+
 ```typescript
 {
   habilitado: boolean          // obligatorio
@@ -310,6 +335,7 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ```
 
 #### `ListadoServiciosRequestDto` — query params en `GET /api/v1/servicios`
+
 ```typescript
 {
   nombre?: string          // opcional, máx 100 chars
@@ -321,46 +347,49 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ### Response DTOs
 
 #### `ServicioResponseDto` — respuesta de detalle
+
 ```typescript
 {
-  id: number
-  nombre: string
-  procedencia: Procedencia
-  cantidad: number | null
-  precioSocio: number
-  precioParticular: number
-  capacidad: number | null
-  estado: EstadoServicio
-  modalidadPrecio: ModalidadPrecio
-  createdAt: string    // Instant ISO-8601 UTC
-  updatedAt: string    // Instant ISO-8601 UTC
-  createdBy: string
-  updatedBy: string
+  id: number;
+  nombre: string;
+  procedencia: Procedencia;
+  cantidad: number | null;
+  precioSocio: number;
+  precioParticular: number;
+  capacidad: number | null;
+  estado: EstadoServicio;
+  modalidadPrecio: ModalidadPrecio;
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
+  createdBy: string;
+  updatedBy: string;
 }
 ```
 
 #### `ListadoServiciosResponseDto` — ítem dentro del listado paginado
+
 ```typescript
 {
-  id: number
-  nombre: string
-  procedencia: Procedencia
-  precioParticular: number
-  precioSocio: number
-  modalidadPrecio: ModalidadPrecio
-  estado: EstadoServicio
+  id: number;
+  nombre: string;
+  procedencia: Procedencia;
+  precioParticular: number;
+  precioSocio: number;
+  modalidadPrecio: ModalidadPrecio;
+  estado: EstadoServicio;
 }
 ```
 
 #### `ReservaProximaResponseDto` — ítem en reservas próximas
+
 ```typescript
 {
-  id: number
-  clienteId: number
-  fechaEntrada: string   // Instant ISO-8601 UTC
-  fechaSalida: string    // Instant ISO-8601 UTC
-  pago: boolean
-  estado: EstadoReserva
+  id: number;
+  clienteId: number;
+  fechaEntrada: string; // Instant ISO-8601 UTC
+  fechaSalida: string; // Instant ISO-8601 UTC
+  pago: boolean;
+  estado: EstadoReserva;
 }
 ```
 
@@ -369,24 +398,26 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 ## Clientes — Endpoints
 
 ### `GET /api/v1/clientes`
+
 Retorna el listado paginado de clientes con filtros opcionales.
 
 **Query params** (todos opcionales):
 
-| Param           | Tipo           | Validación                                                                                 |
-|-----------------|----------------|--------------------------------------------------------------------------------------------|
-| `tipoCliente`   | `TipoCliente`  | —                                                                                          |
-| `nombre`        | string         | máx 100 caracteres                                                                         |
-| `identificador` | string         | Solo dígitos (`12345678`) o formato parcial de cédula (`1.234`, `1.234.567-8`). Cualquier otro formato devuelve resultado vacío. |
-| `estado`        | `EstadoSocio`  | Solo aplica a socios; combinarlo con `tipoCliente=PARTICULAR` devuelve resultado vacío     |
-| `page`          | integer        | >= 0, default 0                                                                            |
-| `size`          | integer        | 1–100, default 1                                                                           |
-| `sortField`     | string         | `nombreCompleto`, `cedula`, `numeroSocio`                                                  |
-| `sortOrder`     | string         | `ASC` o `DESC`, default `ASC`                                                              |
+| Param           | Tipo          | Validación                                                                                                                       |
+| --------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `tipoCliente`   | `TipoCliente` | —                                                                                                                                |
+| `nombre`        | string        | máx 100 caracteres                                                                                                               |
+| `identificador` | string        | Solo dígitos (`12345678`) o formato parcial de cédula (`1.234`, `1.234.567-8`). Cualquier otro formato devuelve resultado vacío. |
+| `estado`        | `EstadoSocio` | Solo aplica a socios; combinarlo con `tipoCliente=PARTICULAR` devuelve resultado vacío                                           |
+| `page`          | integer       | >= 0, default 0                                                                                                                  |
+| `size`          | integer       | 1–100, default 1                                                                                                                 |
+| `sortField`     | string        | `nombreCompleto`, `cedula`, `numeroSocio`                                                                                        |
+| `sortOrder`     | string        | `ASC` o `DESC`, default `ASC`                                                                                                    |
 
 > El campo `identificador` busca por cédula o por número de socio usando el prefijo del valor ingresado (ej: `123` devuelve clientes cuya cédula o nro de socio comience con `123`). Los puntos y guiones del formato de cédula se normalizan automáticamente antes de la búsqueda.
 
 **Respuesta 200:**
+
 ```json
 {
   "content": [
@@ -421,11 +452,13 @@ Retorna el listado paginado de clientes con filtros opcionales.
 ---
 
 ### `GET /api/v1/clientes/{id}`
+
 Retorna el detalle completo de un cliente.
 
 **Path param:** `id` — integer positivo
 
 **Respuesta 200:**
+
 ```json
 {
   "id": 1,
@@ -455,6 +488,7 @@ Retorna el detalle completo de un cliente.
 ---
 
 ### `PATCH /api/v1/clientes/socios/{id}/baja`
+
 Da de baja a un socio y cancela automáticamente todas sus reservas futuras en estado `PENDIENTE` o `CONFIRMADA` (incluso las pagas).
 
 **Path param:** `id` — integer positivo
@@ -463,19 +497,21 @@ Da de baja a un socio y cancela automáticamente todas sus reservas futuras en e
 
 **Errores:**
 
-| HTTP Status | Código                  | Cuándo ocurre                                    |
-|-------------|-------------------------|--------------------------------------------------|
-| 400         | `ID_INVALIDO`           | El `id` no es un número positivo                 |
-| 404         | `SOCIO_NO_ENCONTRADO`   | No existe un socio con ese `id`                  |
+| HTTP Status | Código                | Cuándo ocurre                    |
+| ----------- | --------------------- | -------------------------------- |
+| 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
+| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
 
 ---
 
 ### `PUT /api/v1/clientes/particulares/{id}`
+
 Modifica los datos de un cliente particular.
 
 **Path param:** `id` — integer positivo. Si no es positivo retorna 400 con código `ID_INVALIDO`.
 
 **Body** (`application/json`):
+
 ```json
 {
   "cedula": "12345672",
@@ -486,15 +522,16 @@ Modifica los datos de un cliente particular.
 }
 ```
 
-| Campo            | Tipo   | Obligatorio | Validación                                      |
-|------------------|--------|-------------|-------------------------------------------------|
-| `cedula`         | string | Sí          | no vacío, algoritmo de cédula uruguaya, única   |
-| `nombreCompleto` | string | Sí          | no vacío                                        |
-| `telefono`       | string | Sí          | no vacío                                        |
-| `mail`           | string | No          | formato email válido si se envía, único         |
-| `notas`          | string | No          | —                                               |
+| Campo            | Tipo   | Obligatorio | Validación                                    |
+| ---------------- | ------ | ----------- | --------------------------------------------- |
+| `cedula`         | string | Sí          | no vacío, algoritmo de cédula uruguaya, única |
+| `nombreCompleto` | string | Sí          | no vacío                                      |
+| `telefono`       | string | Sí          | no vacío                                      |
+| `mail`           | string | No          | formato email válido si se envía, único       |
+| `notas`          | string | No          | —                                             |
 
 **Respuestas:**
+
 - `200` — cliente modificado; mismo body que `GET /api/v1/clientes/{id}`
 - `400` — campo obligatorio faltante o vacío (código `SOLICITUD_INVALIDA`), o id inválido (código `ID_INVALIDO`)
 - `404` — el id no corresponde a un Particular (no existe o es un Socio) (código `CLIENTE_NO_ENCONTRADO`)
@@ -502,11 +539,13 @@ Modifica los datos de un cliente particular.
 ---
 
 ### `PUT /api/v1/clientes/socios/{id}`
+
 Modifica los datos de un socio.
 
 **Path param:** `id` — integer positivo. Si no es positivo retorna 400 con código `ID_INVALIDO`.
 
 **Body** (`application/json`):
+
 ```json
 {
   "cedula": "12345678",
@@ -523,23 +562,24 @@ Modifica los datos de un socio.
 }
 ```
 
-| Campo             | Tipo           | Obligatorio | Validación                                      |
-|-------------------|----------------|-------------|-------------------------------------------------|
-| `cedula`          | string         | Sí          | no vacío, algoritmo de cédula uruguaya, única   |
-| `nombreCompleto`  | string         | Sí          | no vacío                                        |
-| `telefono`        | string         | Sí          | no vacío                                        |
-| `mail`            | string         | No          | formato email válido si se envía, único         |
-| `notas`           | string         | No          | —          |
-| `fechaNacimiento` | string (date)  | Sí          | `yyyy-MM-dd` |
-| `pais`            | string         | Sí          | no vacío   |
-| `departamento`    | string         | Sí          | no vacío   |
-| `ciudad`          | string         | Sí          | no vacío   |
-| `direccion`       | string         | Sí          | no vacío   |
-| `metodoCobro`     | `MetodoCobro`  | Sí          | —          |
+| Campo             | Tipo          | Obligatorio | Validación                                    |
+| ----------------- | ------------- | ----------- | --------------------------------------------- |
+| `cedula`          | string        | Sí          | no vacío, algoritmo de cédula uruguaya, única |
+| `nombreCompleto`  | string        | Sí          | no vacío                                      |
+| `telefono`        | string        | Sí          | no vacío                                      |
+| `mail`            | string        | No          | formato email válido si se envía, único       |
+| `notas`           | string        | No          | —                                             |
+| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd`                                  |
+| `pais`            | string        | Sí          | no vacío                                      |
+| `departamento`    | string        | Sí          | no vacío                                      |
+| `ciudad`          | string        | Sí          | no vacío                                      |
+| `direccion`       | string        | Sí          | no vacío                                      |
+| `metodoCobro`     | `MetodoCobro` | Sí          | —                                             |
 
 > Campos no modificables: `numeroSocio`, `estado`, `fechaIngreso`, `mesesSinPagar`, `fechaUltimoPago`.
 
 **Respuestas:**
+
 - `200` — socio modificado; mismo body que `GET /api/v1/clientes/{id}`
 - `400` — campo obligatorio faltante o vacío (código `SOLICITUD_INVALIDA`), o id inválido (código `ID_INVALIDO`)
 - `404` — el id no corresponde a un Socio (no existe o es un Particular) (código `CLIENTE_NO_ENCONTRADO`)
@@ -547,9 +587,11 @@ Modifica los datos de un socio.
 ---
 
 ### `POST /api/v1/clientes/socios`
+
 Registra un nuevo cliente de tipo socio.
 
 **Body** (`application/json`):
+
 ```json
 {
   "cedula": "1.234.567-8",
@@ -566,19 +608,19 @@ Registra un nuevo cliente de tipo socio.
 }
 ```
 
-| Campo             | Tipo           | Obligatorio | Validación                                    |
-|-------------------|----------------|-------------|-----------------------------------------------|
-| `cedula`          | string         | Sí          | no vacío, algoritmo de cédula uruguaya, única |
-| `nombreCompleto`  | string         | Sí          | no vacío                                      |
-| `fechaNacimiento` | string (date)  | Sí          | `yyyy-MM-dd`                                  |
-| `telefono`        | string         | Sí          | no vacío                                      |
-| `email`           | string         | No          | formato email válido si se envía, único (case-insensitive) |
-| `metodoCobro`     | `MetodoCobro`  | Sí          | —                                             |
-| `pais`            | string         | Sí          | no vacío                                      |
-| `departamento`    | string         | Sí          | no vacío                                      |
-| `ciudad`          | string         | Sí          | no vacío                                      |
-| `direccion`       | string         | No          | —                                             |
-| `observaciones`   | string         | No          | —                                             |
+| Campo             | Tipo          | Obligatorio | Validación                                                 |
+| ----------------- | ------------- | ----------- | ---------------------------------------------------------- |
+| `cedula`          | string        | Sí          | no vacío, algoritmo de cédula uruguaya, única              |
+| `nombreCompleto`  | string        | Sí          | no vacío                                                   |
+| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd`                                               |
+| `telefono`        | string        | Sí          | no vacío                                                   |
+| `email`           | string        | No          | formato email válido si se envía, único (case-insensitive) |
+| `metodoCobro`     | `MetodoCobro` | Sí          | —                                                          |
+| `pais`            | string        | Sí          | no vacío                                                   |
+| `departamento`    | string        | Sí          | no vacío                                                   |
+| `ciudad`          | string        | Sí          | no vacío                                                   |
+| `direccion`       | string        | No          | —                                                          |
+| `observaciones`   | string        | No          | —                                                          |
 
 > La cédula se normaliza automáticamente (se eliminan puntos y guión). El socio se crea con estado `ACTIVO`, `mesesSinPagar = 0` y `fechaIngreso` igual a la fecha actual. El `numeroSocio` se asigna de forma incremental.
 
@@ -586,14 +628,14 @@ Registra un nuevo cliente de tipo socio.
 
 **Errores:**
 
-| HTTP Status | Código              | Cuándo ocurre                                                 |
-|-------------|---------------------|---------------------------------------------------------------|
-| 400         | `SOLICITUD_INVALIDA`| Campo obligatorio faltante, vacío, o `metodoCobro` inválido  |
-| 400         | `CEDULA_INVALIDA`   | La cédula no cumple el algoritmo de validación uruguayo       |
-| 400         | `CEDULA_DUPLICADA`  | Ya existe un cliente con esa cédula                           |
-| 400         | `EMAIL_INVALIDO`    | El email no tiene formato válido                              |
-| 400         | `EMAIL_DUPLICADO`   | Ya existe un cliente con ese email                            |
-| 401         | —                   | Token ausente, inválido o expirado                            |
+| HTTP Status | Código               | Cuándo ocurre                                               |
+| ----------- | -------------------- | ----------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante, vacío, o `metodoCobro` inválido |
+| 400         | `CEDULA_INVALIDA`    | La cédula no cumple el algoritmo de validación uruguayo     |
+| 400         | `CEDULA_DUPLICADA`   | Ya existe un cliente con esa cédula                         |
+| 400         | `EMAIL_INVALIDO`     | El email no tiene formato válido                            |
+| 400         | `EMAIL_DUPLICADO`    | Ya existe un cliente con ese email                          |
+| 401         | —                    | Token ausente, inválido o expirado                          |
 
 ---
 
@@ -602,6 +644,7 @@ Registra un nuevo cliente de tipo socio.
 ### Request DTOs
 
 #### `RegistroSocioRequestDto` — body en `POST /api/v1/clientes/socios`
+
 ```typescript
 {
   cedula: string              // obligatorio, algoritmo cédula uruguaya, única
@@ -619,6 +662,7 @@ Registra un nuevo cliente de tipo socio.
 ```
 
 #### `ModificacionParticularRequestDto` — body en `PUT /api/v1/clientes/particulares/{id}`
+
 ```typescript
 {
   cedula: string          // obligatorio, algoritmo cédula uruguaya, única
@@ -630,6 +674,7 @@ Registra un nuevo cliente de tipo socio.
 ```
 
 #### `ModificacionSocioRequestDto` — body en `PUT /api/v1/clientes/socios/{id}`
+
 ```typescript
 {
   cedula: string              // obligatorio, algoritmo cédula uruguaya, única
@@ -647,6 +692,7 @@ Registra un nuevo cliente de tipo socio.
 ```
 
 #### `ListadoClientesRequestDto` — query params en `GET /api/v1/clientes`
+
 ```typescript
 {
   tipoCliente?: TipoCliente   // opcional
@@ -659,40 +705,42 @@ Registra un nuevo cliente de tipo socio.
 ### Response DTOs
 
 #### `ClienteResponseDto` — respuesta de detalle
+
 ```typescript
 {
-  id: number
-  nombre: string
-  cedula: string
-  fechaNacimiento: string | null    // LocalDate ISO-8601 (yyyy-MM-dd), null para Particulares
-  telefono: string
-  email: string | null
-  metodoCobro: MetodoCobro | null   // null para Particulares
-  pais: string | null               // null para Particulares
-  departamento: string | null       // null para Particulares
-  ciudad: string | null             // null para Particulares
-  direccion: string | null          // null para Particulares
-  numeroSocio: number | null        // null para Particulares
-  tipoCliente: TipoCliente
-  estado: EstadoSocio | null        // null para Particulares
-  observaciones: string | null
-  createdAt: string                 // Instant ISO-8601 UTC
-  updatedAt: string                 // Instant ISO-8601 UTC
-  createdBy: string
-  updatedBy: string
+  id: number;
+  nombre: string;
+  cedula: string;
+  fechaNacimiento: string | null; // LocalDate ISO-8601 (yyyy-MM-dd), null para Particulares
+  telefono: string;
+  email: string | null;
+  metodoCobro: MetodoCobro | null; // null para Particulares
+  pais: string | null; // null para Particulares
+  departamento: string | null; // null para Particulares
+  ciudad: string | null; // null para Particulares
+  direccion: string | null; // null para Particulares
+  numeroSocio: number | null; // null para Particulares
+  tipoCliente: TipoCliente;
+  estado: EstadoSocio | null; // null para Particulares
+  observaciones: string | null;
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
+  createdBy: string;
+  updatedBy: string;
 }
 ```
 
 #### `ListadoClientesResponseDto` — ítem dentro del listado paginado
+
 ```typescript
 {
-  id: number
-  nombreCompleto: string
-  cedula: string
-  email: string | null
-  tipoCliente: TipoCliente
-  numeroSocio: number | null   // null para Particulares
-  estado: EstadoSocio | null   // null para Particulares
+  id: number;
+  nombreCompleto: string;
+  cedula: string;
+  email: string | null;
+  tipoCliente: TipoCliente;
+  numeroSocio: number | null; // null para Particulares
+  estado: EstadoSocio | null; // null para Particulares
 }
 ```
 
@@ -701,6 +749,7 @@ Registra un nuevo cliente de tipo socio.
 ## Manejo de errores
 
 Todos los errores retornan el siguiente body:
+
 ```json
 {
   "codigo": "CODIGO_ERROR",
@@ -708,11 +757,11 @@ Todos los errores retornan el siguiente body:
 }
 ```
 
-| HTTP Status | Cuándo ocurre                                              |
-|-------------|------------------------------------------------------------|
-| 400         | Validación fallida en body o query params                  |
-| 401         | Token ausente, inválido o expirado                         |
-| 403         | Usuario autenticado sin permisos para la operación         |
-| 404         | Recurso no encontrado por el ID proporcionado              |
+| HTTP Status | Cuándo ocurre                                                              |
+| ----------- | -------------------------------------------------------------------------- |
+| 400         | Validación fallida en body o query params                                  |
+| 401         | Token ausente, inválido o expirado                                         |
+| 403         | Usuario autenticado sin permisos para la operación                         |
+| 404         | Recurso no encontrado por el ID proporcionado                              |
 | 409         | Conflicto de negocio (ej: deshabilitar con reservas activas sin confirmar) |
-| 500         | Error interno del servidor                                 |
+| 500         | Error interno del servidor                                                 |
