@@ -10,6 +10,7 @@ import {
   MetodoCobro,
   ModificacionParticularRequestDto,
   ModificacionSocioRequestDto,
+  RegistroSocioRequestDto,
   TipoCliente,
 } from '../models/cliente.model';
 
@@ -256,6 +257,68 @@ describe('ClientesService', () => {
         .expectOne(`${BASE}/socios/-1`)
         .flush(
           { codigo: 'ID_INVALIDO', descripcion: 'El id no es un número positivo' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('registrarSocio', () => {
+    const dto: RegistroSocioRequestDto = {
+      cedula: '5.191.926-8',
+      nombreCompleto: 'Lucía Rodríguez',
+      fechaNacimiento: '1999-06-29',
+      telefono: '099985648',
+      email: 'lucia.rodriguez@example.com',
+      metodoCobro: MetodoCobro.Cobradora,
+      pais: 'Uruguay',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      direccion: 'Luis Alberto de Herrera 123',
+      observaciones: null,
+    };
+
+    it('realiza POST a /clientes/socios y retorna el detalle del socio creado', () => {
+      service.registrarSocio(dto).subscribe((result) => {
+        expect(result).toEqual(mockDetalle);
+      });
+      const req = httpMock.expectOne(`${BASE}/socios`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockDetalle, { status: 201, statusText: 'Created' });
+    });
+
+    it('propaga error 400 cuando la cédula ya está registrada', () => {
+      let errorStatus = 0;
+      service.registrarSocio(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios`)
+        .flush(
+          { codigo: 'CEDULA_YA_REGISTRADA', descripcion: 'Ya existe un cliente con esa cédula' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+
+    it('propaga error 400 cuando el email ya está registrado', () => {
+      let errorStatus = 0;
+      service.registrarSocio(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios`)
+        .flush(
+          { codigo: 'EMAIL_DUPLICADO', descripcion: 'Ya existe un cliente con ese email' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+
+    it('propaga error 400 cuando faltan campos obligatorios', () => {
+      let errorStatus = 0;
+      service.registrarSocio(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios`)
+        .flush(
+          { codigo: 'SOLICITUD_INVALIDA', descripcion: 'Campo obligatorio faltante' },
           { status: 400, statusText: 'Bad Request' },
         );
       expect(errorStatus).toBe(400);

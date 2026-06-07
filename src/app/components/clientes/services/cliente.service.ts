@@ -3,11 +3,11 @@ import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
-  ClienteCrearDto,
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
   ModificacionParticularRequestDto,
   ModificacionSocioRequestDto,
+  RegistroSocioRequestDto,
 } from '../models/cliente.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
@@ -34,9 +34,7 @@ export class ClientesService extends BaseHttpService {
   getCostoCuota(): number {
     return 5000;
   }
-  create(dto: ClienteCrearDto): Observable<ClienteDetalleRespuestaDto> {
-    return this.post<ClienteDetalleRespuestaDto>('clientes', dto);
-  }
+
   modificarParticular(
     id: number,
     dto: ModificacionParticularRequestDto,
@@ -53,5 +51,9 @@ export class ClientesService extends BaseHttpService {
 
   darDeBaja(id: number): Observable<void> {
     return this.patch<void>(`clientes/socios/${id}/baja`, {});
+  }
+
+  registrarSocio(dto: RegistroSocioRequestDto): Observable<ClienteDetalleRespuestaDto> {
+    return this.post<ClienteDetalleRespuestaDto>('clientes/socios', dto);
   }
 }

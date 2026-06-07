@@ -16,8 +16,6 @@
 6. [Clientes — DTOs](#clientes--dtos)
 7. [Manejo de errores](#manejo-de-errores)
 
-> **Nuevos endpoints (DEV-76):** `PUT /api/v1/clientes/particulares/{id}` y `PUT /api/v1/clientes/socios/{id}`
-
 ---
 
 ## Enums
@@ -70,14 +68,14 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 
 ### `PageRequestDto` — query params de paginación
 
-| Campo       | Tipo            | Obligatorio | Validación         | Default |
-| ----------- | --------------- | ----------- | ------------------ | ------- |
-| `page`      | integer         | No          | >= 0               | 0       |
-| `size`      | integer         | No          | > 0, máximo 100    | 1       |
-| `sortField` | string          | No          | nombre del campo   | —       |
-| `sortOrder` | `ASC` \| `DESC` | No          | solo con sortField | —       |
+| Campo       | Tipo    | Obligatorio | Validación                        | Default |
+| ----------- | ------- | ----------- | --------------------------------- | ------- |
+| `page`      | integer | No          | >= 0                              | 0       |
+| `size`      | integer | No          | > 0, máximo 100                   | 1       |
+| `sortField` | string  | No          | Valores permitidos según endpoint | —       |
+| `sortOrder` | string  | No          | `ASC` o `DESC`                    | `ASC`   |
 
-> El frontend envía `sortOrder` en mayúsculas (`ASC`/`DESC`) y solo lo incluye cuando `sortField` está presente.
+> Si `sortField` no se envía o está vacío, los resultados no tienen ordenamiento explícito. Si `sortField` se envía y `sortOrder` se omite, se usa `ASC` por defecto.
 
 ### `PageResponse<T>` — respuesta paginada
 
@@ -105,13 +103,15 @@ Retorna el listado paginado de servicios con filtros opcionales.
 
 **Query params** (todos opcionales):
 
-| Param         | Tipo             | Validación         |
-| ------------- | ---------------- | ------------------ |
-| `nombre`      | string           | máx 100 caracteres |
-| `procedencia` | `Procedencia`    | —                  |
-| `estado`      | `EstadoServicio` | —                  |
-| `page`        | integer          | >= 0, default 0    |
-| `size`        | integer          | 1–100, default 1   |
+| Param         | Tipo             | Validación                                  |
+| ------------- | ---------------- | ------------------------------------------- |
+| `nombre`      | string           | máx 100 caracteres                          |
+| `procedencia` | `Procedencia`    | —                                           |
+| `estado`      | `EstadoServicio` | —                                           |
+| `page`        | integer          | >= 0, default 0                             |
+| `size`        | integer          | 1–100, default 1                            |
+| `sortField`   | string           | `nombre`, `precioParticular`, `precioSocio` |
+| `sortOrder`   | string           | `ASC` o `DESC`, default `ASC`               |
 
 **Respuesta 200:**
 
@@ -411,6 +411,8 @@ Retorna el listado paginado de clientes con filtros opcionales.
 | `estado`        | `EstadoSocio` | Solo aplica a socios; combinarlo con `tipoCliente=PARTICULAR` devuelve resultado vacío                                           |
 | `page`          | integer       | >= 0, default 0                                                                                                                  |
 | `size`          | integer       | 1–100, default 1                                                                                                                 |
+| `sortField`     | string        | `nombreCompleto`, `cedula`, `numeroSocio`                                                                                        |
+| `sortOrder`     | string        | `ASC` o `DESC`, default `ASC`                                                                                                    |
 
 > El campo `identificador` busca por cédula o por número de socio usando el prefijo del valor ingresado (ej: `123` devuelve clientes cuya cédula o nro de socio comience con `123`). Los puntos y guiones del formato de cédula se normalizan automáticamente antes de la búsqueda.
 
@@ -481,7 +483,24 @@ Retorna el detalle completo de un cliente.
 }
 ```
 
-> Los campos `fechaNacimiento`, `metodoCobro`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+> Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+
+---
+
+### `PATCH /api/v1/clientes/socios/{id}/baja`
+
+Da de baja a un socio y cancela automáticamente todas sus reservas futuras en estado `PENDIENTE` o `CONFIRMADA` (incluso las pagas).
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 204:** No Content
+
+**Errores:**
+
+| HTTP Status | Código                | Cuándo ocurre                    |
+| ----------- | --------------------- | -------------------------------- |
+| 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
+| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
 
 ---
 
@@ -495,6 +514,7 @@ Modifica los datos de un cliente particular.
 
 ```json
 {
+  "cedula": "12345672",
   "nombreCompleto": "Laura Fernández",
   "telefono": "099222222",
   "mail": "laura@mail.com",
@@ -502,12 +522,13 @@ Modifica los datos de un cliente particular.
 }
 ```
 
-| Campo            | Tipo   | Obligatorio | Validación |
-| ---------------- | ------ | ----------- | ---------- |
-| `nombreCompleto` | string | Sí          | no vacío   |
-| `telefono`       | string | Sí          | no vacío   |
-| `mail`           | string | No          | —          |
-| `notas`          | string | No          | —          |
+| Campo            | Tipo   | Obligatorio | Validación                                    |
+| ---------------- | ------ | ----------- | --------------------------------------------- |
+| `cedula`         | string | Sí          | no vacío, algoritmo de cédula uruguaya, única |
+| `nombreCompleto` | string | Sí          | no vacío                                      |
+| `telefono`       | string | Sí          | no vacío                                      |
+| `mail`           | string | No          | formato email válido si se envía, único       |
+| `notas`          | string | No          | —                                             |
 
 **Respuestas:**
 
@@ -541,19 +562,19 @@ Modifica los datos de un socio.
 }
 ```
 
-| Campo             | Tipo          | Obligatorio | Validación   |
-| ----------------- | ------------- | ----------- | ------------ |
-| `cedula`          | string        | Sí          | no vacío     |
-| `nombreCompleto`  | string        | Sí          | no vacío     |
-| `telefono`        | string        | Sí          | no vacío     |
-| `mail`            | string        | No          | —            |
-| `notas`           | string        | No          | —            |
-| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd` |
-| `pais`            | string        | Sí          | no vacío     |
-| `departamento`    | string        | Sí          | no vacío     |
-| `ciudad`          | string        | Sí          | no vacío     |
-| `direccion`       | string        | Sí          | no vacío     |
-| `metodoCobro`     | `MetodoCobro` | Sí          | —            |
+| Campo             | Tipo          | Obligatorio | Validación                                    |
+| ----------------- | ------------- | ----------- | --------------------------------------------- |
+| `cedula`          | string        | Sí          | no vacío, algoritmo de cédula uruguaya, única |
+| `nombreCompleto`  | string        | Sí          | no vacío                                      |
+| `telefono`        | string        | Sí          | no vacío                                      |
+| `mail`            | string        | No          | formato email válido si se envía, único       |
+| `notas`           | string        | No          | —                                             |
+| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd`                                  |
+| `pais`            | string        | Sí          | no vacío                                      |
+| `departamento`    | string        | Sí          | no vacío                                      |
+| `ciudad`          | string        | Sí          | no vacío                                      |
+| `direccion`       | string        | Sí          | no vacío                                      |
+| `metodoCobro`     | `MetodoCobro` | Sí          | —                                             |
 
 > Campos no modificables: `numeroSocio`, `estado`, `fechaIngreso`, `mesesSinPagar`, `fechaUltimoPago`.
 
@@ -565,20 +586,56 @@ Modifica los datos de un socio.
 
 ---
 
-### `PATCH /api/v1/clientes/socios/{id}/baja`
+### `POST /api/v1/clientes/socios`
 
-Da de baja a un socio y cancela automáticamente todas sus reservas futuras en estado `PENDIENTE` o `CONFIRMADA` (incluso las pagas).
+Registra un nuevo cliente de tipo socio.
 
-**Path param:** `id` — integer positivo
+**Body** (`application/json`):
 
-**Respuesta 204:** No Content
+```json
+{
+  "cedula": "1.234.567-8",
+  "nombreCompleto": "Juan Pérez",
+  "fechaNacimiento": "1990-05-10",
+  "telefono": "099123456",
+  "email": "juan@mail.com",
+  "metodoCobro": "EFECTIVO",
+  "pais": "Uruguay",
+  "departamento": "Montevideo",
+  "ciudad": "Montevideo",
+  "direccion": "Av. Italia 1234",
+  "observaciones": "Sin observaciones"
+}
+```
+
+| Campo             | Tipo          | Obligatorio | Validación                                                 |
+| ----------------- | ------------- | ----------- | ---------------------------------------------------------- |
+| `cedula`          | string        | Sí          | no vacío, algoritmo de cédula uruguaya, única              |
+| `nombreCompleto`  | string        | Sí          | no vacío                                                   |
+| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd`                                               |
+| `telefono`        | string        | Sí          | no vacío                                                   |
+| `email`           | string        | No          | formato email válido si se envía, único (case-insensitive) |
+| `metodoCobro`     | `MetodoCobro` | Sí          | —                                                          |
+| `pais`            | string        | Sí          | no vacío                                                   |
+| `departamento`    | string        | Sí          | no vacío                                                   |
+| `ciudad`          | string        | Sí          | no vacío                                                   |
+| `direccion`       | string        | No          | —                                                          |
+| `observaciones`   | string        | No          | —                                                          |
+
+> La cédula se normaliza automáticamente (se eliminan puntos y guión). El socio se crea con estado `ACTIVO`, `mesesSinPagar = 0` y `fechaIngreso` igual a la fecha actual. El `numeroSocio` se asigna de forma incremental.
+
+**Respuesta 201:** mismo body que `GET /api/v1/clientes/{id}`
 
 **Errores:**
 
-| HTTP Status | Código                | Cuándo ocurre                    |
-| ----------- | --------------------- | -------------------------------- |
-| 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
-| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
+| HTTP Status | Código               | Cuándo ocurre                                               |
+| ----------- | -------------------- | ----------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante, vacío, o `metodoCobro` inválido |
+| 400         | `CEDULA_INVALIDA`    | La cédula no cumple el algoritmo de validación uruguayo     |
+| 400         | `CEDULA_DUPLICADA`   | Ya existe un cliente con esa cédula                         |
+| 400         | `EMAIL_INVALIDO`     | El email no tiene formato válido                            |
+| 400         | `EMAIL_DUPLICADO`    | Ya existe un cliente con ese email                          |
+| 401         | —                    | Token ausente, inválido o expirado                          |
 
 ---
 
@@ -586,13 +643,32 @@ Da de baja a un socio y cancela automáticamente todas sus reservas futuras en e
 
 ### Request DTOs
 
+#### `RegistroSocioRequestDto` — body en `POST /api/v1/clientes/socios`
+
+```typescript
+{
+  cedula: string              // obligatorio, algoritmo cédula uruguaya, única
+  nombreCompleto: string      // obligatorio, no vacío
+  fechaNacimiento: string     // obligatorio, LocalDate yyyy-MM-dd
+  telefono: string            // obligatorio, no vacío
+  email?: string              // opcional, formato email válido si se envía, único (case-insensitive)
+  metodoCobro: MetodoCobro    // obligatorio
+  pais: string                // obligatorio, no vacío
+  departamento: string        // obligatorio, no vacío
+  ciudad: string              // obligatorio, no vacío
+  direccion?: string          // opcional
+  observaciones?: string      // opcional
+}
+```
+
 #### `ModificacionParticularRequestDto` — body en `PUT /api/v1/clientes/particulares/{id}`
 
 ```typescript
 {
+  cedula: string          // obligatorio, algoritmo cédula uruguaya, única
   nombreCompleto: string  // obligatorio, no vacío
   telefono: string        // obligatorio, no vacío
-  mail?: string           // opcional
+  mail?: string           // opcional, formato email válido si se envía, único
   notas?: string          // opcional
 }
 ```
@@ -601,10 +677,10 @@ Da de baja a un socio y cancela automáticamente todas sus reservas futuras en e
 
 ```typescript
 {
-  cedula: string              // obligatorio, no vacío
+  cedula: string              // obligatorio, algoritmo cédula uruguaya, única
   nombreCompleto: string      // obligatorio, no vacío
   telefono: string            // obligatorio, no vacío
-  mail?: string               // opcional
+  mail?: string               // opcional, formato email válido si se envía, único
   notas?: string              // opcional
   fechaNacimiento: string     // obligatorio, LocalDate yyyy-MM-dd
   pais: string                // obligatorio, no vacío

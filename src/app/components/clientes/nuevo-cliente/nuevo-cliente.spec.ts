@@ -1,10 +1,11 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
-import { MetodoCobro, TipoCliente } from '../models/cliente.model';
-import { of } from 'rxjs';
+import { EstadoSocio, MetodoCobro, TipoCliente } from '../models/cliente.model';
+import { NEVER, of, throwError } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 const clienteMock = {
@@ -21,10 +22,12 @@ const clienteMock = {
   direccion: 'Calle A 123',
   observaciones: null,
   fechaNacimiento: '1999-06-29',
-  estado: 'Activo',
+  estado: EstadoSocio.Activo,
   metodoCobro: MetodoCobro.Cobradora,
   createdAt: '2024-01-01',
   createdBy: 'admin',
+  updatedAt: '2024-01-02',
+  updatedBy: 'admin',
 };
 
 describe('NuevoCliente', () => {
@@ -56,7 +59,14 @@ describe('NuevoCliente', () => {
         },
         {
           provide: ClientesService,
-          useValue: { getById: vi.fn().mockReturnValue(of(clienteMock)) },
+          useValue: {
+            getById: vi.fn().mockReturnValue(of(clienteMock)),
+            registrarSocio: vi.fn().mockReturnValue(NEVER),
+          },
+        },
+        {
+          provide: ErrorHandlerService,
+          useValue: { handle: vi.fn() },
         },
         ClienteValidacionesService,
       ],
@@ -202,5 +212,61 @@ describe('NuevoCliente', () => {
     component['onConfirmar']();
     expect(component['submitted']()).toBe(true);
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('onConfirmar con form válido navega a /clientes/:id al registrar con éxito', () => {
+    const service = TestBed.inject(ClientesService);
+    vi.spyOn(service, 'registrarSocio').mockReturnValue(of(clienteMock));
+
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    fixture.detectChanges();
+    component['onConfirmar']();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', clienteMock.id]);
+  });
+
+  it('onConfirmar llama errorHandler.handle cuando el servicio retorna error', () => {
+    const service = TestBed.inject(ClientesService);
+    const errorHandler = TestBed.inject(ErrorHandlerService);
+    const error = new Error('500');
+    vi.spyOn(service, 'registrarSocio').mockReturnValue(throwError(() => error));
+
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    fixture.detectChanges();
+    component['onConfirmar']();
+
+    expect(errorHandler.handle).toHaveBeenCalledWith(error);
+  });
+
+  it('loading vuelve a false luego de registrar (vía finalize)', () => {
+    const service = TestBed.inject(ClientesService);
+    vi.spyOn(service, 'registrarSocio').mockReturnValue(of(clienteMock));
+
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    fixture.detectChanges();
+    component['onConfirmar']();
+
+    expect(component['loading']()).toBe(false);
   });
 });
