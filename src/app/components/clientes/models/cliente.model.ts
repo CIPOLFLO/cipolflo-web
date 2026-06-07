@@ -119,7 +119,7 @@ export interface ClienteCrearDto {
 
 export interface RegistroSocioRequestDto {
   cedula: string;
-  nombre: string;
+  nombreCompleto: string;
   fechaNacimiento: string;
   telefono: string;
   email: string | null;
@@ -127,6 +127,6 @@ export interface RegistroSocioRequestDto {
   pais: string;
   departamento: string;
   ciudad: string;
-  direccion: string;
+  direccion: string | null;
   observaciones: string | null;
 }

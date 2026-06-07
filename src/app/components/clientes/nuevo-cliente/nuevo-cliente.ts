@@ -89,7 +89,7 @@ export class NuevoCliente extends ClienteFormBase {
     this.clientesService
       .registrarSocio({
         cedula: v['cedula']!.trim(),
-        nombre: v['nombre']!.trim(),
+        nombreCompleto: v['nombre']!.trim(),
         fechaNacimiento: v['fechaNacimiento']!,
         telefono: v['telefono']!.trim(),
         email: v['email']?.trim() || null,
@@ -97,7 +97,7 @@ export class NuevoCliente extends ClienteFormBase {
         pais: v['pais']!.trim(),
         departamento: v['departamento']!.trim(),
         ciudad: v['ciudad']!.trim(),
-        direccion: v['direccion']?.trim() || '',
+        direccion: v['direccion']?.trim() || null,
         observaciones: v['observaciones']?.trim() || null,
       })
       .pipe(
