@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
-  ClienteCrearDto,
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
   ModificacionParticularRequestDto,
