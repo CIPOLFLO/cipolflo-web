@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-import { PageResponse, TableQueryParams } from '../../../shared';
+import { PageResponse, TableQueryParams, Procedencia } from '../../../shared';
 import {
   Concepto,
   FinanzaCrearDto,
@@ -9,7 +9,6 @@ import {
   FinanzaRespuestaDto,
   TipoMovimiento,
 } from '../models/finanza.model';
-import { Procedencia } from '../../../shared';
 
 @Injectable({
   providedIn: 'root',
@@ -79,5 +78,11 @@ export class FinanzaService extends BaseHttpService {
       updatedBy: 'Juan Pérez',
       tipoMovimiento: TipoMovimiento.Ingreso,
     });
+  }
+
+  eliminar(id: number): Observable<void> {
+    // TODO: reemplazar cuando el backend esté disponible
+    console.log('Eliminar finanza', id);
+    return of(void 0);
   }
 }
