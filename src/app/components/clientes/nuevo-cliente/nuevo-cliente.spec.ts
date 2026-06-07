@@ -2,7 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
 import { MetodoCobro, TipoCliente } from '../models/cliente.model';
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -56,7 +56,10 @@ describe('NuevoCliente', () => {
         },
         {
           provide: ClientesService,
-          useValue: { getById: vi.fn().mockReturnValue(of(clienteMock)) },
+          useValue: {
+            getById: vi.fn().mockReturnValue(of(clienteMock)),
+            registrarSocio: vi.fn().mockReturnValue(NEVER),
+          },
         },
         ClienteValidacionesService,
       ],

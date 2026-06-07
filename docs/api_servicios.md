@@ -16,7 +16,7 @@
 6. [Clientes — DTOs](#clientes--dtos)
 7. [Manejo de errores](#manejo-de-errores)
 
-> **Nuevos endpoints (DEV-76):** `PUT /api/v1/clientes/particulares/{id}` y `PUT /api/v1/clientes/socios/{id}`
+> **Nuevos endpoints (DEV-78):** `POST /api/v1/clientes/socios`, `PUT /api/v1/clientes/particulares/{id}`, `PUT /api/v1/clientes/socios/{id}` y `PATCH /api/v1/clientes/socios/{id}/baja`
 
 ---
 
@@ -582,9 +582,82 @@ Da de baja a un socio y cancela automáticamente todas sus reservas futuras en e
 
 ---
 
+### `POST /api/v1/clientes/socios`
+
+Registra un nuevo socio.
+
+**Body** (`application/json`):
+
+````json
+{
+  "cedula": "12345678",
+  "nombre": "Juan Pérez",
+  "fechaNacimiento": "1990-01-01",
+  "telefono": "099111111",
+  "email": "juan@mail.com",
+  "metodoCobro": "EN_SEDE",
+  "pais": "Uruguay",
+  "departamento": "Montevideo",
+  "ciudad": "Montevideo",
+  "direccion": "Av. 18 de Julio 100",
+  "observaciones": null
+}
+
+
+| Campo             | Tipo          | Obligatorio | Validación   |
+| ----------------- | ------------- | ----------- | ------------ |
+| `cedula`          | string        | Sí          | no vacío     |
+| `nombreCompleto`  | string        | Sí          | no vacío     |
+| `telefono`        | string        | Sí          | no vacío     |
+| `mail`            | string        | No          | —            |
+| `observaciones`   | string        | No          | —            |
+| `fechaNacimiento` | string (date) | Sí          | `yyyy-MM-dd` |
+| `pais`            | string        | Sí          | no vacío     |
+| `departamento`    | string        | Sí          | no vacío     |
+| `ciudad`          | string        | Sí          | no vacío     |
+| `direccion`       | string        | Sí          | no vacío     |
+| `metodoCobro`     | `MetodoCobro` | Sí          | —            |
+
+
+**Respuesta 201:** mismo body que `GET /api/v1/clientes/{id}`
+
+**Errores:**
+
+| HTTP Status | Código                 | Cuándo ocurre
+----------------------------------------------------------------
+| 400         | `SOLICITUD_INVALIDA`   | Campo obligatorio faltante o vacío
+|             |                        | cédula inválida, método de cobro
+|             |                        | inválido o JSON malformado
+-----------------------------------------------------------------------------
+| 400         | `CEDULA_YA_REGISTRADA` | Ya existe un cliente de cualquier tipo
+|             |                        | con esa cédula
+--------------------------------------------------------------------------
+| 400         | `EMAIL_DUPLICADO`      | Ya existe un cliente con ese
+|             |                        | email
+------------------------------------------------------------------------
+| 401         | —                      | Token ausente, inválido o expirado
+---
+
 ## Clientes — DTOs
 
 ### Request DTOs
+
+#### `RegistroSocioRequestDto` — body en `POST /api/v1/clientes/socios`
+
+```typescript
+{
+  cedula: string              // obligatorio, no vacío, formato válido
+  nombre: string              // obligatorio, no vacío
+  fechaNacimiento: string     // obligatorio, LocalDate yyyy-MM-dd
+  telefono: string            // obligatorio, no vacío
+  email?: string              // opcional
+  metodoCobro: MetodoCobro    // obligatorio
+  pais: string                // obligatorio, no vacío
+  departamento: string        // obligatorio, no vacío
+  ciudad: string              // obligatorio, no vacío
+  direccion?: string          // opcional
+  observaciones?: string      // opcional
+}
 
 #### `ModificacionParticularRequestDto` — body en `PUT /api/v1/clientes/particulares/{id}`
 
@@ -595,7 +668,7 @@ Da de baja a un socio y cancela automáticamente todas sus reservas futuras en e
   mail?: string           // opcional
   notas?: string          // opcional
 }
-```
+````
 
 #### `ModificacionSocioRequestDto` — body en `PUT /api/v1/clientes/socios/{id}`
 

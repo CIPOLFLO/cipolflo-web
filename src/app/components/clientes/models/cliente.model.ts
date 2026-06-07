@@ -116,3 +116,17 @@ export interface ClienteCrearDto {
   direccion: string | null;
   observaciones: string | null;
 }
+
+export interface RegistroSocioRequestDto {
+  cedula: string;
+  nombre: string;
+  fechaNacimiento: string;
+  telefono: string;
+  email: string | null;
+  metodoCobro: MetodoCobro;
+  pais: string;
+  departamento: string;
+  ciudad: string;
+  direccion: string;
+  observaciones: string | null;
+}

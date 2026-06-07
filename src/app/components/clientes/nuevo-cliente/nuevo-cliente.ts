@@ -10,6 +10,8 @@ import {
 } from '../../../shared';
 import { MetodoCobro, EstadoSocio, METODO_COBRO_OPTIONS } from '../models/cliente.model';
 import { ClienteFormBase } from '../cliente-form-base';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -75,4 +77,40 @@ export class NuevoCliente extends ClienteFormBase {
   protected override readonly adicionalFields = computed<FormFieldConfig[]>(() => [
     { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea' },
   ]);
+
+  protected override onConfirmar(): void {
+    super.onConfirmar();
+    if (this.form.invalid) return;
+
+    const v = this.form.getRawValue();
+
+    this.loading.set(true);
+
+    this.clientesService
+      .registrarSocio({
+        cedula: v['cedula']!.trim(),
+        nombre: v['nombre']!.trim(),
+        fechaNacimiento: v['fechaNacimiento']!,
+        telefono: v['telefono']!.trim(),
+        email: v['email']?.trim() || null,
+        metodoCobro: v['metodoCobro']!,
+        pais: v['pais']!.trim(),
+        departamento: v['departamento']!.trim(),
+        ciudad: v['ciudad']!.trim(),
+        direccion: v['direccion']?.trim() || '',
+        observaciones: v['observaciones']?.trim() || null,
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (cliente) => {
+          this.router.navigate(['/clientes', cliente.id]);
+        },
+        error: (err: unknown) => {
+          this.errorHandler.handle(err);
+        },
+      });
+  }
 }
