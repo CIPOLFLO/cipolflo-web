@@ -71,5 +71,9 @@ describe('FinanzaService', () => {
       const result = await firstValueFrom(service.getById(1));
       expect(result.tipoMovimiento).toBe(TipoMovimiento.Ingreso);
     });
+
+    it('eliminar debería completar correctamente', async () => {
+      await expect(firstValueFrom(service.eliminar(1))).resolves.toBeUndefined();
+    });
   });
 });
