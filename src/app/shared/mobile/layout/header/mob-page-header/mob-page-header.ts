@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { UserService } from '../../../../../core/services/user.service';
 
 @Component({
   selector: 'app-mob-page-header',
@@ -10,9 +11,10 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 export class MobPageHeader {
   title = input.required<string>();
   subtitle = input<string>('');
-  userInitials = input<string>('');
-
   menuToggled = output<void>();
+
+  protected readonly userService = inject(UserService);
+
   onMenuClick(): void {
     this.menuToggled.emit();
   }

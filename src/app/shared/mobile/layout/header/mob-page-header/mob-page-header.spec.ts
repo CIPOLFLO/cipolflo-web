@@ -1,5 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../../../core/services/user.service';
 import { MobPageHeader } from './mob-page-header';
+
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+};
 
 describe('MobPageHeader', () => {
   let fixture: ComponentFixture<MobPageHeader>;
@@ -7,6 +14,7 @@ describe('MobPageHeader', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MobPageHeader],
+      providers: [UserService, { provide: AuthService, useValue: mockAuthService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MobPageHeader);
@@ -33,10 +41,7 @@ describe('MobPageHeader', () => {
     expect(el).toBeNull();
   });
 
-  it('should render the userInitials in the avatar', () => {
-    fixture.componentRef.setInput('userInitials', 'JP');
-    fixture.detectChanges();
-
+  it('should render the userInitials from UserService in the avatar', () => {
     const el = fixture.nativeElement.querySelector('.mob-header__avatar');
     expect(el.textContent.trim()).toBe('JP');
   });

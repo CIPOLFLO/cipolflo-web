@@ -1,8 +1,11 @@
 @if (!breakpoint.isMobile()) {
   <app-header></app-header>
-  <app-confirm-dialog></app-confirm-dialog>
-  <main>
-    <router-outlet />
-  </main>
+}
+<app-confirm-dialog></app-confirm-dialog>
+<app-error-dialog></app-error-dialog>
+<main>
+  <router-outlet />
+</main>
+@if (!breakpoint.isMobile()) {
   <app-footer></app-footer>
 }

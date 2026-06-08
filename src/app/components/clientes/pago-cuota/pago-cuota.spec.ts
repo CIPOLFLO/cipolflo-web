@@ -1,7 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { PagoCuota } from './pago-cuota';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { ClientesService } from '../services/cliente.service';
 import { FormaPago } from 'src/app/shared/models/forma-pago.model';
 
 const mockCliente: ClienteRespuestaDto = {
@@ -21,6 +24,11 @@ describe('PagoCuota', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PagoCuota],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ClientesService, useValue: { getCostoCuota: () => 5000 } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PagoCuota);

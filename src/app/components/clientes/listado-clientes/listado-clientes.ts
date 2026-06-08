@@ -19,7 +19,6 @@ import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
-import { UserService } from '../../../core/services/user.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
@@ -42,7 +41,6 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   protected readonly breakpoint = inject(BreakpointService);
-  protected readonly userService = inject(UserService);
   private readonly errorHandler = inject(ErrorHandlerService);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
@@ -88,6 +86,8 @@ export class ListadoClientes {
           queryParams: { from: 'listado' },
         }),
     },
+    // { label: 'Nueva Reserva', icon: 'pi pi-calendar', command: () => ... },
+    // { separator: true },
     ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
       ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
       : []),
