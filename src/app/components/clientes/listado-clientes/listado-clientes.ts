@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { catchError, filter, of, switchMap } from 'rxjs';
+import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -7,21 +7,23 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  MobPageHeader,
   PageLayout,
   RowAction,
   TableStateService,
 } from '../../../shared';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-listado-clientes',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota],
+  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota, MobPageHeader],
   providers: [
     TableStateService,
     ClientesColumnsService,
@@ -38,8 +40,9 @@ export class ListadoClientes {
   private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
-  protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  protected readonly breakpoint = inject(BreakpointService);
   private readonly errorHandler = inject(ErrorHandlerService);
+  protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -56,20 +59,7 @@ export class ListadoClientes {
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params).pipe(
-      catchError((err) => {
-        this.errorHandler.handle(err);
-        return of({
-          content: [],
-          page: params.page,
-          size: params.size,
-          totalElements: 0,
-          totalPages: 0,
-          first: true,
-          last: true,
-        });
-      }),
-    );
+    this.clientesService.getAll(params);
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     {
@@ -96,12 +86,7 @@ export class ListadoClientes {
           queryParams: { from: 'listado' },
         }),
     },
-
-    // { label: 'Modificar',     icon: 'pi pi-pencil',        command: () => ... },
-    // ...(row.estado !== 'ACTIVO'
-    //   ? [{ label: 'Activar',    icon: 'pi pi-check-circle', command: () => ... }]
-    //   : [{ label: 'Desactivar', icon: 'pi pi-ban',          command: () => ... }]),
-    // { label: 'Nueva Reserva', icon: 'pi pi-calendar',     command: () => ... },
+    // { label: 'Nueva Reserva', icon: 'pi pi-calendar', command: () => ... },
     // { separator: true },
     ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
       ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
@@ -123,6 +108,7 @@ export class ListadoClientes {
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
   }
+
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
     this.confirmDialogService
       .open({

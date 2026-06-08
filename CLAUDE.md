@@ -167,6 +167,39 @@ TestBed.configureTestingModule({
 });
 ```
 
+## Detección de resolución
+
+El breakpoint mobile está fijado en **767px** (`max-width: 767px`).
+
+### BreakpointService
+
+Servicio singleton (`providedIn: 'root'`) en `src/app/core/services/breakpoint.service.ts`. Expone un único signal:
+
+```typescript
+isMobile = toSignal(
+  this.observer.observe('(max-width: 767px)').pipe(map((result) => result.matches)),
+  { initialValue: false },
+);
+```
+
+El signal reacciona a cambios de tamaño de ventana en tiempo real vía `BreakpointObserver` de `@angular/cdk/layout`.
+
+### Patrón de uso en páginas
+
+Cada página que tenga vista mobile inyecta `BreakpointService` y usa `@if`/`@else` para decidir qué árbol de componentes renderizar:
+
+```typescript
+export class ListadoClientes {
+  protected readonly breakpoint = inject(BreakpointService);
+}
+```
+
+```html
+@if (breakpoint.isMobile()) { } @else { }
+```
+
+El componente mobile (`mob-page-header`, `mob-list-layout`, etc.) nunca se renderiza en desktop y viceversa.
+
 ## Hard rules
 
 - **No NgModules** — architecture is 100% standalone.

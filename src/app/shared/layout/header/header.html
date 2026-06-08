@@ -22,7 +22,7 @@
   </nav>
   @if (auth.user$ | async; as user) {
     <div class="header__user">
-      <div class="header__avatar">{{ (user.name ?? user.email)?.charAt(0)?.toUpperCase() }}</div>
+      <div class="header__avatar">{{ userService.userInitials() }}</div>
       <span class="header__username">{{ user.name ?? user.email }}</span>
       <button class="header__logout" (click)="logout()">
         <i class="pi pi-sign-out"></i>

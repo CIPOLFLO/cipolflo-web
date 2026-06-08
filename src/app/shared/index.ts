@@ -59,3 +59,5 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
+//Mobile Layout
+export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
