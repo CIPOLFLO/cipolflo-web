@@ -17,6 +17,7 @@ export const FINANZAS_ROUTES: Routes = [
   },
   {
     path: ':id/editar',
-    redirectTo: ':id',
+    loadComponent: () =>
+      import('./modificar-finanza/modificar-finanza').then((m) => m.ModificarFinanza),
   },
 ];

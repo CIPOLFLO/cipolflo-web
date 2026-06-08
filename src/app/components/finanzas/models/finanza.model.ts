@@ -88,3 +88,12 @@ export interface FinanzaDetalleRespuestaDto extends AuditInfoDto {
   notas?: string | null;
   tipoMovimiento: TipoMovimiento;
 }
+
+export interface FinanzaModificarDto {
+  procedencia: Procedencia;
+  concepto: Concepto;
+  fecha: string;
+  importe: number;
+  formaPago: FormaPago;
+  notas?: string | null;
+}
