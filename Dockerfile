@@ -14,7 +14,7 @@ RUN apk add --no-cache gettext
 
 COPY --from=builder /app/dist/*/browser /usr/share/nginx/html
 COPY docker/env.template.js /usr/share/nginx/html/env.template.js
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
