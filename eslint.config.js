@@ -23,7 +23,7 @@ module.exports = tseslint.config(
       ],
       '@angular-eslint/component-selector': [
         'error',
-        { type: 'element', prefix: 'app', style: 'kebab-case' },
+        { type: 'element', prefix: ['app', 'mob'], style: 'kebab-case' },
       ],
     },
   },
