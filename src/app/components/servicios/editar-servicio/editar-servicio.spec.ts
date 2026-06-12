@@ -97,8 +97,8 @@ describe('EditarServicio', () => {
         },
         { provide: Router, useValue: { navigate: vi.fn(), navigateByUrl: vi.fn() } },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
-               { provide: AuthService, useValue: mockAuthService },
-               { provide: UserService, useValue: mockUserService },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
   });

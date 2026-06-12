@@ -18,7 +18,7 @@ const mockAuthService = {
 const mockUserService = {
   userInitials: () => 'JP',
   userEmail: () => 'juan@example.com',
-}; 
+};
 
 describe('NuevoServicio', () => {
   let fixture: ComponentFixture<NuevoServicio>;

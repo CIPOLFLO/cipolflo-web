@@ -16,7 +16,6 @@ import {
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
 
-
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
   numeroSocio: 123,
@@ -48,7 +47,6 @@ const mockUserService = {
   userInitials: () => 'JP',
   userEmail: () => 'juan@example.com',
 };
-
 
 describe('ModificarCliente', () => {
   let fixture: ComponentFixture<ModificarCliente>;
@@ -380,7 +378,7 @@ describe('ModificarCliente - onConfirmar Particular', () => {
           },
         },
         { provide: AuthService, useValue: mockAuthService },
-       { provide: UserService, useValue: mockUserService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 

@@ -31,14 +31,14 @@ const mockFinanza: FinanzaDetalleRespuestaDto = {
   updatedBy: 'Juan Pérez',
 };
 const mockAuthService = {
-    user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
-    logout: vi.fn(),
-  };
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
 
-  const mockUserService = {
-    userInitials: () => 'JP',
-    userEmail: () => 'juan@example.com',
-  };
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
+};
 
 describe('ModificarFinanza', () => {
   let component: ModificarFinanza;
