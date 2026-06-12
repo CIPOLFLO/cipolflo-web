@@ -9,6 +9,9 @@
 :host ::ng-deep .mob-sidebar .p-drawer-content {
   padding: 0;
 }
+:host ::ng-deep .mob-sidebar .p-drawer-header {
+  display: none;
+}
 
 .mob-sidebar__container {
   display: flex;
@@ -24,6 +27,17 @@
   background-color: var(--color-primary);
   color: var(--color-text-inverse);
   padding: 1rem;
+  position: relative;
+}
+.mob-sidebar__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: none;
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  font-size: 0.875rem;
 }
 
 .mob-sidebar__org-avatar,

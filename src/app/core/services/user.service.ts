@@ -12,6 +12,7 @@ export class UserService {
   userInitials = toSignal(
     this.auth.user$.pipe(
       map((user) => {
+        console.log(user);
         const name = user?.name ?? '';
         const parts = name.trim().split(' ');
         if (parts.length >= 2) {
@@ -22,4 +23,7 @@ export class UserService {
     ),
     { initialValue: '' },
   );
+  userEmail = toSignal(this.auth.user$.pipe(map((user) => user?.email ?? '')), {
+    initialValue: '',
+  });
 }

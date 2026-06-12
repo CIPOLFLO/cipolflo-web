@@ -18,7 +18,6 @@ export class MobSidebar {
   orgInitials = input.required<string>();
   orgSubtitle = input<string>('');
 
-  userName = input.required<string>();
   userEmail = input.required<string>();
   userInitials = input.required<string>();
 

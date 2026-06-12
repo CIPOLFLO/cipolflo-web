@@ -12,6 +12,9 @@
           <span class="mob-sidebar__org-subtitle">{{ orgSubtitle() }}</span>
         }
       </div>
+      <button type="button" class="mob-sidebar__close" (click)="closed.emit()">
+        <i class="pi pi-times"></i>
+      </button>
     </header>
 
     <nav class="mob-sidebar__nav" aria-label="Navegación principal">
@@ -36,7 +39,6 @@
         </div>
 
         <div class="mob-sidebar__user-info">
-          <strong class="mob-sidebar__user-name">{{ userName() }}</strong>
           <span class="mob-sidebar__user-email">{{ userEmail() }}</span>
         </div>
       </div>
