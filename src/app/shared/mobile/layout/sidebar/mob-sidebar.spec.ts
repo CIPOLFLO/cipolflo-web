@@ -25,7 +25,6 @@ describe('MobSidebar', () => {
     fixture.componentRef.setInput('orgName', 'Círculo Policial');
     fixture.componentRef.setInput('orgInitials', 'CP');
     fixture.componentRef.setInput('orgSubtitle', 'de Flores');
-    fixture.componentRef.setInput('userName', 'Juan Pérez');
     fixture.componentRef.setInput('userEmail', 'juan.perez@email.com');
     fixture.componentRef.setInput('userInitials', 'JP');
     fixture.componentRef.setInput('navItems', navItems);
@@ -49,7 +48,7 @@ describe('MobSidebar', () => {
 
     expect(drawer).toBeTruthy();
     expect(drawer?.textContent).toContain('Círculo Policial');
-    expect(drawer?.textContent).toContain('Juan Pérez');
+    expect(drawer?.textContent).toContain('juan.perez@email.com');
   });
 
   it('debería renderizar tantos ítems de navegación como elementos recibe', () => {

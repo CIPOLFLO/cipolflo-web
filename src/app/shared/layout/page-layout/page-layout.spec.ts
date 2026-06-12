@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
 import { PageLayout } from './page-layout';
+import { of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   template: `
@@ -22,6 +25,15 @@ class TestHostPageLayout {
   showBackButton = signal(false);
   backButtonLink = signal('/');
 }
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
+};
 
 describe('PageLayout', () => {
   let component: PageLayout;
@@ -31,6 +43,10 @@ describe('PageLayout', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PageLayout],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PageLayout);
@@ -95,6 +111,10 @@ describe('PageLayout - actions and content projection', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TestHostPageLayout],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+      ],
     }).compileComponents();
 
     hostFixture = TestBed.createComponent(TestHostPageLayout);

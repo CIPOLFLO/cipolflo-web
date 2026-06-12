@@ -7,6 +7,8 @@ import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const clienteMock = {
   id: 1,
@@ -28,6 +30,15 @@ const clienteMock = {
   createdBy: 'admin',
   updatedAt: '2024-01-02',
   updatedBy: 'admin',
+};
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
 };
 
 describe('NuevoCliente', () => {
@@ -68,6 +79,8 @@ describe('NuevoCliente', () => {
           provide: ErrorHandlerService,
           useValue: { handle: vi.fn() },
         },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
         ClienteValidacionesService,
       ],
     }).compileComponents();

@@ -17,6 +17,8 @@ import {
 } from '../../../shared';
 import { EstadoServicio, ReservaProximaDto, ServicioRow } from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 interface ServicioRespuestaDtoMock {
   id: number;
@@ -97,6 +99,16 @@ const rowDeshabilitado: ServicioRow = {
   unidad: 'p/hora',
   estado: EstadoServicio.Deshabilitado,
 };
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
+};
+
 
 describe('ListadoServicios', () => {
   let fixture: ComponentFixture<ListadoServicios>;
@@ -136,6 +148,8 @@ describe('ListadoServicios', () => {
           },
         },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 
@@ -516,6 +530,8 @@ describe('ListadoServicios sin filtros por defecto', () => {
             createUrlTree: vi.fn().mockReturnValue({}),
           },
         },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     })
       .overrideComponent(ListadoServicios, {
