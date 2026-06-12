@@ -12,6 +12,8 @@ import {
 } from '../models/finanza.model';
 import { FinanzaService } from '../services/finanza.service';
 import { ModificarFinanza } from './modificar-finanza';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const mockFinanza: FinanzaDetalleRespuestaDto = {
   id: 1,
@@ -28,6 +30,15 @@ const mockFinanza: FinanzaDetalleRespuestaDto = {
   updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
 };
+const mockAuthService = {
+    user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+    logout: vi.fn(),
+  };
+
+  const mockUserService = {
+    userInitials: () => 'JP',
+    userEmail: () => 'juan@example.com',
+  };
 
 describe('ModificarFinanza', () => {
   let component: ModificarFinanza;
@@ -73,6 +84,8 @@ describe('ModificarFinanza', () => {
           provide: ErrorHandlerService,
           useValue: mockErrorHandler,
         },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 
