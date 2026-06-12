@@ -61,3 +61,5 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 export { FilterConfigProvider } from './services/filter-config.provider';
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
+export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
+export type { NavItem } from './mobile/layout/sidebar/sidebar.models';
