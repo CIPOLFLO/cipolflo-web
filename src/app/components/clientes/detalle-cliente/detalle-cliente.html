@@ -7,6 +7,10 @@
   <app-form-layout>
     <app-detail-section title="Resumen del Cliente" [fields]="infoFields()" />
 
+    @if (esSocio()) {
+      <app-detail-section title="Última cuota paga" [fields]="ultimaCuotaPagaFields()" />
+    }
+
     @if (registroData()) {
       <app-detail-registro-section [data]="registroData()!" />
     }

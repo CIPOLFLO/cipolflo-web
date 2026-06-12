@@ -37,6 +37,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   createdBy: 'Juan Pérez',
   updatedAt: '',
   updatedBy: '',
+  ultimaCuotaPaga: null,
 };
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),

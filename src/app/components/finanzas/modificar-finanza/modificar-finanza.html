@@ -1,0 +1,42 @@
+<app-page-layout
+  pageTitle="Modificar Movimiento Financiero"
+  pageDescription="Actualice los datos del movimiento financiero"
+  [showBackButton]="true"
+  backButtonLink="/finanzas"
+>
+  <app-form-layout>
+    <app-form-section
+      title="Tipo de Movimiento"
+      [fields]="movimientoFields()"
+      [errors]="movimientoErrors()"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-section
+      title="Información del Movimiento"
+      [fields]="infoFields()"
+      [errors]="infoErrors()"
+      (valuesChange)="onInfoChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-section
+      title="Información Adicional"
+      [fields]="adicionalFields()"
+      (valuesChange)="onAdicionalChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Guardar cambios"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        tooltip="Complete con valores válidos el formulario para continuar"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+  </app-form-layout>
+</app-page-layout>

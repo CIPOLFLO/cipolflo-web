@@ -62,6 +62,12 @@ ACTIVO | INACTIVO | DE_BAJA
 COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 ```
 
+### `FormaPago`
+
+```
+EFECTIVO | TRANSFERENCIA
+```
+
 ---
 
 ## DTOs Compartidos
@@ -479,11 +485,17 @@ Retorna el detalle completo de un cliente.
   "createdAt": "2024-03-01T10:00:00Z",
   "updatedAt": "2024-03-15T14:00:00Z",
   "createdBy": "admin@cipolflo.com",
-  "updatedBy": "admin@cipolflo.com"
+  "updatedBy": "admin@cipolflo.com",
+  "ultimaCuotaPaga": {
+    "mesCorrespondiente": "Marzo 2026",
+    "fechaPago": "2026-03-15T14:30:00Z",
+    "formaPago": "TRANSFERENCIA"
+  }
 }
 ```
 
 > Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+> `ultimaCuotaPaga` solo aplica a clientes de tipo `SOCIO`. Para clientes `PARTICULAR` es `null`. Si el socio aún no tiene pagos registrados, los campos internos pueden venir sin información.
 
 ---
 
@@ -723,10 +735,21 @@ Registra un nuevo cliente de tipo socio.
   tipoCliente: TipoCliente;
   estado: EstadoSocio | null; // null para Particulares
   observaciones: string | null;
+  ultimaCuotaPaga: UltimaCuotaPagaDto | null;
   createdAt: string; // Instant ISO-8601 UTC
   updatedAt: string; // Instant ISO-8601 UTC
   createdBy: string;
   updatedBy: string;
+}
+```
+
+#### `UltimaCuotaPagaDto`
+
+```typescript
+{
+  mesCorrespondiente: string | null;
+  fechaPago: string | null; // Instant ISO-8601 UTC
+  formaPago: FormaPago | null;
 }
 ```
 
