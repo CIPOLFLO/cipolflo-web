@@ -34,6 +34,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   createdBy: 'Juan Pérez',
   updatedAt: '',
   updatedBy: '',
+  ultimaCuotaPaga: null,
 };
 
 describe('ModificarCliente', () => {

@@ -8,6 +8,8 @@ import {
   FinanzaDetalleRespuestaDto,
   FinanzaRespuestaDto,
   TipoMovimiento,
+  FormaPago,
+  FinanzaModificarDto,
 } from '../models/finanza.model';
 
 @Injectable({
@@ -67,9 +69,9 @@ export class FinanzaService extends BaseHttpService {
       codigo: 'FIN-2026-001',
       procedencia: Procedencia.Camping,
       servicio: 'Alquiler de parrillero',
-      fecha: '14/3/2026',
+      fecha: '2026-03-14',
       importe: 15000,
-      formaPago: 'Transferencia',
+      formaPago: FormaPago.Transferencia,
       notas:
         'Pago de cuota mensual correspondiente a Marzo 2026. Socio al día con sus obligaciones.',
       createdAt: '2026-03-15T14:30:00Z',
@@ -83,6 +85,12 @@ export class FinanzaService extends BaseHttpService {
   eliminar(id: number): Observable<void> {
     // TODO: reemplazar cuando el backend esté disponible
     console.log('Eliminar finanza', id);
+    return of(void 0);
+  }
+
+  update(id: number, dto: FinanzaModificarDto): Observable<void> {
+    // TODO: reemplazar cuando el backend esté disponible
+    console.log('Modificar finanza', id, dto);
     return of(void 0);
   }
 }

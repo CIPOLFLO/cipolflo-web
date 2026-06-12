@@ -17,6 +17,10 @@ export enum MetodoCobro {
   EnSede = 'EN_SEDE',
   Efectivo = 'EFECTIVO',
 }
+export enum FormaPago {
+  Efectivo = 'EFECTIVO',
+  Transferencia = 'TRANSFERENCIA',
+}
 
 export const METODO_COBRO_OPTIONS: FormFieldOption[] = [
   { label: 'Cobradora', value: MetodoCobro.Cobradora },
@@ -46,6 +50,11 @@ export const TIPO_CLIENTE_OPTIONS = [
   { label: 'Socio', value: TipoCliente.Socio },
   { label: 'Particular', value: TipoCliente.Particular },
 ];
+
+export const FORMA_PAGO_LABEL: Record<FormaPago, string> = {
+  [FormaPago.Efectivo]: 'Efectivo',
+  [FormaPago.Transferencia]: 'Transferencia',
+};
 
 export interface ListadoClientesRequestDto {
   tipoCliente?: TipoCliente;
@@ -80,6 +89,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   ciudad: string | null;
   direccion: string | null;
   observaciones: string | null;
+  ultimaCuotaPaga: UltimaCuotaPagaDto | null;
 }
 export interface ModificacionParticularRequestDto {
   nombreCompleto: string;
@@ -129,4 +139,10 @@ export interface RegistroSocioRequestDto {
   ciudad: string;
   direccion: string | null;
   observaciones: string | null;
+}
+
+export interface UltimaCuotaPagaDto {
+  mesCorrespondiente: string;
+  fechaPago: string;
+  formaPago: FormaPago;
 }

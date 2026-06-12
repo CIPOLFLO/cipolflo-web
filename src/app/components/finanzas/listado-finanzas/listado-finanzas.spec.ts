@@ -121,12 +121,15 @@ describe('ListadoFinanzas', () => {
 
       expect(actions.some((action) => action.label === 'Eliminar')).toBe(true);
     });
-
     it('debería ejecutar onEliminarFinanza al seleccionar Eliminar', () => {
       mockConfirmDialogService.open.mockReturnValue(of(false));
       const eliminarSpy = vi.spyOn(component, 'onEliminarFinanza' as keyof ListadoFinanzas);
 
-      component['rowActions'](mockRow)[1].command?.(mockRow);
+      const eliminarAction = component['rowActions'](mockRow).find(
+        (action) => action.label === 'Eliminar',
+      );
+
+      eliminarAction?.command?.(mockRow);
 
       expect(eliminarSpy).toHaveBeenCalledWith(mockRow);
     });

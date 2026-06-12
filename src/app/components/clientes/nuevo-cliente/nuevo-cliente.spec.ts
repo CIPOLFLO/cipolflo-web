@@ -28,6 +28,7 @@ const clienteMock = {
   createdBy: 'admin',
   updatedAt: '2024-01-02',
   updatedBy: 'admin',
+  ultimaCuotaPaga: null,
 };
 
 describe('NuevoCliente', () => {
