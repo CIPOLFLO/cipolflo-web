@@ -28,6 +28,7 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   createdBy: 'admin',
   updatedAt: '',
   updatedBy: '',
+  ultimaCuotaPaga: null,
 };
 
 function buildForm(): FormGroup {

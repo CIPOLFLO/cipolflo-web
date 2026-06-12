@@ -15,7 +15,7 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesService } from '../services/cliente.service';
-import { METODO_COBRO_LABEL } from '../models/cliente.model';
+import { FORMA_PAGO_LABEL, METODO_COBRO_LABEL, TipoCliente } from '../models/cliente.model';
 
 @Component({
   standalone: true,
@@ -43,6 +43,8 @@ export class DetalleCliente {
   protected readonly clienteId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
   });
+
+  protected readonly esSocio = computed(() => this.cliente()?.tipoCliente === TipoCliente.Socio);
 
   protected readonly cliente = toSignal(
     toObservable(this.clienteId).pipe(
@@ -107,5 +109,29 @@ export class DetalleCliente {
       fechaRegistro: c.createdAt,
       registradoPor: c.createdBy,
     };
+  });
+
+  protected readonly ultimaCuotaPagaFields = computed<DetailFieldConfig[]>(() => {
+    const ultimaCuota = this.cliente()?.ultimaCuotaPaga;
+
+    return [
+      {
+        key: 'mesCorrespondiente',
+        label: 'Mes correspondiente',
+        value: ultimaCuota?.mesCorrespondiente ?? null,
+      },
+      {
+        key: 'fechaPago',
+        label: 'Fecha de pago',
+        value: ultimaCuota?.fechaPago ?? null,
+      },
+      {
+        key: 'formaPago',
+        label: 'Forma de pago',
+        value: ultimaCuota?.formaPago
+          ? (FORMA_PAGO_LABEL[ultimaCuota.formaPago] ?? ultimaCuota.formaPago)
+          : null,
+      },
+    ];
   });
 }

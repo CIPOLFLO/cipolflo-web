@@ -5,6 +5,7 @@ import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
   MetodoCobro,
+  FormaPago,
   TipoCliente,
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
@@ -31,6 +32,11 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   createdBy: 'Juan Pérez',
   updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
+  ultimaCuotaPaga: {
+    mesCorrespondiente: 'Marzo 2026',
+    fechaPago: '2026-03-15T14:30:00Z',
+    formaPago: FormaPago.Transferencia,
+  },
 };
 
 describe('DetalleCliente', () => {
@@ -111,6 +117,21 @@ describe('DetalleCliente', () => {
       queryParams: { from: 'detalle' },
     });
   });
+  it('debería mostrar la sección de última cuota paga', () => {
+    expect(fixture.nativeElement.textContent).toContain('Última cuota paga');
+  });
+
+  it('debería mostrar el mes correspondiente de la última cuota paga', () => {
+    expect(fixture.nativeElement.textContent).toContain('Marzo 2026');
+  });
+
+  it('debería mostrar la fecha de pago de la última cuota paga', () => {
+    expect(fixture.nativeElement.textContent).toContain('2026-03-15T14:30:00Z');
+  });
+
+  it('debería mostrar la forma de pago de la última cuota paga', () => {
+    expect(fixture.nativeElement.textContent).toContain('Transferencia');
+  });
 });
 
 describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
@@ -123,6 +144,7 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
     numeroSocio: null,
     estado: null,
     metodoCobro: null,
+    ultimaCuotaPaga: null,
   };
 
   beforeEach(async () => {
@@ -151,5 +173,9 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
   it('el campo metodoCobro tiene value null', () => {
     const field = component['infoFields']().find((f) => f.key === 'metodoCobro');
     expect(field?.value).toBeNull();
+  });
+
+  it('no debería mostrar sección de última cuota paga cuando no existe información', () => {
+    expect(fixture.nativeElement.textContent).not.toContain('Última cuota paga');
   });
 });
