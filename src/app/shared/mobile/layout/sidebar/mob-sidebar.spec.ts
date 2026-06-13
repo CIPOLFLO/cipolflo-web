@@ -57,11 +57,28 @@ describe('MobSidebar', () => {
     expect(items.length).toBe(navItems.length);
   });
 
-  it('debería emitir closed al cerrar el drawer', () => {
+  it('debería emitir closed al hacer click en el botón cerrar', () => {
     let emitted = false;
     fixture.componentInstance.closed.subscribe(() => (emitted = true));
 
-    fixture.componentInstance.closed.emit();
+    const button = document.body.querySelector('.mob-sidebar__close') as HTMLButtonElement;
+    button.click();
+
+    expect(emitted).toBe(true);
+  });
+
+  it('debería emitir closed al hacer click en un ítem de navegación', () => {
+    let emitted = false;
+    fixture.componentInstance.closed.subscribe(() => (emitted = true));
+
+    // ctrlKey evita que RouterLink navegue (la navegación async correría tras destruirse
+    // el TestBed) y preventDefault evita que jsdom intente la navegación del <a href>;
+    // el handler (click)="closed.emit()" igual se ejecuta.
+    const navItem = document.body.querySelector('.mob-sidebar__nav-item') as HTMLAnchorElement;
+    navItem.addEventListener('click', (e) => e.preventDefault(), { once: true });
+    navItem.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }),
+    );
 
     expect(emitted).toBe(true);
   });

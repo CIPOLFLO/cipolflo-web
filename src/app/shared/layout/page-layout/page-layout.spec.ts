@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { PageLayout } from './page-layout';
 import { of } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
 
 @Component({
   template: `
@@ -173,5 +175,77 @@ describe('PageLayout - actions and content projection', () => {
 
     const link = hostEl.querySelector<HTMLAnchorElement>('.sub-header__back-button');
     expect(link?.getAttribute('href')).toBe('/reservas');
+  });
+});
+
+describe('PageLayout - vista mobile', () => {
+  let fixture: ComponentFixture<PageLayout>;
+  let el: HTMLElement;
+
+  const mockBreakpointMobile = { isMobile: () => true };
+
+  beforeEach(async () => {
+    mockAuthService.logout.mockClear();
+
+    await TestBed.configureTestingModule({
+      imports: [PageLayout],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+        { provide: BreakpointService, useValue: mockBreakpointMobile },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(PageLayout);
+    el = fixture.nativeElement;
+    fixture.detectChanges();
+  });
+
+  it('debería renderizar el header y el sidebar mobile, no el sub-header de desktop', () => {
+    expect(el.querySelector('app-mob-page-header')).not.toBeNull();
+    expect(el.querySelector('app-mob-sidebar')).not.toBeNull();
+    expect(el.querySelector('app-sub-header')).toBeNull();
+  });
+
+  it('el sidebar arranca cerrado y se abre al togglear el menú del header', () => {
+    // El drawer de PrimeNG se monta en document.body solo cuando está visible
+    expect(document.body.querySelector('.mob-sidebar')).toBeNull();
+
+    const menuBtn = el.querySelector('.mob-header__menu-btn') as HTMLButtonElement;
+    menuBtn.click();
+    fixture.detectChanges();
+
+    expect(document.body.querySelector('.mob-sidebar')).not.toBeNull();
+  });
+
+  it('debería cerrar el sidebar al hacer click en un ítem de navegación', () => {
+    (el.querySelector('.mob-header__menu-btn') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(document.body.querySelector('.mob-sidebar')).not.toBeNull();
+
+    // ctrlKey evita que RouterLink navegue (la navegación async correría tras destruirse
+    // el TestBed) y preventDefault evita que jsdom intente navegar por el <a href>;
+    // el handler (click)="closed.emit()" igual cierra el sidebar.
+    const navItem = document.body.querySelector('.mob-sidebar__nav-item') as HTMLAnchorElement;
+    navItem.addEventListener('click', (e) => e.preventDefault(), { once: true });
+    navItem.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }),
+    );
+    fixture.detectChanges();
+
+    expect(document.body.querySelector('.mob-sidebar')).toBeNull();
+  });
+
+  it('debería desloguear al hacer click en Cerrar Sesión del sidebar', () => {
+    (el.querySelector('.mob-header__menu-btn') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const logoutBtn = document.body.querySelector('.mob-sidebar__logout') as HTMLButtonElement;
+    logoutBtn.click();
+
+    expect(mockAuthService.logout).toHaveBeenCalledWith({
+      logoutParams: { returnTo: window.location.origin },
+    });
   });
 });

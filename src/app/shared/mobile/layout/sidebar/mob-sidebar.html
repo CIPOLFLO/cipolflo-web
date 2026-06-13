@@ -12,7 +12,12 @@
           <span class="mob-sidebar__org-subtitle">{{ orgSubtitle() }}</span>
         }
       </div>
-      <button type="button" class="mob-sidebar__close" (click)="closed.emit()">
+      <button
+        type="button"
+        class="mob-sidebar__close"
+        aria-label="Cerrar menú"
+        (click)="closed.emit()"
+      >
         <i class="pi pi-times"></i>
       </button>
     </header>

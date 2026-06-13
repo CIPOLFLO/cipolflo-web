@@ -124,12 +124,6 @@
   font-size: 0.75rem;
 }
 
-.mob-sidebar__user-name {
-  font-size: 0.8125rem;
-  line-height: 1.25;
-  color: var(--color-text-primary);
-}
-
 .mob-sidebar__user-email {
   font-size: 0.75rem;
   line-height: 1.25;

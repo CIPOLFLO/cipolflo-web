@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { Router } from '@angular/router';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { UserService } from '../../../core/services/user.service';
 import { MobPageHeader } from '../../mobile/layout/header/mob-page-header/mob-page-header';
@@ -23,7 +22,6 @@ export class PageLayout {
   protected readonly breakpoint = inject(BreakpointService);
   protected readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
   protected readonly isSidebarVisible = signal(false);
 
