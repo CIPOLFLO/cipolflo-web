@@ -1,0 +1,26 @@
+<div class="stepper" role="list">
+  @for (step of steps(); track $index) {
+    <div
+      class="stepper__step"
+      role="listitem"
+      [class.stepper__step--active]="stepState($index) === 'active'"
+      [class.stepper__step--completed]="stepState($index) === 'completed'"
+      [class.stepper__step--future]="stepState($index) === 'future'"
+      [attr.aria-label]="step.label + ' (' + stepStateLabel($index) + ')'"
+      [attr.aria-current]="stepState($index) === 'active' ? 'step' : null"
+    >
+      <span class="stepper__circle">
+        @if (stepState($index) === 'completed') {
+          <i class="pi pi-check stepper__check" aria-hidden="true"></i>
+        } @else {
+          {{ $index + 1 }}
+        }
+      </span>
+      <span
+        class="stepper__line"
+        [class.stepper__line--filled]="stepState($index) === 'completed'"
+        aria-hidden="true"
+      ></span>
+    </div>
+  }
+</div>

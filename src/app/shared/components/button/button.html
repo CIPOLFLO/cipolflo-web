@@ -12,8 +12,11 @@
   tooltipPosition="top"
   (click)="handleClick($event)"
 >
-  @if (icon()) {
+  @if (icon() && iconPosition() === 'left') {
     <i [class]="'button__icon pi ' + icon()" aria-hidden="true"></i>
   }
   {{ label() }}
+  @if (icon() && iconPosition() === 'right') {
+    <i [class]="'button__icon pi ' + icon()" aria-hidden="true"></i>
+  }
 </button>

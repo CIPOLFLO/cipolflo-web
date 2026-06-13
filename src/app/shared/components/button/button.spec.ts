@@ -110,4 +110,25 @@ describe('AppButton - contenido e icono', () => {
     expect(icon?.classList.contains('pi-plus')).toBe(true);
     expect(button?.firstElementChild).toBe(icon);
   });
+
+  it('debería aplicar la clase de host full cuando fullWidth es true', () => {
+    fixture.componentRef.setInput('fullWidth', true);
+    fixture.detectChanges();
+
+    expect(el.classList.contains('button-host--full')).toBe(true);
+  });
+
+  it('debería renderizar el icono a la derecha del label cuando iconPosition es right', () => {
+    fixture.componentRef.setInput('label', 'Siguiente');
+    fixture.componentRef.setInput('icon', 'pi-chevron-right');
+    fixture.componentRef.setInput('iconPosition', 'right');
+    fixture.detectChanges();
+
+    const button = el.querySelector<HTMLButtonElement>('button');
+    const icon = el.querySelector<HTMLElement>('.button__icon');
+
+    expect(icon).not.toBeNull();
+    expect(icon?.classList.contains('pi-chevron-right')).toBe(true);
+    expect(button?.lastElementChild).toBe(icon);
+  });
 });

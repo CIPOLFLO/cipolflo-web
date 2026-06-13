@@ -6,7 +6,7 @@ export { SubHeader } from './layout/sub-header/sub-header';
 
 // UI Components
 export { AppButton } from './components/button/button';
-export type { ButtonIntent, ButtonType } from './components/button/button.models';
+export type { ButtonIntent, ButtonType, IconPosition } from './components/button/button.models';
 export { FilterPanel } from './components/filter-panel/filter-panel';
 export { DetailSection } from './components/detail-section/detail-section';
 export { DetailRegistroSection } from './components/detail-registro-section/detail-registro-section';
@@ -59,7 +59,14 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
+
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
 export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
 export type { NavItem } from './mobile/layout/sidebar/sidebar.models';
+
+// Mobile Components
+export { MobStepper } from './mobile/components/stepper/mob-stepper';
+export type { StepConfig } from './mobile/components/stepper/stepper.models';
+export { MobStepCard } from './mobile/components/step-card/mob-step-card';
+export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
