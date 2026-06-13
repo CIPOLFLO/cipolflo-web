@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 
 @Component({
   template: `
@@ -181,12 +182,11 @@ describe('PageLayout - actions and content projection', () => {
 describe('PageLayout - vista mobile', () => {
   let fixture: ComponentFixture<PageLayout>;
   let el: HTMLElement;
+  let sidebar: SidebarService;
 
   const mockBreakpointMobile = { isMobile: () => true };
 
   beforeEach(async () => {
-    mockAuthService.logout.mockClear();
-
     await TestBed.configureTestingModule({
       imports: [PageLayout],
       providers: [
@@ -199,53 +199,26 @@ describe('PageLayout - vista mobile', () => {
 
     fixture = TestBed.createComponent(PageLayout);
     el = fixture.nativeElement;
+    sidebar = TestBed.inject(SidebarService);
     fixture.detectChanges();
   });
 
-  it('debería renderizar el header y el sidebar mobile, no el sub-header de desktop', () => {
+  it('debería renderizar el header mobile, no el sub-header de desktop', () => {
     expect(el.querySelector('app-mob-page-header')).not.toBeNull();
-    expect(el.querySelector('app-mob-sidebar')).not.toBeNull();
     expect(el.querySelector('app-sub-header')).toBeNull();
   });
 
-  it('el sidebar arranca cerrado y se abre al togglear el menú del header', () => {
-    // El drawer de PrimeNG se monta en document.body solo cuando está visible
-    expect(document.body.querySelector('.mob-sidebar')).toBeNull();
+  it('no renderiza el sidebar (vive en app, fuera del router-outlet)', () => {
+    expect(el.querySelector('app-mob-sidebar')).toBeNull();
+  });
+
+  it('abre el sidebar vía SidebarService al togglear el menú del header', () => {
+    expect(sidebar.isVisible()).toBe(false);
 
     const menuBtn = el.querySelector('.mob-header__menu-btn') as HTMLButtonElement;
     menuBtn.click();
     fixture.detectChanges();
 
-    expect(document.body.querySelector('.mob-sidebar')).not.toBeNull();
-  });
-
-  it('debería cerrar el sidebar al hacer click en un ítem de navegación', () => {
-    (el.querySelector('.mob-header__menu-btn') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    expect(document.body.querySelector('.mob-sidebar')).not.toBeNull();
-
-    // ctrlKey evita que RouterLink navegue (la navegación async correría tras destruirse
-    // el TestBed) y preventDefault evita que jsdom intente navegar por el <a href>;
-    // el handler (click)="closed.emit()" igual cierra el sidebar.
-    const navItem = document.body.querySelector('.mob-sidebar__nav-item') as HTMLAnchorElement;
-    navItem.addEventListener('click', (e) => e.preventDefault(), { once: true });
-    navItem.dispatchEvent(
-      new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }),
-    );
-    fixture.detectChanges();
-
-    expect(document.body.querySelector('.mob-sidebar')).toBeNull();
-  });
-
-  it('debería desloguear al hacer click en Cerrar Sesión del sidebar', () => {
-    (el.querySelector('.mob-header__menu-btn') as HTMLButtonElement).click();
-    fixture.detectChanges();
-
-    const logoutBtn = document.body.querySelector('.mob-sidebar__logout') as HTMLButtonElement;
-    logoutBtn.click();
-
-    expect(mockAuthService.logout).toHaveBeenCalledWith({
-      logoutParams: { returnTo: window.location.origin },
-    });
+    expect(sidebar.isVisible()).toBe(true);
   });
 });

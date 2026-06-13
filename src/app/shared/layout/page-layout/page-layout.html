@@ -2,19 +2,7 @@
   <app-mob-page-header
     [title]="pageTitle()"
     [subtitle]="pageDescription()"
-    (menuToggled)="isSidebarVisible.set(true)"
-  />
-
-  <app-mob-sidebar
-    [visible]="isSidebarVisible()"
-    [orgName]="orgName"
-    [orgInitials]="orgInitials"
-    [orgSubtitle]="orgSubtitle"
-    [userEmail]="userService.userEmail()"
-    [userInitials]="userService.userInitials()"
-    [navItems]="navItems"
-    (closed)="isSidebarVisible.set(false)"
-    (logoutClicked)="onLogout()"
+    (menuToggled)="sidebar.open()"
   />
 } @else {
   <app-sub-header
