@@ -23,5 +23,5 @@
 }
 
 .mob-fab:active {
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-primary-active);
 }

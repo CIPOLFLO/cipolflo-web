@@ -9,13 +9,13 @@
   border-radius: 8px;
 }
 
-.mob-list-card__actions {
+.mob-list-card-actions {
   position: absolute;
   top: 8px;
   right: 8px;
 }
 
-.mob-list-card__content {
+.mob-list-card-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
