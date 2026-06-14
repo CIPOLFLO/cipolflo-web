@@ -6,7 +6,11 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
 import { BreakpointService } from './core/services/breakpoint.service';
+import { SidebarService } from './core/services/sidebar.service';
+import { UserService } from './core/services/user.service';
 import { ErrorDialogComponent } from './shared/error-dialog/error-dialog';
+import { MobSidebar } from './shared/mobile/layout/sidebar/mob-sidebar';
+import { NavItem } from './shared/models/nav-item.model';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +21,7 @@ import { ErrorDialogComponent } from './shared/error-dialog/error-dialog';
     ErrorDialogComponent,
     ConfirmDialogComponent,
     CommonModule,
+    MobSidebar,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -25,4 +30,27 @@ export class App {
   protected readonly window = window;
   protected auth = inject(AuthService);
   protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
+  protected readonly userService = inject(UserService);
+
+  protected readonly orgName = 'Círculo Policial';
+  protected readonly orgInitials = 'CP';
+  protected readonly orgSubtitle = 'de Flores';
+
+  protected readonly navItems: NavItem[] = [
+    { label: 'Reservas', route: '/reservas', icon: 'pi pi-calendar' },
+    { label: 'Clientes', route: '/clientes', icon: 'pi pi-users' },
+    { label: 'Estadísticas', route: '/estadisticas', icon: 'pi pi-chart-bar' },
+    { label: 'Finanzas', route: '/finanzas', icon: 'pi pi-wallet' },
+    { label: 'Servicios', route: '/servicios', icon: 'pi pi-building' },
+  ];
+
+  protected onLogout(): void {
+    this.sidebar.close();
+    this.auth.logout({
+      logoutParams: {
+        returnTo: window.location.origin,
+      },
+    });
+  }
 }
