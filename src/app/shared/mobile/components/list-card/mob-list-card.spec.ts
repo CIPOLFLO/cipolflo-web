@@ -1,16 +1,16 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { RowAction } from '../../../../index';
+import { RowAction } from '../../../components/table/table.models';
 import { MobListCard } from './mob-list-card';
 
 @Component({
-  selector: 'mob-test-host',
+  selector: 'app-mob-test-host',
   imports: [MobListCard],
   template: `
-    <mob-list-card [actions]="actions" [row]="row">
+    <app-mob-list-card [actions]="actions" [row]="row">
       <span class="projected-content">Contenido proyectado</span>
-    </mob-list-card>
+    </app-mob-list-card>
   `,
 })
 class TestHostComponent {
@@ -19,12 +19,12 @@ class TestHostComponent {
 }
 
 @Component({
-  selector: 'mob-test-host-empty',
+  selector: 'app-mob-test-host-empty',
   imports: [MobListCard],
   template: `
-    <mob-list-card [actions]="actions" [row]="row">
+    <app-mob-list-card [actions]="actions" [row]="row">
       <span class="projected-content">Contenido proyectado</span>
-    </mob-list-card>
+    </app-mob-list-card>
   `,
 })
 class TestHostEmptyActionsComponent {

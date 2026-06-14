@@ -69,6 +69,6 @@ export { MobStepper } from './mobile/components/stepper/mob-stepper';
 export type { StepConfig } from './mobile/components/stepper/stepper.models';
 export { MobStepCard } from './mobile/components/step-card/mob-step-card';
 export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
-export { MobFab } from './mobile/components/fab/mob-fab/mob-fab';
-export { MobListCard } from './mobile/components/list-card/mob-list-card/mob-list-card';
+export { MobFab } from './mobile/components/fab/mob-fab';
+export { MobListCard } from './mobile/components/list-card/mob-list-card';
 export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
