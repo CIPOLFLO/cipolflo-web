@@ -1,0 +1,72 @@
+/* El stepper está pensado para renderizarse sobre el header azul (--color-primary). */
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Cada step es una columna: círculo arriba, su propia línea debajo. */
+.stepper__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper__circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Paso activo: círculo blanco con número en color primary. */
+.stepper__step--active .stepper__circle {
+  background-color: var(--color-bg-white);
+  border-color: var(--color-bg-white);
+  color: var(--color-primary);
+}
+
+/* Paso completado: círculo verde con check blanco, sin número. */
+.stepper__step--completed .stepper__circle {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-text-inverse);
+}
+
+/* Paso futuro: círculo translúcido (sin borde) sobre el fondo azul. */
+.stepper__step--future .stepper__circle {
+  background-color: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stepper__check {
+  font-size: 13px;
+}
+
+/* Línea debajo de cada círculo, ocupando el ancho de su columna. */
+.stepper__line {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.35);
+  transition: background-color 0.2s ease;
+}
+
+/* Verde cuando el step ya está completado. */
+.stepper__line--filled {
+  background-color: var(--color-success);
+}

@@ -1,24 +1,19 @@
-@if (breakpoint.isMobile()) {
-  <app-mob-page-header title="Clientes" />
-  <div>Mobile view coming soon...</div>
-} @else {
-  <app-page-layout
-    pageTitle="Listado de Clientes"
-    pageDescription="Gestiona y consulta información de todos los clientes del sistema"
-  >
-    <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
-    <app-button
-      actions
-      label="Nuevo Socio"
-      intent="primary"
-      icon="pi-plus"
-      (clicked)="onNuevoCliente()"
-    />
-    <app-filter-panel (filterChange)="onFilterChange($event)" />
+<app-page-layout
+  pageTitle="Listado de Clientes"
+  pageDescription="Gestiona y consulta información de todos los clientes del sistema"
+>
+  <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
+  <app-button
+    actions
+    label="Nuevo Socio"
+    intent="primary"
+    icon="pi-plus"
+    (clicked)="onNuevoCliente()"
+  />
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
 
-    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
-    @if (clientePagoSeleccionado(); as clientePago) {
-      <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
-    }
-  </app-page-layout>
-}
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+  @if (clientePagoSeleccionado(); as clientePago) {
+    <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
+  }
+</app-page-layout>

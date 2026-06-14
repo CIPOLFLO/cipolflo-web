@@ -1,0 +1,148 @@
+:host {
+  display: contents;
+}
+
+:host ::ng-deep .mob-sidebar {
+  width: 280px;
+}
+
+:host ::ng-deep .mob-sidebar .p-drawer-content {
+  padding: 0;
+}
+:host ::ng-deep .mob-sidebar .p-drawer-header {
+  display: none;
+}
+
+.mob-sidebar__container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+}
+
+.mob-sidebar__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  padding: 1rem;
+  position: relative;
+}
+.mob-sidebar__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: none;
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.mob-sidebar__org-avatar,
+.mob-sidebar__user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.mob-sidebar__org-avatar {
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-primary-hover);
+  font-size: 0.875rem;
+}
+
+.mob-sidebar__org-info,
+.mob-sidebar__user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mob-sidebar__org-name {
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.mob-sidebar__org-subtitle {
+  font-size: 0.75rem;
+  line-height: 1.25;
+  opacity: 0.8;
+}
+
+.mob-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+}
+
+.mob-sidebar__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.mob-sidebar__nav-item--active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.mob-sidebar__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding: 1rem;
+}
+
+.mob-sidebar__user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-secondary);
+  padding: 0.75rem;
+}
+
+.mob-sidebar__user-avatar {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 0.75rem;
+}
+
+.mob-sidebar__user-email {
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mob-sidebar__logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0;
+}

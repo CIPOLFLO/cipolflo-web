@@ -3,10 +3,11 @@ import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { DetalleServicio } from './detalle-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const mockServicio: ServicioDetalleRespuestaDto = {
   id: 1,
@@ -22,6 +23,15 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
   updatedBy: 'Juan Pérez',
+};
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
 };
 
 function setup(
@@ -68,6 +78,8 @@ describe('DetalleServicio', () => {
         },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
         { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
   });

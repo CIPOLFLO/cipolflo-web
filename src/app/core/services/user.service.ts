@@ -22,4 +22,7 @@ export class UserService {
     ),
     { initialValue: '' },
   );
+  userEmail = toSignal(this.auth.user$.pipe(map((user) => user?.email ?? '')), {
+    initialValue: '',
+  });
 }

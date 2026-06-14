@@ -13,6 +13,8 @@ import {
   EstadoSocio,
   MetodoCobro,
 } from '../models/cliente.model';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -35,6 +37,15 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   updatedAt: '',
   updatedBy: '',
   ultimaCuotaPaga: null,
+};
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
 };
 
 describe('ModificarCliente', () => {
@@ -78,6 +89,8 @@ describe('ModificarCliente', () => {
             },
           },
         },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 
@@ -364,6 +377,8 @@ describe('ModificarCliente - onConfirmar Particular', () => {
             },
           },
         },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 
@@ -424,6 +439,8 @@ describe('ModificarCliente - backLink', () => {
             },
           },
         },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 

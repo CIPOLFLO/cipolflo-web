@@ -6,6 +6,8 @@ import { Procedencia } from '../../../shared';
 import { Concepto, FormaPago, TipoMovimiento } from '../models/finanza.model';
 import { FinanzaService } from '../services/finanza.service';
 import { NuevoMovimiento } from './nuevo-movimiento';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const FORM_VALIDO = {
   tipoMovimiento: TipoMovimiento.Ingreso,
@@ -14,6 +16,15 @@ const FORM_VALIDO = {
   fecha: '2026-01-15',
   importe: 500,
   formaPago: FormaPago.Efectivo,
+};
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
 };
 
 describe('NuevoMovimiento', () => {
@@ -34,6 +45,8 @@ describe('NuevoMovimiento', () => {
         { provide: FinanzaService, useValue: { create: createSpy } },
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 

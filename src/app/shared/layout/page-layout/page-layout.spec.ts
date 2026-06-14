@@ -1,6 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { PageLayout } from './page-layout';
+import { of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 
 @Component({
   template: `
@@ -22,6 +28,15 @@ class TestHostPageLayout {
   showBackButton = signal(false);
   backButtonLink = signal('/');
 }
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
+};
 
 describe('PageLayout', () => {
   let component: PageLayout;
@@ -31,6 +46,10 @@ describe('PageLayout', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PageLayout],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PageLayout);
@@ -95,6 +114,10 @@ describe('PageLayout - actions and content projection', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TestHostPageLayout],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+      ],
     }).compileComponents();
 
     hostFixture = TestBed.createComponent(TestHostPageLayout);
@@ -153,5 +176,49 @@ describe('PageLayout - actions and content projection', () => {
 
     const link = hostEl.querySelector<HTMLAnchorElement>('.sub-header__back-button');
     expect(link?.getAttribute('href')).toBe('/reservas');
+  });
+});
+
+describe('PageLayout - vista mobile', () => {
+  let fixture: ComponentFixture<PageLayout>;
+  let el: HTMLElement;
+  let sidebar: SidebarService;
+
+  const mockBreakpointMobile = { isMobile: () => true };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PageLayout],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+        { provide: BreakpointService, useValue: mockBreakpointMobile },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(PageLayout);
+    el = fixture.nativeElement;
+    sidebar = TestBed.inject(SidebarService);
+    fixture.detectChanges();
+  });
+
+  it('debería renderizar el header mobile, no el sub-header de desktop', () => {
+    expect(el.querySelector('app-mob-page-header')).not.toBeNull();
+    expect(el.querySelector('app-sub-header')).toBeNull();
+  });
+
+  it('no renderiza el sidebar (vive en app, fuera del router-outlet)', () => {
+    expect(el.querySelector('app-mob-sidebar')).toBeNull();
+  });
+
+  it('abre el sidebar vía SidebarService al togglear el menú del header', () => {
+    expect(sidebar.isVisible()).toBe(false);
+
+    const menuBtn = el.querySelector('.mob-header__menu-btn') as HTMLButtonElement;
+    menuBtn.click();
+    fixture.detectChanges();
+
+    expect(sidebar.isVisible()).toBe(true);
   });
 });
