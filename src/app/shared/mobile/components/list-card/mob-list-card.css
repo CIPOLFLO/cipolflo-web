@@ -1,0 +1,23 @@
+.mob-list-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+}
+
+.mob-list-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.mob-list-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 32px;
+}
