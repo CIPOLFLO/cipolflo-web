@@ -51,6 +51,7 @@ export { Procedencia, PROCEDENCIA_LABEL, PROCEDENCIA_OPTIONS } from './models/pr
 export type { AuditInfoDto } from './models/audit.model';
 export { EstadoReserva } from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
+export type { NavItem } from './models/nav-item.model';
 
 // Pipes
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
@@ -69,4 +70,3 @@ export { MobStepper } from './mobile/components/stepper/mob-stepper';
 export type { StepConfig } from './mobile/components/stepper/stepper.models';
 export { MobStepCard } from './mobile/components/step-card/mob-step-card';
 export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
-export type { NavItem } from './models/nav-item.model';
