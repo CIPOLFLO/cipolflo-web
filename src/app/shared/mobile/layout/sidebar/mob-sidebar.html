@@ -1,0 +1,57 @@
+<p-drawer styleClass="mob-sidebar" position="left" [visible]="visible()" (onHide)="closed.emit()">
+  <div class="mob-sidebar__container">
+    <header class="mob-sidebar__header">
+      <div class="mob-sidebar__org-avatar">
+        {{ orgInitials() }}
+      </div>
+
+      <div class="mob-sidebar__org-info">
+        <strong class="mob-sidebar__org-name">{{ orgName() }}</strong>
+
+        @if (orgSubtitle()) {
+          <span class="mob-sidebar__org-subtitle">{{ orgSubtitle() }}</span>
+        }
+      </div>
+      <button
+        type="button"
+        class="mob-sidebar__close"
+        aria-label="Cerrar menú"
+        (click)="closed.emit()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <nav class="mob-sidebar__nav" aria-label="Navegación principal">
+      @for (item of navItems(); track item.route) {
+        <a
+          class="mob-sidebar__nav-item"
+          [routerLink]="item.route"
+          routerLinkActive="mob-sidebar__nav-item--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          (click)="closed.emit()"
+        >
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <footer class="mob-sidebar__footer">
+      <div class="mob-sidebar__user-card">
+        <div class="mob-sidebar__user-avatar">
+          {{ userInitials() }}
+        </div>
+
+        <div class="mob-sidebar__user-info">
+          <span class="mob-sidebar__user-email">{{ userEmail() }}</span>
+        </div>
+      </div>
+
+      <button type="button" class="mob-sidebar__logout" (click)="onLogoutClick()">
+        <i class="pi pi-sign-out"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </footer>
+  </div>
+</p-drawer>

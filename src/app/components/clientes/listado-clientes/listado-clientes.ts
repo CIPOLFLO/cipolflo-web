@@ -7,7 +7,6 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
-  MobPageHeader,
   PageLayout,
   RowAction,
   TableStateService,
@@ -18,12 +17,11 @@ import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
-import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-listado-clientes',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota, MobPageHeader],
+  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota],
   providers: [
     TableStateService,
     ClientesColumnsService,
@@ -40,7 +38,6 @@ export class ListadoClientes {
   private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
-  protected readonly breakpoint = inject(BreakpointService);
   private readonly errorHandler = inject(ErrorHandlerService);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 

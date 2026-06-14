@@ -7,6 +7,8 @@ import { FinanzaDetalleRespuestaDto, TipoMovimiento } from '../models/finanza.mo
 import { FinanzaService } from '../services/finanza.service';
 import { DetalleFinanza } from './detalle-finanza';
 import { Procedencia } from '../../../shared';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const mockFinanza: FinanzaDetalleRespuestaDto = {
   id: 1,
@@ -22,6 +24,16 @@ const mockFinanza: FinanzaDetalleRespuestaDto = {
   updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
   tipoMovimiento: TipoMovimiento.Ingreso,
+};
+
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
 };
 
 describe('DetalleFinanza', () => {
@@ -50,6 +62,8 @@ describe('DetalleFinanza', () => {
         },
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 

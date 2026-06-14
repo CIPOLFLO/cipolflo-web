@@ -11,6 +11,8 @@ import {
 import { ClientesService } from '../services/cliente.service';
 import { DetalleCliente } from './detalle-cliente';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 const mockCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -38,6 +40,15 @@ const mockCliente: ClienteDetalleRespuestaDto = {
     formaPago: FormaPago.Transferencia,
   },
 };
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
+};
 
 describe('DetalleCliente', () => {
   let fixture: ComponentFixture<DetalleCliente>;
@@ -58,6 +69,8 @@ describe('DetalleCliente', () => {
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
         { provide: Router, useValue: { navigate: vi.fn() } },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 
@@ -158,6 +171,8 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
         { provide: Router, useValue: { navigate: vi.fn() } },
         { provide: ErrorHandlerService, useValue: { handle: vi.fn() } },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 
