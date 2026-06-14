@@ -63,10 +63,10 @@ export { FilterConfigProvider } from './services/filter-config.provider';
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
 export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
-export type { NavItem } from './mobile/layout/sidebar/sidebar.models';
 
 // Mobile Components
 export { MobStepper } from './mobile/components/stepper/mob-stepper';
 export type { StepConfig } from './mobile/components/stepper/stepper.models';
 export { MobStepCard } from './mobile/components/step-card/mob-step-card';
 export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
+export type { NavItem } from './models/nav-item.model';

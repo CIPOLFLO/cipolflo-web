@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Drawer } from 'primeng/drawer';
-import { NavItem } from './sidebar.models';
+import { NavItem } from '../../../models/nav-item.model';
 
 @Component({
   standalone: true,
