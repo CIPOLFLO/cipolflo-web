@@ -10,7 +10,7 @@ import { SidebarService } from './core/services/sidebar.service';
 import { UserService } from './core/services/user.service';
 import { ErrorDialogComponent } from './shared/error-dialog/error-dialog';
 import { MobSidebar } from './shared/mobile/layout/sidebar/mob-sidebar';
-import type { NavItem } from './shared/mobile/layout/sidebar/sidebar.models';
+import { NavItem } from './shared/models/nav-item.model';
 
 @Component({
   selector: 'app-root',

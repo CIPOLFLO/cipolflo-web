@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MobSidebar } from './mob-sidebar';
-import { NavItem } from './sidebar.models';
+import { NavItem } from '../../../models/nav-item.model';
 
 const navItems: NavItem[] = [
   { label: 'Reservas', route: '/reservas', icon: 'pi pi-calendar' },
