@@ -6,6 +6,8 @@ import { ConfirmDialogService } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { FinanzaService } from '../services/finanza.service';
 import { ListadoFinanzas } from './listado-finanzas';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
 
 describe('ListadoFinanzas', () => {
   let component: ListadoFinanzas;
@@ -18,6 +20,15 @@ describe('ListadoFinanzas', () => {
     fecha: '14/3/2026',
     importeSignado: 15000,
     descripcion: 'Pago de alquiler',
+  };
+  const mockAuthService = {
+    user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+    logout: vi.fn(),
+  };
+
+  const mockUserService = {
+    userInitials: () => 'JP',
+    userEmail: () => 'juan@example.com',
   };
 
   let mockFinanzaService: {
@@ -64,6 +75,8 @@ describe('ListadoFinanzas', () => {
         { provide: FinanzaService, useValue: mockFinanzaService },
         { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 

@@ -7,6 +7,18 @@ import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { EstadoServicio } from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { AuthService } from '@auth0/auth0-angular';
+import { UserService } from '../../../core/services/user.service';
+
+const mockAuthService = {
+  user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+  logout: vi.fn(),
+};
+
+const mockUserService = {
+  userInitials: () => 'JP',
+  userEmail: () => 'juan@example.com',
+};
 
 describe('NuevoServicio', () => {
   let fixture: ComponentFixture<NuevoServicio>;
@@ -37,6 +49,8 @@ describe('NuevoServicio', () => {
         { provide: ServicioOptionsService, useValue: mockOptionsService },
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
       ],
     }).compileComponents();
 

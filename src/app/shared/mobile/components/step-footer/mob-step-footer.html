@@ -1,0 +1,33 @@
+<footer class="step-footer" [class.step-footer--single]="!showPrevious()">
+  @if (showPrevious()) {
+    <app-button
+      label="Anterior"
+      icon="pi-chevron-left"
+      iconPosition="left"
+      intent="secondary"
+      [fullWidth]="true"
+      (clicked)="previous.emit()"
+    />
+  }
+
+  @if (isLastStep()) {
+    <app-button
+      label="Confirmar"
+      icon="pi-save"
+      intent="primary"
+      [fullWidth]="true"
+      [disabled]="nextDisabled()"
+      (clicked)="confirm.emit()"
+    />
+  } @else {
+    <app-button
+      label="Siguiente"
+      icon="pi-chevron-right"
+      iconPosition="right"
+      intent="primary"
+      [fullWidth]="true"
+      [disabled]="nextDisabled()"
+      (clicked)="next.emit()"
+    />
+  }
+</footer>

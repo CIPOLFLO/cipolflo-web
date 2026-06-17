@@ -1,5 +1,17 @@
 @if (!breakpoint.isMobile()) {
   <app-header></app-header>
+} @else {
+  <app-mob-sidebar
+    [visible]="sidebar.isVisible()"
+    [orgName]="orgName"
+    [orgInitials]="orgInitials"
+    [orgSubtitle]="orgSubtitle"
+    [userEmail]="userService.userEmail()"
+    [userInitials]="userService.userInitials()"
+    [navItems]="navItems"
+    (closed)="sidebar.close()"
+    (logoutClicked)="onLogout()"
+  />
 }
 <app-confirm-dialog></app-confirm-dialog>
 <app-error-dialog></app-error-dialog>

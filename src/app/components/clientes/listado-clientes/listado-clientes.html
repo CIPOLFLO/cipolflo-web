@@ -1,32 +1,19 @@
-@if (breakpoint.isMobile()) {
-  <mob-list-layout>
-    <app-mob-page-header header title="Clientes" />
-    <mob-filter-panel
-      filters
-      searchPlaceholder="Buscar clientes..."
-      (searchChange)="onSearchChange($event)"
-      (filtersApply)="onApplyFilters($event)"
-      (filtersClear)="onClearFilters()"
-    />
-  </mob-list-layout>
-  <mob-fab (clicked)="onNuevoCliente()" />
-} @else {
-  <app-page-layout
-    pageTitle="Listado de Clientes"
-    pageDescription="Gestiona y consulta información de todos los clientes del sistema"
-  >
-    <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
-    <app-button
-      actions
-      label="Nuevo Socio"
-      intent="primary"
-      icon="pi-plus"
-      (clicked)="onNuevoCliente()"
-    />
-    <app-filter-panel (filterChange)="onFilterChange($event)" />
-    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
-    @if (clientePagoSeleccionado(); as clientePago) {
-      <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
-    }
-  </app-page-layout>
-}
+<app-page-layout
+  pageTitle="Listado de Clientes"
+  pageDescription="Gestiona y consulta información de todos los clientes del sistema"
+>
+  <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
+  <app-button
+    actions
+    label="Nuevo Socio"
+    intent="primary"
+    icon="pi-plus"
+    (clicked)="onNuevoCliente()"
+  />
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+  @if (clientePagoSeleccionado(); as clientePago) {
+    <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
+  }
+</app-page-layout>

@@ -1,0 +1,18 @@
+/* El footer queda fijo al pie del wizard: el área de contenido scrollea por debajo.
+   La página contenedora es responsable del layout (columna a altura completa); aquí
+   solo evitamos que se comprima y agregamos una sombra superior como pista de scroll. */
+.step-footer {
+  display: flex;
+  flex-shrink: 0;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-border-separator);
+  background-color: var(--color-bg-white);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Cada botón ocupa la misma fracción del ancho disponible.
+   El ancho interno lo resuelve AppButton vía su input fullWidth (sin ::ng-deep). */
+.step-footer app-button {
+  flex: 1;
+}

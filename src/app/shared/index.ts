@@ -6,7 +6,7 @@ export { SubHeader } from './layout/sub-header/sub-header';
 
 // UI Components
 export { AppButton } from './components/button/button';
-export type { ButtonIntent, ButtonType } from './components/button/button.models';
+export type { ButtonIntent, ButtonType, IconPosition } from './components/button/button.models';
 export { FilterPanel } from './components/filter-panel/filter-panel';
 export { DetailSection } from './components/detail-section/detail-section';
 export { DetailRegistroSection } from './components/detail-registro-section/detail-registro-section';
@@ -51,6 +51,7 @@ export { Procedencia, PROCEDENCIA_LABEL, PROCEDENCIA_OPTIONS } from './models/pr
 export type { AuditInfoDto } from './models/audit.model';
 export { EstadoReserva } from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
+export type { NavItem } from './models/nav-item.model';
 
 // Pipes
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
@@ -59,10 +60,15 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
+
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
-//Mobile Components
-export { MobFab } from './mobile/components/fab/mob-fab/mob-fab';
-export { MobListCard } from './mobile/components/list-card/mob-list-card/mob-list-card';
-export { MobFilterPanel } from './mobile/components/filter-panel/mob-filter-panel';
-export { MobListLayout } from './mobile/components/layout/mob-list-layout/mob-list-layout';
+
+// Mobile Components
+export { MobStepper } from './mobile/components/stepper/mob-stepper';
+export type { StepConfig } from './mobile/components/stepper/stepper.models';
+export { MobStepCard } from './mobile/components/step-card/mob-step-card';
+export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
+export { MobFab } from './mobile/components/fab/mob-fab';
+export { MobListCard } from './mobile/components/list-card/mob-list-card';
+export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';

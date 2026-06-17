@@ -97,3 +97,12 @@
 .button__icon {
   font-size: 14px;
 }
+
+/* Permite que el botón ocupe todo el ancho disponible (ej. footers mobile). */
+:host(.button-host--full) {
+  display: block;
+}
+
+:host(.button-host--full) .button {
+  width: 100%;
+}

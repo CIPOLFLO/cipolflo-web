@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, output } from '@angular/core';
 
 @Component({
-  selector: 'mob-fab',
+  selector: 'app-mob-fab',
   imports: [],
   templateUrl: './mob-fab.html',
   styleUrl: './mob-fab.css',
