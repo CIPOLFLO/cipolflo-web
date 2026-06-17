@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MobListLayout } from './mob-list-layout';
 
 @Component({
-  selector: 'mob-test-host',
+  selector: 'app-mob-test-host',
   imports: [MobListLayout],
   template: `
     <mob-list-layout>
