@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'mob-list-layout',
+  selector: 'app-mob-list-layout',
   imports: [],
   templateUrl: './mob-list-layout.html',
   styleUrl: './mob-list-layout.css',

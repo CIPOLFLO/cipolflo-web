@@ -4,7 +4,7 @@ import { AppButton } from '../../../components/button/button';
 import { FilterConfigProvider } from '../../../services/filter-config.provider';
 import { FILTER_DEBOUNCE_MS } from '../../../config/filter.config';
 @Component({
-  selector: 'mob-filter-panel',
+  selector: 'app-mob-filter-panel',
   imports: [FormField, AppButton],
   templateUrl: './mob-filter-panel.html',
   styleUrl: './mob-filter-panel.css',
