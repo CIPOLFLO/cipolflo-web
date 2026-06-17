@@ -65,4 +65,4 @@ export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-h
 export { MobFab } from './mobile/components/fab/mob-fab/mob-fab';
 export { MobListCard } from './mobile/components/list-card/mob-list-card/mob-list-card';
 export { MobFilterPanel } from './mobile/components/filter-panel/mob-filter-panel';
-export { MobListLayout } from './mobile/components/layout/mob-list-layout';
+export { MobListLayout } from './mobile/components/layout/mob-list-layout/mob-list-layout';

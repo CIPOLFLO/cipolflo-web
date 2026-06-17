@@ -1,6 +1,15 @@
 @if (breakpoint.isMobile()) {
-  <app-mob-page-header title="Clientes" />
-  <div>Mobile view coming soon...</div>
+  <mob-list-layout>
+    <app-mob-page-header header title="Clientes" />
+    <mob-filter-panel
+      filters
+      searchPlaceholder="Buscar clientes..."
+      (searchChange)="onSearchChange($event)"
+      (filtersApply)="onApplyFilters($event)"
+      (filtersClear)="onClearFilters()"
+    />
+  </mob-list-layout>
+  <mob-fab (clicked)="onNuevoCliente()" />
 } @else {
   <app-page-layout
     pageTitle="Listado de Clientes"
@@ -15,7 +24,6 @@
       (clicked)="onNuevoCliente()"
     />
     <app-filter-panel (filterChange)="onFilterChange($event)" />
-
     <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
     @if (clientePagoSeleccionado(); as clientePago) {
       <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
