@@ -36,13 +36,15 @@ export class MobFilterPanel {
     this.isExpanded.update((v) => !v);
   }
 
-  protected updateSearch(value: string | null): void {
+  protected updateSearch(value: string | null | undefined): void {
     const normalized = value ?? '';
+
     this.searchValue.set(normalized);
 
     if (this._debounceTimer !== null) {
       clearTimeout(this._debounceTimer);
     }
+
     this._debounceTimer = setTimeout(() => {
       this._debounceTimer = null;
       this.searchChange.emit(normalized);
