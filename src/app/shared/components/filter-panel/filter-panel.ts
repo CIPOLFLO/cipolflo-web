@@ -3,6 +3,7 @@ import { FormField } from '../form-field/form-field';
 import { AppButton } from '../button/button';
 import { FilterConfigProvider } from '../../services/filter-config.provider';
 import { FILTER_DEBOUNCE_MS } from '../../config/filter.config';
+import { buildActiveFilters } from '../../utils/filter.utils';
 
 @Component({
   selector: 'app-filter-panel',
@@ -41,7 +42,6 @@ export class FilterPanel {
 
   protected updateValue(key: string, value: string | null): void {
     this.filterValues.update((prev) => ({ ...prev, [key]: value }));
-
     const field = this.filterFields().find((f) => f.key === key);
     if (field?.type === 'select') {
       this.emitFilters();
@@ -57,12 +57,7 @@ export class FilterPanel {
   }
 
   protected emitFilters(): void {
-    const active = Object.fromEntries(
-      Object.entries(this.filterValues()).filter(
-        (entry): entry is [string, string] => entry[1] !== null && entry[1] !== '',
-      ),
-    );
-    this.filterChange.emit({ ...active });
+    this.filterChange.emit(buildActiveFilters(this.filterValues()));
   }
 
   protected onClear(): void {

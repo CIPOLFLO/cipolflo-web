@@ -3,6 +3,8 @@ import { FormField } from '../../../components/form-field/form-field';
 import { AppButton } from '../../../components/button/button';
 import { FilterConfigProvider } from '../../../services/filter-config.provider';
 import { FILTER_DEBOUNCE_MS } from '../../../config/filter.config';
+import { buildActiveFilters } from '../../../utils/filter.utils';
+
 @Component({
   selector: 'app-mob-filter-panel',
   imports: [FormField, AppButton],
@@ -38,13 +40,11 @@ export class MobFilterPanel {
 
   protected updateSearch(value: string | null | undefined): void {
     const normalized = value ?? '';
-
     this.searchValue.set(normalized);
 
     if (this._debounceTimer !== null) {
       clearTimeout(this._debounceTimer);
     }
-
     this._debounceTimer = setTimeout(() => {
       this._debounceTimer = null;
       this.searchChange.emit(normalized);
@@ -56,12 +56,7 @@ export class MobFilterPanel {
   }
 
   protected onApply(): void {
-    const active = Object.fromEntries(
-      Object.entries(this.filterValues()).filter(
-        (entry): entry is [string, string] => entry[1] !== null && entry[1] !== '',
-      ),
-    );
-    this.filtersApply.emit({ ...active });
+    this.filtersApply.emit(buildActiveFilters(this.filterValues()));
   }
 
   protected onClear(): void {
