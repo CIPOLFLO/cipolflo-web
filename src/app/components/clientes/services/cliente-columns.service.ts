@@ -23,5 +23,14 @@ export class ClientesColumnsService {
         [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
       },
     },
+    {
+      key: 'ultimaCuota',
+      label: 'Última cuota paga',
+      nullFallback: '—',
+      transform: (v) => {
+        const ultimaCuota = v as { descripcion?: string } | null;
+        return ultimaCuota?.descripcion ?? '—';
+      },
+    },
   ];
 }

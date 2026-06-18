@@ -112,25 +112,13 @@ export class DetalleCliente {
   });
 
   protected readonly ultimaCuotaPagaFields = computed<DetailFieldConfig[]>(() => {
-    const ultimaCuota = this.cliente()?.ultimaCuotaPaga;
+    const ultimaCuota = this.cliente()?.ultimaCuota;
 
     return [
       {
         key: 'mesCorrespondiente',
-        label: 'Mes correspondiente',
-        value: ultimaCuota?.mesCorrespondiente ?? null,
-      },
-      {
-        key: 'fechaPago',
-        label: 'Fecha de pago',
-        value: ultimaCuota?.fechaPago ?? null,
-      },
-      {
-        key: 'formaPago',
-        label: 'Forma de pago',
-        value: ultimaCuota?.formaPago
-          ? (FORMA_PAGO_LABEL[ultimaCuota.formaPago] ?? ultimaCuota.formaPago)
-          : null,
+        label: 'Ultimo mes pago ',
+        value: ultimaCuota?.nombreMes ?? null,
       },
     ];
   });

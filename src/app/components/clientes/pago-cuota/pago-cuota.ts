@@ -11,7 +11,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AppButton, CurrencyFormatPipe } from '../../../shared';
 import { ClienteRespuestaDto } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
-import { PagoCuotaDto } from '../models/pago-cuota.model';
+import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
@@ -38,7 +38,7 @@ import { Dialog } from 'primeng/dialog';
 export class PagoCuota {
   readonly cliente = input<ClienteRespuestaDto | null>(null);
   readonly cerrado = output<void>();
-  protected readonly pagoConfirmado = signal<PagoCuotaDto | null>(null);
+  protected readonly pagoConfirmado = signal<PagoCuotaResponseDto[] | null>(null);
   private readonly clientesService = inject(ClientesService);
 
   protected readonly FormaPago = FormaPago;

@@ -1,7 +1,21 @@
-export interface PagoCuotaDto {
-  clienteId: number;
+import { MetodoCobro } from './cliente.model';
+
+export interface RegistroPagoCuotaRequestDto {
   cantidadCuotas: number;
-  formaPago: string;
+  importeTotal: number;
+  metodoCobro: MetodoCobro;
   fechaPago: string;
-  total: number;
+  observaciones: string | null;
+}
+
+export interface PagoCuotaResponseDto {
+  id: number;
+  socioId: number;
+  anio: number;
+  mes: number;
+  nombreMes: string;
+  descripcion: string;
+  fechaPago: string;
+  importe: number;
+  metodoCobro: MetodoCobro;
 }
