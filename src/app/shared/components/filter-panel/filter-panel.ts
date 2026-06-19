@@ -3,7 +3,7 @@ import { FormField } from '../form-field/form-field';
 import { AppButton } from '../button/button';
 import { FilterConfigProvider } from '../../services/filter-config.provider';
 import { FILTER_DEBOUNCE_MS } from '../../config/filter.config';
-import { buildActiveFilters } from '../../utils/filter.utils';
+import { buildActiveFilters, buildDefaultFilterValues } from '../../utils/filter.utils';
 
 @Component({
   selector: 'app-filter-panel',
@@ -19,11 +19,7 @@ export class FilterPanel {
   protected readonly filterFields = this.filterConfigProvider.filterFields;
   protected readonly isExpanded = signal(true);
   protected readonly filterValues = signal<Record<string, string | null>>(
-    Object.fromEntries(
-      this.filterFields()
-        .filter((f) => f.defaultValue != null)
-        .map((f) => [f.key, f.defaultValue!]),
-    ),
+    buildDefaultFilterValues(this.filterFields()),
   );
 
   private readonly debounceMs = inject(FILTER_DEBOUNCE_MS);

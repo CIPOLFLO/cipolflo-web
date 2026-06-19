@@ -5,3 +5,11 @@ export function buildActiveFilters(values: Record<string, string | null>): Recor
     ),
   );
 }
+
+export function buildDefaultFilterValues(
+  fields: { key: string; defaultValue?: string }[],
+): Record<string, string | null> {
+  return Object.fromEntries(
+    fields.filter((f) => f.defaultValue != null).map((f) => [f.key, f.defaultValue!]),
+  );
+}

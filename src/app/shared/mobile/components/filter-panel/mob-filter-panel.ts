@@ -3,7 +3,7 @@ import { FormField } from '../../../components/form-field/form-field';
 import { AppButton } from '../../../components/button/button';
 import { FilterConfigProvider } from '../../../services/filter-config.provider';
 import { FILTER_DEBOUNCE_MS } from '../../../config/filter.config';
-import { buildActiveFilters } from '../../../utils/filter.utils';
+import { buildActiveFilters, buildDefaultFilterValues } from '../../../utils/filter.utils';
 
 @Component({
   selector: 'app-mob-filter-panel',
@@ -24,11 +24,7 @@ export class MobFilterPanel {
   protected readonly isExpanded = signal(false);
   protected readonly searchValue = signal('');
   protected readonly filterValues = signal<Record<string, string | null>>(
-    Object.fromEntries(
-      this.filterFields()
-        .filter((f) => f.defaultValue != null)
-        .map((f) => [f.key, f.defaultValue!]),
-    ),
+    buildDefaultFilterValues(this.filterFields()),
   );
 
   private readonly debounceMs = inject(FILTER_DEBOUNCE_MS);
