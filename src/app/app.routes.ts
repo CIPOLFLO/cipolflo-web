@@ -19,6 +19,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'reservas/nueva',
+        loadComponent: () =>
+          import('./components/reservas/nueva-reserva/nueva-reserva').then(
+            (module) => module.NuevaReserva,
+          ),
+      },
+      {
         path: 'reservas/:id',
         loadComponent: () =>
           import('./components/reservas/detalle-reserva/detalle-reserva').then(

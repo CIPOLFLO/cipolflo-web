@@ -63,6 +63,8 @@ export interface ServicioRespuestaDto {
   precioSocio: number;
   modalidadPrecio: string;
   estado: EstadoServicio;
+  capacidad: number | null;
+  cantidad: number | null;
 }
 
 export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
@@ -85,6 +87,14 @@ export interface ReservaProximaDto {
   fechaSalida: string;
   pago: boolean;
   estado: EstadoReserva;
+}
+
+/** Rango de fechas ocupado por una reserva activa del servicio (alimenta el calendario). */
+export interface ServicioFechaOcupadaDto {
+  reservaId: number;
+  estado: EstadoReserva;
+  fechaInicio: string;
+  fechaFin: string;
 }
 
 export interface HabilitacionServicioDto {

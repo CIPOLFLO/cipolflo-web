@@ -61,6 +61,20 @@ export class MiService extends BaseHttpService {
 
 While the backend is unavailable, return `of(mockData)` with a `// TODO` comment.
 
+**No mapping/transformation logic in HTTP services.** A service method only performs the request and returns the backend DTO (or `PageResponse<DTO>`) as-is — no `map` to reshape, unwrap `.content`, filter, or adapt the payload. Any transformation to the shape a component needs lives in a dedicated mapper (a pure function in a `mappers/` file next to the consumer) and is applied by the consumer:
+
+```typescript
+// ❌ NO: el service desempaqueta/transforma
+getHabilitados(p: Procedencia): Observable<ItemDto[]> {
+  return this.get<PageResponse<ItemDto>>('items', { ... }).pipe(map((page) => page.content));
+}
+
+// ✅ SÍ: el service devuelve el DTO crudo; el consumidor mapea
+this.service
+  .getAll({ page: 0, size: 100, filters: { procedencia, estado: Estado.Habilitado } })
+  .pipe(map(mapItemsConsumidor));
+```
+
 ### Environment
 
 Always import environment via the alias — never use relative paths:
@@ -250,6 +264,7 @@ El **componente padre wizard** es responsable de la lógica de navegación, calc
 
 - **No NgModules** — architecture is 100% standalone.
 - **No direct `HttpClient` injection** in feature services — extend `BaseHttpService`.
+- **No mapping/transformation in HTTP services** — return the backend DTO as-is; transform via a mapper in the consumer.
 - **No relative environment imports** — use `@env/environment`.
 - **No `any`** without a comment justifying it.
 - **No real HTTP requests in tests** — always `provideHttpClientTesting`.

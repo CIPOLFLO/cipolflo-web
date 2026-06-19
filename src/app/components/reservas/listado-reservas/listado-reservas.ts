@@ -66,4 +66,8 @@ export class ListadoReservas {
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }
+
+  protected onNuevaReserva(): void {
+    this.router.navigate(['/reservas/nueva']);
+  }
 }

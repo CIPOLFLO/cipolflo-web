@@ -8,6 +8,7 @@ import {
   ServicioActualizarDto,
   ServicioCrearDto,
   ServicioDetalleRespuestaDto,
+  ServicioFechaOcupadaDto,
   ServicioRespuestaDto,
 } from '../models/servicio.model';
 
@@ -31,6 +32,15 @@ export class ServicioService extends BaseHttpService {
 
   getById(id: number): Observable<ServicioDetalleRespuestaDto> {
     return this.get<ServicioDetalleRespuestaDto>(`servicios/${id}`);
+  }
+
+  /** Rangos de fecha ocupados de un servicio dentro de la ventana [desde, hasta]. */
+  getFechasOcupadas(
+    id: number,
+    desde: string,
+    hasta: string,
+  ): Observable<ServicioFechaOcupadaDto[]> {
+    return this.get<ServicioFechaOcupadaDto[]>(`servicios/${id}/fechas-ocupadas`, { desde, hasta });
   }
 
   create(dto: ServicioCrearDto): Observable<ServicioRespuestaDto> {

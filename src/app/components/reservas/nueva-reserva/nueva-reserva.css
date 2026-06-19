@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.nueva-reserva__cedula {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  align-self: start;
+}
+
+.nueva-reserva__cedula-field {
+  flex: 1;
+}
+
+.nueva-reserva__lupa {
+  margin-bottom: 0.125rem;
+}
+
+.nueva-reserva__calendario {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nueva-reserva__calendario-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}

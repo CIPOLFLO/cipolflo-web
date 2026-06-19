@@ -1,0 +1,181 @@
+<app-page-layout
+  pageTitle="Nueva Reserva"
+  pageDescription="Complete los datos para registrar una nueva reserva"
+  [showBackButton]="true"
+  backButtonLink="/reservas"
+>
+  <app-form-layout>
+    <!-- Información de la Reserva -->
+    <app-form-section title="Información de la Reserva">
+      <app-form-field
+        [config]="tipoReservaField"
+        [value]="controlValue('tipoReserva')"
+        [error]="reservaErrors()['tipoReserva']"
+        (valueChange)="onControlChange('tipoReserva', $event)"
+        (blurred)="onFieldBlur('tipoReserva')"
+      />
+      <app-form-field
+        [config]="procedenciaField"
+        [value]="controlValue('procedencia')"
+        [error]="reservaErrors()['procedencia']"
+        (valueChange)="onControlChange('procedencia', $event)"
+        (blurred)="onFieldBlur('procedencia')"
+      />
+      <app-form-field
+        [config]="servicioField()"
+        [value]="controlValue('servicioId')"
+        [error]="reservaErrors()['servicioId']"
+        (valueChange)="onControlChange('servicioId', $event)"
+        (blurred)="onFieldBlur('servicioId')"
+      />
+      @if (servicioSeleccionado()) {
+        <div class="nueva-reserva__calendario">
+          <span class="nueva-reserva__calendario-label">Fechas de la reserva *</span>
+          <app-occupancy-calendar
+            [occupiedRanges]="fechasOcupadas()"
+            (rangeSelected)="onRangoSeleccionado($event)"
+          />
+        </div>
+      }
+
+      @if (modoCapacidad()) {
+        <app-form-field
+          [config]="cantidadTotalField"
+          [value]="controlValue('cantidadTotal')"
+          [error]="reservaErrors()['cantidadTotal']"
+          (valueChange)="onControlChange('cantidadTotal', $event)"
+          (blurred)="onFieldBlur('cantidadTotal')"
+        />
+        <app-form-field
+          [config]="cantidadMenoresField"
+          [value]="controlValue('cantidadMenores')"
+          [error]="reservaErrors()['cantidadMenores']"
+          (valueChange)="onControlChange('cantidadMenores', $event)"
+          (blurred)="onFieldBlur('cantidadMenores')"
+        />
+      }
+      @if (modoCantidad()) {
+        <app-form-field
+          [config]="cantidadField"
+          [value]="controlValue('cantidad')"
+          [error]="reservaErrors()['cantidad']"
+          (valueChange)="onControlChange('cantidad', $event)"
+          (blurred)="onFieldBlur('cantidad')"
+        />
+      }
+    </app-form-section>
+
+    <!-- Información del Cliente -->
+    <app-form-section title="Información del Cliente">
+      @if (!esColaboracion()) {
+        <app-form-field
+          [config]="tipoClienteField"
+          [value]="controlValue('tipoCliente')"
+          [error]="clienteErrors()['tipoCliente']"
+          (valueChange)="onControlChange('tipoCliente', $event)"
+          (blurred)="onFieldBlur('tipoCliente')"
+        />
+
+        <div class="nueva-reserva__cedula">
+          <app-form-field
+            class="nueva-reserva__cedula-field"
+            [config]="cedulaField()"
+            [value]="controlValue('cedula')"
+            [error]="clienteErrors()['cedula']"
+            (valueChange)="onControlChange('cedula', $event)"
+            (blurred)="onFieldBlur('cedula')"
+          />
+          @if (lupitaVisible()) {
+            <app-button
+              class="nueva-reserva__lupa"
+              intent="secondary"
+              icon="pi-search"
+              tooltip="Buscar cliente por cédula"
+              (clicked)="buscarCliente()"
+            />
+          }
+        </div>
+
+        <app-form-field
+          [config]="nombreField()"
+          [displayOnly]="clienteCamposReadonly()"
+          [value]="controlValue('nombre')"
+          [error]="clienteErrors()['nombre']"
+          (valueChange)="onControlChange('nombre', $event)"
+          (blurred)="onFieldBlur('nombre')"
+        />
+        <app-form-field
+          [config]="celularField()"
+          [displayOnly]="clienteCamposReadonly()"
+          [value]="controlValue('celular')"
+          [error]="clienteErrors()['celular']"
+          (valueChange)="onControlChange('celular', $event)"
+          (blurred)="onFieldBlur('celular')"
+        />
+        <app-form-field
+          [config]="emailField()"
+          [displayOnly]="clienteCamposReadonly()"
+          [value]="controlValue('email')"
+          [error]="clienteErrors()['email']"
+          (valueChange)="onControlChange('email', $event)"
+          (blurred)="onFieldBlur('email')"
+        />
+
+        @if (esSocio()) {
+          <app-form-field
+            [config]="numeroSocioField"
+            [displayOnly]="true"
+            [value]="controlValue('numeroSocio')"
+          />
+        }
+
+        @if (mostrarObservaciones()) {
+          <app-form-field
+            [config]="observacionesField"
+            [displayOnly]="true"
+            [value]="observacionesCliente()"
+          />
+        }
+      } @else {
+        <app-form-field
+          [config]="rutField"
+          [value]="controlValue('rut')"
+          (valueChange)="onControlChange('rut', $event)"
+          (blurred)="onFieldBlur('rut')"
+        />
+        <app-form-field
+          [config]="nombreColaboracionField"
+          [value]="controlValue('nombreColaboracion')"
+          [error]="colaboracionErrors()['nombreColaboracion']"
+          (valueChange)="onControlChange('nombreColaboracion', $event)"
+          (blurred)="onFieldBlur('nombreColaboracion')"
+        />
+      }
+    </app-form-section>
+
+    <!-- Información Adicional -->
+    <app-form-section title="Información Adicional">
+      <app-form-field
+        [config]="notasField"
+        [value]="controlValue('notas')"
+        (valueChange)="onControlChange('notas', $event)"
+        (blurred)="onFieldBlur('notas')"
+      />
+    </app-form-section>
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Confirmar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        tooltip="Complete los datos requeridos para continuar"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+  </app-form-layout>
+
+  <app-confirm-dialog />
+  <app-error-dialog />
+</app-page-layout>

@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-import { PageResponse, TableQueryParams } from '../../../shared/components/table/table.models';
-import { ReservaRow } from '../models/reserva.model';
+import { PageResponse, TableQueryParams } from '../../../shared';
+import {
+  ReservaCreacionRequestDto,
+  ReservaCreacionRespuestaDto,
+  ReservaRow,
+} from '../models/reserva.model';
 
 const MOCK_RESERVAS: ReservaRow[] = [
   {
@@ -250,6 +254,7 @@ const MOCK_RESERVAS: ReservaRow[] = [
 @Injectable()
 export class ReservasService extends BaseHttpService {
   getDatos(params: TableQueryParams): Observable<PageResponse<ReservaRow>> {
+    // TODO: reemplazar cuando el backend exponga el listado de reservas
     const start = params.page * params.size;
     const content = MOCK_RESERVAS.slice(start, start + params.size);
     return of({
@@ -261,5 +266,12 @@ export class ReservasService extends BaseHttpService {
       first: params.page === 0,
       last: start + params.size >= MOCK_RESERVAS.length,
     });
+  }
+
+  crear(dto: ReservaCreacionRequestDto): Observable<ReservaCreacionRespuestaDto> {
+    // TODO: reemplazar cuando el backend exponga POST /reservas (contrato aún sin definir)
+    // return this.post<ReservaCreacionRespuestaDto>('reservas', dto);
+    void dto;
+    return of({ id: MOCK_RESERVAS.length + 1 });
   }
 }

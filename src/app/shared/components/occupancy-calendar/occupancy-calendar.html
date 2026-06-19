@@ -1,0 +1,16 @@
+<p-datepicker
+  [ngModel]="selection()"
+  (ngModelChange)="onSelectionChange($event)"
+  selectionMode="range"
+  [inline]="true"
+  [readonlyInput]="true"
+  [disabledDates]="disabledDates()"
+  [minDate]="minDate()"
+  dateFormat="dd/mm/yy"
+/>
+
+@if (rangoLabel(); as label) {
+  <p class="occupancy-calendar__rango">
+    <span class="occupancy-calendar__rango-label">Período seleccionado:</span> {{ label }}
+  </p>
+}

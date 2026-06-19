@@ -1,5 +1,5 @@
 import { FormGroup } from '@angular/forms';
-import { ClienteDetalleRespuestaDto, MetodoCobro } from '../models/cliente.model';
+import { ClienteDetalleRespuestaDto } from '../models/cliente.model';
 
 export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespuestaDto): void {
   form.patchValue({
@@ -21,21 +21,4 @@ export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespues
     estado: cliente.estado ?? null,
     metodoCobro: cliente.metodoCobro ?? null,
   });
-}
-
-export function applySectionChange(
-  form: FormGroup,
-  values: Record<string, string | MetodoCobro | null>,
-): void {
-  form.patchValue(values);
-
-  form.markAsDirty();
-
-  Object.keys(values).forEach((key) => {
-    form.get(key)?.markAsTouched();
-  });
-}
-
-export function markFieldAsTouched(form: FormGroup, key: string): void {
-  form.get(key)?.markAsTouched();
 }
