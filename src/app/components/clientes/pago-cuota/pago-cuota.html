@@ -14,33 +14,36 @@
       </header>
 
       <section class="pago-cuota__socio">
-        <p>Socio: {{ cliente['nombreCompleto'] }}</p>
-        <p>N° de Socio: {{ cliente['numeroSocio'] }}</p>
-        <p>Costo por Cuota: {{ costoCuota | currencyFormat }}</p>
+        <p>Socio: {{ cliente.nombreCompleto }}</p>
+        <p>N° de Socio: {{ cliente.numeroSocio }}</p>
+        <p>Última cuota paga: {{ ultimaCuotaDescripcion() }}</p>
+        <p>Costo por cuota: {{ costoCuota | currencyFormat }}</p>
       </section>
 
       <form [formGroup]="form" class="pago-cuota__form">
-        <label for="cantidadCuotas">Cantidad de Cuotas a Pagar *</label>
+        <label for="cantidadCuotas">Cantidad de cuotas a pagar *</label>
         <p-inputnumber
           inputId="cantidadCuotas"
           formControlName="cantidadCuotas"
           [showButtons]="true"
+          [min]="1"
+          [max]="12"
         />
 
         @if (cantidadInvalida()) {
-          <small class="pago-cuota__error">La cantidad debe ser mayor o igual a 1.</small>
+          <small class="pago-cuota__error">La cantidad debe ser entre 1 y 12.</small>
         }
 
-        <label for="formaPago">Forma de Pago *</label>
+        <label for="metodoCobro">Método de cobro *</label>
         <p-select
-          inputId="formaPago"
-          formControlName="formaPago"
-          [options]="formasPago"
+          inputId="metodoCobro"
+          formControlName="metodoCobro"
+          [options]="metodosCobro"
           optionLabel="label"
           optionValue="value"
         />
 
-        <label for="fechaPago">Fecha de Pago</label>
+        <label for="fechaPago">Fecha de pago *</label>
         <p-datepicker
           inputId="fechaPago"
           formControlName="fechaPago"
@@ -51,6 +54,14 @@
         @if (fechaEsFutura()) {
           <small class="pago-cuota__error">La fecha de pago no puede ser posterior a hoy.</small>
         }
+
+        <label for="observaciones">Observaciones</label>
+        <textarea
+          id="observaciones"
+          formControlName="observaciones"
+          rows="3"
+          class="pago-cuota__textarea"
+        ></textarea>
       </form>
 
       <section class="pago-cuota__resumen">
@@ -63,12 +74,24 @@
         </div>
 
         <div>
+          <span>Meses cubiertos:</span>
+          <strong>
+            @for (periodo of periodosCubiertos(); track periodo) {
+              <span>{{ periodo }}</span>
+              @if (!$last) {
+                <span>, </span>
+              }
+            }
+          </strong>
+        </div>
+
+        <div>
           <span>Costo por cuota:</span>
           <strong>{{ costoCuota | currencyFormat }}</strong>
         </div>
 
         <div class="pago-cuota__total">
-          <span>Total a Pagar:</span>
+          <span>Total a pagar:</span>
           <strong>{{ getTotal() | currencyFormat }}</strong>
         </div>
       </section>
@@ -76,7 +99,7 @@
       <footer class="pago-cuota__actions">
         <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
         <app-button
-          label="Confirmar Pago"
+          label="Confirmar pago"
           intent="primary"
           [disabled]="confirmDisabled()"
           [tooltip]="confirmDisabled() ? 'Complete todos los campos correctamente' : ''"
@@ -93,9 +116,9 @@
   [closable]="false"
   [resizable]="false"
   [draggable]="false"
-  [style]="{ width: '360px' }"
+  [style]="{ width: '420px' }"
 >
-  @if (pagoConfirmado(); as pago) {
+  @if (pagoConfirmado(); as pagos) {
     <div class="pago-confirmado">
       <div class="pago-confirmado__icon">
         <i class="pi pi-check-circle"></i>
@@ -103,7 +126,15 @@
 
       <h3>Pago registrado</h3>
       <p>El pago de cuota fue registrado correctamente.</p>
-      <p><strong>Total:</strong> {{ pago.total | currencyFormat }}</p>
+
+      <p><strong>Total:</strong> {{ getTotal() | currencyFormat }}</p>
+
+      <p><strong>Cuotas registradas:</strong></p>
+      <ul>
+        @for (pago of pagos; track pago.id) {
+          <li>{{ pago.descripcion }} — {{ pago.importe | currencyFormat }}</li>
+        }
+      </ul>
 
       <app-button label="Aceptar" intent="primary" (clicked)="cerrarConfirmacion()" />
     </div>

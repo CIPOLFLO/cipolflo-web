@@ -34,10 +34,11 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   createdBy: 'Juan Pérez',
   updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
-  ultimaCuotaPaga: {
-    mesCorrespondiente: 'Marzo 2026',
-    fechaPago: '2026-03-15T14:30:00Z',
-    formaPago: FormaPago.Transferencia,
+  ultimaCuota: {
+    anio: 2026,
+    mes: 5,
+    nombreMes: 'junio',
+    descripcion: 'Junio 2026',
   },
 };
 const mockAuthService = {
@@ -134,17 +135,6 @@ describe('DetalleCliente', () => {
     expect(fixture.nativeElement.textContent).toContain('Última cuota paga');
   });
 
-  it('debería mostrar el mes correspondiente de la última cuota paga', () => {
-    expect(fixture.nativeElement.textContent).toContain('Marzo 2026');
-  });
-
-  it('debería mostrar la fecha de pago de la última cuota paga', () => {
-    expect(fixture.nativeElement.textContent).toContain('2026-03-15T14:30:00Z');
-  });
-
-  it('debería mostrar la forma de pago de la última cuota paga', () => {
-    expect(fixture.nativeElement.textContent).toContain('Transferencia');
-  });
 });
 
 describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
@@ -157,7 +147,7 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
     numeroSocio: null,
     estado: null,
     metodoCobro: null,
-    ultimaCuotaPaga: null,
+    ultimaCuota: null,
   };
 
   beforeEach(async () => {

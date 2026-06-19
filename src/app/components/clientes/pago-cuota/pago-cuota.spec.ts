@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-
+import { of } from 'rxjs';
 import { PagoCuota } from './pago-cuota';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
-import { FormaPago } from 'src/app/shared/models/forma-pago.model';
-
+import { MetodoCobro } from '../models/cliente.model';
+import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 const mockCliente: ClienteRespuestaDto = {
   id: 1,
   nombreCompleto: 'Lucía Rodríguez',
@@ -15,7 +15,26 @@ const mockCliente: ClienteRespuestaDto = {
   cedula: '5.191.926-8',
   email: 'lucia@example.com',
   estado: EstadoSocio.Activo,
+  ultimaCuota: {
+    anio: 2026,
+    mes: 6,
+    nombreMes: 'junio',
+    descripcion: 'Junio 2026',
+  },
 };
+const mockPagoCuotaResponse: PagoCuotaResponseDto[] = [
+  {
+    id: 1,
+    socioId: mockCliente.id,
+    anio: 2026,
+    mes: 7,
+    nombreMes: 'julio',
+    descripcion: 'Julio 2026',
+    fechaPago: '2026-03-27T03:00:00Z',
+    importe: 5000,
+    metodoCobro: MetodoCobro.Efectivo,
+  },
+];
 
 describe('PagoCuota', () => {
   let component: PagoCuota;
@@ -27,7 +46,13 @@ describe('PagoCuota', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: ClientesService, useValue: { getCostoCuota: () => 5000 } },
+        {
+          provide: ClientesService,
+          useValue: {
+            getCostoCuota: () => 5000,
+            registrarPagoCuota: vi.fn(),
+          }
+        },
       ],
     }).compileComponents();
 
@@ -65,33 +90,38 @@ describe('PagoCuota', () => {
   });
 
   it('onConfirmar guarda el pago confirmado si el formulario es válido', () => {
+    const clientesService = TestBed.inject(ClientesService);
+    vi.spyOn(clientesService, 'registrarPagoCuota').mockReturnValue(of(mockPagoCuotaResponse));
+
     component['form'].patchValue({
-      cantidadCuotas: 2,
-      formaPago: FormaPago.Efectivo,
+      cantidadCuotas: 1,
+      metodoCobro: MetodoCobro.Efectivo,
+      observaciones: null,
       fechaPago: new Date(2026, 2, 27),
     });
 
     component['onConfirmar']();
 
-    expect(component['pagoConfirmado']()).toEqual({
-      clienteId: mockCliente.id,
-      cantidadCuotas: 2,
-      formaPago: FormaPago.Efectivo,
-      fechaPago: '2026-03-27',
-      total: 10000,
-    });
+    expect(clientesService.registrarPagoCuota).toHaveBeenCalled();
+    expect(component['pagoConfirmado']()).toEqual(mockPagoCuotaResponse);
   });
 
   it('cerrarConfirmacion limpia el pago confirmado y emite cerrado', () => {
     const cerradoSpy = vi.spyOn(component.cerrado, 'emit');
 
-    component['pagoConfirmado'].set({
-      clienteId: mockCliente.id,
-      cantidadCuotas: 1,
-      formaPago: FormaPago.Efectivo,
-      fechaPago: '2026-03-27',
-      total: 5000,
-    });
+    component['pagoConfirmado'].set([
+      {
+        id: 1,
+        socioId: mockCliente.id,
+        anio: 2026,
+        mes: 7,
+        nombreMes: 'julio',
+        descripcion: 'Julio 2026',
+        fechaPago: '2026-03-27T03:00:00Z',
+        importe: 5000,
+        metodoCobro: MetodoCobro.Efectivo,
+      },
+    ]);
 
     component['cerrarConfirmacion']();
 
@@ -99,7 +129,7 @@ describe('PagoCuota', () => {
     expect(cerradoSpy).toHaveBeenCalled();
   });
 
-  it('muestra el error de cantidad inválida cuando cantidadCuotas < 1 (línea 31)', async () => {
+  it('muestra el error de cantidad inválida cuando cantidadCuotas < 1', async () => {
     component['form'].controls.cantidadCuotas.setValue(0);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -107,7 +137,7 @@ describe('PagoCuota', () => {
     expect(component['cantidadInvalida']()).toBe(true);
   });
 
-  it('muestra el error de fecha futura cuando fechaPago es posterior a hoy (línea 52)', async () => {
+  it('muestra el error de fecha futura cuando fechaPago es posterior a hoy', async () => {
     component['form'].controls.fechaPago.setValue(new Date(2999, 0, 1));
     fixture.detectChanges();
     await fixture.whenStable();
@@ -115,12 +145,14 @@ describe('PagoCuota', () => {
     expect(component['fechaEsFutura']()).toBe(true);
   });
 
-  it('el botón "Confirmar Pago" llama a onConfirmar al hacer click (línea 83)', async () => {
-    const confirmarSpy = vi.spyOn(component as PagoCuota & { onConfirmar(): void }, 'onConfirmar');
+  it('el botón "Confirmar pago" llama a onConfirmar al hacer click ', async () => {
+    const clientesService = TestBed.inject(ClientesService);
+    vi.spyOn(clientesService, 'registrarPagoCuota').mockReturnValue(of(mockPagoCuotaResponse));
 
-    // p-dialog porta su contenido a document.body; buscar el botón nativo por texto
+    const confirmarSpy = vi.spyOn(component as PagoCuota & { onConfirmar(): void }, 'onConfirmar');
     const nativeButtons = Array.from(document.querySelectorAll('button'));
-    const confirmBtn = nativeButtons.find((b) => b.textContent?.trim().includes('Confirmar Pago'));
+    const confirmBtn = nativeButtons.find((b) => b.textContent?.trim().includes('Confirmar pago'));
+
     confirmBtn?.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -129,13 +161,19 @@ describe('PagoCuota', () => {
   });
 
   it('renderiza el bloque de confirmación cuando pagoConfirmado no es null (líneas 99-108)', async () => {
-    const pago = {
-      clienteId: mockCliente.id,
-      cantidadCuotas: 2,
-      formaPago: FormaPago.Efectivo,
-      fechaPago: '2026-03-27',
-      total: 10000,
-    };
+    const pago: PagoCuotaResponseDto[] = [
+      {
+        id: 1,
+        socioId: mockCliente.id,
+        anio: 2026,
+        mes: 7,
+        nombreMes: 'julio',
+        descripcion: 'Julio 2026',
+        fechaPago: '2026-03-27T03:00:00Z',
+        importe: 5000,
+        metodoCobro: MetodoCobro.Efectivo,
+      },
+    ];
     component['pagoConfirmado'].set(pago);
     fixture.detectChanges();
     await fixture.whenStable();

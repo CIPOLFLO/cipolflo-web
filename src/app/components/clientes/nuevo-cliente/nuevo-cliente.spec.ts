@@ -30,7 +30,7 @@ const clienteMock = {
   createdBy: 'admin',
   updatedAt: '2024-01-02',
   updatedBy: 'admin',
-  ultimaCuotaPaga: null,
+  ultimaCuota: null,
 };
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
