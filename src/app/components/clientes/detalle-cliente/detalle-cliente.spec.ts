@@ -5,7 +5,6 @@ import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
   MetodoCobro,
-  FormaPago,
   TipoCliente,
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
@@ -134,7 +133,6 @@ describe('DetalleCliente', () => {
   it('debería mostrar la sección de última cuota paga', () => {
     expect(fixture.nativeElement.textContent).toContain('Última cuota paga');
   });
-
 });
 
 describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {

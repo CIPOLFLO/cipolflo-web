@@ -46,7 +46,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       email: null,
       estado: null,
       ultimaCuota: null,
-    }
+    },
   ],
   page: 0,
   size: 10,

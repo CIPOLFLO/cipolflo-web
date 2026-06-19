@@ -15,7 +15,7 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesService } from '../services/cliente.service';
-import { FORMA_PAGO_LABEL, METODO_COBRO_LABEL, TipoCliente } from '../models/cliente.model';
+import { METODO_COBRO_LABEL, TipoCliente } from '../models/cliente.model';
 
 @Component({
   standalone: true,

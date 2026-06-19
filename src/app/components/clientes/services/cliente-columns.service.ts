@@ -10,6 +10,15 @@ export class ClientesColumnsService {
   readonly columns: ColumnConfig[] = [
     { key: 'nombreCompleto', label: 'Nombre', sortable: true },
     { key: 'numeroSocio', label: 'Nro de socio', nullFallback: '—' },
+    {
+      key: 'ultimaCuota',
+      label: 'Última cuota paga',
+      nullFallback: '—',
+      transform: (v) => {
+        const ultimaCuota = v as { descripcion?: string } | null;
+        return ultimaCuota?.descripcion ?? '—';
+      },
+    },
     { key: 'cedula', label: 'Cédula', transform: (v) => this.cedulaFormat.transform(v as string) },
     { key: 'email', label: 'Email', nullFallback: '—' },
     {
@@ -21,15 +30,6 @@ export class ClientesColumnsService {
         [EstadoSocio.Activo]: { styleClass: 'tag--green', label: 'Activo' },
         [EstadoSocio.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
         [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
-      },
-    },
-    {
-      key: 'ultimaCuota',
-      label: 'Última cuota paga',
-      nullFallback: '—',
-      transform: (v) => {
-        const ultimaCuota = v as { descripcion?: string } | null;
-        return ultimaCuota?.descripcion ?? '—';
       },
     },
   ];

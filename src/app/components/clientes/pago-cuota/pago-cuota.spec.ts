@@ -51,7 +51,7 @@ describe('PagoCuota', () => {
           useValue: {
             getCostoCuota: () => 5000,
             registrarPagoCuota: vi.fn(),
-          }
+          },
         },
       ],
     }).compileComponents();
