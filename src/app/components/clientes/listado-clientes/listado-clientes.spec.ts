@@ -27,7 +27,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       nombreCompleto: 'Juan Pérez',
       tipoCliente: TipoCliente.Socio,
       numeroSocio: 5,
-      cedula: '12345678',
+      cedula: '1.234.567-8',
       email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
       ultimaCuota: {
@@ -42,7 +42,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       nombreCompleto: 'Laura Fernández',
       tipoCliente: TipoCliente.Particular,
       numeroSocio: null,
-      cedula: '67890123',
+      cedula: '6.789.012-3',
       email: null,
       estado: null,
       ultimaCuota: null,
