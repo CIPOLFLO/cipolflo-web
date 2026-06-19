@@ -15,7 +15,7 @@ const mockCliente: ClienteRespuestaDto = {
   cedula: '5.191.926-8',
   email: 'lucia@example.com',
   estado: EstadoSocio.Activo,
-  ultimaCuota: {
+  ultimaCuotaDto: {
     anio: 2026,
     mes: 6,
     nombreMes: 'junio',

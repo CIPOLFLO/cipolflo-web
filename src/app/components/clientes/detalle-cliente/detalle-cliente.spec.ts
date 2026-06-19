@@ -33,7 +33,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   createdBy: 'Juan Pérez',
   updatedAt: '2026-03-15T14:30:00Z',
   updatedBy: 'Juan Pérez',
-  ultimaCuota: {
+  ultimaCuotaDto: {
     anio: 2026,
     mes: 5,
     nombreMes: 'junio',
@@ -145,7 +145,7 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
     numeroSocio: null,
     estado: null,
     metodoCobro: null,
-    ultimaCuota: null,
+    ultimaCuotaDto: null,
   };
 
   beforeEach(async () => {

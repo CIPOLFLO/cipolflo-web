@@ -71,7 +71,7 @@ export interface ClienteRespuestaDto extends Record<string, unknown> {
   tipoCliente: TipoCliente;
   numeroSocio: number | null;
   estado: EstadoSocio | null;
-  ultimaCuota: UltimaCuotaDto | null;
+  ultimaCuotaDto: UltimaCuotaDto | null;
 }
 
 export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
@@ -90,7 +90,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   ciudad: string | null;
   direccion: string | null;
   observaciones: string | null;
-  ultimaCuota: UltimaCuotaDto | null;
+  ultimaCuotaDto: UltimaCuotaDto | null;
 }
 export interface ModificacionParticularRequestDto {
   nombreCompleto: string;

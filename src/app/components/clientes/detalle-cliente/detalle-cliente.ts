@@ -98,6 +98,17 @@ export class DetalleCliente {
       },
     ];
   });
+  protected readonly ultimaCuotaPagaFields = computed<DetailFieldConfig[]>(() => {
+    const ultimaCuota = this.cliente()?.ultimaCuotaDto;
+
+    return [
+      {
+        key: 'ultimaCuotaDto',
+        label: 'Última cuota paga',
+        value: ultimaCuota?.descripcion ?? null,
+      },
+    ];
+  });
 
   protected readonly registroData = computed<DetailRegistroData | null>(() => {
     const c = this.cliente();
@@ -109,17 +120,5 @@ export class DetalleCliente {
       fechaRegistro: c.createdAt,
       registradoPor: c.createdBy,
     };
-  });
-
-  protected readonly ultimaCuotaPagaFields = computed<DetailFieldConfig[]>(() => {
-    const ultimaCuota = this.cliente()?.ultimaCuota;
-
-    return [
-      {
-        key: 'mesCorrespondiente',
-        label: 'Ultimo mes pago ',
-        value: ultimaCuota?.nombreMes ?? null,
-      },
-    ];
   });
 }

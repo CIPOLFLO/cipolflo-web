@@ -30,7 +30,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       cedula: '1.234.567-8',
       email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
-      ultimaCuota: {
+      ultimaCuotaDto: {
         anio: 2026,
         mes: 6,
         nombreMes: 'junio',
@@ -45,7 +45,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       cedula: '6.789.012-3',
       email: null,
       estado: null,
-      ultimaCuota: null,
+      ultimaCuotaDto: null,
     },
   ],
   page: 0,

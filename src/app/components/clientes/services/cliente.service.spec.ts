@@ -36,7 +36,7 @@ const mockDetalle: ClienteDetalleRespuestaDto = {
   createdBy: 'Pedro Aguirre',
   updatedAt: '2026-03-18T09:15:00Z',
   updatedBy: 'Mariana Silva',
-  ultimaCuota: null,
+  ultimaCuotaDto: null,
 };
 
 const emptyPage = {

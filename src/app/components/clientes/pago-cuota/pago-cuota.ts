@@ -89,7 +89,7 @@ export class PagoCuota {
   );
 
   protected readonly ultimaCuotaDescripcion = computed(() => {
-    return this.cliente()?.ultimaCuota?.descripcion ?? 'Sin cuotas registradas';
+    return this.cliente()?.ultimaCuotaDto?.descripcion ?? 'Sin cuotas registradas';
   });
 
   protected readonly periodosCubiertos = computed(() => {
@@ -98,7 +98,7 @@ export class PagoCuota {
 
     if (!cliente || cantidad < 1) return [];
 
-    const inicio = this.obtenerSiguientePeriodo(cliente.ultimaCuota);
+    const inicio = this.obtenerSiguientePeriodo(cliente.ultimaCuotaDto);
 
     return Array.from({ length: cantidad }, (_, index) =>
       this.descripcionPeriodo(this.sumarMeses(inicio, index)),

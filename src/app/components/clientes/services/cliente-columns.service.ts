@@ -11,7 +11,7 @@ export class ClientesColumnsService {
     { key: 'nombreCompleto', label: 'Nombre', sortable: true },
     { key: 'numeroSocio', label: 'Nro de socio', nullFallback: '—' },
     {
-      key: 'ultimaCuota',
+      key: 'ultimaCuotaDto',
       label: 'Última cuota paga',
       nullFallback: '—',
       transform: (v) => {
