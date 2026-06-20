@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
 import { Procedencia } from '../../../shared';
 import { Concepto, FinanzaCrearDto, FormaPago, TipoMovimiento } from '../models/finanza.model';
 import { FinanzaService } from './finanza.service';
@@ -10,12 +9,19 @@ const PARAMS_BASE = { page: 0, size: 10, filters: {} };
 
 describe('FinanzaService', () => {
   let service: FinanzaService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting(), FinanzaService],
     });
+
     service = TestBed.inject(FinanzaService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('debería crearse', () => {
@@ -23,26 +29,23 @@ describe('FinanzaService', () => {
   });
 
   describe('getAll', () => {
-    it('retorna una página con 3 movimientos de placeholder', async () => {
-      const result = await firstValueFrom(service.getAll(PARAMS_BASE));
-      expect(result.totalElements).toBe(3);
-      expect(result.content).toHaveLength(3);
+    it('retorna una página vacía porque el listado aún no está conectado al backend', async () => {
+      service.getAll(PARAMS_BASE).subscribe((result) => {
+        expect(result.totalElements).toBe(0);
+        expect(result.content).toHaveLength(0);
+      });
     });
 
     it('refleja los parámetros de paginación recibidos', async () => {
-      const result = await firstValueFrom(service.getAll({ page: 2, size: 5, filters: {} }));
-      expect(result.page).toBe(2);
-      expect(result.size).toBe(5);
-    });
-
-    it('el primer elemento tiene tipoMovimiento Ingreso', async () => {
-      const result = await firstValueFrom(service.getAll(PARAMS_BASE));
-      expect(result.content[0].tipoMovimiento).toBe(TipoMovimiento.Ingreso);
+      service.getAll({ page: 2, size: 5, filters: {} }).subscribe((result) => {
+        expect(result.page).toBe(2);
+        expect(result.size).toBe(5);
+      });
     });
   });
 
   describe('create', () => {
-    it('retorna Observable<void> sin error', async () => {
+    it('llama a POST /finanzas', () => {
       const dto: FinanzaCrearDto = {
         tipoMovimiento: TipoMovimiento.Ingreso,
         procedencia: Procedencia.Sede,
@@ -50,30 +53,69 @@ describe('FinanzaService', () => {
         fecha: '2026-01-15',
         importe: 1000,
         formaPago: FormaPago.Efectivo,
+        notas: null,
       };
-      const result = await firstValueFrom(service.create(dto));
-      expect(result).toBeUndefined();
+
+      service.create(dto).subscribe((result) => {
+        expect(result.id).toBe(1);
+      });
+
+      const req = httpMock.expectOne(
+        (request) => request.method === 'POST' && request.url.includes('finanzas'),
+      );
+
+      expect(req.request.body).toEqual(dto);
+
+      req.flush({
+        id: 1,
+        tipoMovimiento: TipoMovimiento.Ingreso,
+        procedencia: Procedencia.Sede,
+        concepto: Concepto.PagoReserva,
+        fecha: '2026-01-15',
+        importe: 1000,
+        formaPago: FormaPago.Efectivo,
+        notas: null,
+      });
     });
   });
 
   describe('getById', () => {
-    it('retorna el detalle con el id recibido', async () => {
-      const result = await firstValueFrom(service.getById(42));
-      expect(result.id).toBe(42);
+    it('llama a GET /finanzas/{id}', () => {
+      service.getById(42).subscribe((result) => {
+        expect(result.id).toBe(42);
+        expect(result.tipoMovimiento).toBe(TipoMovimiento.Ingreso);
+      });
+
+      const req = httpMock.expectOne(
+        (request) => request.method === 'GET' && request.url.includes('finanzas/42'),
+      );
+
+      req.flush({
+        id: 42,
+        tipoMovimiento: TipoMovimiento.Ingreso,
+        procedencia: Procedencia.Sede,
+        concepto: Concepto.PagoReserva,
+        fecha: '2026-01-15',
+        importe: 1000,
+        formaPago: FormaPago.Efectivo,
+        notas: null,
+        createdAt: '2026-01-15T10:00:00Z',
+        updatedAt: '2026-01-15T10:00:00Z',
+        createdBy: 'admin',
+        updatedBy: 'admin',
+      });
     });
 
-    it('retorna el código de placeholder', async () => {
-      const result = await firstValueFrom(service.getById(1));
-      expect(result.codigo).toBe('FIN-2026-001');
-    });
+    it('eliminar llama a DELETE /finanzas/{id}', () => {
+      service.eliminar(1).subscribe((result) => {
+        expect(result).toBeNull();
+      });
 
-    it('retorna tipoMovimiento Ingreso', async () => {
-      const result = await firstValueFrom(service.getById(1));
-      expect(result.tipoMovimiento).toBe(TipoMovimiento.Ingreso);
-    });
+      const req = httpMock.expectOne(
+        (request) => request.method === 'DELETE' && request.url.includes('finanzas/1'),
+      );
 
-    it('eliminar debería completar correctamente', async () => {
-      await expect(firstValueFrom(service.eliminar(1))).resolves.toBeUndefined();
+      req.flush(null);
     });
   });
 });

@@ -15,7 +15,7 @@
 5. [Clientes — Endpoints](#clientes--endpoints)
 6. [Clientes — DTOs](#clientes--dtos)
 7. [Finanzas -DTOs](#finanzas--dtos)
-7. [Manejo de errores](#manejo-de-errores)
+8. [Manejo de errores](#manejo-de-errores)
 
 ---
 
@@ -784,21 +784,21 @@ Registra manualmente un movimiento financiero.
   "procedencia": "SEDE",
   "concepto": "PAGO_RESERVA",
   "fecha": "2026-06-15",
-  "importe": 1500.00,
+  "importe": 1500.0,
   "formaPago": "EFECTIVO",
   "notas": "Alta manual"
 }
 ```
 
-| Campo            | Tipo               | Obligatorio | Validación |
-| ---------------- | ------------------ | ----------- | ---------- |
-| `tipoMovimiento` | `TipoMovimiento`   | Sí          | — |
-| `procedencia`    | `Procedencia`      | Sí          | — |
-| `concepto`       | `Concepto`         | Sí          | — |
-| `fecha`          | string (date)      | No          | `yyyy-MM-dd` |
-| `importe`        | number (decimal)   | Sí          | > 0 |
-| `formaPago`      | `FormaPago`        | Sí          | — |
-| `notas`          | string             | No          | — |
+| Campo            | Tipo             | Obligatorio | Validación   |
+| ---------------- | ---------------- | ----------- | ------------ |
+| `tipoMovimiento` | `TipoMovimiento` | Sí          | —            |
+| `procedencia`    | `Procedencia`    | Sí          | —            |
+| `concepto`       | `Concepto`       | Sí          | —            |
+| `fecha`          | string (date)    | No          | `yyyy-MM-dd` |
+| `importe`        | number (decimal) | Sí          | > 0          |
+| `formaPago`      | `FormaPago`      | Sí          | —            |
+| `notas`          | string           | No          | —            |
 
 > Si `fecha` no se informa, se utiliza la fecha actual.
 
@@ -811,7 +811,7 @@ Registra manualmente un movimiento financiero.
   "procedencia": "SEDE",
   "concepto": "PAGO_RESERVA",
   "fecha": "2026-06-15",
-  "importe": 1500.00,
+  "importe": 1500.0,
   "formaPago": "EFECTIVO",
   "notas": "Alta manual"
 }
@@ -834,7 +834,7 @@ Retorna el detalle completo de una finanza.
   "procedencia": "SEDE",
   "concepto": "PAGO_RESERVA",
   "fecha": "2026-06-15",
-  "importe": 1500.00,
+  "importe": 1500.0,
   "formaPago": "EFECTIVO",
   "notas": "Alta manual",
   "createdAt": "2026-06-15T10:00:00Z",
@@ -846,11 +846,11 @@ Retorna el detalle completo de una finanza.
 
 **Errores:**
 
-| HTTP Status | Código                 | Cuándo ocurre |
-|------------|-------------------------|---------------|
-| 400        | `ID_INVALIDO`           | El id no es un número positivo |
-| 404        | `FINANZA_NO_ENCONTRADA` | No existe una finanza con ese id |
-| 401         | —                    | Token ausente, inválido o expirado |
+| HTTP Status | Código                  | Cuándo ocurre                      |
+| ----------- | ----------------------- | ---------------------------------- |
+| 400         | `ID_INVALIDO`           | El id no es un número positivo     |
+| 404         | `FINANZA_NO_ENCONTRADA` | No existe una finanza con ese id   |
+| 401         | —                       | Token ausente, inválido o expirado |
 
 ---
 
@@ -909,7 +909,6 @@ Retorna el detalle completo de una finanza.
 }
 ```
 
-
 ## Manejo de errores
 
 Todos los errores retornan el siguiente body:
@@ -929,4 +928,3 @@ Todos los errores retornan el siguiente body:
 | 404         | Recurso no encontrado por el ID proporcionado                              |
 | 409         | Conflicto de negocio (ej: deshabilitar con reservas activas sin confirmar) |
 | 500         | Error interno del servidor                                                 |
-

@@ -14,17 +14,16 @@ import {
 })
 export class FinanzaService extends BaseHttpService {
   getAll({ page, size }: TableQueryParams): Observable<PageResponse<FinanzaRespuestaDto>> {
-  return of({
-    content: [],
-    page,
-    size,
-    totalElements: 0,
-    totalPages: 0,
-    first: true,
-    last: true,
-  });
-}
-  
+    return of({
+      content: [],
+      page,
+      size,
+      totalElements: 0,
+      totalPages: 0,
+      first: true,
+      last: true,
+    });
+  }
 
   create(dto: FinanzaCrearDto): Observable<FinanzaRespuestaDto> {
     return this.post<FinanzaRespuestaDto>('finanzas', dto);
