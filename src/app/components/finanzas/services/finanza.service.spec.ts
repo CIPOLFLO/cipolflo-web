@@ -2,7 +2,13 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Procedencia } from '../../../shared';
-import { Concepto, FinanzaCrearDto, FormaPago, TipoMovimiento } from '../models/finanza.model';
+import {
+  Concepto,
+  FinanzaCrearDto,
+  FormaPago,
+  TipoMovimiento,
+  FinanzaModificarDto,
+} from '../models/finanza.model';
 import { FinanzaService } from './finanza.service';
 
 const PARAMS_BASE = { page: 0, size: 10, filters: {} };
@@ -114,6 +120,31 @@ describe('FinanzaService', () => {
       const req = httpMock.expectOne(
         (request) => request.method === 'DELETE' && request.url.includes('finanzas/1'),
       );
+
+      req.flush(null);
+    });
+  });
+
+  describe('update', () => {
+    it('llama a PUT /finanzas/{id}', () => {
+      const dto: FinanzaModificarDto = {
+        procedencia: Procedencia.Sede,
+        concepto: Concepto.PagoReserva,
+        fecha: '2026-01-15',
+        importe: 1000,
+        formaPago: FormaPago.Efectivo,
+        notas: 'Modificado',
+      };
+
+      service.update(1, dto).subscribe((result) => {
+        expect(result).toBeNull();
+      });
+
+      const req = httpMock.expectOne(
+        (request) => request.method === 'PUT' && request.url.includes('finanzas/1'),
+      );
+
+      expect(req.request.body).toEqual(dto);
 
       req.flush(null);
     });
