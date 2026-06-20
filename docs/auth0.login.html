@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Sign In with Auth0</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+  />
+
+  <style>
+
+    /* ===================== 1. RESET Y BASE ===================== */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* ===================== 2. LAYOUT DESKTOP ===================== */
+
+    #login-wrapper {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #panel-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      padding: 40px;
+
+      background-color: #1a3ed4;
+      color: white;
+    }
+
+    #panel-right {
+      width: 750px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 40px;
+
+      background-color: #ffffff;
+    }
+
+    #form-container {
+      width: 100%;
+    }
+
+    /* ===================== PANEL IZQUIERDO ===================== */
+
+    #brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    #brand-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    #panel-left-content h2 {
+      margin-bottom: 16px;
+
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    #panel-left-content p {
+      font-size: 15px;
+      line-height: 1.6;
+      opacity: 0.85;
+    }
+
+    #access-note {
+      font-size: 13px;
+      opacity: 0.6;
+    }
+
+    /* ===================== 3. ESTILOS AUTH0 LOCK ===================== */
+
+    .auth0-lock.auth0-lock .auth0-lock-widget {
+      width: 100% !important;
+      box-shadow: none !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-container,
+    .auth0-lock.auth0-lock .auth0-lock-center {
+      width: 100% !important;
+      padding: 0 !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-input-wrap .auth0-lock-icon-box {
+      display: none !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-input-wrap {
+      padding-left: 12px !important;
+
+      border: 1.5px solid #e0e0e0 !important;
+      border-radius: 8px !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-header {
+      background: #ffffff !important;
+      border-bottom: none !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-header-bg,
+    .auth0-lock.auth0-lock .auth0-lock-header-bg-blur {
+      display: block !important;
+
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      background-image: none !important;
+
+      opacity: 1 !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-cred-pane-internal-wrapper {
+      background: #ffffff !important;
+      background-image: none !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-header-welcome {
+      color: #1a3ed4 !important;
+      font-size: 20px !important;
+      font-weight: 700 !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-submit {
+      background: #1a3ed4 !important;
+      border-radius: 8px !important;
+
+      font-size: 15px !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-alternative-link {
+      color: #1a3ed4 !important;
+    }
+
+    .auth0-lock.auth0-lock .auth0-lock-widget-container,
+    .auth0-lock.auth0-lock {
+      height: auto !important;
+    }
+
+    /* ===================== 4. MOBILE (≤767px) ===================== */
+
+    @media (max-width: 767px) {
+
+      html,
+      body {
+        height: 100dvh;
+        overflow: hidden;
+      }
+
+      #login-wrapper {
+        display: flex;
+        flex-direction: column;
+
+        height: 100dvh;
+
+        background-color: #1a3ed4;
+      }
+
+      #panel-left {
+        display: none;
+      }
+
+      #panel-right {
+        flex: 1;
+        width: 100%;
+        height: 100dvh;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        padding: 16px 20px;
+
+        background-color: transparent;
+      }
+
+      #mobile-brand {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+
+        margin-bottom: 12px;
+
+        text-align: center;
+      }
+
+      #mobile-brand img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+      }
+
+      #mobile-brand span {
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      #form-container {
+        width: 100%;
+        max-width: 400px;
+
+        overflow: hidden;
+
+        padding: 0 0 8px 0;
+
+        background: #ffffff;
+        border-radius: 16px;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-cred-pane-internal-wrapper {
+        overflow: hidden !important;
+        border-radius: 0 0 16px 16px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-header {
+        min-height: 0 !important;
+        padding: 8px 0 0 !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-header-logo {
+        display: none !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-header-welcome {
+        padding: 4px 0 6px !important;
+        font-size: 15px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-content {
+        padding: 0 12px 6px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-form {
+        padding: 0 !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-input-wrap {
+        height: 38px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-input {
+        height: 38px !important;
+        font-size: 13px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-error-msg {
+        padding: 2px 0 !important;
+        font-size: 11px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-alternative {
+        padding: 6px 0 2px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-alternative-link {
+        font-size: 12px !important;
+      }
+
+      .auth0-lock.auth0-lock .auth0-lock-submit {
+        width: calc(100% - 24px) !important;
+        height: 44px !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        margin: 0 12px !important;
+        padding: 0 !important;
+
+        background: #1a3ed4 !important;
+        border-radius: 8px !important;
+
+        color: #ffffff !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        text-align: center !important;
+      }
+
+      #access-note-mobile {
+        display: block !important;
+
+        margin-top: 12px;
+
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 11px;
+        text-align: center;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div id="login-wrapper">
+
+    <div id="panel-left">
+      <div id="brand">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/National_Police_of_Uruguay_coat_of_arms.png" alt="Logo" id="logo"/>
+        <span id="brand-name">Círculo Policial de Flores</span>
+      </div>
+
+      <div id="panel-left-content">
+        <h2>Gestión de reservas para nuestra comunidad</h2>
+        <p>Accedé a la plataforma para administrar reservas, socios, servicios y finanzas de la institución de manera ágil y segura.</p>
+      </div>
+
+      <span id="access-note">Acceso exclusivo para personal autorizado</span>
+    </div>
+
+    <div id="panel-right">
+      <div id="mobile-brand" style="display: none;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/National_Police_of_Uruguay_coat_of_arms.png" alt="Logo" />
+        <span>Círculo Policial de Flores</span>
+      </div>
+      <div id="form-container"></div>
+      <span id="access-note-mobile" style="display: none;">Acceso exclusivo para personal autorizado</span>
+    </div>
+
+  </div>
+
+
+  <script src="https://cdn.auth0.com/js/lock/14.2.3/lock.min.js"></script>
+  <script>
+    var config = JSON.parse(decodeURIComponent(escape(window.atob('@@config@@'))));
+    config.extraParams = config.extraParams || {};
+    var connection = config.connection;
+    var prompt = config.prompt;
+    var colors = config.colors || {};
+
+    var languageDictionary = {
+      title: 'Bienvenido',
+      p: 'Círculo Policial de Flores',
+      emailInputPlaceholder: 'Email',
+      passwordInputPlaceholder: 'Contraseña',
+      loginSubmitLabel: 'Ingresar',
+      forgotPasswordAction: 'Olvidé mi contraseña'
+    };
+
+    var loginHint = config.extraParams.login_hint;
+
+    var lock = new Auth0Lock(config.clientID, config.auth0Domain, {
+      container: 'form-container',
+      auth: {
+        redirectUrl: config.callbackURL,
+        responseType: (config.internalOptions || {}).response_type ||
+          (config.callbackOnLocationHash ? 'token' : 'code'),
+        params: config.internalOptions
+      },
+      configurationBaseUrl: config.clientConfigurationBaseUrl,
+      overrides: {
+        __tenant: config.auth0Tenant,
+        __token_issuer: config.authorizationServer.issuer
+      },
+      assetsUrl: config.assetsUrl,
+      allowedConnections: connection ? [connection] : null,
+      rememberLastLogin: !prompt,
+      language: 'es',
+      languageDictionary: languageDictionary,
+      theme: {
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/3/39/National_Police_of_Uruguay_coat_of_arms.png',
+        primaryColor: colors.primary ? colors.primary : '#1a3ed4'
+      },
+      prefill: loginHint ? { email: loginHint, username: loginHint } : null,
+      closable: false,
+      defaultADUsernameFromEmailPrefix: false
+    });
+
+    if (colors.page_background) {
+      var css = '.auth0-lock.auth0-lock .auth0-lock-overlay { background: ' +
+                  colors.page_background +
+                ' }';
+      var style = document.createElement('style');
+      style.appendChild(document.createTextNode(css));
+      document.body.appendChild(style);
+    }
+
+    lock.show();
+
+    // Inyectar estilos DESPUÉS de que el Lock renderice para pisar su CSS interno
+    if (window.innerWidth <= 767) {
+      lock.on('show', function() {
+        setTimeout(function() {
+          var mobileOverride = document.createElement('style');
+          mobileOverride.innerHTML = [
+            '.auth0-lock.auth0-lock .auth0-lock-cred-pane { min-height: 0 !important; height: auto !important; }',
+            '.auth0-lock.auth0-lock .auth0-lock-cred-pane-internal-wrapper { min-height: 0 !important; height: auto !important; border-radius: 0 0 16px 16px !important; overflow: hidden !important; }',
+            '.auth0-lock.auth0-lock .auth0-lock-content-wrapper { min-height: 0 !important; height: auto !important; }',
+            '.auth0-lock.auth0-lock .auth0-lock-widget { min-height: 0 !important; height: auto !important; }',
+            '.auth0-lock.auth0-lock .auth0-lock-widget-container { min-height: 0 !important; height: auto !important; }'
+          ].join('\n');
+          document.head.appendChild(mobileOverride);
+        }, 100);
+      });
+    }
+  </script>
+
+</body>
+
+</html>
