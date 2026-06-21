@@ -42,11 +42,11 @@ Al elegir una **procedencia** (SEDE / CAMPING):
 
 Al elegir un **servicio**, se determinan dos modos mutuamente excluyentes según los campos del servicio:
 
-| Modo | Condición | Campos que aparecen |
-|------|-----------|---------------------|
+| Modo          | Condición                     | Campos que aparecen                                         |
+| ------------- | ----------------------------- | ----------------------------------------------------------- |
 | **Capacidad** | `servicio.capacidad !== null` | Cantidad total (requerido) + Cantidad de menores (opcional) |
-| **Cantidad** | `servicio.cantidad !== null` | Cantidad (requerido) |
-| **Sin modo** | Ambos `null` | Ningún campo extra |
+| **Cantidad**  | `servicio.cantidad !== null`  | Cantidad (requerido)                                        |
+| **Sin modo**  | Ambos `null`                  | Ningún campo extra                                          |
 
 Adicionalmente se carga el calendario de fechas ocupadas con `GET /api/v1/servicios/{id}/fechas-ocupadas`.
 
@@ -68,10 +68,10 @@ El comportamiento de esta sección depende por completo del **tipo de reserva**.
 
 Los campos de identificación de persona física **no aplican**. Solo se piden:
 
-| Campo | Obligatorio |
-|-------|-------------|
-| Nombre del cliente (institución) | Sí |
-| RUT del cliente | No |
+| Campo                            | Obligatorio |
+| -------------------------------- | ----------- |
+| Nombre del cliente (institución) | Sí          |
+| RUT del cliente                  | No          |
 
 No hay búsqueda de cliente. El botón Confirmar no queda bloqueado por `busquedaRealizada`.
 
@@ -102,7 +102,7 @@ Hay tres sub-escenarios según cómo se entró al formulario y el resultado de l
 #### Escenario 3 — Búsqueda por cédula: cliente no encontrado
 
 1. El backend devuelve una página vacía para ese `identificador`
-2. Se muestra el mensaje: *"No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente."*
+2. Se muestra el mensaje: _"No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente."_
 3. Los campos nombre, celular y email se habilitan para ingreso manual
 4. El tipo de cliente se fija internamente como **Particular** (no se puede elegir)
 5. Al confirmar, se envía `crearCliente: true` para que el backend cree el Particular
@@ -117,11 +117,11 @@ Solo aplica para reservas **Comunes** cuyo cliente encontrado es de tipo **Socio
 
 Se llama a `GET /api/v1/clientes/socios/{id}/estado` al presionar Confirmar. Existen tres ramas:
 
-| Estado del socio | Comportamiento |
-|------------------|----------------|
-| `ACTIVO` | Se crea la reserva sin interrupciones |
-| `INACTIVO` | Se muestra un diálogo de advertencia. Si el operador confirma, se crea la reserva. Si cancela, se aborta. |
-| `DE_BAJA` | Se muestra un error bloqueante. No es posible crear la reserva. |
+| Estado del socio | Comportamiento                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `ACTIVO`         | Se crea la reserva sin interrupciones                                                                     |
+| `INACTIVO`       | Se muestra un diálogo de advertencia. Si el operador confirma, se crea la reserva. Si cancela, se aborta. |
+| `DE_BAJA`        | Se muestra un error bloqueante. No es posible crear la reserva.                                           |
 
 ---
 
@@ -137,10 +137,10 @@ El botón permanece deshabilitado (`confirmDisabled`) si se cumple **cualquiera*
 
 ### Estado inicial de la reserva
 
-| Tipo de reserva | Estado inicial |
-|-----------------|----------------|
-| Común | `PENDIENTE` |
-| Colaboración sin fines de lucro | `CONFIRMADA` |
+| Tipo de reserva                 | Estado inicial |
+| ------------------------------- | -------------- |
+| Común                           | `PENDIENTE`    |
+| Colaboración sin fines de lucro | `CONFIRMADA`   |
 
 ### Flujo de confirmación completo
 
@@ -164,18 +164,18 @@ onConfirmar()
 
 El método `construirDto()` resuelve los diferentes escenarios:
 
-| Campo del DTO | Común con cliente existente | Común sin cliente (crearCliente) | Colaboración |
-|---|---|---|---|
-| `clienteId` | ID del cliente | `null` | `null` |
-| `crearCliente` | `false` | `true` | `false` |
-| `tipoCliente` | tipo del cliente | `PARTICULAR` | `null` |
-| `cedula` | cédula | cédula ingresada | `null` |
-| `nombre` | nombre del cliente | nombre ingresado | valor de `nombreColaboracion` |
-| `celular` | teléfono del cliente | celular ingresado | `null` |
-| `rut` | `null` | `null` | RUT ingresado (si hay) |
-| `cantidadTotal` | solo si `modoCapacidad` | — | — |
-| `cantidadMenores` | solo si `modoCapacidad` | — | — |
-| `cantidad` | solo si `modoCantidad` | — | — |
+| Campo del DTO     | Común con cliente existente | Común sin cliente (crearCliente) | Colaboración                  |
+| ----------------- | --------------------------- | -------------------------------- | ----------------------------- |
+| `clienteId`       | ID del cliente              | `null`                           | `null`                        |
+| `crearCliente`    | `false`                     | `true`                           | `false`                       |
+| `tipoCliente`     | tipo del cliente            | `PARTICULAR`                     | `null`                        |
+| `cedula`          | cédula                      | cédula ingresada                 | `null`                        |
+| `nombre`          | nombre del cliente          | nombre ingresado                 | valor de `nombreColaboracion` |
+| `celular`         | teléfono del cliente        | celular ingresado                | `null`                        |
+| `rut`             | `null`                      | `null`                           | RUT ingresado (si hay)        |
+| `cantidadTotal`   | solo si `modoCapacidad`     | —                                | —                             |
+| `cantidadMenores` | solo si `modoCapacidad`     | —                                | —                             |
+| `cantidad`        | solo si `modoCantidad`      | —                                | —                             |
 
 ---
 
@@ -183,25 +183,25 @@ El método `construirDto()` resuelve los diferentes escenarios:
 
 ### Backend no disponible (TODO en `ReservasService`)
 
-| Ticket | Descripción | Archivo | Detalle |
-|--------|-------------|---------|---------|
-| **DEV-??** | Integrar `GET /api/v1/reservas` | `reservas.service.ts` → `getDatos()` | Reemplazar el array mock. Alinear `ReservaRow` / `ReservaListadoResponseDto` con el contrato real del backend. |
-| **DEV-??** | Integrar `POST /api/v1/reservas` | `reservas.service.ts` → `crear()` | Reemplazar el mock. Manejar error `409 SERVICIO_NO_DISPONIBLE` (el rango quedó ocupado entre que el usuario eligió fechas y presionó confirmar). |
-| **DEV-??** | Integrar `POST /api/v1/reservas/costo` | `reservas.service.ts` → `calcularCosto()` | Reemplazar `costoMock()` y eliminarla. El campo de costo ya está conectado al resultado. |
+| Ticket     | Descripción                            | Archivo                                   | Detalle                                                                                                                                          |
+| ---------- | -------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **DEV-??** | Integrar `GET /api/v1/reservas`        | `reservas.service.ts` → `getDatos()`      | Reemplazar el array mock. Alinear `ReservaRow` / `ReservaListadoResponseDto` con el contrato real del backend.                                   |
+| **DEV-??** | Integrar `POST /api/v1/reservas`       | `reservas.service.ts` → `crear()`         | Reemplazar el mock. Manejar error `409 SERVICIO_NO_DISPONIBLE` (el rango quedó ocupado entre que el usuario eligió fechas y presionó confirmar). |
+| **DEV-??** | Integrar `POST /api/v1/reservas/costo` | `reservas.service.ts` → `calcularCosto()` | Reemplazar `costoMock()` y eliminarla. El campo de costo ya está conectado al resultado.                                                         |
 
 ### Funcionalidades del listado no implementadas
 
-| Ticket | Descripción | Detalle |
-|--------|-------------|---------|
-| **DEV-??** | Filtros del listado de reservas | `ReservasFilterService` define los campos pero no llegan al endpoint (el mock los ignora). Los select de `servicio` y `estado` tienen `options: []`. |
-| **DEV-??** | Ver detalle de reserva | La acción "Ver detalle" navega a `/reservas/:id`, ruta que aún no existe. |
-| **DEV-??** | Editar reserva | La acción "Editar" solo hace `console.log`. Requiere implementar el formulario de edición extendiendo `ReservaFormBase` (la clase base fue diseñada para esto: la sección de cliente queda en readonly, sin lupita ni campos manuales). |
-| **DEV-??** | Exportar reservas | El botón "Exportar" existe en el listado sin funcionalidad. |
+| Ticket     | Descripción                     | Detalle                                                                                                                                                                                                                                 |
+| ---------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **DEV-??** | Filtros del listado de reservas | `ReservasFilterService` define los campos pero no llegan al endpoint (el mock los ignora). Los select de `servicio` y `estado` tienen `options: []`.                                                                                    |
+| **DEV-??** | Ver detalle de reserva          | La acción "Ver detalle" navega a `/reservas/:id`, ruta que aún no existe.                                                                                                                                                               |
+| **DEV-??** | Editar reserva                  | La acción "Editar" solo hace `console.log`. Requiere implementar el formulario de edición extendiendo `ReservaFormBase` (la clase base fue diseñada para esto: la sección de cliente queda en readonly, sin lupita ni campos manuales). |
+| **DEV-??** | Exportar reservas               | El botón "Exportar" existe en el listado sin funcionalidad.                                                                                                                                                                             |
 
 ### UI pendiente
 
-| Ticket | Descripción | Detalle |
-|--------|-------------|---------|
+| Ticket     | Descripción                   | Detalle                                                                                                                                                                              |
+| ---------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **DEV-??** | Vista mobile de nueva reserva | Solo existe la vista desktop. La estructura wizard (`MobStepper`) debería dividirse en pasos: (1) Info reserva, (2) Selección de fechas, (3) Info cliente, (4) Resumen/confirmación. |
 
 ---
