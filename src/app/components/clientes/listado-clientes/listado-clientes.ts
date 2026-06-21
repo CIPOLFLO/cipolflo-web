@@ -114,6 +114,7 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+    this.recargarTabla();
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
