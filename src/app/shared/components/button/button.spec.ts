@@ -72,6 +72,7 @@ describe('AppButton - comportamiento base', () => {
 });
 
 describe('AppButton - contenido e icono', () => {
+  let component: AppButton;
   let fixture: ComponentFixture<AppButton>;
   let el: HTMLElement;
 
@@ -81,6 +82,7 @@ describe('AppButton - contenido e icono', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppButton);
+    component = fixture.componentInstance;
     el = fixture.nativeElement;
     fixture.detectChanges();
   });
@@ -130,5 +132,37 @@ describe('AppButton - contenido e icono', () => {
     expect(icon).not.toBeNull();
     expect(icon?.classList.contains('pi-chevron-right')).toBe(true);
     expect(button?.lastElementChild).toBe(icon);
+  });
+
+  it('no debería emitir clicked cuando loading es true', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.detectChanges();
+    let emitted = false;
+    component.clicked.subscribe(() => (emitted = true));
+    const button = el.querySelector<HTMLButtonElement>('button');
+    button?.click();
+    expect(emitted).toBe(false);
+  });
+
+  it('debería renderizar el spinner cuando loading es true', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.detectChanges();
+    const spinner = el.querySelector('.pi-spinner');
+    expect(spinner).not.toBeNull();
+  });
+
+  it('no debería renderizar el ícono cuando loading es true', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.componentRef.setInput('icon', 'pi-download');
+    fixture.detectChanges();
+    const icon = el.querySelector('.pi-download');
+    expect(icon).toBeNull();
+  });
+
+  it('debería deshabilitar el botón nativo cuando loading es true', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.detectChanges();
+    const button = el.querySelector<HTMLButtonElement>('button');
+    expect(button?.disabled).toBe(true);
   });
 });

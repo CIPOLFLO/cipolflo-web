@@ -14,6 +14,18 @@ export class TableStateService {
   private readonly size = signal(10);
   private readonly sortField = signal<string | undefined>(undefined);
   private readonly sortOrder = signal<'asc' | 'desc'>('asc');
+  private readonly _totalElements = signal(0);
+  private readonly _loading = signal(false);
+  readonly totalElements = this._totalElements.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly hasResults = computed(() => this._totalElements() > 0);
+
+  setResult(totalElements: number): void {
+    this._totalElements.set(totalElements);
+  }
+  setLoading(value: boolean): void {
+    this._loading.set(value);
+  }
 
   readonly queryParams: Signal<TableQueryParams> = computed(() => ({
     filters: this.filters(),

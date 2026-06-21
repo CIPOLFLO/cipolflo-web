@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -18,6 +18,7 @@ import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -39,7 +40,12 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   private readonly errorHandler = inject(ErrorHandlerService);
+  protected readonly breakpoint = inject(BreakpointService);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  protected readonly exportando = signal(false);
+  protected readonly puedeExportar = computed(
+    () => this.tableState.hasResults() && !this.tableState.loading(),
+  );
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -114,6 +120,16 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+  }
+
+  protected onExportar(): void {
+    if (!this.puedeExportar() || this.exportando()) return;
+    this.exportando.set(true);
+    const filters = this.tableState.queryParams().filters;
+    this.clientesService.exportar(filters).subscribe({
+      next: () => this.exportando.set(false),
+      error: () => this.exportando.set(false),
+    });
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {

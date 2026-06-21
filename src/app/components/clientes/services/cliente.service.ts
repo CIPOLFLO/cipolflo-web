@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { catchError, Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
+import { FileDownloadService } from '../../../core/services/file-download.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   ClienteDetalleRespuestaDto,
@@ -9,8 +10,11 @@ import {
   ModificacionSocioRequestDto,
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
+
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
+  private readonly fileDownloadService = inject(FileDownloadService);
+
   getAll({
     page,
     size,
@@ -55,5 +59,11 @@ export class ClientesService extends BaseHttpService {
 
   registrarSocio(dto: RegistroSocioRequestDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes/socios', dto);
+  }
+
+  exportar(filters: Record<string, string | null>): Observable<void> {
+    return this.fileDownloadService
+      .download('clientes/exportar', filters, 'clientes.xlsx')
+      .pipe(catchError((error) => this.fileDownloadService.handleBlobError(error)));
   }
 }

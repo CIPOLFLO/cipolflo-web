@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { finalize, forkJoin, map, switchMap, timer } from 'rxjs';
+import { finalize, forkJoin, map, switchMap, timer, tap } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { Skeleton } from 'primeng/skeleton';
 import { SortEvent } from 'primeng/api';
@@ -57,12 +57,19 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
     this.params$.pipe(
       switchMap((params) => {
         this.loading.set(true);
+        this.tableState.setLoading(true);
         const data$ = this.loadDataFn()(params);
         const bounded$ =
           this.minLoadingMs > 0
             ? forkJoin([data$, timer(this.minLoadingMs)]).pipe(map(([data]) => data))
             : data$;
-        return bounded$.pipe(finalize(() => this.loading.set(false)));
+        return bounded$.pipe(
+          tap((data) => this.tableState.setResult(data.totalElements)),
+          finalize(() => {
+            this.loading.set(false);
+            this.tableState.setLoading(false);
+          }),
+        );
       }),
     ),
     { initialValue: EMPTY_PAGE as PageResponse<T> },
