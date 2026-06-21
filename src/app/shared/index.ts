@@ -64,7 +64,6 @@ export { FilterConfigProvider } from './services/filter-config.provider';
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
 export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
-export type { NavItem } from './models/nav-item.model';
 
 // Mobile Components
 export { MobStepper } from './mobile/components/stepper/mob-stepper';
