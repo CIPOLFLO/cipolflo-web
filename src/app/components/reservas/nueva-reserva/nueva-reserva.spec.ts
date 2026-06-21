@@ -1,12 +1,15 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@auth0/auth0-angular';
 import { NuevaReserva } from './nueva-reserva';
+import { FormField } from '../../../shared';
 import { ReservasService } from '../services/reservas.service';
+import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
 import { ServicioService } from '../../servicios/services/servicio.service';
 import { ClientesService } from '../../clientes/services/cliente.service';
 import { Procedencia } from '../../../shared';
@@ -87,10 +90,14 @@ describe('NuevaReserva', () => {
   };
   let mockClientesService: {
     getAll: ReturnType<typeof vi.fn>;
+    getByCedula: ReturnType<typeof vi.fn>;
     getById: ReturnType<typeof vi.fn>;
     getEstadoSocio: ReturnType<typeof vi.fn>;
   };
-  let mockReservasService: { crear: ReturnType<typeof vi.fn> };
+  let mockReservasService: {
+    crear: ReturnType<typeof vi.fn>;
+    calcularCosto: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     navigateSpy = vi.fn();
@@ -103,10 +110,14 @@ describe('NuevaReserva', () => {
       getAll: vi.fn((params: { filters?: Record<string, string> }) =>
         of(page(params.filters?.['identificador'] === '12345678' ? [{ id: 1 }] : [])),
       ),
+      getByCedula: vi.fn((cedula: string) => of(page(cedula === '12345678' ? [{ id: 1 }] : []))),
       getById: vi.fn((id: number) => of(id === 2 ? detalleParticular : detalleSocio)),
       getEstadoSocio: vi.fn(() => of({ id: 1, estado: EstadoSocio.Activo, numeroSocio: 5 })),
     };
-    mockReservasService = { crear: vi.fn(() => of({ id: 99 })) };
+    mockReservasService = {
+      crear: vi.fn(() => of({ id: 99 })),
+      calcularCosto: vi.fn(() => of({ costo: 5000 })),
+    };
 
     await TestBed.configureTestingModule({
       imports: [NuevaReserva],
@@ -126,7 +137,12 @@ describe('NuevaReserva', () => {
       ],
     })
       .overrideComponent(NuevaReserva, {
-        set: { providers: [{ provide: ReservasService, useValue: mockReservasService }] },
+        set: {
+          providers: [
+            { provide: ReservasService, useValue: mockReservasService },
+            ReservaClienteBusquedaService,
+          ],
+        },
       })
       .compileComponents();
 
@@ -136,12 +152,26 @@ describe('NuevaReserva', () => {
     await fixture.whenStable();
   });
 
+  /** Campo "Tipo de cliente" renderizado, o `undefined` si no está presente. */
+  const tipoClienteField = (): FormField | undefined => {
+    fixture.detectChanges();
+    return fixture.debugElement
+      .queryAll(By.directive(FormField))
+      .map((f) => f.componentInstance as FormField)
+      .find((c) => c.config().key === 'tipoCliente');
+  };
+
   it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });
 
   it('el tipo de reserva por defecto es Común', () => {
     expect(component['form'].get('tipoReserva')?.value).toBe(TipoReserva.Comun);
+  });
+
+  it('al entrar desde Nueva Reserva se ofrece Colaboración sin fines de lucro', () => {
+    const opciones = component['tipoReservaField']().options ?? [];
+    expect(opciones.some((o) => o.value === TipoReserva.ColaboracionSinFines)).toBe(true);
   });
 
   it('confirmDisabled es true al inicio (form incompleto)', () => {
@@ -174,6 +204,37 @@ describe('NuevaReserva', () => {
     expect(component['modoCapacidad']()).toBe(false);
   });
 
+  it('al seleccionar el rango de fechas calcula y muestra el costo de la reserva', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(mockReservasService.calcularCosto).toHaveBeenCalled();
+    expect(component['costo']()).toBe(5000);
+  });
+
+  it('cambiar la cantidad vuelve a pedir el costo al backend', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('3');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      vi.advanceTimersByTime(300);
+      mockReservasService.calcularCosto.mockClear();
+
+      component['onControlChange']('cantidad', '4');
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(mockReservasService.calcularCosto).toHaveBeenCalled();
+  });
+
   it('una cantidad negativa muestra error de inmediato', () => {
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     component['form'].get('servicioId')?.setValue('2');
@@ -193,12 +254,57 @@ describe('NuevaReserva', () => {
     expect(component['esSocio']()).toBe(true);
   });
 
+  it('al encontrar cliente por cédula muestra el tipo en sólo lectura (no se puede elegir)', () => {
+    component['form'].get('cedula')?.setValue('12345678');
+    component['buscarCliente']();
+    const tipo = tipoClienteField();
+    expect(tipo?.displayOnly()).toBe(true);
+    expect(component['tipoClienteLabel']()).toBe('Socio');
+  });
+
   it('buscarCliente sin coincidencia habilita la carga manual', () => {
     component['form'].get('cedula')?.setValue('00000000');
     component['buscarCliente']();
     expect(component['busquedaRealizada']()).toBe(true);
     expect(component['clienteBusqueda']()).toBeNull();
     expect(component['clienteCamposReadonly']()).toBe(false);
+  });
+
+  it('sin coincidencia no se muestra el campo tipo de cliente y se registra como Particular', () => {
+    component['form'].get('cedula')?.setValue('00000000');
+    component['buscarCliente']();
+    expect(component['mostrarFormularioManual']()).toBe(true);
+    expect(tipoClienteField()).toBeUndefined();
+    expect(component['form'].get('tipoCliente')?.value).toBe(TipoCliente.Particular);
+  });
+
+  it('sin coincidencia el DTO marca crearCliente y no envía clienteId', () => {
+    component['form'].get('cedula')?.setValue('00000000');
+    component['buscarCliente']();
+    const dto = component['construirDto']();
+    expect(dto.crearCliente).toBe(true);
+    expect(dto.clienteId).toBeNull();
+  });
+
+  it('con cliente encontrado el DTO no marca crearCliente y envía el clienteId', () => {
+    component['form'].get('cedula')?.setValue('12345678');
+    component['buscarCliente']();
+    const dto = component['construirDto']();
+    expect(dto.crearCliente).toBe(false);
+    expect(dto.clienteId).toBe(1);
+  });
+
+  it('editar la cédula después de verificar invalida la búsqueda y limpia los datos', () => {
+    component['form'].get('cedula')?.setValue('12345678');
+    component['buscarCliente']();
+    expect(component['busquedaRealizada']()).toBe(true);
+    expect(component['clienteBusqueda']()).not.toBeNull();
+
+    component['form'].get('cedula')?.setValue('1234567');
+
+    expect(component['busquedaRealizada']()).toBe(false);
+    expect(component['clienteBusqueda']()).toBeNull();
+    expect(component['form'].get('nombre')?.value).toBeNull();
   });
 
   it('en Colaboración sólo se exige el nombre del cliente', () => {
@@ -240,5 +346,14 @@ describe('NuevaReserva', () => {
     await f.whenStable();
     expect(f.componentInstance['clientePrellenado']()).toBe(true);
     expect(f.componentInstance['clienteBusqueda']()?.tipoCliente).toBe(TipoCliente.Particular);
+  });
+
+  it('al precargar un cliente no se ofrece Colaboración sin fines de lucro', async () => {
+    queryParamGet.mockReturnValue('2');
+    const f = TestBed.createComponent(NuevaReserva);
+    f.detectChanges();
+    await f.whenStable();
+    const opciones = f.componentInstance['tipoReservaField']().options ?? [];
+    expect(opciones.some((o) => o.value === TipoReserva.ColaboracionSinFines)).toBe(false);
   });
 });

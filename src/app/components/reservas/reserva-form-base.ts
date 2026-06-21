@@ -2,10 +2,9 @@ import { computed, DestroyRef, Directive, inject, signal, Signal } from '@angula
 import { FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { map, Observable, of, switchMap } from 'rxjs';
+import { map } from 'rxjs';
 import { applySectionChange, markFieldAsTouched, Procedencia } from '../../shared';
-import { ClienteDetalleRespuestaDto, TipoCliente } from '../clientes/models/cliente.model';
-import { ClientesService } from '../clientes/services/cliente.service';
+import { TipoCliente } from '../clientes/models/cliente.model';
 import {
   EstadoServicio,
   ServicioFechaOcupadaDto,
@@ -18,20 +17,16 @@ import { ReservaValidacionesService } from './services/reserva-validaciones.serv
 import { ClienteBusquedaReservaDto, TipoReserva } from './models/reserva.model';
 
 /**
- * Lógica común del formulario de reserva (orquestación de servicios/fechas según
- * procedencia y servicio, modo capacidad/cantidad, validadores condicionales y manejo
- * de la sección de cliente). Pensada para que una futura edición la extienda
- * (la edición sólo restringe la sección de cliente a sólo lectura).
- *
- * Los datos de servicios y clientes se piden a sus respectivos servicios
- * (`ServicioService`, `ClientesService`); reservas no reimplementa esos endpoints.
+ * Lógica común del formulario de reserva: orquestación de servicios/fechas según
+ * procedencia y servicio, modo capacidad/cantidad, validadores condicionales y estado
+ * de la sección de cliente (señales de búsqueda/precarga y computed derivados).
+ * La lógica de búsqueda activa de cliente es responsabilidad de cada subclase.
  */
 @Directive()
 export abstract class ReservaFormBase {
   protected readonly router = inject(Router);
   protected readonly route = inject(ActivatedRoute);
   protected readonly servicioService = inject(ServicioService);
-  protected readonly clientesService = inject(ClientesService);
   protected readonly validaciones = inject(ReservaValidacionesService);
   protected readonly errorHandler = inject(ErrorHandlerService);
   protected readonly destroyRef = inject(DestroyRef);
@@ -78,12 +73,13 @@ export abstract class ReservaFormBase {
 
   protected readonly mostrarObservaciones = computed(() => this.observacionesCliente() !== null);
 
-  /** Campos de cliente editables manualmente sólo cuando la búsqueda no encontró cliente. */
+  /** Cliente encontrado (o precargado): sus datos se muestran en sólo lectura. */
   protected readonly clienteCamposReadonly = computed(
     () => this.clientePrellenado() || this.clienteBusqueda() !== null,
   );
-  protected readonly clienteCamposDeshabilitados = computed(
-    () => !this.busquedaRealizada() && !this.clienteCamposReadonly(),
+  /** Búsqueda realizada sin coincidencia: se ingresan los datos básicos manualmente. */
+  protected readonly mostrarFormularioManual = computed(
+    () => this.busquedaRealizada() && !this.clienteCamposReadonly(),
   );
 
   protected readonly reservaErrors = computed<Record<string, string>>(() => {
@@ -168,9 +164,12 @@ export abstract class ReservaFormBase {
         size: 100,
         filters: { procedencia, estado: EstadoServicio.Habilitado },
       })
-      .pipe(map(mapServiciosReserva), takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (servicios) => this.servicios.set(servicios),
+        next: (respuesta) => {
+          console.log('[cargarServicios] respuesta raw:', respuesta);
+          this.servicios.set(mapServiciosReserva(respuesta));
+        },
         error: (err: unknown) => this.errorHandler.handle(err),
       });
   }
@@ -214,7 +213,8 @@ export abstract class ReservaFormBase {
 
   /** Activa los validadores de la sección de cliente según el tipo de reserva. */
   private aplicarValidadoresCliente(): void {
-    const requeridosComun = ['tipoCliente', 'cedula', 'nombre', 'celular'];
+    // El tipo de cliente ya no se elige: se deriva de la búsqueda (Particular si no existe).
+    const requeridosComun = ['cedula', 'nombre', 'celular'];
     const requeridosColab = ['nombreColaboracion'];
     const colaboracion = this.esColaboracion();
 
@@ -232,79 +232,21 @@ export abstract class ReservaFormBase {
     }
   }
 
-  /** Dispara la búsqueda manual de cliente por cédula (botón de lupita). */
-  protected buscarCliente(): void {
-    const cedula = (this.form.get('cedula')?.value as string | null)?.trim();
-    if (!cedula) {
-      markFieldAsTouched(this.form, 'cedula');
-      this.blurCount.update((v) => v + 1);
-      return;
-    }
-
-    this.loading.set(true);
-    this.clientesService
-      .getAll({ page: 0, size: 1, filters: { identificador: cedula } })
-      .pipe(
-        switchMap((page) => {
-          const encontrado = page.content[0];
-          return encontrado ? this.obtenerClientePorId(encontrado.id) : of(null);
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe({
-        next: (cliente) => {
-          this.busquedaRealizada.set(true);
-          this.loading.set(false);
-          if (cliente) {
-            this.aplicarCliente(cliente);
-          } else {
-            this.clienteBusqueda.set(null);
-            this.habilitarCamposManuales();
-          }
-        },
-        error: (err: unknown) => {
-          this.loading.set(false);
-          this.errorHandler.handle(err);
-        },
-      });
-  }
-
-  /** Trae el detalle de un cliente y lo mapea al shape que consume la reserva. */
-  protected obtenerClientePorId(id: number): Observable<ClienteBusquedaReservaDto> {
-    return this.clientesService.getById(id).pipe(map((c) => this.mapearCliente(c)));
-  }
-
-  private mapearCliente(c: ClienteDetalleRespuestaDto): ClienteBusquedaReservaDto {
-    return {
-      id: c.id,
-      nombre: c.nombre,
-      cedula: c.cedula,
-      tipoCliente: c.tipoCliente,
-      numeroSocio: c.numeroSocio,
-      estado: c.estado,
-      telefono: c.telefono,
-      email: c.email,
-      observaciones: c.observaciones,
-    };
-  }
-
   /** Carga los datos de un cliente (búsqueda o precarga) y deja los campos en sólo lectura. */
   protected aplicarCliente(cliente: ClienteBusquedaReservaDto): void {
     this.clienteBusqueda.set(cliente);
     this.busquedaRealizada.set(true);
     this.tipoClienteValue.set(cliente.tipoCliente);
+    // La cédula se escribe sin emitir: es resultado de la búsqueda, no una edición del
+    // usuario, así que no debe invalidar la verificación recién hecha.
+    this.form.get('cedula')?.setValue(cliente.cedula, { emitEvent: false });
     this.form.patchValue({
       tipoCliente: cliente.tipoCliente,
-      cedula: cliente.cedula,
       nombre: cliente.nombre,
       celular: cliente.telefono,
       email: cliente.email,
       numeroSocio: cliente.numeroSocio === null ? null : String(cliente.numeroSocio),
     });
-  }
-
-  private habilitarCamposManuales(): void {
-    this.form.patchValue({ nombre: null, celular: null, email: null, numeroSocio: null });
   }
 
   /** Aplica el cambio de un único control (evita reemitir valores obsoletos de otros campos). */

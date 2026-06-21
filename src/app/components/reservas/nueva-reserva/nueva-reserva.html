@@ -8,7 +8,7 @@
     <!-- Información de la Reserva -->
     <app-form-section title="Información de la Reserva">
       <app-form-field
-        [config]="tipoReservaField"
+        [config]="tipoReservaField()"
         [value]="controlValue('tipoReserva')"
         [error]="reservaErrors()['tipoReserva']"
         (valueChange)="onControlChange('tipoReserva', $event)"
@@ -35,6 +35,16 @@
             [occupiedRanges]="fechasOcupadas()"
             (rangeSelected)="onRangoSeleccionado($event)"
           />
+          @if (costoCargando() || costo() !== null) {
+            <div class="nueva-reserva__costo">
+              <span class="nueva-reserva__costo-label">Costo de la reserva</span>
+              @if (costoCargando()) {
+                <span class="nueva-reserva__costo-valor">Calculando…</span>
+              } @else {
+                <span class="nueva-reserva__costo-valor">$ {{ costo() | currencyFormat }}</span>
+              }
+            </div>
+          }
         </div>
       }
 
@@ -68,14 +78,6 @@
     <!-- Información del Cliente -->
     <app-form-section title="Información del Cliente">
       @if (!esColaboracion()) {
-        <app-form-field
-          [config]="tipoClienteField"
-          [value]="controlValue('tipoCliente')"
-          [error]="clienteErrors()['tipoCliente']"
-          (valueChange)="onControlChange('tipoCliente', $event)"
-          (blurred)="onFieldBlur('tipoCliente')"
-        />
-
         <div class="nueva-reserva__cedula">
           <app-form-field
             class="nueva-reserva__cedula-field"
@@ -86,55 +88,81 @@
             (blurred)="onFieldBlur('cedula')"
           />
           @if (lupitaVisible()) {
-            <app-button
-              class="nueva-reserva__lupa"
-              intent="secondary"
-              icon="pi-search"
-              tooltip="Buscar cliente por cédula"
-              (clicked)="buscarCliente()"
-            />
+            <div class="nueva-reserva__cedula-actions">
+              <app-button
+                class="nueva-reserva__lupa"
+                intent="secondary"
+                icon="pi-search"
+                tooltip="Buscar cliente por cédula"
+                (clicked)="buscarCliente()"
+              />
+              <span
+                class="nueva-reserva__verif"
+                [class.nueva-reserva__verif--ok]="busquedaRealizada()"
+              >
+                @if (busquedaRealizada()) {
+                  <i class="pi pi-check-circle"></i> Verificada
+                } @else {
+                  <i class="pi pi-exclamation-circle"></i> Sin verificar
+                }
+              </span>
+            </div>
           }
         </div>
 
-        <app-form-field
-          [config]="nombreField()"
-          [displayOnly]="clienteCamposReadonly()"
-          [value]="controlValue('nombre')"
-          [error]="clienteErrors()['nombre']"
-          (valueChange)="onControlChange('nombre', $event)"
-          (blurred)="onFieldBlur('nombre')"
-        />
-        <app-form-field
-          [config]="celularField()"
-          [displayOnly]="clienteCamposReadonly()"
-          [value]="controlValue('celular')"
-          [error]="clienteErrors()['celular']"
-          (valueChange)="onControlChange('celular', $event)"
-          (blurred)="onFieldBlur('celular')"
-        />
-        <app-form-field
-          [config]="emailField()"
-          [displayOnly]="clienteCamposReadonly()"
-          [value]="controlValue('email')"
-          [error]="clienteErrors()['email']"
-          (valueChange)="onControlChange('email', $event)"
-          (blurred)="onFieldBlur('email')"
-        />
-
-        @if (esSocio()) {
+        @if (clienteCamposReadonly()) {
           <app-form-field
-            [config]="numeroSocioField"
+            [config]="tipoClienteDisplayField"
             [displayOnly]="true"
-            [value]="controlValue('numeroSocio')"
+            [value]="tipoClienteLabel()"
           />
+        } @else if (mostrarFormularioManual()) {
+          <p class="nueva-reserva__sin-cliente">
+            No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente.
+          </p>
         }
 
-        @if (mostrarObservaciones()) {
+        @if (clienteCamposReadonly() || mostrarFormularioManual()) {
           <app-form-field
-            [config]="observacionesField"
-            [displayOnly]="true"
-            [value]="observacionesCliente()"
+            [config]="nombreField"
+            [displayOnly]="clienteCamposReadonly()"
+            [value]="controlValue('nombre')"
+            [error]="clienteErrors()['nombre']"
+            (valueChange)="onControlChange('nombre', $event)"
+            (blurred)="onFieldBlur('nombre')"
           />
+          <app-form-field
+            [config]="celularField"
+            [displayOnly]="clienteCamposReadonly()"
+            [value]="controlValue('celular')"
+            [error]="clienteErrors()['celular']"
+            (valueChange)="onControlChange('celular', $event)"
+            (blurred)="onFieldBlur('celular')"
+          />
+          <app-form-field
+            [config]="emailField"
+            [displayOnly]="clienteCamposReadonly()"
+            [value]="controlValue('email')"
+            [error]="clienteErrors()['email']"
+            (valueChange)="onControlChange('email', $event)"
+            (blurred)="onFieldBlur('email')"
+          />
+
+          @if (esSocio()) {
+            <app-form-field
+              [config]="numeroSocioField"
+              [displayOnly]="true"
+              [value]="controlValue('numeroSocio')"
+            />
+          }
+
+          @if (mostrarObservaciones()) {
+            <app-form-field
+              [config]="observacionesField"
+              [displayOnly]="true"
+              [value]="observacionesCliente()"
+            />
+          }
         }
       } @else {
         <app-form-field

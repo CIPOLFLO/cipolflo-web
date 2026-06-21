@@ -53,6 +53,7 @@ export interface ReservaCreacionRequestDto {
   estado: EstadoReserva;
   pago: boolean;
   clienteId: number | null;
+  crearCliente: boolean;
   tipoCliente: TipoCliente | null;
   cedula: string | null;
   nombre: string | null;
@@ -64,4 +65,18 @@ export interface ReservaCreacionRequestDto {
 
 export interface ReservaCreacionRespuestaDto {
   id: number;
+}
+
+/** Parámetros para calcular el costo de una reserva (depende del servicio y las cantidades). */
+export interface CostoReservaRequestDto {
+  servicioId: number;
+  fechaInicio: string;
+  fechaFin: string;
+  cantidadTotal: number | null;
+  cantidadMenores: number | null;
+  cantidad: number | null;
+}
+
+export interface CostoReservaRespuestaDto {
+  costo: number;
 }

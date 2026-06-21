@@ -43,12 +43,12 @@ export class ServicioService extends BaseHttpService {
     return this.get<ServicioFechaOcupadaDto[]>(`servicios/${id}/fechas-ocupadas`, { desde, hasta });
   }
 
-  create(dto: ServicioCrearDto): Observable<ServicioRespuestaDto> {
-    return this.post<ServicioRespuestaDto>('servicios', dto);
+  create(dto: ServicioCrearDto): Observable<ServicioDetalleRespuestaDto> {
+    return this.post<ServicioDetalleRespuestaDto>('servicios', dto);
   }
 
-  update(id: number, dto: ServicioActualizarDto): Observable<ServicioRespuestaDto> {
-    return this.put<ServicioRespuestaDto>(`servicios/${id}`, dto);
+  update(id: number, dto: ServicioActualizarDto): Observable<ServicioDetalleRespuestaDto> {
+    return this.put<ServicioDetalleRespuestaDto>(`servicios/${id}`, dto);
   }
 
   getReservasProximas(id: number): Observable<ReservaProximaDto[]> {

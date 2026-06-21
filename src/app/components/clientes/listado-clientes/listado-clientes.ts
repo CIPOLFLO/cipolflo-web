@@ -83,12 +83,16 @@ export class ListadoClientes {
           queryParams: { from: 'listado' },
         }),
     },
-    {
-      label: 'Nueva Reserva',
-      icon: 'pi pi-calendar',
-      command: () =>
-        this.router.navigate(['/reservas/nueva'], { queryParams: { clienteId: row.id } }),
-    },
+    ...(row.estado !== EstadoSocio.Baja
+      ? [
+          {
+            label: 'Nueva Reserva',
+            icon: 'pi pi-calendar',
+            command: () =>
+              this.router.navigate(['/reservas/nueva'], { queryParams: { clienteId: row.id } }),
+          },
+        ]
+      : []),
     ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
       ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
       : []),

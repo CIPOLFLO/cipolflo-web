@@ -19,16 +19,24 @@ export const TIPO_MOVIMIENTO_OPTIONS = [
 
 export enum Concepto {
   PagoReserva = 'PAGO_RESERVA',
+  PagoCuota = 'PAGO_CUOTA',
   Ute = 'UTE',
+  Ose = 'OSE',
   Antel = 'ANTEL',
+  Sueldos = 'SUELDOS',
   Barraca = 'BARRACA',
+  Otros = 'OTROS',
 }
 
 export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.PagoReserva]: 'Pago de reserva',
+  [Concepto.PagoCuota]: 'Pago de cuota',
   [Concepto.Ute]: 'UTE',
+  [Concepto.Ose]: 'OSE',
   [Concepto.Antel]: 'ANTEL',
+  [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
+  [Concepto.Otros]: 'Otros',
 };
 
 export interface FinanzaRespuestaDto {
@@ -51,6 +59,8 @@ export interface FinanzaRow extends Record<string, unknown> {
 export enum FormaPago {
   Efectivo = 'EFECTIVO',
   Transferencia = 'TRANSFERENCIA',
+  Debito = 'DEBITO',
+  Credito = 'CREDITO',
 }
 
 export const FORMA_PAGO_OPTIONS: FormFieldOption[] = [

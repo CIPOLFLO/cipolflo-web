@@ -14,9 +14,11 @@
 4. [Servicios — DTOs](#servicios--dtos)
 5. [Clientes — Endpoints](#clientes--endpoints)
 6. [Clientes — DTOs](#clientes--dtos)
-7.  [Finanzas — Endpoints](#finanzas--endpoints)
+7. [Finanzas — Endpoints](#finanzas--endpoints)
 8. [Finanzas — DTOs](#finanzas--dtos)
-9. [Manejo de errores](#manejo-de-errores)
+9. [Reservas — Endpoints](#reservas--endpoints)
+10. [Reservas — DTOs](#reservas--dtos)
+11. [Manejo de errores](#manejo-de-errores)
 
 
 ---
@@ -53,6 +55,11 @@ SOCIO | PARTICULAR
 ACTIVO | INACTIVO | DE_BAJA
 ```
 
+### `TipoReserva`
+```
+COMUN | COLABORACION_SIN_FINES_LUCRO
+```
+
 ### `MetodoCobro`
 ```
 COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
@@ -61,6 +68,11 @@ COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 ### `TipoMovimiento`
 ```
 INGRESO | EGRESO
+```
+
+### `FormaPago`
+```
+EFECTIVO | TRANSFERENCIA | DEBITO | CREDITO
 ```
 
 ### `Concepto`
@@ -124,9 +136,7 @@ Retorna el listado paginado de servicios con filtros opcionales.
       "precioParticular": 5000.00,
       "precioSocio": 2500.00,
       "modalidadPrecio": "POR_HORA",
-      "estado": "HABILITADO",
-      "capacidad": 4,
-      "cantidad": null
+      "estado": "HABILITADO"
     }
   ],
   "page": 0,
@@ -137,8 +147,6 @@ Retorna el listado paginado de servicios con filtros opcionales.
   "last": true
 }
 ```
-
-> `capacidad` y `cantidad` se incluyen en el listado (mutuamente excluyentes, uno es `null`) para que el alta de reserva pueda derivar el grupo de campos a pedir sin llamar al detalle del servicio.
 
 ---
 
@@ -411,8 +419,6 @@ Retorna las reservas activas del servicio que se solapan con la ventana `[desde,
   precioSocio: number
   modalidadPrecio: ModalidadPrecio
   estado: EstadoServicio
-  capacidad: number | null   // mutuamente excluyente con cantidad
-  cantidad: number | null     // mutuamente excluyente con capacidad
 }
 ```
 
@@ -525,6 +531,43 @@ Retorna el detalle completo de un cliente.
 ```
 
 > Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
+
+---
+
+### `GET /api/v1/clientes/cedula/{cedula}`
+Busca un cliente por cédula exacta. Devuelve un subconjunto de datos del cliente (sin auditoría ni campos exclusivos de socios).
+
+**Path param:** `cedula` — string en cualquier formato de cédula uruguaya (con o sin puntos y guión)
+
+**Respuesta 200:**
+```json
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "cedula": "12345678",
+  "telefono": "099111111",
+  "mail": "juan@mail.com",
+  "observaciones": null,
+  "tipoCliente": "SOCIO"
+}
+```
+
+| Campo          | Tipo          | Descripción                                    |
+|----------------|---------------|------------------------------------------------|
+| `id`           | integer       | ID del cliente                                 |
+| `nombre`       | string        | Nombre completo                                |
+| `cedula`       | string        | Cédula normalizada (sin puntos ni guión)       |
+| `telefono`     | string        | Teléfono de contacto                           |
+| `mail`         | string \| null | Email, puede ser null                         |
+| `observaciones`| string \| null | Notas del cliente, puede ser null             |
+| `tipoCliente`  | `TipoCliente` | `SOCIO` o `PARTICULAR`                         |
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                                     |
+|-------------|-------------------------|---------------------------------------------------|
+| 400         | `CEDULA_INVALIDA`       | La cédula no cumple el formato válido             |
+| 404         | `CLIENTE_NO_ENCONTRADO` | No existe un cliente con esa cédula               |
 
 ---
 
@@ -826,8 +869,42 @@ Registra un nuevo cliente de tipo particular.
 }
 ```
 
+#### `BusquedaCedulaResponseDto` — respuesta de `GET /api/v1/clientes/cedula/{cedula}`
+```typescript
+{
+  id: number
+  nombre: string
+  cedula: string
+  telefono: string
+  mail: string | null
+  observaciones: string | null
+  tipoCliente: TipoCliente
+}
+```
+
 ---
+
 ## Finanzas — Endpoints
+
+### `GET /api/v1/finanzas`
+
+Retorna el listado paginado de movimientos financieros con filtros opcionales.
+
+**Query params** (todos opcionales):
+
+| Param            | Tipo             | Validación                     |
+|------------------|------------------|--------------------------------|
+| `tipoMovimiento` | `TipoMovimiento` | —                              |
+| `concepto`       | `Concepto`       | —                              |
+| `procedencia`    | `Procedencia`    | —                              |
+| `page`           | integer          | >= 0, default 0                |
+| `size`           | integer          | 1–100, default 1               |
+| `sortField`      | string           | `fecha`, `importe`, `concepto` |
+| `sortOrder`      | string           | `ASC` o `DESC`, default `ASC`  |
+
+**Respuesta 200:** `PageResponse<FinanzaListadoResponseDto>`
+
+---
 
 ### `POST /api/v1/finanzas`
 
@@ -865,10 +942,10 @@ Registra manualmente un ingreso o egreso.
 {
   "id": 1,
   "tipoMovimiento": "INGRESO",
+  "procedencia": "SEDE",
+  "concepto": "PAGO_RESERVA",
   "fecha": "2026-06-20",
   "importe": 1500.00,
-  "concepto": "PAGO_RESERVA",
-  "procedencia": "SEDE",
   "formaPago": "EFECTIVO",
   "notas": "Pago realizado en administración",
   "reservaId": null,
@@ -878,10 +955,73 @@ Registra manualmente un ingreso o egreso.
 
 **Errores:**
 
-| HTTP Status | Código | Cuándo ocurre |
-|-------------|---------|---------------|
-| 400 | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o valor inválido |
-| 401 | — | Token ausente, inválido o expirado |
+| HTTP Status | Código               | Cuándo ocurre                               |
+|-------------|----------------------|---------------------------------------------|
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o valor inválido |
+| 401         | —                    | Token ausente, inválido o expirado          |
+
+---
+
+### `GET /api/v1/finanzas/{id}`
+
+Retorna el detalle completo de un movimiento financiero.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:** `FinanzaDetalleResponseDto`
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                    |
+|-------------|----------------------|----------------------------------|
+| 400         | `ID_INVALIDO`        | `id` no es entero positivo       |
+| 404         | `FINANZA_NO_ENCONTRADA` | no existe movimiento con ese id |
+
+---
+
+### `PUT /api/v1/finanzas/{id}`
+
+Modifica un movimiento financiero existente. No permite cambiar `tipoMovimiento`.
+
+**Path param:** `id` — integer positivo
+
+**Body** (`application/json`):
+
+| Campo         | Tipo             | Obligatorio | Validación   |
+|---------------|------------------|-------------|--------------|
+| `procedencia` | `Procedencia`    | Sí          | —            |
+| `concepto`    | `Concepto`       | Sí          | —            |
+| `fecha`       | string (date)    | Sí          | `yyyy-MM-dd` |
+| `importe`     | number (decimal) | Sí          | > 0          |
+| `formaPago`   | `FormaPago`      | Sí          | —            |
+| `notas`       | string           | No          | —            |
+
+**Respuesta 200:** `FinanzaDetalleResponseDto`
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                        |
+|-------------|----------------------|--------------------------------------|
+| 400         | `ID_INVALIDO`        | `id` no es entero positivo           |
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o inválido|
+| 404         | `FINANZA_NO_ENCONTRADA` | no existe movimiento con ese id   |
+
+---
+
+### `DELETE /api/v1/finanzas/{id}`
+
+Elimina un movimiento financiero.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 204:** No Content
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                    |
+|-------------|----------------------|----------------------------------|
+| 400         | `ID_INVALIDO`        | `id` no es entero positivo       |
+| 404         | `FINANZA_NO_ENCONTRADA` | no existe movimiento con ese id |
 
 ---
 
@@ -893,28 +1033,41 @@ Registra manualmente un ingreso o egreso.
 
 ```typescript
 {
-  tipoMovimiento: TipoMovimiento
-  fecha?: string
-  importe: number
-  concepto: Concepto
-  procedencia: Procedencia
-  formaPago: FormaPago
-  notas?: string
+  tipoMovimiento: TipoMovimiento  // obligatorio
+  fecha?: string                  // opcional, yyyy-MM-dd; si se omite usa fecha actual
+  importe: number                 // obligatorio, > 0
+  concepto: Concepto              // obligatorio
+  procedencia: Procedencia        // obligatorio
+  formaPago: FormaPago            // obligatorio
+  notas?: string                  // opcional
+}
+```
+
+#### `FinanzaModificarRequestDto` — body en `PUT /api/v1/finanzas/{id}`
+
+```typescript
+{
+  procedencia: Procedencia  // obligatorio
+  concepto: Concepto        // obligatorio
+  fecha: string             // obligatorio, yyyy-MM-dd
+  importe: number           // obligatorio, > 0
+  formaPago: FormaPago      // obligatorio
+  notas?: string            // opcional
 }
 ```
 
 ### Response DTOs
 
-#### `FinanzaResponseDto`
+#### `FinanzaListadoResponseDto` — ítem dentro del listado paginado
 
 ```typescript
 {
   id: number
   tipoMovimiento: TipoMovimiento
-  fecha: string
-  importe: number
   concepto: Concepto
   procedencia: Procedencia
+  fecha: string           // LocalDate yyyy-MM-dd
+  importe: number
   formaPago: FormaPago
   notas: string | null
   reservaId: number | null
@@ -922,7 +1075,205 @@ Registra manualmente un ingreso o egreso.
 }
 ```
 
+#### `FinanzaDetalleResponseDto` — respuesta de detalle y de creación/modificación
 
+```typescript
+{
+  id: number
+  codigo: string          // referencia generada por el backend (ej. "FIN-2026-001")
+  tipoMovimiento: TipoMovimiento
+  concepto: Concepto
+  procedencia: Procedencia
+  servicio: string | null // nombre del servicio asociado si aplica
+  fecha: string           // LocalDate yyyy-MM-dd
+  importe: number
+  formaPago: FormaPago
+  notas: string | null
+  reservaId: number | null
+  pagoCuotaId: number | null
+  createdAt: string       // Instant ISO-8601 UTC
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
+```
+
+---
+
+## Reservas — Endpoints
+
+### `GET /api/v1/reservas`
+
+Retorna el listado paginado de reservas con filtros opcionales.
+
+**Query params** (todos opcionales):
+
+| Param         | Tipo             | Validación                                    |
+|---------------|------------------|-----------------------------------------------|
+| `estado`      | `EstadoReserva`  | —                                             |
+| `tipoReserva` | `TipoReserva`    | —                                             |
+| `procedencia` | `Procedencia`    | —                                             |
+| `servicioId`  | integer          | > 0                                           |
+| `clienteId`   | integer          | > 0                                           |
+| `fechaDesde`  | string (date)    | `yyyy-MM-dd`                                  |
+| `fechaHasta`  | string (date)    | `yyyy-MM-dd`                                  |
+| `page`        | integer          | >= 0, default 0                               |
+| `size`        | integer          | 1–100, default 1                              |
+| `sortField`   | string           | `fechaInicio`, `fechaFin`, `estado`, `cliente`|
+| `sortOrder`   | string           | `ASC` o `DESC`, default `ASC`                 |
+
+**Respuesta 200:** `PageResponse<ReservaListadoResponseDto>`
+
+---
+
+### `POST /api/v1/reservas`
+
+Crea una nueva reserva. Puede crear un cliente particular en la misma operación si `crearCliente` es `true` y `clienteId` es `null`.
+
+**Body** (`application/json`):
+
+| Campo            | Tipo             | Obligatorio | Notas                                                               |
+|------------------|------------------|-------------|---------------------------------------------------------------------|
+| `tipoReserva`    | `TipoReserva`    | Sí          | —                                                                   |
+| `procedencia`    | `Procedencia`    | Sí          | —                                                                   |
+| `servicioId`     | integer          | Sí          | —                                                                   |
+| `fechaInicio`    | string (date)    | Sí          | `yyyy-MM-dd`                                                        |
+| `fechaFin`       | string (date)    | Sí          | `yyyy-MM-dd`, >= `fechaInicio`                                      |
+| `cantidadTotal`  | integer          | Cond.       | Requerido si el servicio es por capacidad                           |
+| `cantidadMenores`| integer          | No          | Solo aplica a servicios por capacidad; >= 0                         |
+| `cantidad`       | integer          | Cond.       | Requerido si el servicio es por cantidad                            |
+| `estado`         | `EstadoReserva`  | Sí          | `PENDIENTE` para Común; `CONFIRMADA` para Colaboración              |
+| `pago`           | boolean          | Sí          | —                                                                   |
+| `clienteId`      | integer          | Cond.       | ID de cliente existente; `null` si `crearCliente` es `true`         |
+| `crearCliente`   | boolean          | Sí          | `true` → el backend crea un Particular con los datos del body       |
+| `tipoCliente`    | `TipoCliente`    | Cond.       | Requerido si `crearCliente` es `true`; `null` para Colaboración     |
+| `cedula`         | string           | Cond.       | Requerido si `crearCliente` es `true`; `null` para Colaboración     |
+| `nombre`         | string           | Cond.       | Nombre del cliente (particular/colaboración)                        |
+| `celular`        | string           | Cond.       | Requerido si `crearCliente` es `true`; `null` para Colaboración     |
+| `email`          | string           | No          | —                                                                   |
+| `rut`            | string           | No          | Solo para `COLABORACION_SIN_FINES_LUCRO`                            |
+| `notas`          | string           | No          | —                                                                   |
+
+**Respuesta 201:** `ReservaCreacionResponseDto`
+
+**Errores:**
+
+| HTTP Status | Código                   | Cuándo ocurre                                        |
+|-------------|--------------------------|------------------------------------------------------|
+| 400         | `SOLICITUD_INVALIDA`     | Campo obligatorio faltante o inválido                |
+| 400         | `FECHAS_INVALIDAS`       | `fechaFin` < `fechaInicio`                           |
+| 409         | `SERVICIO_NO_DISPONIBLE` | El servicio tiene conflicto de fechas en ese rango   |
+| 404         | `SERVICIO_NO_ENCONTRADO` | El `servicioId` no existe                            |
+| 404         | `CLIENTE_NO_ENCONTRADO`  | El `clienteId` no existe                             |
+
+---
+
+### `POST /api/v1/reservas/costo`
+
+Calcula el costo estimado de una reserva según el servicio, rango de fechas y cantidades. No persiste ningún dato.
+
+**Body** (`application/json`):
+
+| Campo             | Tipo          | Obligatorio | Notas                                        |
+|-------------------|---------------|-------------|----------------------------------------------|
+| `servicioId`      | integer       | Sí          | —                                            |
+| `fechaInicio`     | string (date) | Sí          | `yyyy-MM-dd`                                 |
+| `fechaFin`        | string (date) | Sí          | `yyyy-MM-dd`, >= `fechaInicio`               |
+| `cantidadTotal`   | integer       | Cond.       | Requerido si el servicio es por capacidad    |
+| `cantidadMenores` | integer       | No          | Solo aplica a servicios por capacidad; >= 0  |
+| `cantidad`        | integer       | Cond.       | Requerido si el servicio es por cantidad     |
+
+**Respuesta 200:**
+
+```json
+{ "costo": 7500.00 }
+```
+
+**Errores:**
+
+| HTTP Status | Código                   | Cuándo ocurre                    |
+|-------------|--------------------------|----------------------------------|
+| 400         | `SOLICITUD_INVALIDA`     | Campos obligatorios faltantes    |
+| 404         | `SERVICIO_NO_ENCONTRADO` | El `servicioId` no existe        |
+
+---
+
+## Reservas — DTOs
+
+### Request DTOs
+
+#### `ReservaCreacionRequestDto` — body en `POST /api/v1/reservas`
+
+```typescript
+{
+  tipoReserva: TipoReserva
+  procedencia: Procedencia
+  servicioId: number
+  fechaInicio: string           // yyyy-MM-dd
+  fechaFin: string              // yyyy-MM-dd
+  cantidadTotal: number | null  // requerido si modoCapacidad
+  cantidadMenores: number | null
+  cantidad: number | null       // requerido si modoCantidad
+  estado: EstadoReserva
+  pago: boolean
+  clienteId: number | null
+  crearCliente: boolean
+  tipoCliente: TipoCliente | null
+  cedula: string | null
+  nombre: string | null
+  celular: string | null
+  email: string | null
+  rut: string | null            // solo para COLABORACION_SIN_FINES_LUCRO
+  notas: string | null
+}
+```
+
+#### `CostoReservaRequestDto` — body en `POST /api/v1/reservas/costo`
+
+```typescript
+{
+  servicioId: number
+  fechaInicio: string           // yyyy-MM-dd
+  fechaFin: string              // yyyy-MM-dd
+  cantidadTotal: number | null
+  cantidadMenores: number | null
+  cantidad: number | null
+}
+```
+
+### Response DTOs
+
+#### `ReservaListadoResponseDto` — ítem dentro del listado paginado
+
+```typescript
+{
+  id: number
+  cliente: string               // nombre del cliente o institución
+  servicio: string              // nombre del servicio
+  procedencia: Procedencia
+  tipoReserva: TipoReserva
+  estado: EstadoReserva
+  fechaInicio: string           // yyyy-MM-dd
+  fechaFin: string              // yyyy-MM-dd
+  pago: boolean
+}
+```
+
+#### `ReservaCreacionResponseDto` — respuesta de `POST /api/v1/reservas`
+
+```typescript
+{
+  id: number
+}
+```
+
+#### `CostoReservaResponseDto` — respuesta de `POST /api/v1/reservas/costo`
+
+```typescript
+{
+  costo: number
+}
+```
 
 ---
 

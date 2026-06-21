@@ -1,11 +1,22 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { filter, finalize } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  filter,
+  finalize,
+  map,
+  merge,
+  Observable,
+  of,
+  switchMap,
+} from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
   ConfirmDialogComponent,
   ConfirmDialogService,
+  CurrencyFormatPipe,
   emailValido,
   ErrorDialogComponent,
   ErrorDialogService,
@@ -27,14 +38,17 @@ import {
   TipoCliente,
   TIPO_CLIENTE_FORM_OPTIONS,
 } from '../../clientes/models/cliente.model';
+import { ClientesService } from '../../clientes/services/cliente.service';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
   estadoInicialPorTipo,
   TIPO_RESERVA_OPTIONS,
   TipoReserva,
+  type CostoReservaRequestDto,
   type ReservaCreacionRequestDto,
 } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
+import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
 
 @Component({
   standalone: true,
@@ -49,8 +63,9 @@ import { ReservasService } from '../services/reservas.service';
     OccupancyCalendar,
     ConfirmDialogComponent,
     ErrorDialogComponent,
+    CurrencyFormatPipe,
   ],
-  providers: [ReservasService],
+  providers: [ReservasService, ReservaClienteBusquedaService],
   templateUrl: './nueva-reserva.html',
   styleUrl: './nueva-reserva.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +74,12 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly errorDialog = inject(ErrorDialogService);
   private readonly reservasService = inject(ReservasService);
+  private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
+  private readonly clientesService = inject(ClientesService);
+
+  /** Costo de la reserva devuelto por el backend (mock por ahora); null si aún no aplica. */
+  protected readonly costo = signal<number | null>(null);
+  protected readonly costoCargando = signal(false);
 
   constructor() {
     super(
@@ -90,22 +111,140 @@ export class NuevaReserva extends ReservaFormBase {
     const clienteId = this.route.snapshot.queryParamMap.get('clienteId');
     if (clienteId) {
       this.clientePrellenado.set(true);
-      this.obtenerClientePorId(Number(clienteId))
+      this.clienteBusquedaService
+        .buscarPorId(Number(clienteId))
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((cliente) => this.aplicarCliente(cliente));
     }
+
+    // Si el usuario edita la cédula después de verificar, se invalida la búsqueda para
+    // evitar que queden datos de un cliente asociados a una cédula que ya no corresponde.
+    this.form
+      .get('cedula')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.busquedaRealizada()) this.resetearBusquedaCliente();
+      });
+
+    this.escucharCostoReserva();
+  }
+
+  /**
+   * Recalcula el costo cada vez que cambian el servicio, el rango de fechas o las
+   * cantidades. El debounce evita una llamada por cada tecla en los inputs numéricos.
+   */
+  private escucharCostoReserva(): void {
+    merge(
+      this.form.get('servicioId')!.valueChanges,
+      this.form.get('fechaInicio')!.valueChanges,
+      this.form.get('fechaFin')!.valueChanges,
+      this.form.get('cantidad')!.valueChanges,
+      this.form.get('cantidadTotal')!.valueChanges,
+      this.form.get('cantidadMenores')!.valueChanges,
+    )
+      .pipe(
+        debounceTime(300),
+        switchMap(() => this.calcularCosto()),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((costo) => this.costo.set(costo));
+  }
+
+  /** Pide el costo al backend si hay servicio y rango completos; si no, lo limpia. */
+  private calcularCosto(): Observable<number | null> {
+    const servicioId = this.servicioIdValue();
+    const fechaInicio = this.controlValue('fechaInicio');
+    const fechaFin = this.controlValue('fechaFin');
+    if (!servicioId || !fechaInicio || !fechaFin) return of(null);
+
+    const request: CostoReservaRequestDto = {
+      servicioId,
+      fechaInicio,
+      fechaFin,
+      cantidadTotal: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
+        : null,
+      cantidadMenores: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
+        : null,
+      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+    };
+
+    this.costoCargando.set(true);
+    return this.reservasService.calcularCosto(request).pipe(
+      map((respuesta) => respuesta.costo),
+      catchError((err: unknown) => {
+        this.errorHandler.handle(err);
+        return of(null);
+      }),
+      finalize(() => this.costoCargando.set(false)),
+    );
+  }
+
+  protected buscarCliente(): void {
+    const cedula = (this.form.get('cedula')?.value as string | null)?.trim();
+    if (!cedula) {
+      this.onFieldBlur('cedula');
+      return;
+    }
+
+    this.loading.set(true);
+    this.clienteBusquedaService
+      .buscarPorCedula(cedula)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cliente) => {
+          this.busquedaRealizada.set(true);
+          this.loading.set(false);
+          if (cliente) {
+            this.aplicarCliente(cliente);
+          } else {
+            this.clienteBusqueda.set(null);
+            this.habilitarCamposManuales();
+          }
+        },
+        error: (err: unknown) => {
+          this.loading.set(false);
+          this.errorHandler.handle(err);
+        },
+      });
+  }
+
+  private resetearBusquedaCliente(): void {
+    this.busquedaRealizada.set(false);
+    this.clienteBusqueda.set(null);
+    this.form.patchValue({
+      tipoCliente: null,
+      nombre: null,
+      celular: null,
+      email: null,
+      numeroSocio: null,
+    });
+  }
+
+  private habilitarCamposManuales(): void {
+    this.form.patchValue({
+      tipoCliente: TipoCliente.Particular,
+      nombre: null,
+      celular: null,
+      email: null,
+      numeroSocio: null,
+    });
   }
 
   // --- Configuración de campos de la sección "Información de la Reserva" ---
 
-  protected readonly tipoReservaField: FormFieldConfig = {
+  protected readonly tipoReservaField = computed<FormFieldConfig>(() => ({
     key: 'tipoReserva',
     label: 'Tipo de reserva',
     type: 'select',
     required: true,
-    options: TIPO_RESERVA_OPTIONS,
+    // Colaboración no aplica cuando se entra desde un cliente concreto (precarga).
+    options: this.clientePrellenado()
+      ? TIPO_RESERVA_OPTIONS.filter((o) => o.value !== TipoReserva.ColaboracionSinFines)
+      : TIPO_RESERVA_OPTIONS,
     defaultValue: TipoReserva.Comun,
-  };
+  }));
 
   protected readonly procedenciaField: FormFieldConfig = {
     key: 'procedencia',
@@ -153,14 +292,18 @@ export class NuevaReserva extends ReservaFormBase {
 
   // --- Sección de cliente (tipo Común) ---
 
-  protected readonly tipoClienteField: FormFieldConfig = {
+  /** Campo de sólo lectura que muestra el tipo del cliente encontrado (no se elige). */
+  protected readonly tipoClienteDisplayField: FormFieldConfig = {
     key: 'tipoCliente',
     label: 'Tipo de cliente',
-    type: 'select',
-    required: true,
-    placeholder: 'Seleccione',
-    options: TIPO_CLIENTE_FORM_OPTIONS,
+    type: 'text',
   };
+
+  /** Etiqueta legible del tipo del cliente encontrado. */
+  protected readonly tipoClienteLabel = computed<string | null>(() => {
+    const tipo = this.clienteBusqueda()?.tipoCliente;
+    return TIPO_CLIENTE_FORM_OPTIONS.find((o) => o.value === tipo)?.label ?? null;
+  });
 
   protected readonly cedulaField = computed<FormFieldConfig>(() => ({
     key: 'cedula',
@@ -170,27 +313,25 @@ export class NuevaReserva extends ReservaFormBase {
     disabled: this.clientePrellenado(),
   }));
 
-  protected readonly nombreField = computed<FormFieldConfig>(() => ({
+  protected readonly nombreField: FormFieldConfig = {
     key: 'nombre',
     label: 'Nombre',
     type: 'text',
     required: true,
-    disabled: this.clienteCamposDeshabilitados(),
-  }));
-  protected readonly celularField = computed<FormFieldConfig>(() => ({
+  };
+
+  protected readonly celularField: FormFieldConfig = {
     key: 'celular',
     label: 'Celular',
     type: 'text',
     required: true,
-    disabled: this.clienteCamposDeshabilitados(),
-  }));
+  };
 
-  protected readonly emailField = computed<FormFieldConfig>(() => ({
+  protected readonly emailField: FormFieldConfig = {
     key: 'email',
     label: 'Email',
     type: 'text',
-    disabled: this.clienteCamposDeshabilitados(),
-  }));
+  };
 
   protected readonly numeroSocioField: FormFieldConfig = {
     key: 'numeroSocio',
@@ -324,6 +465,8 @@ export class NuevaReserva extends ReservaFormBase {
       estado: estadoInicialPorTipo(tipoReserva),
       pago: false,
       clienteId: cliente?.id ?? null,
+      // Reserva común sin cliente encontrado: se enviaron datos básicos para que el backend lo cree.
+      crearCliente: !colaboracion && cliente === null,
       tipoCliente: colaboracion ? null : (this.controlValue('tipoCliente') as TipoCliente | null),
       cedula: colaboracion ? null : this.controlValue('cedula'),
       nombre: colaboracion ? this.controlValue('nombreColaboracion') : this.controlValue('nombre'),

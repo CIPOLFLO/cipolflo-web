@@ -19,6 +19,7 @@ const dto: ReservaCreacionRequestDto = {
   estado: EstadoReserva.Pendiente,
   pago: false,
   clienteId: 1,
+  crearCliente: false,
   tipoCliente: null,
   cedula: '12345678',
   nombre: 'Juan',
@@ -50,5 +51,53 @@ describe('ReservasService', () => {
     let id = 0;
     service.crear(dto).subscribe((r) => (id = r.id));
     expect(id).toBeGreaterThan(0);
+  });
+
+  describe('calcularCosto (mock dinámico)', () => {
+    const base = {
+      servicioId: 1,
+      cantidadTotal: 2,
+      cantidadMenores: null,
+      cantidad: null,
+    };
+
+    it('devuelve un costo mayor cuando el rango de fechas es más largo', () => {
+      let corto = 0;
+      let largo = 0;
+      service
+        .calcularCosto({ ...base, fechaInicio: '2026-07-01', fechaFin: '2026-07-02' })
+        .subscribe((r) => (corto = r.costo));
+      service
+        .calcularCosto({ ...base, fechaInicio: '2026-07-01', fechaFin: '2026-07-06' })
+        .subscribe((r) => (largo = r.costo));
+      expect(corto).toBeGreaterThan(0);
+      expect(largo).toBeGreaterThan(corto);
+    });
+
+    it('devuelve un costo mayor cuando aumenta la cantidad', () => {
+      let pocos = 0;
+      let muchos = 0;
+      service
+        .calcularCosto({
+          servicioId: 1,
+          fechaInicio: '2026-07-01',
+          fechaFin: '2026-07-03',
+          cantidadTotal: null,
+          cantidadMenores: null,
+          cantidad: 1,
+        })
+        .subscribe((r) => (pocos = r.costo));
+      service
+        .calcularCosto({
+          servicioId: 1,
+          fechaInicio: '2026-07-01',
+          fechaFin: '2026-07-03',
+          cantidadTotal: null,
+          cantidadMenores: null,
+          cantidad: 5,
+        })
+        .subscribe((r) => (muchos = r.costo));
+      expect(muchos).toBeGreaterThan(pocos);
+    });
   });
 });
