@@ -83,8 +83,6 @@ export class ListadoClientes {
           queryParams: { from: 'listado' },
         }),
     },
-    // { label: 'Nueva Reserva', icon: 'pi pi-calendar', command: () => ... },
-    // { separator: true },
     ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
       ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
       : []),
@@ -92,6 +90,18 @@ export class ListadoClientes {
 
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
+  }
+
+  protected onApplyFilters(filters: Record<string, string>): void {
+    this.tableState.updateFilters(filters);
+  }
+
+  protected onSearchChange(search: string): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
+  }
+
+  protected onClearFilters(): void {
+    this.tableState.updateFilters({});
   }
 
   protected onNuevoCliente(): void {
@@ -104,6 +114,7 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+    this.recargarTabla();
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
