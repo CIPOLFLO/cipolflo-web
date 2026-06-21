@@ -3,8 +3,10 @@ import { FormField } from '../../../components/form-field/form-field';
 import { AppButton } from '../../../components/button/button';
 import { FilterConfigProvider } from '../../../services/filter-config.provider';
 import { FILTER_DEBOUNCE_MS } from '../../../config/filter.config';
+import { buildActiveFilters, buildDefaultFilterValues } from '../../../utils/filter.utils';
+
 @Component({
-  selector: 'mob-filter-panel',
+  selector: 'app-mob-filter-panel',
   imports: [FormField, AppButton],
   templateUrl: './mob-filter-panel.html',
   styleUrl: './mob-filter-panel.css',
@@ -22,11 +24,7 @@ export class MobFilterPanel {
   protected readonly isExpanded = signal(false);
   protected readonly searchValue = signal('');
   protected readonly filterValues = signal<Record<string, string | null>>(
-    Object.fromEntries(
-      this.filterFields()
-        .filter((f) => f.defaultValue != null)
-        .map((f) => [f.key, f.defaultValue!]),
-    ),
+    buildDefaultFilterValues(this.filterFields()),
   );
 
   private readonly debounceMs = inject(FILTER_DEBOUNCE_MS);
@@ -36,7 +34,7 @@ export class MobFilterPanel {
     this.isExpanded.update((v) => !v);
   }
 
-  protected updateSearch(value: string | null): void {
+  protected updateSearch(value: string | null | undefined): void {
     const normalized = value ?? '';
     this.searchValue.set(normalized);
 
@@ -54,12 +52,7 @@ export class MobFilterPanel {
   }
 
   protected onApply(): void {
-    const active = Object.fromEntries(
-      Object.entries(this.filterValues()).filter(
-        (entry): entry is [string, string] => entry[1] !== null && entry[1] !== '',
-      ),
-    );
-    this.filtersApply.emit({ ...active });
+    this.filtersApply.emit(buildActiveFilters(this.filterValues()));
   }
 
   protected onClear(): void {

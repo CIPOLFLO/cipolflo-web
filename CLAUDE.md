@@ -31,7 +31,10 @@ src/app/
 ├── shared/
 │   ├── layout/            # page-layout, sub-header, header, footer
 │   ├── components/        # Reusable UI components (table, button, filter-panel, form-*)
-│   └── models/            # Shared interfaces: AuditInfoDto (audit.model.ts)
+│   ├── models/            # Shared interfaces: AuditInfoDto (audit.model.ts)
+│   └── mobile/
+│       ├── layout/        # MobPageHeader, MobSidebar (estructura de página mobile)
+│       └── components/    # MobStepper, MobStepCard, MobStepFooter (bloques reutilizables mobile)
 └── <modulo>/
     ├── models/            # Module-specific interfaces and DTOs
     ├── services/          # HTTP services extending BaseHttpService
@@ -167,7 +170,7 @@ TestBed.configureTestingModule({
 });
 ```
 
-## Detección de resolución
+## Resolución mobile
 
 El breakpoint mobile está fijado en **767px** (`max-width: 767px`).
 
@@ -198,7 +201,50 @@ export class ListadoClientes {
 @if (breakpoint.isMobile()) { } @else { }
 ```
 
-El componente mobile (`mob-page-header`, `mob-list-layout`, etc.) nunca se renderiza en desktop y viceversa.
+El componente mobile nunca se renderiza en desktop y viceversa.
+
+### Componentes mobile
+
+Los componentes exclusivos de resolución mobile viven en `src/app/shared/mobile/`:
+
+- `mobile/layout/` — estructura de página: `MobPageHeader` (`app-mob-page-header`), `MobSidebar` (`app-mob-sidebar`).
+- `mobile/components/` — bloques reutilizables: `MobStepper`, `MobStepCard`, `MobStepFooter`.
+
+**Convención de nombres:**
+
+- Clase: prefijo `Mob` (ej. `MobStepper`); archivos: prefijo `mob-` (ej. `mob-stepper.ts`).
+- Selector: prefijo `app-mob-` (ej. `app-mob-stepper`). El `app-` lo exige ESLint; el `mob-` identifica el componente como mobile-only.
+
+**Cuándo crear un `mob-` vs reutilizar un `app-` existente:** crear `mob-` solo si no hay análogo desktop (estructura propia de la vista mobile). Si el componente desktop ya sirve (ej. `app-button`), reutilizarlo directamente.
+
+### MobPageHeader y el menú hamburguesa
+
+`MobPageHeader` emite el output `menuToggled` al hacer clic en el ícono de menú. La apertura del
+sidebar está a cargo de `SidebarService` (`src/app/core/services/sidebar.service.ts`).
+
+- **Páginas normales** (usan `app-page-layout`): el layout ya conecta `(menuToggled)="sidebar.open()"` internamente. No requiere código extra en la página.
+- **Páginas que usan `app-mob-page-header` directamente** (ej. wizards): deben inyectar `SidebarService` y enlazar el output manualmente:
+
+```typescript
+protected readonly sidebar = inject(SidebarService);
+```
+
+```html
+<app-mob-page-header title="..." (menuToggled)="sidebar.open()"></app-mob-page-header>
+```
+
+### Wizard mobile (`MobStepper` / `MobStepCard` / `MobStepFooter`)
+
+Son los bloques estructurales de cualquier flujo mobile de múltiples pasos. Son
+**presentacionales y sin estado**:
+
+- `MobStepper`: deriva el estado visual de cada paso (`active`/`completed`/`future`) únicamente de `currentStep`; no guarda historial de pasos visitados. Al retroceder, los pasos que superan `currentStep` vuelven a estado `future`.
+- `MobStepCard`: proyecta contenido del padre con `<ng-content>`; no conoce campos ni lógica de negocio.
+- `MobStepFooter`: recibe `showPrevious`, `nextDisabled`, `isLastStep` y emite `previous`/`next`/`confirm`; no decide la navegación ni la validez.
+
+El **componente padre wizard** es responsable de la lógica de navegación, calcular `nextDisabled` según la validez del paso, y mantener un **único modelo de datos persistente** (reactive form o signals) que sobreviva al cambio de paso.
+
+`MobPageHeader` acepta `<ng-content>` (debajo de la barra menú/título/avatar) para proyectar contenido opcional dentro del header azul. El wizard coloca ahí el `MobStepper`. Si no se proyecta nada, el header se ve igual que siempre.
 
 ## Hard rules
 

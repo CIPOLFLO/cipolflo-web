@@ -3,14 +3,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MobListLayout } from './mob-list-layout';
 
 @Component({
-  selector: 'mob-test-host',
+  selector: 'app-mob-test-host',
   imports: [MobListLayout],
   template: `
-    <mob-list-layout>
+    <app-mob-list-layout>
       <div header data-testid="slot-header">Header</div>
       <div filters data-testid="slot-filters">Filters</div>
       <div data-testid="slot-default">Card</div>
-    </mob-list-layout>
+    </app-mob-list-layout>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

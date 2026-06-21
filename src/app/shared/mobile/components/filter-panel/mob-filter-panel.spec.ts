@@ -48,7 +48,12 @@ describe('MobFilterPanel', () => {
     expect(btn).not.toBeNull();
   });
 
-  it('el body no está visible cuando el panel está colapsado', () => {
+  it('la barra de búsqueda está siempre visible', () => {
+    const search = fixture.nativeElement.querySelector('.mob-filter-panel__search');
+    expect(search).not.toBeNull();
+  });
+
+  it('el body de filtros no está visible cuando el panel está colapsado', () => {
     const body = fixture.nativeElement.querySelector('.mob-filter-panel__body');
     expect(body.classList).toContain('mob-filter-panel__body--hidden');
   });
@@ -67,13 +72,6 @@ describe('MobFilterPanel', () => {
     fixture.detectChanges();
     const body = fixture.nativeElement.querySelector('.mob-filter-panel__body');
     expect(body.classList).toContain('mob-filter-panel__body--hidden');
-  });
-
-  it('la barra de búsqueda aparece en el DOM cuando el panel está expandido', () => {
-    api.toggle();
-    fixture.detectChanges();
-    const search = fixture.nativeElement.querySelector('.mob-filter-panel__search');
-    expect(search).not.toBeNull();
   });
 
   it('cambiar búsqueda emite searchChange con debounce', async () => {
