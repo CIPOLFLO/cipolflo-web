@@ -3,18 +3,14 @@ import { Signal, signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MobFilterPanel } from './mob-filter-panel';
 import { FilterConfigProvider } from '../../../services/filter-config.provider';
-import { FILTER_DEBOUNCE_MS } from '../../../config/filter.config';
 import { FormFieldConfig } from '../../../models/form-field.model';
-import { vi } from 'vitest';
 
 interface MobFilterPanelTestApi {
   toggle(): void;
-  updateSearch(value: string | null): void;
   updateFilterValue(key: string, value: string | null): void;
   onApply(): void;
   onClear(): void;
   filterValues: Signal<Record<string, string | null>>;
-  searchValue: Signal<string>;
 }
 
 class FakeFilterConfigProvider extends FilterConfigProvider {
@@ -31,10 +27,7 @@ describe('MobFilterPanel', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MobFilterPanel],
-      providers: [
-        { provide: FilterConfigProvider, useClass: FakeFilterConfigProvider },
-        { provide: FILTER_DEBOUNCE_MS, useValue: 0 },
-      ],
+      providers: [{ provide: FilterConfigProvider, useClass: FakeFilterConfigProvider }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MobFilterPanel);
@@ -46,11 +39,6 @@ describe('MobFilterPanel', () => {
   it('el botón de toggle está siempre en el DOM', () => {
     const btn = fixture.debugElement.query(By.css('.mob-filter-panel__toggle'));
     expect(btn).not.toBeNull();
-  });
-
-  it('la barra de búsqueda está siempre visible', () => {
-    const search = fixture.nativeElement.querySelector('.mob-filter-panel__search');
-    expect(search).not.toBeNull();
   });
 
   it('el body de filtros no está visible cuando el panel está colapsado', () => {
@@ -72,21 +60,6 @@ describe('MobFilterPanel', () => {
     fixture.detectChanges();
     const body = fixture.nativeElement.querySelector('.mob-filter-panel__body');
     expect(body.classList).toContain('mob-filter-panel__body--hidden');
-  });
-
-  it('cambiar búsqueda emite searchChange con debounce', async () => {
-    vi.useFakeTimers();
-
-    const emitted: string[] = [];
-    component.searchChange.subscribe((v: string) => emitted.push(v));
-
-    api.updateSearch('test');
-    expect(emitted.length).toBe(0);
-
-    await vi.runAllTimersAsync();
-    expect(emitted).toEqual(['test']);
-
-    vi.useRealTimers();
   });
 
   it('cambiar un campo de filtro no emite filtersApply automáticamente', () => {

@@ -1,18 +1,4 @@
 <div class="mob-filter-panel">
-  <div class="mob-filter-panel__search">
-    <i class="pi pi-search mob-filter-panel__search-icon" aria-hidden="true"></i>
-    <app-form-field
-      [config]="{
-        key: '__search__',
-        label: '',
-        type: 'text',
-        placeholder: searchPlaceholder(),
-      }"
-      [value]="searchValue()"
-      (valueChange)="updateSearch($event)"
-    />
-  </div>
-
   <app-button
     class="mob-filter-panel__toggle"
     [label]="isExpanded() ? 'Ocultar Filtros' : 'Mostrar Filtros'"
