@@ -76,6 +76,7 @@ export { emailValido } from './validators/email.validator';
 
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
+export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
 
 // Mobile Components
 export { MobStepper } from './mobile/components/stepper/mob-stepper';
@@ -84,4 +85,3 @@ export { MobStepCard } from './mobile/components/step-card/mob-step-card';
 export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
 export { MobFab } from './mobile/components/fab/mob-fab';
 export { MobListCard } from './mobile/components/list-card/mob-list-card';
-export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';

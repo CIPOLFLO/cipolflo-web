@@ -10,6 +10,15 @@ export class ClientesColumnsService {
   readonly columns: ColumnConfig[] = [
     { key: 'nombreCompleto', label: 'Nombre', sortable: true },
     { key: 'numeroSocio', label: 'Nro de socio', nullFallback: '—' },
+    {
+      key: 'ultimaCuotaDto',
+      label: 'Última cuota paga',
+      nullFallback: '—',
+      transform: (v) => {
+        const ultimaCuota = v as { descripcion?: string } | null;
+        return ultimaCuota?.descripcion ?? '—';
+      },
+    },
     { key: 'cedula', label: 'Cédula', transform: (v) => this.cedulaFormat.transform(v as string) },
     { key: 'email', label: 'Email', nullFallback: '—' },
     {

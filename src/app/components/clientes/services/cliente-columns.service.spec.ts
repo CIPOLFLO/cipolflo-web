@@ -15,8 +15,8 @@ describe('ClientesColumnsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('debe definir 5 columnas', () => {
-    expect(service.columns.length).toBe(5);
+  it('debe definir 6 columnas', () => {
+    expect(service.columns.length).toBe(6);
   });
 
   it('debe definir columna nombreCompleto como sortable', () => {

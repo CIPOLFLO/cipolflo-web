@@ -10,6 +10,7 @@ import {
   ModificacionSocioRequestDto,
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
+import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
   getAll({
@@ -68,5 +69,12 @@ export class ClientesService extends BaseHttpService {
 
   registrarSocio(dto: RegistroSocioRequestDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes/socios', dto);
+  }
+
+  registrarPagoCuota(
+    socioId: number,
+    dto: RegistroPagoCuotaRequestDto,
+  ): Observable<PagoCuotaResponseDto[]> {
+    return this.post<PagoCuotaResponseDto[]>(`clientes/socios/${socioId}/pago-cuota`, dto);
   }
 }

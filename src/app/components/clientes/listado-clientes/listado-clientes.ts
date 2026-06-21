@@ -102,6 +102,18 @@ export class ListadoClientes {
     this.tableState.updateFilters(filters);
   }
 
+  protected onApplyFilters(filters: Record<string, string>): void {
+    this.tableState.updateFilters(filters);
+  }
+
+  protected onSearchChange(search: string): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
+  }
+
+  protected onClearFilters(): void {
+    this.tableState.updateFilters({});
+  }
+
   protected onNuevoCliente(): void {
     this.router.navigate(['/clientes/nuevo']);
   }
@@ -112,6 +124,7 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+    this.recargarTabla();
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {

@@ -77,6 +77,7 @@ export interface ClienteRespuestaDto extends Record<string, unknown> {
   tipoCliente: TipoCliente;
   numeroSocio: number | null;
   estado: EstadoSocio | null;
+  ultimaCuotaDto: UltimaCuotaDto | null;
 }
 
 export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
@@ -95,7 +96,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   ciudad: string | null;
   direccion: string | null;
   observaciones: string | null;
-  ultimaCuotaPaga: UltimaCuotaPagaDto | null;
+  ultimaCuotaDto: UltimaCuotaDto | null;
 }
 export interface ModificacionParticularRequestDto {
   nombreCompleto: string;
@@ -147,10 +148,11 @@ export interface RegistroSocioRequestDto {
   observaciones: string | null;
 }
 
-export interface UltimaCuotaPagaDto {
-  mesCorrespondiente: string;
-  fechaPago: string;
-  formaPago: FormaPago;
+export interface UltimaCuotaDto {
+  anio: number;
+  mes: number;
+  nombreMes: string;
+  descripcion: string;
 }
 
 /** Estado puntual de un socio (GET /clientes/socios/{id}/estado). */
