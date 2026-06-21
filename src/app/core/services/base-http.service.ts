@@ -35,4 +35,11 @@ export abstract class BaseHttpService {
   protected delete<T>(path: string): Observable<T> {
     return this.http.delete<T>(`${this.apiUrl}/${path}`);
   }
+
+  protected postBlob(path: string, body: unknown) {
+    return this.http.post(`${this.apiUrl}/${path}`, body, {
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
 }

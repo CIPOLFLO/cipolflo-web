@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, of, map } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
@@ -8,6 +8,7 @@ import {
   FinanzaRespuestaDto,
   FinanzaModificarDto,
 } from '../models/finanza.model';
+import { FileDownloadService } from '../../../core/services/file-download.service';
 
 @Injectable({
   providedIn: 'root',
@@ -39,5 +40,15 @@ export class FinanzaService extends BaseHttpService {
 
   update(id: number, dto: FinanzaModificarDto): Observable<void> {
     return this.put<void>(`finanzas/${id}`, dto);
+  }
+
+  private readonly fileDownloadService = inject(FileDownloadService);
+
+  exportar(filters: Record<string, string | null>): Observable<void> {
+    return this.postBlob('finanzas/export', filters).pipe(
+      map((response) => {
+        this.fileDownloadService.download(response, 'finanzas.xlsx');
+      }),
+    );
   }
 }

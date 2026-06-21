@@ -10,16 +10,32 @@ import {
   FinanzaModificarDto,
 } from '../models/finanza.model';
 import { FinanzaService } from './finanza.service';
+import { FileDownloadService } from '../../../core/services/file-download.service';
+import { throwError } from 'rxjs';
 
 const PARAMS_BASE = { page: 0, size: 10, filters: {} };
 
 describe('FinanzaService', () => {
   let service: FinanzaService;
   let httpMock: HttpTestingController;
+  let fileDownloadService: {
+    download: ReturnType<typeof vi.fn>;
+    parseBlobError: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
+    fileDownloadService = {
+      download: vi.fn(),
+      parseBlobError: vi.fn().mockImplementation((err) => throwError(() => err)),
+    };
+
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), FinanzaService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        FinanzaService,
+        { provide: FileDownloadService, useValue: fileDownloadService },
+      ],
     });
 
     service = TestBed.inject(FinanzaService);
@@ -148,5 +164,22 @@ describe('FinanzaService', () => {
 
       req.flush(null);
     });
+  });
+
+  it('exportar debería hacer POST blob y disparar descarga', () => {
+    service.exportar({ concepto: 'PAGO_RESERVA' }).subscribe();
+
+    const req = httpMock.expectOne(
+      (request) => request.method === 'POST' && request.url.includes('finanzas/export'),
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.responseType).toBe('blob');
+    expect(req.request.body).toEqual({ concepto: 'PAGO_RESERVA' });
+
+    req.flush(new Blob(['excel']), {
+      headers: { 'Content-Disposition': 'attachment; filename="finanzas.xlsx"' },
+    });
+
+    expect(fileDownloadService.download).toHaveBeenCalled();
   });
 });

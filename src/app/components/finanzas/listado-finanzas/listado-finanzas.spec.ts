@@ -34,6 +34,7 @@ describe('ListadoFinanzas', () => {
   let mockFinanzaService: {
     getAll: ReturnType<typeof vi.fn>;
     eliminar: ReturnType<typeof vi.fn>;
+    exportar: ReturnType<typeof vi.fn>;
   };
 
   let mockConfirmDialogService: {
@@ -58,6 +59,7 @@ describe('ListadoFinanzas', () => {
         }),
       ),
       eliminar: vi.fn().mockReturnValue(of(void 0)),
+      exportar: vi.fn().mockReturnValue(of(void 0)),
     };
 
     mockConfirmDialogService = {
@@ -192,5 +194,36 @@ describe('ListadoFinanzas', () => {
     component['onFilterChange']({ concepto: 'Servicio' });
 
     expect(updateFiltersSpy).toHaveBeenCalledWith({ concepto: 'Servicio' });
+  });
+
+  it('puedeExportar es false cuando no hay resultados', () => {
+    component['tableState'].setResult(0);
+    component['tableState'].setLoading(false);
+
+    expect(component['puedeExportar']()).toBe(false);
+  });
+
+  it('puedeExportar es false cuando la tabla está cargando', () => {
+    component['tableState'].setResult(10);
+    component['tableState'].setLoading(true);
+
+    expect(component['puedeExportar']()).toBe(false);
+  });
+
+  it('puedeExportar es true cuando hay resultados y no está cargando', () => {
+    component['tableState'].setResult(10);
+    component['tableState'].setLoading(false);
+
+    expect(component['puedeExportar']()).toBe(true);
+  });
+
+  it('onDescargarListado llama a exportar con los filtros activos', () => {
+    component['tableState'].updateFilters({ concepto: 'PAGO_RESERVA' });
+    component['tableState'].setResult(10);
+    component['tableState'].setLoading(false);
+
+    component['onDescargarListado']();
+
+    expect(mockFinanzaService.exportar).toHaveBeenCalledWith({ concepto: 'PAGO_RESERVA' });
   });
 });
