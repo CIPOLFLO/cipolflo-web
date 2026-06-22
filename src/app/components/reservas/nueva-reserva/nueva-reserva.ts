@@ -3,12 +3,14 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   catchError,
   debounceTime,
+  EMPTY,
   filter,
   finalize,
   map,
   merge,
   Observable,
   of,
+  Subject,
   switchMap,
 } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -76,6 +78,8 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
 
+  private readonly buscarClienteTrigger = new Subject<string>();
+
   /** Costo de la reserva devuelto por el backend (mock por ahora); null si aún no aplica. */
   protected readonly costo = signal<number | null>(null);
   protected readonly costoCargando = signal(false);
@@ -126,6 +130,7 @@ export class NuevaReserva extends ReservaFormBase {
       });
 
     this.escucharCostoReserva();
+    this.inicializarBusquedaCliente();
   }
 
   /**
@@ -180,33 +185,39 @@ export class NuevaReserva extends ReservaFormBase {
     );
   }
 
+  private inicializarBusquedaCliente(): void {
+    this.buscarClienteTrigger
+      .pipe(
+        switchMap((cedula) =>
+          this.clienteBusquedaService.buscarPorCedula(cedula).pipe(
+            finalize(() => this.loading.set(false)),
+            catchError((err: unknown) => {
+              this.errorHandler.handle(err);
+              return EMPTY;
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((cliente) => {
+        this.busquedaRealizada.set(true);
+        if (cliente) {
+          this.aplicarCliente(cliente);
+        } else {
+          this.clienteBusqueda.set(null);
+          this.habilitarCamposManuales();
+        }
+      });
+  }
+
   protected buscarCliente(): void {
     const cedula = (this.form.get('cedula')?.value as string | null)?.trim();
     if (!cedula) {
       this.onFieldBlur('cedula');
       return;
     }
-
     this.loading.set(true);
-    this.clienteBusquedaService
-      .buscarPorCedula(cedula)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (cliente) => {
-          this.busquedaRealizada.set(true);
-          this.loading.set(false);
-          if (cliente) {
-            this.aplicarCliente(cliente);
-          } else {
-            this.clienteBusqueda.set(null);
-            this.habilitarCamposManuales();
-          }
-        },
-        error: (err: unknown) => {
-          this.loading.set(false);
-          this.errorHandler.handle(err);
-        },
-      });
+    this.buscarClienteTrigger.next(cedula);
   }
 
   private resetearBusquedaCliente(): void {
@@ -459,7 +470,9 @@ export class NuevaReserva extends ReservaFormBase {
       cantidadTotal: this.modoCapacidad()
         ? parseNumberOrNull(this.controlValue('cantidadTotal'))
         : null,
-      cantidadMenores: parseNumberOrNull(this.controlValue('cantidadMenores')),
+      cantidadMenores: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
+        : null,
       cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
       pago: false,
       clienteId: cliente?.id ?? null,

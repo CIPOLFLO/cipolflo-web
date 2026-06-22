@@ -94,6 +94,7 @@
                 intent="secondary"
                 icon="pi-search"
                 tooltip="Buscar cliente por cédula"
+                [disabled]="loading()"
                 (clicked)="buscarCliente()"
               />
               <span

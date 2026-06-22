@@ -40,13 +40,6 @@ export class ReservaValidacionesService {
 
   getClienteErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errors: Record<string, string> = {};
-    this.addRequiredError(
-      errors,
-      form,
-      submitted,
-      'tipoCliente',
-      'El tipo de cliente es obligatorio.',
-    );
     this.addRequiredError(errors, form, submitted, 'cedula', 'La cédula es obligatoria.');
     this.addRequiredError(errors, form, submitted, 'nombre', 'El nombre es obligatorio.');
     this.addRequiredError(errors, form, submitted, 'celular', 'El celular es obligatorio.');

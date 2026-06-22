@@ -2,7 +2,14 @@ import { computed, DestroyRef, Directive, inject, signal, Signal } from '@angula
 import { FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { applySectionChange, markFieldAsTouched, Procedencia } from '../../shared';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
+import {
+  applySectionChange,
+  markFieldAsTouched,
+  Procedencia,
+  startOfToday,
+  toIsoDate,
+} from '../../shared';
 import { TipoCliente } from '../clientes/models/cliente.model';
 import {
   EstadoServicio,
@@ -131,22 +138,56 @@ export abstract class ReservaFormBase {
 
     this.form
       .get('procedencia')
-      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((procedencia: Procedencia | null) => {
-        this.servicios.set([]);
-        this.form.get('servicioId')?.setValue(null, { emitEvent: true });
-        if (procedencia) this.cargarServicios(procedencia);
+      ?.valueChanges.pipe(
+        tap(() => {
+          this.servicios.set([]);
+          this.form.get('servicioId')?.setValue(null, { emitEvent: true });
+        }),
+        switchMap((procedencia: Procedencia | null) =>
+          procedencia
+            ? this.servicioService
+                .getAll({
+                  page: 0,
+                  size: 100,
+                  filters: { procedencia, estado: EstadoServicio.Habilitado },
+                })
+                .pipe(
+                  catchError((err: unknown) => {
+                    this.errorHandler.handle(err);
+                    return of(null);
+                  }),
+                )
+            : of(null),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((respuesta) => {
+        if (respuesta) this.servicios.set(mapServiciosReserva(respuesta));
       });
 
     this.form
       .get('servicioId')
-      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((raw: string | number | null) => {
-        const id = raw == null || raw === '' ? null : Number(raw);
-        this.servicioIdValue.set(id);
-        this.aplicarValidadoresMonto();
-        if (id) this.cargarFechasOcupadas(id);
-      });
+      ?.valueChanges.pipe(
+        map((raw: string | number | null) => (raw == null || raw === '' ? null : Number(raw))),
+        tap((id) => {
+          this.servicioIdValue.set(id);
+          this.aplicarValidadoresMonto();
+        }),
+        switchMap((id) =>
+          id
+            ? this.servicioService
+                .getFechasOcupadas(id, this.ventanaDesde(), this.ventanaHasta())
+                .pipe(
+                  catchError((err: unknown) => {
+                    this.errorHandler.handle(err);
+                    return of(null);
+                  }),
+                )
+            : of(null),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((fechas) => this.fechasOcupadas.set(fechas ?? []));
 
     this.form
       .get('tipoCliente')
@@ -154,42 +195,13 @@ export abstract class ReservaFormBase {
       .subscribe((tipo: TipoCliente | null) => this.tipoClienteValue.set(tipo));
   }
 
-  private cargarServicios(procedencia: Procedencia): void {
-    // Sólo se ofrecen servicios habilitados de la procedencia; el size amplio evita
-    // paginar (el form necesita la lista completa). El mapper desempaqueta la página.
-    this.servicioService
-      .getAll({
-        page: 0,
-        size: 100,
-        filters: { procedencia, estado: EstadoServicio.Habilitado },
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (respuesta) => {
-          console.log('[cargarServicios] respuesta raw:', respuesta);
-          this.servicios.set(mapServiciosReserva(respuesta));
-        },
-        error: (err: unknown) => this.errorHandler.handle(err),
-      });
-  }
-
-  private cargarFechasOcupadas(servicioId: number): void {
-    this.servicioService
-      .getFechasOcupadas(servicioId, this.ventanaDesde(), this.ventanaHasta())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (fechas) => this.fechasOcupadas.set(fechas),
-        error: (err: unknown) => this.errorHandler.handle(err),
-      });
-  }
-
   private ventanaDesde(): string {
-    return new Date().toISOString().slice(0, 10);
+    return toIsoDate(startOfToday())!;
   }
+
   private ventanaHasta(): string {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() + 1);
-    return d.toISOString().slice(0, 10);
+    const hoy = startOfToday();
+    return toIsoDate(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()))!;
   }
 
   /** Activa el validador de cantidad según el modo del servicio (capacidad vs cantidad). */
