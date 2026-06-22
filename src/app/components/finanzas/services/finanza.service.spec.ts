@@ -51,20 +51,64 @@ describe('FinanzaService', () => {
   });
 
   describe('getAll', () => {
-    it('retorna una página vacía porque el listado aún no está conectado al backend', async () => {
-      service.getAll(PARAMS_BASE).subscribe((result) => {
-        expect(result.totalElements).toBe(0);
-        expect(result.content).toHaveLength(0);
-      });
+  it('llama a GET /finanzas con paginación', () => {
+    service.getAll(PARAMS_BASE).subscribe((result) => {
+      expect(result.totalElements).toBe(1);
+      expect(result.content).toHaveLength(1);
+      expect(result.content[0].tipoMovimiento).toBe(TipoMovimiento.Ingreso);
     });
 
-    it('refleja los parámetros de paginación recibidos', async () => {
-      service.getAll({ page: 2, size: 5, filters: {} }).subscribe((result) => {
-        expect(result.page).toBe(2);
-        expect(result.size).toBe(5);
-      });
+    const req = httpMock.expectOne((request) =>
+      request.method === 'GET' &&
+      request.url.includes('finanzas') &&
+      request.params.get('page') === '0' &&
+      request.params.get('size') === '10',
+    );
+
+    req.flush({
+      content: [
+        {
+          id: 1,
+          concepto: Concepto.PagoReserva,
+          fecha: '2026-06-18',
+          importe: 5000,
+          notas: null,
+          tipoMovimiento: TipoMovimiento.Ingreso,
+        },
+      ],
+      page: 0,
+      size: 10,
+      totalElements: 1,
+      totalPages: 1,
+      first: true,
+      last: true,
     });
   });
+
+  it('refleja los parámetros de paginación recibidos', () => {
+    service.getAll({ page: 2, size: 5, filters: {} }).subscribe((result) => {
+      expect(result.page).toBe(2);
+      expect(result.size).toBe(5);
+    });
+
+    const req = httpMock.expectOne((request) =>
+      request.method === 'GET' &&
+      request.url.includes('finanzas') &&
+      request.params.get('page') === '2' &&
+      request.params.get('size') === '5',
+    );
+
+    req.flush({
+      content: [],
+      page: 2,
+      size: 5,
+      totalElements: 0,
+      totalPages: 0,
+      first: true,
+      last: true,
+    });
+  });
+});
 
   describe('create', () => {
     it('llama a POST /finanzas', () => {

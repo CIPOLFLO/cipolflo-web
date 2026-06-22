@@ -66,7 +66,7 @@ export class DetalleFinanza {
 
     return [
       { key: 'procedencia', label: 'Procedencia', value: f.procedencia },
-      { key: 'servicio', label: 'Servicio', value: f.servicio },
+      { key: 'cocepto', label: 'Concepto', value: f.concepto },
       { key: 'fecha', label: 'Fecha', value: f.fecha },
       {
         key: 'importe',

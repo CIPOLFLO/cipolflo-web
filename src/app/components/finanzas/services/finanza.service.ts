@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, map } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
@@ -14,15 +14,19 @@ import { FileDownloadService } from '../../../core/services/file-download.servic
   providedIn: 'root',
 })
 export class FinanzaService extends BaseHttpService {
-  getAll({ page, size }: TableQueryParams): Observable<PageResponse<FinanzaRespuestaDto>> {
-    return of({
-      content: [],
+  getAll({
+    page,
+    size,
+    filters,
+    sortField,
+    sortOrder,
+  }: TableQueryParams): Observable<PageResponse<FinanzaRespuestaDto>> {
+    return this.get<PageResponse<FinanzaRespuestaDto>>('finanzas', {
       page,
       size,
-      totalElements: 0,
-      totalPages: 0,
-      first: true,
-      last: true,
+      ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
     });
   }
 
