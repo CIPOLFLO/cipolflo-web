@@ -474,7 +474,6 @@ export class NuevaReserva extends ReservaFormBase {
         ? parseNumberOrNull(this.controlValue('cantidadMenores'))
         : null,
       cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
-      pago: false,
       clienteId: cliente?.id ?? null,
       // Reserva común sin cliente encontrado: se enviaron datos básicos para que el backend lo cree.
       crearCliente: !colaboracion && cliente === null,

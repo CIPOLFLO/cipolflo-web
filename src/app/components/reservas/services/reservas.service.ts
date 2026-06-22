@@ -271,11 +271,7 @@ export class ReservasService extends BaseHttpService {
   }
 
   crear(dto: ReservaCreacionRequestDto): Observable<ReservaCreacionRespuestaDto> {
-    // TODO: reemplazar cuando el backend exponga POST /reservas (contrato aún sin definir)
-    // return this.post<ReservaCreacionRespuestaDto>('reservas', dto);
-    void dto;
-    console.log('dto', dto);
-    return of({ id: MOCK_RESERVAS.length + 1 });
+    return this.post<ReservaCreacionRespuestaDto>('reservas', dto);
   }
 
   calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {

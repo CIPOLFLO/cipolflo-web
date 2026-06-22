@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ReservasService } from './reservas.service';
 import { Procedencia } from '../../../shared';
@@ -15,7 +16,6 @@ const dto: ReservaCreacionRequestDto = {
   cantidadTotal: 2,
   cantidadMenores: null,
   cantidad: null,
-  pago: false,
   clienteId: 1,
   crearCliente: false,
   tipoCliente: null,
@@ -29,12 +29,14 @@ const dto: ReservaCreacionRequestDto = {
 
 describe('ReservasService', () => {
   let service: ReservasService;
+  let httpTesting: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting(), ReservasService],
     });
     service = TestBed.inject(ReservasService);
+    httpTesting = TestBed.inject(HttpTestingController);
   });
 
   it('getDatos devuelve la página de reservas (mock)', () => {
@@ -45,10 +47,14 @@ describe('ReservasService', () => {
     expect(total).toBeGreaterThan(0);
   });
 
-  it('crear devuelve un id (mock, sin HTTP mientras no exista POST /reservas)', () => {
+  it('crear llama a POST /reservas y devuelve el id', () => {
     let id = 0;
     service.crear(dto).subscribe((r) => (id = r.id));
-    expect(id).toBeGreaterThan(0);
+
+    const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'POST');
+    req.flush({ id: 42 });
+
+    expect(id).toBe(42);
   });
 
   describe('calcularCosto (mock dinámico)', () => {

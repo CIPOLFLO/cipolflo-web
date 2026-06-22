@@ -12,7 +12,7 @@ export interface ReservaRow extends Record<string, unknown> {
 
 export enum TipoReserva {
   Comun = 'COMUN',
-  ColaboracionSinFines = 'COLABORACION_SIN_FINES_LUCRO',
+  ColaboracionSinFines = 'COLABORACION_SIN_FINES_DE_LUCRO',
 }
 
 export const TIPO_RESERVA_OPTIONS: FormFieldOption[] = [
@@ -50,7 +50,6 @@ export interface ReservaCreacionRequestDto {
   cantidadTotal: number | null;
   cantidadMenores: number | null;
   cantidad: number | null;
-  pago: boolean;
   clienteId: number | null;
   crearCliente: boolean;
   tipoCliente: TipoCliente | null;
