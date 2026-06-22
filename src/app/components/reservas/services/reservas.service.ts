@@ -7,6 +7,7 @@ import {
   CostoReservaRespuestaDto,
   ReservaCreacionRequestDto,
   ReservaCreacionRespuestaDto,
+  ReservaDetalleRespuestaDto,
   ReservaRow,
 } from '../models/reserva.model';
 
@@ -268,6 +269,10 @@ export class ReservasService extends BaseHttpService {
       first: params.page === 0,
       last: start + params.size >= MOCK_RESERVAS.length,
     });
+  }
+
+  getById(id: number): Observable<ReservaDetalleRespuestaDto> {
+    return this.get<ReservaDetalleRespuestaDto>(`reservas/${id}`);
   }
 
   crear(dto: ReservaCreacionRequestDto): Observable<ReservaCreacionRespuestaDto> {

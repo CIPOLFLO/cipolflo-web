@@ -78,6 +78,12 @@ INGRESO | EGRESO
 COMUN | COLABORACION_SIN_FINES_DE_LUCRO
 ```
 
+### `FormaPago`
+
+```
+EFECTIVO | TRANSFERENCIA | DEBITO | CREDITO
+```
+
 ### `Concepto`
 
 ```
@@ -980,6 +986,66 @@ Crea una nueva reserva. Soporta tres variantes de cliente:
 
 ---
 
+### `GET /api/v1/reservas/{id}`
+
+Retorna el detalle completo de una reserva.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:**
+
+```json
+{
+  "id": 42,
+  "tipoReserva": "COMUN",
+  "estado": "CONFIRMADA",
+  "procedencia": "CAMPING",
+  "fechaEntrada": "2026-08-10",
+  "fechaSalida": "2026-08-15",
+  "cantidadTotal": 4,
+  "cantidadMenores": 1,
+  "cantidad": null,
+  "importe": 15000.0,
+  "formaPago": "EFECTIVO",
+  "pago": true,
+  "requiereDocumentacion": false,
+  "tieneDocumentacion": false,
+  "rut": null,
+  "notas": "Llegan a las 14hs",
+  "cliente": {
+    "id": 12,
+    "nombre": "Juan Pérez",
+    "cedula": "12345678",
+    "telefono": "099111111",
+    "email": "juan@mail.com",
+    "tipoCliente": "SOCIO"
+  },
+  "servicio": {
+    "id": 3,
+    "nombre": "Cabaña del río",
+    "procedencia": "CAMPING",
+    "modalidadPrecio": "POR_DIA"
+  },
+  "createdAt": "2026-07-01T10:00:00Z",
+  "updatedAt": "2026-07-05T14:30:00Z",
+  "createdBy": "admin@cipolflo.com",
+  "updatedBy": "admin@cipolflo.com"
+}
+```
+
+> El campo `cliente` es `null` cuando la reserva es de tipo `COLABORACION_SIN_FINES_DE_LUCRO` sin cliente asociado (solo `rut`).
+> `importe` y `formaPago` son `null` mientras la reserva no haya sido pagada.
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                      |
+| ----------- | ----------------------- | ---------------------------------- |
+| 400         | `ID_INVALIDO`           | `id` no es un entero positivo      |
+| 404         | `RESERVA_NO_ENCONTRADA` | No existe una reserva con ese `id` |
+| 401         | —                       | Token ausente, inválido o expirado |
+
+---
+
 ## Reservas — DTOs
 
 ### Request DTOs
@@ -1015,6 +1081,59 @@ Crea una nueva reserva. Soporta tres variantes de cliente:
 ```typescript
 {
   id: number; // ID de la reserva creada
+}
+```
+
+#### `ReservaDetalleResponseDto` — respuesta de `GET /api/v1/reservas/{id}`
+
+```typescript
+{
+  id: number;
+  tipoReserva: TipoReserva;
+  estado: EstadoReserva;
+  procedencia: Procedencia;
+  fechaEntrada: string; // LocalDate yyyy-MM-dd
+  fechaSalida: string; // LocalDate yyyy-MM-dd
+  cantidadTotal: number | null;
+  cantidadMenores: number | null;
+  cantidad: number | null;
+  importe: number | null; // null si aún no fue pagada
+  formaPago: FormaPago | null; // null si aún no fue pagada
+  pago: boolean;
+  requiereDocumentacion: boolean;
+  tieneDocumentacion: boolean;
+  rut: string | null;
+  notas: string | null;
+  cliente: ClienteDetalleReservaDto | null; // null si no hay cliente asociado
+  servicio: ServicioDetalleReservaDto;
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### `ClienteDetalleReservaDto` — cliente embebido en el detalle de reserva
+
+```typescript
+{
+  id: number;
+  nombre: string;
+  cedula: string;
+  telefono: string;
+  email: string | null;
+  tipoCliente: TipoCliente;
+}
+```
+
+#### `ServicioDetalleReservaDto` — servicio embebido en el detalle de reserva
+
+```typescript
+{
+  id: number;
+  nombre: string;
+  procedencia: Procedencia;
+  modalidadPrecio: ModalidadPrecio;
 }
 ```
 

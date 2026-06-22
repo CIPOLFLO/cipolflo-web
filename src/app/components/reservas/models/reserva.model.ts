@@ -1,4 +1,10 @@
-import { type FormFieldOption, EstadoReserva, Procedencia } from '../../../shared';
+import {
+  type AuditInfoDto,
+  type FormFieldOption,
+  EstadoReserva,
+  Procedencia,
+} from '../../../shared';
+import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
 
 export interface ReservaRow extends Record<string, unknown> {
@@ -14,6 +20,21 @@ export enum TipoReserva {
   Comun = 'COMUN',
   ColaboracionSinFines = 'COLABORACION_SIN_FINES_DE_LUCRO',
 }
+
+export const TIPO_RESERVA_LABEL: Record<TipoReserva, string> = {
+  [TipoReserva.Comun]: 'Común',
+  [TipoReserva.ColaboracionSinFines]: 'Colaboración sin fines de lucro',
+};
+
+export const FORMA_PAGO_RESERVA_LABEL: Partial<Record<FormaPago, string>> = {
+  [FormaPago.Efectivo]: 'Efectivo',
+  [FormaPago.Transferencia]: 'Transferencia',
+};
+
+export const TIPO_CLIENTE_LABEL: Record<TipoCliente, string> = {
+  [TipoCliente.Socio]: 'Socio',
+  [TipoCliente.Particular]: 'Particular',
+};
 
 export const TIPO_RESERVA_OPTIONS: FormFieldOption[] = [
   { label: 'Común', value: TipoReserva.Comun },
@@ -77,4 +98,41 @@ export interface CostoReservaRequestDto {
 
 export interface CostoReservaRespuestaDto {
   costo: number;
+}
+
+export interface ClienteDetalleReservaDto {
+  id: number;
+  nombre: string;
+  cedula: string;
+  telefono: string | null;
+  email: string | null;
+  tipoCliente: TipoCliente;
+}
+
+export interface ServicioDetalleReservaDto {
+  id: number;
+  nombre: string;
+  procedencia: Procedencia;
+  modalidadPrecio: string;
+}
+
+export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
+  id: number;
+  tipoReserva: TipoReserva;
+  estado: EstadoReserva;
+  procedencia: Procedencia;
+  fechaEntrada: string;
+  fechaSalida: string;
+  cantidadTotal: number | null;
+  cantidadMenores: number | null;
+  cantidad: number | null;
+  importe: number | null;
+  formaPago: FormaPago | null;
+  pago: boolean;
+  requiereDocumentacion: boolean;
+  tieneDocumentacion: boolean;
+  rut: string | null;
+  notas: string | null;
+  cliente: ClienteDetalleReservaDto | null;
+  servicio: ServicioDetalleReservaDto;
 }

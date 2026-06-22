@@ -4,8 +4,51 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ReservasService } from './reservas.service';
-import { Procedencia } from '../../../shared';
-import { TipoReserva, type ReservaCreacionRequestDto } from '../models/reserva.model';
+import { EstadoReserva, Procedencia } from '../../../shared';
+import { FormaPago } from '../../../shared/models/forma-pago.model';
+import { TipoCliente } from '../../clientes/models/cliente.model';
+import {
+  TipoReserva,
+  type ReservaCreacionRequestDto,
+  type ReservaDetalleRespuestaDto,
+} from '../models/reserva.model';
+
+const mockDetalle: ReservaDetalleRespuestaDto = {
+  id: 42,
+  tipoReserva: TipoReserva.Comun,
+  estado: EstadoReserva.Confirmada,
+  procedencia: Procedencia.Camping,
+  fechaEntrada: '2026-08-10',
+  fechaSalida: '2026-08-15',
+  cantidadTotal: 4,
+  cantidadMenores: 1,
+  cantidad: null,
+  importe: 4500,
+  formaPago: FormaPago.Efectivo,
+  pago: false,
+  requiereDocumentacion: true,
+  tieneDocumentacion: false,
+  rut: null,
+  notas: 'Llegan a las 14hs',
+  cliente: {
+    id: 10,
+    nombre: 'Carlos Martínez Gómez',
+    cedula: '12345678',
+    telefono: '+598 99 123 456',
+    email: 'carlos.martinez@email.com',
+    tipoCliente: TipoCliente.Socio,
+  },
+  servicio: {
+    id: 3,
+    nombre: 'Hospedaje en camping',
+    procedencia: Procedencia.Camping,
+    modalidadPrecio: 'POR_DIA',
+  },
+  createdAt: '2026-03-15T14:30:00Z',
+  updatedAt: '2026-03-15T14:30:00Z',
+  createdBy: 'Juan Pérez',
+  updatedBy: 'Juan Pérez',
+};
 
 const dto: ReservaCreacionRequestDto = {
   tipoReserva: TipoReserva.Comun,
@@ -55,6 +98,28 @@ describe('ReservasService', () => {
     req.flush({ id: 42 });
 
     expect(id).toBe(42);
+  });
+
+  describe('getById', () => {
+    it('llama a GET /reservas/:id', () => {
+      service.getById(42).subscribe();
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas/42') && r.method === 'GET');
+      req.flush(mockDetalle);
+    });
+
+    it('devuelve el DTO de detalle de la respuesta', () => {
+      let resultado: ReservaDetalleRespuestaDto | undefined;
+      service.getById(42).subscribe((r) => (resultado = r));
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas/42'));
+      req.flush(mockDetalle);
+
+      expect(resultado?.id).toBe(42);
+      expect(resultado?.estado).toBe(EstadoReserva.Confirmada);
+      expect(resultado?.cliente?.nombre).toBe('Carlos Martínez Gómez');
+      expect(resultado?.servicio.nombre).toBe('Hospedaje en camping');
+    });
   });
 
   describe('calcularCosto (mock dinámico)', () => {
