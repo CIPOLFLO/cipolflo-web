@@ -11,6 +11,7 @@ import {
   TipoReserva,
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
+  type ReservaRespuestaDto,
 } from '../models/reserva.model';
 
 const mockDetalle: ReservaDetalleRespuestaDto = {
@@ -82,12 +83,60 @@ describe('ReservasService', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  it('getDatos devuelve la página de reservas (mock)', () => {
-    let total = 0;
-    service
-      .getDatos({ page: 0, size: 10, filters: {} })
-      .subscribe((p) => (total = p.totalElements));
-    expect(total).toBeGreaterThan(0);
+  describe('getAll', () => {
+    const mockRow: ReservaRespuestaDto = {
+      id: 1,
+      clienteId: 10,
+      nombreCliente: 'Juan Pérez',
+      servicioId: 3,
+      servicioNombre: 'Hospedaje en camping',
+      fechaEntrada: '2026-08-10',
+      fechaSalida: '2026-08-15',
+      estadoReserva: EstadoReserva.Confirmada,
+    };
+
+    const mockPage = {
+      content: [mockRow],
+      page: 0,
+      size: 10,
+      totalElements: 1,
+      totalPages: 1,
+      first: true,
+      last: true,
+    };
+
+    it('llama a GET /reservas con los parámetros de paginación', () => {
+      service.getAll({ page: 0, size: 10, filters: {} }).subscribe();
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      expect(req.request.params.get('page')).toBe('0');
+      expect(req.request.params.get('size')).toBe('10');
+      req.flush(mockPage);
+    });
+
+    it('devuelve el DTO con los nuevos campos del backend', () => {
+      let resultado: ReservaRespuestaDto | undefined;
+      service.getAll({ page: 0, size: 10, filters: {} }).subscribe((p) => {
+        resultado = p.content[0];
+      });
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      req.flush(mockPage);
+
+      expect(resultado?.nombreCliente).toBe('Juan Pérez');
+      expect(resultado?.servicioNombre).toBe('Hospedaje en camping');
+      expect(resultado?.fechaEntrada).toBe('2026-08-10');
+      expect(resultado?.fechaSalida).toBe('2026-08-15');
+      expect(resultado?.estadoReserva).toBe(EstadoReserva.Confirmada);
+    });
+
+    it('pasa los filtros activos como query params', () => {
+      service.getAll({ page: 0, size: 10, filters: { estadoReserva: 'PENDIENTE' } }).subscribe();
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      expect(req.request.params.get('estadoReserva')).toBe('PENDIENTE');
+      req.flush(mockPage);
+    });
   });
 
   it('crear llama a POST /reservas y devuelve el id', () => {

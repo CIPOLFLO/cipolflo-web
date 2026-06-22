@@ -35,13 +35,13 @@ export class ReservasFilterService extends FilterConfigProvider {
       options: [],
     },
     {
-      key: 'fechaDesde',
-      label: 'Fecha Desde',
+      key: 'fechaEntrada',
+      label: 'Fecha Entrada',
       type: 'date',
     },
     {
-      key: 'fechaHasta',
-      label: 'Fecha Hasta',
+      key: 'fechaSalida',
+      label: 'Fecha Salida',
       type: 'date',
     },
   ]);

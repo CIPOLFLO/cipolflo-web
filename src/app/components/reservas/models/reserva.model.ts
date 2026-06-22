@@ -9,11 +9,13 @@ import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
 
 export interface ReservaRow extends Record<string, unknown> {
   id: number;
-  cliente: string;
-  servicio: string;
-  estado: string;
-  fechaDesde: string;
-  fechaHasta: string;
+  clienteId: number;
+  nombreCliente: string;
+  servicioId: number;
+  servicioNombre: string;
+  fechaEntrada: string;
+  fechaSalida: string;
+  estadoReserva: EstadoReserva;
 }
 
 export enum TipoReserva {
@@ -135,4 +137,15 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;
   servicio: ServicioDetalleReservaDto;
+}
+
+export interface ReservaRespuestaDto extends Record<string, unknown> {
+  id: number;
+  clienteId: number;
+  nombreCliente: string;
+  servicioId: number;
+  servicioNombre: string;
+  fechaEntrada: string;
+  fechaSalida: string;
+  estadoReserva: EstadoReserva;
 }
