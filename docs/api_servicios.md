@@ -14,11 +14,8 @@
 4. [Servicios — DTOs](#servicios--dtos)
 5. [Clientes — Endpoints](#clientes--endpoints)
 6. [Clientes — DTOs](#clientes--dtos)
-7. [Finanzas — Endpoints](#finanzas--endpoints)
-8. [Finanzas — DTOs](#finanzas--dtos)
-9. [Reservas — Endpoints](#reservas--endpoints)
-10. [Reservas — DTOs](#reservas--dtos)
-11. [Manejo de errores](#manejo-de-errores)
+7. [Finanzas -DTOs](#finanzas--dtos)
+8. [Manejo de errores](#manejo-de-errores)
 
 ---
 
@@ -1342,6 +1339,145 @@ Calcula el costo estimado de una reserva según el servicio, rango de fechas y c
 ```
 
 ---
+
+## Finanzas — Endpoints
+
+### `POST /api/v1/finanzas`
+
+Registra manualmente un movimiento financiero.
+
+**Body** (`application/json`):
+
+```json
+{
+  "tipoMovimiento": "INGRESO",
+  "procedencia": "SEDE",
+  "concepto": "PAGO_RESERVA",
+  "fecha": "2026-06-15",
+  "importe": 1500.0,
+  "formaPago": "EFECTIVO",
+  "notas": "Alta manual"
+}
+```
+
+| Campo            | Tipo             | Obligatorio | Validación   |
+| ---------------- | ---------------- | ----------- | ------------ |
+| `tipoMovimiento` | `TipoMovimiento` | Sí          | —            |
+| `procedencia`    | `Procedencia`    | Sí          | —            |
+| `concepto`       | `Concepto`       | Sí          | —            |
+| `fecha`          | string (date)    | No          | `yyyy-MM-dd` |
+| `importe`        | number (decimal) | Sí          | > 0          |
+| `formaPago`      | `FormaPago`      | Sí          | —            |
+| `notas`          | string           | No          | —            |
+
+> Si `fecha` no se informa, se utiliza la fecha actual.
+
+**Respuesta 201:**
+
+```json
+{
+  "id": 1,
+  "tipoMovimiento": "INGRESO",
+  "procedencia": "SEDE",
+  "concepto": "PAGO_RESERVA",
+  "fecha": "2026-06-15",
+  "importe": 1500.0,
+  "formaPago": "EFECTIVO",
+  "notas": "Alta manual"
+}
+```
+
+---
+
+### `GET /api/v1/finanzas/{id}`
+
+Retorna el detalle completo de una finanza.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:**
+
+```json
+{
+  "id": 1,
+  "tipoMovimiento": "INGRESO",
+  "procedencia": "SEDE",
+  "concepto": "PAGO_RESERVA",
+  "fecha": "2026-06-15",
+  "importe": 1500.0,
+  "formaPago": "EFECTIVO",
+  "notas": "Alta manual",
+  "createdAt": "2026-06-15T10:00:00Z",
+  "updatedAt": "2026-06-15T10:00:00Z",
+  "createdBy": "admin@cipolflo.com",
+  "updatedBy": "admin@cipolflo.com"
+}
+```
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                      |
+| ----------- | ----------------------- | ---------------------------------- |
+| 400         | `ID_INVALIDO`           | El id no es un número positivo     |
+| 404         | `FINANZA_NO_ENCONTRADA` | No existe una finanza con ese id   |
+| 401         | —                       | Token ausente, inválido o expirado |
+
+---
+
+## Finanzas — DTOs
+
+### Request DTOs
+
+#### `FinanzaCrearRequestDto` — body en `POST /api/v1/finanzas`
+
+```typescript
+{
+  tipoMovimiento: TipoMovimiento
+  procedencia: Procedencia
+  concepto: Concepto
+  fecha?: string
+  importe: number
+  formaPago: FormaPago
+  notas?: string
+}
+```
+
+### Response DTOs
+
+#### `FinanzaResponseDto` — respuesta de creación
+
+```typescript
+{
+  id: number
+  tipoMovimiento: TipoMovimiento
+  procedencia: Procedencia
+  concepto: Concepto
+  fecha: string
+  importe: number
+  formaPago: FormaPago
+  notas?: string | null
+}
+```
+
+#### `FinanzaDetalleResponseDto` — respuesta de detalle
+
+```typescript
+{
+  id: number
+  tipoMovimiento: TipoMovimiento
+  procedencia: Procedencia
+  concepto: Concepto
+  fecha: string
+  importe: number
+  formaPago: FormaPago
+  notas?: string | null
+
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
+}
+```
 
 ## Manejo de errores
 
