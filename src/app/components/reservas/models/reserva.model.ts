@@ -50,7 +50,6 @@ export interface ReservaCreacionRequestDto {
   cantidadTotal: number | null;
   cantidadMenores: number | null;
   cantidad: number | null;
-  estado: EstadoReserva;
   pago: boolean;
   clienteId: number | null;
   crearCliente: boolean;

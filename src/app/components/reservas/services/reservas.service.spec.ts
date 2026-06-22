@@ -5,7 +5,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ReservasService } from './reservas.service';
 import { Procedencia } from '../../../shared';
 import { TipoReserva, type ReservaCreacionRequestDto } from '../models/reserva.model';
-import { EstadoReserva } from '../../../shared';
 
 const dto: ReservaCreacionRequestDto = {
   tipoReserva: TipoReserva.Comun,
@@ -16,7 +15,6 @@ const dto: ReservaCreacionRequestDto = {
   cantidadTotal: 2,
   cantidadMenores: null,
   cantidad: null,
-  estado: EstadoReserva.Pendiente,
   pago: false,
   clienteId: 1,
   crearCliente: false,

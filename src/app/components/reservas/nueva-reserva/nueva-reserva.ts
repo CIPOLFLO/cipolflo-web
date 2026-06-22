@@ -41,7 +41,6 @@ import {
 import { ClientesService } from '../../clientes/services/cliente.service';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
-  estadoInicialPorTipo,
   TIPO_RESERVA_OPTIONS,
   TipoReserva,
   type CostoReservaRequestDto,
@@ -462,7 +461,6 @@ export class NuevaReserva extends ReservaFormBase {
         : null,
       cantidadMenores: parseNumberOrNull(this.controlValue('cantidadMenores')),
       cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
-      estado: estadoInicialPorTipo(tipoReserva),
       pago: false,
       clienteId: cliente?.id ?? null,
       // Reserva común sin cliente encontrado: se enviaron datos básicos para que el backend lo cree.
