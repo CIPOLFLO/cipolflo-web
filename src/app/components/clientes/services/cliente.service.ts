@@ -10,7 +10,7 @@ import {
   ModificacionSocioRequestDto,
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
-
+import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
   private readonly fileDownloadService = inject(FileDownloadService);

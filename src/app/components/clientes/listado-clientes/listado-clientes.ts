@@ -120,6 +120,7 @@ export class ListadoClientes {
 
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
+    this.recargarTabla();
   }
 
   protected onExportar(): void {

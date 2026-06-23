@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, OnInit } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { finalize, forkJoin, map, switchMap, timer, tap } from 'rxjs';
 import { TableModule } from 'primeng/table';
@@ -46,7 +46,6 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
   pageSizeOptions = input<number[]>([10, 25, 50, 100]);
 
   protected readonly tableState = inject(TableStateService);
-  protected readonly loading = signal(false);
 
   private readonly minLoadingMs = inject(TABLE_MIN_LOADING_MS);
   private readonly skeletonRowCount = inject(TABLE_SKELETON_ROW_COUNT);
@@ -56,7 +55,6 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
   protected readonly tableData = toSignal(
     this.params$.pipe(
       switchMap((params) => {
-        this.loading.set(true);
         this.tableState.setLoading(true);
 
         const data$ = this.loadDataFn()(params);
@@ -67,10 +65,7 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
         return bounded$.pipe(
           tap((data) => this.tableState.setResult(data.totalElements)),
-          finalize(() => {
-            this.loading.set(false);
-            this.tableState.setLoading(false);
-          }),
+          finalize(() => this.tableState.setLoading(false)),
         );
       }),
     ),

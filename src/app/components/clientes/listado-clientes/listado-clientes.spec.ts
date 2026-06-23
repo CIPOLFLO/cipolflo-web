@@ -24,21 +24,28 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
     {
       id: 1,
-      nombreCompleto: 'Juan Perez',
+      nombreCompleto: 'Juan Pérez',
       tipoCliente: TipoCliente.Socio,
-      numeroSocio: 123,
+      numeroSocio: 5,
       cedula: '1.234.567-8',
-      email: 'juan@example.com',
+      email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
+      ultimaCuotaDto: {
+        anio: 2026,
+        mes: 6,
+        nombreMes: 'junio',
+        descripcion: 'Junio 2026',
+      },
     },
     {
       id: 2,
-      nombreCompleto: 'Maria Fernandez',
+      nombreCompleto: 'Laura Fernández',
       tipoCliente: TipoCliente.Particular,
       numeroSocio: null,
-      cedula: '2.345.678-9',
+      cedula: '6.789.012-3',
       email: null,
       estado: null,
+      ultimaCuotaDto: null,
     },
   ],
   page: 0,
@@ -97,8 +104,8 @@ describe('ListadoClientes', () => {
     expect(fixture.nativeElement.textContent).toContain('Clientes');
   });
 
-  it('debe tener 5 columnas definidas', () => {
-    expect(component['columns'].length).toBe(5);
+  it('debe tener 6 columnas definidas', () => {
+    expect(component['columns'].length).toBe(6);
   });
 
   it('debe definir columna nombreCompleto como sortable', () => {

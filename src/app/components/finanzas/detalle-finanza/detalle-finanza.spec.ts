@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { FinanzaDetalleRespuestaDto, TipoMovimiento } from '../models/finanza.model';
+import { Concepto, FinanzaDetalleRespuestaDto, TipoMovimiento } from '../models/finanza.model';
 import { FinanzaService } from '../services/finanza.service';
 import { DetalleFinanza } from './detalle-finanza';
 import { Procedencia } from '../../../shared';
@@ -14,7 +14,7 @@ const mockFinanza: FinanzaDetalleRespuestaDto = {
   id: 1,
   codigo: 'FIN-2026-001',
   procedencia: Procedencia.Camping,
-  servicio: 'Alquiler de parrillero',
+  concepto: Concepto.Antel,
   fecha: '14/3/2026',
   importe: 15000,
   formaPago: 'Transferencia',

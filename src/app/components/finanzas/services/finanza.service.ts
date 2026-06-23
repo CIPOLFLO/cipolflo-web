@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
+import { BlobExportService } from '../../../core/services/blob-export.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   FinanzaCrearDto,
@@ -8,21 +9,24 @@ import {
   FinanzaRespuestaDto,
   FinanzaModificarDto,
 } from '../models/finanza.model';
-import { FileDownloadService } from '../../../core/services/file-download.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FinanzaService extends BaseHttpService {
-  getAll({ page, size }: TableQueryParams): Observable<PageResponse<FinanzaRespuestaDto>> {
-    return of({
-      content: [],
+  getAll({
+    page,
+    size,
+    filters,
+    sortField,
+    sortOrder,
+  }: TableQueryParams): Observable<PageResponse<FinanzaRespuestaDto>> {
+    return this.get<PageResponse<FinanzaRespuestaDto>>('finanzas', {
       page,
       size,
-      totalElements: 0,
-      totalPages: 0,
-      first: true,
-      last: true,
+      ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
     });
   }
 
@@ -42,13 +46,9 @@ export class FinanzaService extends BaseHttpService {
     return this.put<void>(`finanzas/${id}`, dto);
   }
 
-  private readonly fileDownloadService = inject(FileDownloadService);
+  private readonly blobExport = inject(BlobExportService);
 
   exportar(filters: Record<string, string | null>): Observable<void> {
-    return this.postBlob('finanzas/export', filters).pipe(
-      map((response) => {
-        this.fileDownloadService.download(response, 'finanzas.xlsx');
-      }),
-    );
+    return this.blobExport.export('finanzas/export', filters, 'finanzas.xlsx');
   }
 }
