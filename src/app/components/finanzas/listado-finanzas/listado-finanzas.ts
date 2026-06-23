@@ -149,8 +149,11 @@ export class ListadoFinanzas {
 
     this.exportando.set(true);
 
+    const filters = this.tableState.queryParams().filters;
+    console.log('Filtros exportación:', filters);
+
     this.finanzaService
-      .exportar(this.tableState.queryParams().filters)
+      .exportar(filters)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
