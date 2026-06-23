@@ -72,10 +72,13 @@ describe('BlobExportService', () => {
     const req = httpMock.expectOne(
       (request) => request.method === 'POST' && request.url.includes('finanzas/export'),
     );
-    req.flush(new Blob([JSON.stringify({ codigo: 'SIN_REGISTROS' })], { type: 'application/json' }), {
-      status: 400,
-      statusText: 'Bad Request',
-    });
+    req.flush(
+      new Blob([JSON.stringify({ codigo: 'SIN_REGISTROS' })], { type: 'application/json' }),
+      {
+        status: 400,
+        statusText: 'Bad Request',
+      },
+    );
 
     await expect(promise).rejects.toBe(parsedError);
     expect(fileDownloadService.parseBlobError).toHaveBeenCalled();

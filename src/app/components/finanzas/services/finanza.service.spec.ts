@@ -213,6 +213,10 @@ describe('FinanzaService', () => {
 
     service.exportar(filters).subscribe();
 
-    expect(blobExportService.export).toHaveBeenCalledWith('finanzas/export', filters, 'finanzas.xlsx');
+    expect(blobExportService.export).toHaveBeenCalledWith(
+      'finanzas/export',
+      filters,
+      'finanzas.xlsx',
+    );
   });
 });
