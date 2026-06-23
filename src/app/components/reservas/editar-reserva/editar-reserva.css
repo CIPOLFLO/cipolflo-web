@@ -1,3 +1,35 @@
 :host {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.editar-reserva__calendario {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editar-reserva__calendario-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.editar-reserva__costo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.editar-reserva__costo-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.editar-reserva__costo-valor {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }

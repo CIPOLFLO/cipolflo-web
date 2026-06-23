@@ -5,6 +5,7 @@ import { PageResponse, parseIsoDate, TableQueryParams } from '../../../shared';
 import {
   CostoReservaRequestDto,
   CostoReservaRespuestaDto,
+  ReservaActualizacionRequestDto,
   ReservaCreacionRequestDto,
   ReservaCreacionRespuestaDto,
   ReservaDetalleRespuestaDto,
@@ -35,6 +36,10 @@ export class ReservasService extends BaseHttpService {
 
   crear(dto: ReservaCreacionRequestDto): Observable<ReservaCreacionRespuestaDto> {
     return this.post<ReservaCreacionRespuestaDto>('reservas', dto);
+  }
+
+  update(id: number, dto: ReservaActualizacionRequestDto): Observable<void> {
+    return this.put<void>(`reservas/${id}`, dto);
   }
 
   calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {

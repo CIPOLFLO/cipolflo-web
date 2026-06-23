@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
@@ -355,5 +355,137 @@ describe('NuevaReserva', () => {
     await f.whenStable();
     const opciones = f.componentInstance['tipoReservaField']().options ?? [];
     expect(opciones.some((o) => o.value === TipoReserva.ColaboracionSinFines)).toBe(false);
+  });
+
+  it('onCancelar navega a /reservas', () => {
+    component['onCancelar']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('mostrarObservaciones es true cuando el cliente encontrado tiene observaciones', () => {
+    component['form'].get('cedula')?.setValue('12345678');
+    component['buscarCliente']();
+    expect(component['observacionesCliente']()).toBe('Cliente frecuente.');
+    expect(component['mostrarObservaciones']()).toBe(true);
+  });
+
+  it('lupitaVisible es false para reservas de Colaboración', () => {
+    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+    expect(component['lupitaVisible']()).toBe(false);
+  });
+
+  it('lupitaVisible es false cuando el cliente está prellenado', async () => {
+    queryParamGet.mockReturnValue('2');
+    const f = TestBed.createComponent(NuevaReserva);
+    f.detectChanges();
+    await f.whenStable();
+    expect(f.componentInstance['lupitaVisible']()).toBe(false);
+  });
+
+  it('en Colaboración el DTO usa nombreColaboracion como nombre y el rut', () => {
+    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+    component['form'].get('nombreColaboracion')?.setValue('Fondo Social');
+    component['form'].get('rut')?.setValue('21-123456-7');
+    const dto = component['construirDto']();
+    expect(dto.nombre).toBe('Fondo Social');
+    expect(dto.rut).toBe('21-123456-7');
+    expect(dto.cedula).toBeNull();
+    expect(dto.crearCliente).toBe(false);
+    expect(dto.clienteId).toBeNull();
+  });
+
+  it('cambiar cantidadMenores vuelve a pedir el costo al backend', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      vi.advanceTimersByTime(300);
+      mockReservasService.calcularCosto.mockClear();
+
+      component['onControlChange']('cantidadMenores', '2');
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(mockReservasService.calcularCosto).toHaveBeenCalled();
+  });
+
+  it('onFieldBlur marca el campo como touched y muestra su error de validación', () => {
+    component['onFieldBlur']('procedencia');
+    expect(component['reservaErrors']()['procedencia']).toBe('La procedencia es obligatoria.');
+  });
+
+  it('error al cargar servicios: llama al errorHandler y la lista queda vacía', () => {
+    const error = new Error('HTTP error');
+    mockServicioService.getAll.mockReturnValue(throwError(() => error));
+    const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    expect(handleSpy).toHaveBeenCalledWith(error);
+    expect(component['servicios']().length).toBe(0);
+  });
+
+  it('guardar con error del backend llama al errorHandler', () => {
+    const error = new Error('Server error');
+    mockReservasService.crear.mockReturnValue(throwError(() => error));
+    const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
+    component['guardar']();
+    expect(handleSpy).toHaveBeenCalledWith(error);
+  });
+
+  it('verificarSocioYGuardar con error en getEstadoSocio llama al errorHandler', () => {
+    const error = new Error('Network error');
+    mockClientesService.getEstadoSocio.mockReturnValue(throwError(() => error));
+    const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
+    component['verificarSocioYGuardar'](1);
+    expect(handleSpy).toHaveBeenCalledWith(error);
+  });
+
+  it('buscarCliente con cédula vacía no dispara la búsqueda y marca el campo como touched', () => {
+    component['form'].get('cedula')?.setValue('');
+    component['buscarCliente']();
+    expect(component['clienteErrors']()['cedula']).toBe('La cédula es obligatoria.');
+    expect(mockClientesService.getByCedula).not.toHaveBeenCalled();
+  });
+
+  it('buscarCliente con error en buscarPorCedula llama al errorHandler', () => {
+    const error = new Error('Network error');
+    mockClientesService.getByCedula.mockReturnValue(throwError(() => error));
+    const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
+    component['form'].get('cedula')?.setValue('12345678');
+    component['buscarCliente']();
+    expect(handleSpy).toHaveBeenCalledWith(error);
+  });
+
+  it('onConfirmar con formulario inválido no envía la solicitud', () => {
+    component['onConfirmar']();
+    expect(mockReservasService.crear).not.toHaveBeenCalled();
+  });
+
+  it('onConfirmar en Colaboración con form válido llama a guardar directamente', () => {
+    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('2');
+    component['form'].get('fechaInicio')?.setValue('2026-08-01');
+    component['form'].get('fechaFin')?.setValue('2026-08-05');
+    component['form'].get('cantidadTotal')?.setValue('4');
+    component['form'].get('nombreColaboracion')?.setValue('Fondo Social');
+    component['onConfirmar']();
+    expect(mockReservasService.crear).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('onConfirmar COMUN con socio encontrado delega a verificarSocioYGuardar', () => {
+    component['form'].get('cedula')?.setValue('12345678');
+    component['buscarCliente']();
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('2');
+    component['form'].get('fechaInicio')?.setValue('2026-08-01');
+    component['form'].get('fechaFin')?.setValue('2026-08-05');
+    component['form'].get('cantidadTotal')?.setValue('4');
+    component['onConfirmar']();
+    expect(mockClientesService.getEstadoSocio).toHaveBeenCalledWith(1);
+    expect(mockReservasService.crear).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
   });
 });

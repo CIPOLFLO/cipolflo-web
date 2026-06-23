@@ -2,10 +2,21 @@ import { computed, DestroyRef, Directive, inject, signal, Signal } from '@angula
 import { FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  finalize,
+  map,
+  merge,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   applySectionChange,
   markFieldAsTouched,
+  parseNumberOrNull,
   Procedencia,
   startOfToday,
   toIsoDate,
@@ -20,12 +31,17 @@ import { ServicioService } from '../servicios/services/servicio.service';
 import { mapServiciosReserva } from './mappers/servicio-reserva.mapper';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { ReservaValidacionesService } from './services/reserva-validaciones.service';
-import { ClienteBusquedaReservaDto, TipoReserva } from './models/reserva.model';
+import {
+  ClienteBusquedaReservaDto,
+  CostoReservaRequestDto,
+  TipoReserva,
+} from './models/reserva.model';
+import { ReservasService } from './services/reservas.service';
 
 /**
  * Lógica común del formulario de reserva: orquestación de servicios/fechas según
- * procedencia y servicio, modo capacidad/cantidad, validadores condicionales y estado
- * de la sección de cliente (señales de búsqueda/precarga y computed derivados).
+ * procedencia y servicio, modo capacidad/cantidad, validadores condicionales, estado
+ * de la sección de cliente y cálculo de costo.
  * La lógica de búsqueda activa de cliente es responsabilidad de cada subclase.
  */
 @Directive()
@@ -33,6 +49,7 @@ export abstract class ReservaFormBase {
   protected readonly router = inject(Router);
   protected readonly route = inject(ActivatedRoute);
   protected readonly servicioService = inject(ServicioService);
+  protected readonly reservasService = inject(ReservasService);
   protected readonly validaciones = inject(ReservaValidacionesService);
   protected readonly errorHandler = inject(ErrorHandlerService);
   protected readonly destroyRef = inject(DestroyRef);
@@ -43,6 +60,8 @@ export abstract class ReservaFormBase {
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
+  protected readonly costo = signal<number | null>(null);
+  protected readonly costoCargando = signal(false);
 
   protected readonly servicios = signal<ServicioRespuestaDto[]>([]);
   protected readonly fechasOcupadas = signal<ServicioFechaOcupadaDto[]>([]);
@@ -125,6 +144,7 @@ export abstract class ReservaFormBase {
     this.escucharCambios();
     this.aplicarValidadoresMonto();
     this.aplicarValidadoresCliente();
+    this.escucharCostoReserva();
   }
 
   private escucharCambios(): void {
@@ -144,25 +164,12 @@ export abstract class ReservaFormBase {
           this.form.get('servicioId')?.setValue(null, { emitEvent: true });
         }),
         switchMap((procedencia: Procedencia | null) =>
-          procedencia
-            ? this.servicioService
-                .getAll({
-                  page: 0,
-                  size: 100,
-                  filters: { procedencia, estado: EstadoServicio.Habilitado },
-                })
-                .pipe(
-                  catchError((err: unknown) => {
-                    this.errorHandler.handle(err);
-                    return of(null);
-                  }),
-                )
-            : of(null),
+          procedencia ? this.cargarServiciosPorProcedencia(procedencia) : of(null),
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((respuesta) => {
-        if (respuesta) this.servicios.set(mapServiciosReserva(respuesta));
+      .subscribe((lista) => {
+        if (lista) this.servicios.set(lista);
       });
 
     this.form
@@ -195,6 +202,73 @@ export abstract class ReservaFormBase {
       .subscribe((tipo: TipoCliente | null) => this.tipoClienteValue.set(tipo));
   }
 
+  /**
+   * Devuelve el observable de servicios habilitados para una procedencia.
+   * El cascade del listener de procedencia lo usa con switchMap (cancela requests anteriores).
+   * La carga inicial de EditarReserva lo llama directamente con emitEvent:false en procedencia,
+   * para poder setear servicioId en el callback sin que el cascade lo resetee.
+   */
+  protected cargarServiciosPorProcedencia(
+    procedencia: Procedencia,
+  ): Observable<ServicioRespuestaDto[] | null> {
+    return this.servicioService
+      .getAll({ page: 0, size: 100, filters: { procedencia, estado: EstadoServicio.Habilitado } })
+      .pipe(
+        map(mapServiciosReserva),
+        catchError((err: unknown) => {
+          this.errorHandler.handle(err);
+          return of(null);
+        }),
+      );
+  }
+
+  private escucharCostoReserva(): void {
+    merge(
+      this.form.get('servicioId')!.valueChanges,
+      this.form.get('fechaInicio')!.valueChanges,
+      this.form.get('fechaFin')!.valueChanges,
+      this.form.get('cantidad')!.valueChanges,
+      this.form.get('cantidadTotal')!.valueChanges,
+      this.form.get('cantidadMenores')!.valueChanges,
+    )
+      .pipe(
+        debounceTime(300),
+        switchMap(() => this.calcularCosto()),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((costo) => this.costo.set(costo));
+  }
+
+  private calcularCosto(): Observable<number | null> {
+    const servicioId = this.servicioIdValue();
+    const fechaInicio = this.controlValue('fechaInicio');
+    const fechaFin = this.controlValue('fechaFin');
+    if (!servicioId || !fechaInicio || !fechaFin) return of(null);
+
+    const request: CostoReservaRequestDto = {
+      servicioId,
+      fechaInicio,
+      fechaFin,
+      cantidadTotal: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
+        : null,
+      cantidadMenores: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
+        : null,
+      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+    };
+
+    this.costoCargando.set(true);
+    return this.reservasService.calcularCosto(request).pipe(
+      map((respuesta) => respuesta.costo),
+      catchError((err: unknown) => {
+        this.errorHandler.handle(err);
+        return of(null);
+      }),
+      finalize(() => this.costoCargando.set(false)),
+    );
+  }
+
   private ventanaDesde(): string {
     return toIsoDate(startOfToday())!;
   }
@@ -223,8 +297,8 @@ export abstract class ReservaFormBase {
   }
 
   /** Activa los validadores de la sección de cliente según el tipo de reserva. */
-  private aplicarValidadoresCliente(): void {
-    // El tipo de cliente ya no se elige: se deriva de la búsqueda (Particular si no existe).
+  protected aplicarValidadoresCliente(): void {
+    // El tipo de cliente se deriva de la búsqueda (Particular si no existe).
     const requeridosComun = ['cedula', 'nombre', 'celular'];
     const requeridosColab = ['nombreColaboracion'];
     const colaboracion = this.esColaboracion();
@@ -268,6 +342,10 @@ export abstract class ReservaFormBase {
   protected onFieldBlur(key: string): void {
     markFieldAsTouched(this.form, key);
     this.blurCount.update((v) => v + 1);
+  }
+
+  protected controlValue(key: string): string | null {
+    return (this.form.get(key)?.value as string | null) ?? null;
   }
 
   protected onCancelar(): void {

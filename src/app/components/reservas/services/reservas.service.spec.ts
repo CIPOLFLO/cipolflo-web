@@ -9,6 +9,7 @@ import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
 import {
   TipoReserva,
+  type ReservaActualizacionRequestDto,
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
   type ReservaRespuestaDto,
@@ -168,6 +169,26 @@ describe('ReservasService', () => {
       expect(resultado?.estado).toBe(EstadoReserva.Confirmada);
       expect(resultado?.cliente?.nombre).toBe('Carlos Martínez Gómez');
       expect(resultado?.servicio.nombre).toBe('Hospedaje en camping');
+    });
+  });
+
+  describe('update', () => {
+    const dtoActualizacion: ReservaActualizacionRequestDto = {
+      procedencia: Procedencia.Camping,
+      servicioId: 3,
+      fechaInicio: '2026-08-10',
+      fechaFin: '2026-08-20',
+      cantidadTotal: 4,
+      cantidadMenores: 1,
+      cantidad: null,
+      notas: 'Fechas actualizadas',
+    };
+
+    it('llama a PUT /reservas/:id con el DTO de actualización', () => {
+      service.update(42, dtoActualizacion).subscribe();
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas/42') && r.method === 'PUT');
+      expect(req.request.body).toEqual(dtoActualizacion);
+      req.flush(null);
     });
   });
 

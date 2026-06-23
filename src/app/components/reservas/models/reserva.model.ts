@@ -88,6 +88,17 @@ export interface ReservaCreacionRespuestaDto {
   id: number;
 }
 
+export interface ReservaActualizacionRequestDto {
+  procedencia: Procedencia;
+  servicioId: number;
+  fechaInicio: string;
+  fechaFin: string;
+  cantidadTotal: number | null;
+  cantidadMenores: number | null;
+  cantidad: number | null;
+  notas: string | null;
+}
+
 /** Parámetros para calcular el costo de una reserva (depende del servicio y las cantidades). */
 export interface CostoReservaRequestDto {
   servicioId: number;

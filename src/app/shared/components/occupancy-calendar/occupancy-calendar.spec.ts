@@ -41,4 +41,14 @@ describe('OccupancyCalendar', () => {
     component['onSelectionChange']([new Date(2026, 6, 1)]);
     expect(spy).toHaveBeenCalledWith({ inicio: '2026-07-01', fin: null });
   });
+
+  it('pre-selecciona el rango cuando se pasa initialRange con fechas válidas', () => {
+    fixture.componentRef.setInput('initialRange', { inicio: '2026-08-10', fin: '2026-08-15' });
+    fixture.detectChanges();
+    const sel = component['selection']();
+    expect(sel).not.toBeNull();
+    expect(sel![0].getDate()).toBe(10);
+    expect(sel![0].getMonth()).toBe(7); // agosto = índice 7
+    expect(sel![1].getDate()).toBe(15);
+  });
 });

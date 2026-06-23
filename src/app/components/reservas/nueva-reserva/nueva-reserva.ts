@@ -1,18 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import {
-  catchError,
-  debounceTime,
-  EMPTY,
-  filter,
-  finalize,
-  map,
-  merge,
-  Observable,
-  of,
-  Subject,
-  switchMap,
-} from 'rxjs';
+import { catchError, EMPTY, filter, finalize, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
@@ -45,11 +33,11 @@ import { ReservaFormBase } from '../reserva-form-base';
 import {
   TIPO_RESERVA_OPTIONS,
   TipoReserva,
-  type CostoReservaRequestDto,
   type ReservaCreacionRequestDto,
 } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
+import { Subject } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -74,15 +62,10 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
 export class NuevaReserva extends ReservaFormBase {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly errorDialog = inject(ErrorDialogService);
-  private readonly reservasService = inject(ReservasService);
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
 
   private readonly buscarClienteTrigger = new Subject<string>();
-
-  /** Costo de la reserva devuelto por el backend (mock por ahora); null si aún no aplica. */
-  protected readonly costo = signal<number | null>(null);
-  protected readonly costoCargando = signal(false);
 
   constructor() {
     super(
@@ -129,60 +112,7 @@ export class NuevaReserva extends ReservaFormBase {
         if (this.busquedaRealizada()) this.resetearBusquedaCliente();
       });
 
-    this.escucharCostoReserva();
     this.inicializarBusquedaCliente();
-  }
-
-  /**
-   * Recalcula el costo cada vez que cambian el servicio, el rango de fechas o las
-   * cantidades. El debounce evita una llamada por cada tecla en los inputs numéricos.
-   */
-  private escucharCostoReserva(): void {
-    merge(
-      this.form.get('servicioId')!.valueChanges,
-      this.form.get('fechaInicio')!.valueChanges,
-      this.form.get('fechaFin')!.valueChanges,
-      this.form.get('cantidad')!.valueChanges,
-      this.form.get('cantidadTotal')!.valueChanges,
-      this.form.get('cantidadMenores')!.valueChanges,
-    )
-      .pipe(
-        debounceTime(300),
-        switchMap(() => this.calcularCosto()),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((costo) => this.costo.set(costo));
-  }
-
-  /** Pide el costo al backend si hay servicio y rango completos; si no, lo limpia. */
-  private calcularCosto(): Observable<number | null> {
-    const servicioId = this.servicioIdValue();
-    const fechaInicio = this.controlValue('fechaInicio');
-    const fechaFin = this.controlValue('fechaFin');
-    if (!servicioId || !fechaInicio || !fechaFin) return of(null);
-
-    const request: CostoReservaRequestDto = {
-      servicioId,
-      fechaInicio,
-      fechaFin,
-      cantidadTotal: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
-        : null,
-      cantidadMenores: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
-        : null,
-      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
-    };
-
-    this.costoCargando.set(true);
-    return this.reservasService.calcularCosto(request).pipe(
-      map((respuesta) => respuesta.costo),
-      catchError((err: unknown) => {
-        this.errorHandler.handle(err);
-        return of(null);
-      }),
-      finalize(() => this.costoCargando.set(false)),
-    );
   }
 
   private inicializarBusquedaCliente(): void {
@@ -381,10 +311,6 @@ export class NuevaReserva extends ReservaFormBase {
   protected readonly lupitaVisible = computed(
     () => !this.clientePrellenado() && !this.esColaboracion(),
   );
-
-  protected controlValue(key: string): string | null {
-    return (this.form.get(key)?.value as string | null) ?? null;
-  }
 
   protected onRangoSeleccionado(rango: DateRangeSelection): void {
     this.onControlChange('fechaInicio', rango.inicio);

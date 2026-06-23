@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
 import { DateRangeSelection, OccupiedRange } from './occupancy-calendar.models';
@@ -20,10 +28,25 @@ import { parseIsoDate, startOfToday, toDisplayDate, toIsoDate } from '../../util
 export class OccupancyCalendar {
   readonly occupiedRanges = input<OccupiedRange[]>([]);
   readonly minDate = input<Date>(startOfToday());
+  readonly initialRange = input<DateRangeSelection | null>(null);
 
   readonly rangeSelected = output<DateRangeSelection>();
 
   protected readonly selection = signal<Date[] | null>(null);
+
+  constructor() {
+    effect(
+      () => {
+        const range = this.initialRange();
+        if (range?.inicio && range?.fin && this.selection() === null) {
+          const inicio = parseIsoDate(range.inicio);
+          const fin = parseIsoDate(range.fin);
+          if (inicio && fin) this.selection.set([inicio, fin]);
+        }
+      },
+      { allowSignalWrites: true },
+    );
+  }
 
   /** Días individuales deshabilitados, expandidos a partir de los rangos ocupados. */
   protected readonly disabledDates = computed<Date[]>(() => {

@@ -11,6 +11,7 @@ import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
 import { ReservaRow } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
+import { EstadoReserva } from '../../../shared';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -42,11 +43,19 @@ export class ListadoReservas {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/reservas', row.id]),
     },
-    // {
-    //   label: 'Modificar',
-    //   icon: 'pi pi-pencil',
-    //   command: () => console.log('Editar', row.id),
-    // },
+    ...(row.estadoReserva === EstadoReserva.Pendiente ||
+    row.estadoReserva === EstadoReserva.Confirmada
+      ? [
+          {
+            label: 'Modificar',
+            icon: 'pi pi-pencil',
+            command: () => this.router.navigate(['/reservas', row.id, 'editar']),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    // { label: 'Habilitar/Deshabilitar', ... },
+    // { separator: true },
+    // { label: 'Eliminar', ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
