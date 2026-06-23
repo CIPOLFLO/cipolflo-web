@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@auth0/auth0-angular';
-import { EstadoReserva, Procedencia } from '../../../shared';
+import { EstadoReserva } from '../../../shared';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { TableStateService } from '../../../shared/components/table/table-state.service';
 import { UserService } from '../../../core/services/user.service';
