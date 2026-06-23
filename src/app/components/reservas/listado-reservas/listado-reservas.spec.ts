@@ -67,7 +67,10 @@ describe('ListadoReservas — rowActions', () => {
             TableStateService,
             ReservasColumnsService,
             { provide: FilterConfigProvider, useClass: ReservasFilterService },
-            { provide: ReservasService, useValue: { getAll: vi.fn().mockReturnValue(of(emptyPage)) } },
+            {
+              provide: ReservasService,
+              useValue: { getAll: vi.fn().mockReturnValue(of(emptyPage)) },
+            },
           ],
         },
       })

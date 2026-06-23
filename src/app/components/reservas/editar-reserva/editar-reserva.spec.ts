@@ -112,7 +112,10 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
       },
       { provide: Router, useValue: { navigate: navigateSpy } },
       { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
-      { provide: ServicioService, useValue: { getAll: getAllSpy, getFechasOcupadas: getFechasOcupadasSpy } },
+      {
+        provide: ServicioService,
+        useValue: { getAll: getAllSpy, getFechasOcupadas: getFechasOcupadasSpy },
+      },
       { provide: AuthService, useValue: mockAuthService },
       { provide: UserService, useValue: mockUserService },
     ],
@@ -159,7 +162,9 @@ describe('EditarReserva', () => {
   it('carga los servicios y setea el servicioId después de cargar la reserva', async () => {
     const { component, getAllSpy } = await setup();
     expect(getAllSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ filters: expect.objectContaining({ procedencia: Procedencia.Camping }) }),
+      expect.objectContaining({
+        filters: expect.objectContaining({ procedencia: Procedencia.Camping }),
+      }),
     );
     expect(component['form'].get('servicioId')?.value).toBe('3');
     expect(component['servicios']().length).toBeGreaterThan(0);
@@ -266,7 +271,10 @@ describe('EditarReserva', () => {
         { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
         {
           provide: ServicioService,
-          useValue: { getAll: vi.fn().mockReturnValue(of(page([]))), getFechasOcupadas: vi.fn().mockReturnValue(of([])) },
+          useValue: {
+            getAll: vi.fn().mockReturnValue(of(page([]))),
+            getFechasOcupadas: vi.fn().mockReturnValue(of([])),
+          },
         },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },

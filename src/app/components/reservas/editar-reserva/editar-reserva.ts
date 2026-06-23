@@ -54,10 +54,9 @@ import { ReservasService } from '../services/reservas.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditarReserva extends ReservaFormBase {
-  protected readonly reservaId = toSignal(
-    this.route.paramMap.pipe(map((p) => p.get('id') ?? '')),
-    { initialValue: '' },
-  );
+  protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
+    initialValue: '',
+  });
 
   protected readonly reserva = signal<ReservaDetalleRespuestaDto | undefined>(undefined);
 
