@@ -63,7 +63,7 @@ export class ListadoFinanzas {
   protected readonly exportando = signal(false);
   protected readonly columns = this.columnsService.columns;
   protected readonly puedeExportar = computed(
-    () => this.tableState.hasResults() && !this.tableState.loading(),
+    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
   );
 
   protected readonly loadDataFn: LoadDataFn<FinanzaRow> = (params) =>

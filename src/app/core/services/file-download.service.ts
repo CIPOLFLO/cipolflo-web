@@ -27,7 +27,7 @@ export class FileDownloadService {
     link.click();
 
     link.remove();
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => window.URL.revokeObjectURL(url), 0);
   }
 
   parseBlobError(error: HttpErrorResponse): Observable<never> {

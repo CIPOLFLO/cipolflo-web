@@ -9,6 +9,7 @@ describe('FileDownloadService', () => {
   let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     TestBed.configureTestingModule({});
     service = TestBed.inject(FileDownloadService);
 
@@ -22,6 +23,7 @@ describe('FileDownloadService', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -39,6 +41,7 @@ describe('FileDownloadService', () => {
 
     expect(createObjectURLSpy).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
+    vi.runAllTimers();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
 
     clickSpy.mockRestore();
@@ -54,6 +57,7 @@ describe('FileDownloadService', () => {
     service.download(response, 'finanzas.xlsx');
 
     expect(clickSpy).toHaveBeenCalled();
+    vi.runAllTimers();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
 
     clickSpy.mockRestore();
@@ -89,6 +93,7 @@ describe('FileDownloadService', () => {
 
     expect(createObjectURLSpy).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
+    vi.runAllTimers();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
 
     clickSpy.mockRestore();

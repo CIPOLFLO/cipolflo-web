@@ -10,23 +10,19 @@ import {
   FinanzaModificarDto,
 } from '../models/finanza.model';
 import { FinanzaService } from './finanza.service';
-import { FileDownloadService } from '../../../core/services/file-download.service';
-import { throwError } from 'rxjs';
+import { BlobExportService } from '../../../core/services/blob-export.service';
+import { of } from 'rxjs';
 
 const PARAMS_BASE = { page: 0, size: 10, filters: {} };
 
 describe('FinanzaService', () => {
   let service: FinanzaService;
   let httpMock: HttpTestingController;
-  let fileDownloadService: {
-    download: ReturnType<typeof vi.fn>;
-    parseBlobError: ReturnType<typeof vi.fn>;
-  };
+  let blobExportService: { export: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    fileDownloadService = {
-      download: vi.fn(),
-      parseBlobError: vi.fn().mockImplementation((err) => throwError(() => err)),
+    blobExportService = {
+      export: vi.fn().mockReturnValue(of(undefined)),
     };
 
     TestBed.configureTestingModule({
@@ -34,7 +30,7 @@ describe('FinanzaService', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         FinanzaService,
-        { provide: FileDownloadService, useValue: fileDownloadService },
+        { provide: BlobExportService, useValue: blobExportService },
       ],
     });
 
@@ -212,20 +208,11 @@ describe('FinanzaService', () => {
     });
   });
 
-  it('exportar debería hacer POST blob y disparar descarga', () => {
-    service.exportar({ concepto: 'PAGO_RESERVA' }).subscribe();
+  it('exportar delega en BlobExportService con el endpoint y filename correctos', () => {
+    const filters = { concepto: 'PAGO_RESERVA' };
 
-    const req = httpMock.expectOne(
-      (request) => request.method === 'POST' && request.url.includes('finanzas/export'),
-    );
-    expect(req.request.method).toBe('POST');
-    expect(req.request.responseType).toBe('blob');
-    expect(req.request.body).toEqual({ concepto: 'PAGO_RESERVA' });
+    service.exportar(filters).subscribe();
 
-    req.flush(new Blob(['excel']), {
-      headers: { 'Content-Disposition': 'attachment; filename="finanzas.xlsx"' },
-    });
-
-    expect(fileDownloadService.download).toHaveBeenCalled();
+    expect(blobExportService.export).toHaveBeenCalledWith('finanzas/export', filters, 'finanzas.xlsx');
   });
 });
