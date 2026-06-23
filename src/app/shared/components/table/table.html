@@ -1,5 +1,5 @@
 <p-table
-  [value]="loading() ? $any(skeletonRows) : tableData().content"
+  [value]="tableState.loading() ? $any(skeletonRows) : tableData().content"
   [lazy]="true"
   [sortField]="sortFieldOrDefault"
   [sortOrder]="
@@ -28,7 +28,7 @@
   </ng-template>
 
   <ng-template pTemplate="body" let-row>
-    @if (loading()) {
+    @if (tableState.loading()) {
       <tr>
         @for (col of columns(); track col.key) {
           <td><p-skeleton height="1.5rem" /></td>

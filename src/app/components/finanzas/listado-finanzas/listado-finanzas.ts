@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, filter, switchMap } from 'rxjs';
 import {
@@ -53,7 +60,11 @@ export class ListadoFinanzas {
     }
   }
 
+  protected readonly exportando = signal(false);
   protected readonly columns = this.columnsService.columns;
+  protected readonly puedeExportar = computed(
+    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
+  );
 
   protected readonly loadDataFn: LoadDataFn<FinanzaRow> = (params) =>
     this.finanzaService.getAll(params).pipe(
@@ -131,5 +142,27 @@ export class ListadoFinanzas {
 
   private recargarTabla(): void {
     this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+  }
+
+  protected onDescargarListado(): void {
+    if (!this.puedeExportar() || this.exportando()) return;
+
+    this.exportando.set(true);
+
+    const filters = this.tableState.queryParams().filters;
+    console.log('Filtros exportación:', filters);
+
+    this.finanzaService
+      .exportar(filters)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.exportando.set(false);
+        },
+        error: (err) => {
+          this.exportando.set(false);
+          this.errorHandler.handle(err);
+        },
+      });
   }
 }

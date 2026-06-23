@@ -19,7 +19,7 @@ const mockFinanza: FinanzaDetalleRespuestaDto = {
   id: 1,
   codigo: 'FIN-2026-001',
   procedencia: Procedencia.Camping,
-  servicio: 'Alquiler de parrillero',
+  concepto: Concepto.PagoReserva,
   fecha: '2026-03-14',
   importe: 15000,
   formaPago: FormaPago.Transferencia,
