@@ -1,18 +1,42 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
-import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
-import { FormLayout } from '../../../shared/components/form-layout/form-layout';
-import { FormActions } from '../../../shared/components/form-actions/form-actions';
-import { AppButton } from '../../../shared/components/button/button';
-import { DetailSection } from '../../../shared/components/detail-section/detail-section';
-import { DetailRegistroSection } from '../../../shared/components/detail-registro-section/detail-registro-section';
-import { DetailFieldConfig, DetailRegistroData } from '../../../shared/models/detail-field.model';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
+import {
+  AppButton,
+  DetailRegistroSection,
+  DetailSection,
+  ESTADO_RESERVA_LABEL,
+  ESTADO_RESERVA_VALUE_CLASS,
+  FormActions,
+  FormLayout,
+  PageLayout,
+  PROCEDENCIA_LABEL,
+  type DetailFieldConfig,
+  type DetailRegistroData,
+} from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { ReservasService } from '../services/reservas.service';
+import {
+  FORMA_PAGO_RESERVA_LABEL,
+  TIPO_CLIENTE_LABEL,
+  TIPO_RESERVA_LABEL,
+  TipoReserva,
+} from '../models/reserva.model';
 
 @Component({
   selector: 'app-detalle-reserva',
-  imports: [PageLayout, FormLayout, FormActions, AppButton, DetailSection, DetailRegistroSection],
+  imports: [
+    CommonModule,
+    PageLayout,
+    FormLayout,
+    FormActions,
+    AppButton,
+    DetailSection,
+    DetailRegistroSection,
+  ],
+  providers: [ReservasService],
   templateUrl: './detalle-reserva.html',
   styleUrl: './detalle-reserva.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,49 +44,152 @@ import { DetailFieldConfig, DetailRegistroData } from '../../../shared/models/de
 export class DetalleReserva {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly reservasService = inject(ReservasService);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
   });
 
-  // Datos mock — en producción vendrían de ReservasService.getById(this.reservaId())
-  protected readonly reservaFields: DetailFieldConfig[] = [
-    { key: 'numeroReserva', label: 'Número de Reserva', value: 'RSV-2026-001' },
-    { key: 'estado', label: 'Estado', value: 'Confirmada' },
-    { key: 'procedencia', label: 'Procedencia', value: 'Web' },
-    { key: 'concepto', label: 'Concepto', value: 'Hospedaje' },
-    { key: 'cantidadPersonas', label: 'Cantidad de Personas', value: '2' },
-    { key: 'fechaInicio', label: 'Fecha Inicio', value: '25/03/2026' },
-    { key: 'fechaFin', label: 'Fecha Fin', value: '28/03/2026' },
-    { key: 'importe', label: 'Importe', value: '$ 3.500' },
-  ];
+  protected readonly reserva = toSignal(
+    toObservable(this.reservaId).pipe(
+      filter((id) => /^\d+$/.test(id)),
+      switchMap((id) =>
+        this.reservasService.getById(Number(id)).pipe(
+          catchError((err) => {
+            this.errorHandler.handle(err);
+            this.router.navigate(['/reservas']);
+            return EMPTY;
+          }),
+        ),
+      ),
+    ),
+    { initialValue: undefined },
+  );
 
-  protected readonly clienteFields: DetailFieldConfig[] = [
-    { key: 'tipoCliente', label: 'Tipo de Cliente', value: 'Socio' },
-    { key: 'ci', label: 'CI / Nro de Socio', value: '12345678' },
-    { key: 'nombre', label: 'Nombre', value: 'Carlos Martínez Gómez' },
-    { key: 'celular', label: 'Celular', value: '+598 99 123 456' },
-    { key: 'email', label: 'Email', value: 'carlos.martinez@email.com' },
-  ];
+  protected readonly esColaboracion = computed(
+    () => this.reserva()?.tipoReserva === TipoReserva.ColaboracionSinFines,
+  );
 
-  protected readonly adicionalFields: DetailFieldConfig[] = [
-    {
-      key: 'notas',
-      label: 'Notas / Observaciones',
-      value: 'Las personas llegarán alrededor de las 17hs',
-      fullWidth: true,
-      multiline: true,
-    },
-  ];
+  protected readonly reservaFields = computed<DetailFieldConfig[]>(() => {
+    const e = this.reserva();
+    if (!e) return [];
+    return [
+      { key: 'tipoReserva', label: 'Tipo de Reserva', value: TIPO_RESERVA_LABEL[e.tipoReserva] },
+      {
+        key: 'estado',
+        label: 'Estado',
+        value: ESTADO_RESERVA_LABEL[e.estado],
+        valueClass: ESTADO_RESERVA_VALUE_CLASS[e.estado],
+      },
+      {
+        key: 'procedencia',
+        label: 'Procedencia',
+        value: PROCEDENCIA_LABEL[e.procedencia] ?? e.procedencia,
+      },
+      { key: 'servicio', label: 'Servicio', value: e.servicio.nombre },
+      { key: 'fechaEntrada', label: 'Fecha de Entrada', value: e.fechaEntrada },
+      { key: 'fechaSalida', label: 'Fecha de Salida', value: e.fechaSalida },
+      ...(e.horaInicio !== null
+        ? [{ key: 'horaInicio', label: 'Hora de Inicio', value: e.horaInicio }]
+        : []),
+      ...(e.horaFin !== null ? [{ key: 'horaFin', label: 'Hora de Fin', value: e.horaFin }] : []),
+      ...(e.cantidadTotal !== null
+        ? [
+            {
+              key: 'cantidadTotal',
+              label: 'Cantidad de Personas',
+              value: e.cantidadTotal.toString(),
+            },
+            ...(e.cantidadMenores !== null
+              ? [{ key: 'cantidadMenores', label: 'Menores', value: e.cantidadMenores.toString() }]
+              : []),
+          ]
+        : []),
+      ...(e.cantidad !== null
+        ? [{ key: 'cantidad', label: 'Cantidad', value: e.cantidad.toString() }]
+        : []),
+      ...(e.importe !== null
+        ? [{ key: 'importe', label: 'Importe', value: `$ ${e.importe.toLocaleString('es-UY')}` }]
+        : []),
+      ...(e.formaPago !== null
+        ? [
+            {
+              key: 'formaPago',
+              label: 'Forma de Pago',
+              value: FORMA_PAGO_RESERVA_LABEL[e.formaPago] ?? e.formaPago,
+            },
+          ]
+        : []),
+      {
+        key: 'pago',
+        label: 'Pago',
+        value: e.pago ? 'Sí' : 'No',
+        valueClass: e.pago ? 'success' : 'danger',
+      },
+      {
+        key: 'requiereDocumentacion',
+        label: 'Requiere Documentación',
+        value: e.requiereDocumentacion ? 'Sí' : 'No',
+      },
+      ...(e.requiereDocumentacion
+        ? [
+            {
+              key: 'tieneDocumentacion',
+              label: 'Tiene Documentación',
+              value: e.tieneDocumentacion ? 'Sí' : 'No',
+              valueClass: e.tieneDocumentacion ? ('success' as const) : ('danger' as const),
+            },
+          ]
+        : []),
+    ];
+  });
 
-  protected readonly registroData = computed<DetailRegistroData>(() => ({
-    entityId: this.reservaId(),
-    entityIdLabel: 'ID de la Reserva',
-    fechaRegistro: '15 mar 2026, 14:30',
-    registradoPor: 'Juan Pérez',
-  }));
+  protected readonly clienteFields = computed<DetailFieldConfig[]>(() => {
+    const e = this.reserva();
+    if (!e) return [];
+    if (e.tipoReserva === TipoReserva.ColaboracionSinFines) {
+      return [{ key: 'rut', label: 'RUT', value: e.rut }];
+    }
+    const c = e.cliente;
+    if (!c) return [];
+    return [
+      { key: 'tipoCliente', label: 'Tipo de Cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
+      { key: 'cedula', label: 'Cédula', value: c.cedula },
+      { key: 'nombre', label: 'Nombre', value: c.nombre },
+      { key: 'telefono', label: 'Teléfono', value: c.telefono },
+      { key: 'email', label: 'Email', value: c.email },
+    ];
+  });
 
-  protected onEditar(): void {
-    this.router.navigate(['/reservas', this.reservaId(), 'editar']);
+  protected readonly adicionalFields = computed<DetailFieldConfig[]>(() => {
+    const e = this.reserva();
+    if (!e) return [];
+    return [
+      {
+        key: 'notas',
+        label: 'Notas / Observaciones',
+        value: e.notas,
+        fullWidth: true,
+        multiline: true,
+      },
+    ];
+  });
+
+  protected readonly registroData = computed<DetailRegistroData | null>(() => {
+    const e = this.reserva();
+    if (!e) return null;
+    return {
+      entityId: `RSV-${String(e.id).padStart(3, '0')}`,
+      entityIdLabel: 'ID de la Reserva',
+      fechaRegistro: e.createdAt,
+      registradoPor: e.createdBy,
+    };
+  });
+
+  protected onModificar(): void {
+    this.router.navigate(['/reservas', this.reservaId(), 'editar'], {
+      queryParams: { from: 'detalle' },
+    });
   }
 }

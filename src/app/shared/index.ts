@@ -54,7 +54,11 @@ export type { FormFieldConfig, FormFieldOption } from './models/form-field.model
 export type { DetailFieldConfig, DetailRegistroData } from './models/detail-field.model';
 export { Procedencia, PROCEDENCIA_LABEL, PROCEDENCIA_OPTIONS } from './models/procedencia.model';
 export type { AuditInfoDto } from './models/audit.model';
-export { EstadoReserva } from './models/estado-reserva.model';
+export {
+  EstadoReserva,
+  ESTADO_RESERVA_LABEL,
+  ESTADO_RESERVA_VALUE_CLASS,
+} from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
 export type { NavItem } from './models/nav-item.model';
 
