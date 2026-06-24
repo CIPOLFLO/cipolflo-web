@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { catchError, map, Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { FileDownloadService } from '../../../core/services/file-download.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
@@ -60,12 +60,17 @@ export class ClientesService extends BaseHttpService {
   registrarSocio(dto: RegistroSocioRequestDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes/socios', dto);
   }
-
+  registrarPagoCuota(
+    id: number,
+    dto: RegistroPagoCuotaRequestDto,
+  ): Observable<PagoCuotaResponseDto[]> {
+    return this.post<PagoCuotaResponseDto[]>(`clientes/${id}/cuotas`, dto);
+  }
   exportar(filters: Record<string, string | null>): Observable<void> {
-  return this.postBlob('clientes/exportar', filters).pipe(
-    map((response) => {
-      this.fileDownloadService.download(response, 'clientes.xlsx');
-    }),
-  );
-}
+    return this.postBlob('clientes/exportar', filters).pipe(
+      map((response) => {
+        this.fileDownloadService.download(response, 'clientes.xlsx');
+      }),
+    );
+  }
 }
