@@ -20,6 +20,8 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   procedencia: Procedencia.Camping,
   fechaEntrada: '2026-08-10',
   fechaSalida: '2026-08-15',
+  horaInicio: null,
+  horaFin: null,
   cantidadTotal: 4,
   cantidadMenores: 1,
   cantidad: null,

@@ -90,6 +90,12 @@ export class DetalleReserva {
       { key: 'servicio', label: 'Servicio', value: e.servicio.nombre },
       { key: 'fechaEntrada', label: 'Fecha de Entrada', value: e.fechaEntrada },
       { key: 'fechaSalida', label: 'Fecha de Salida', value: e.fechaSalida },
+      ...(e.horaInicio !== null
+        ? [{ key: 'horaInicio', label: 'Hora de Inicio', value: e.horaInicio }]
+        : []),
+      ...(e.horaFin !== null
+        ? [{ key: 'horaFin', label: 'Hora de Fin', value: e.horaFin }]
+        : []),
       ...(e.cantidadTotal !== null
         ? [
             {
