@@ -47,6 +47,8 @@ export interface ReservaCreacionRequestDto {
   servicioId: number;
   fechaInicio: string;
   fechaFin: string;
+  horaInicio: string | null;
+  horaFin: string | null;
   cantidadTotal: number | null;
   cantidadMenores: number | null;
   cantidad: number | null;
