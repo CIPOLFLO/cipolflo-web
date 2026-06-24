@@ -93,9 +93,7 @@ export class DetalleReserva {
       ...(e.horaInicio !== null
         ? [{ key: 'horaInicio', label: 'Hora de Inicio', value: e.horaInicio }]
         : []),
-      ...(e.horaFin !== null
-        ? [{ key: 'horaFin', label: 'Hora de Fin', value: e.horaFin }]
-        : []),
+      ...(e.horaFin !== null ? [{ key: 'horaFin', label: 'Hora de Fin', value: e.horaFin }] : []),
       ...(e.cantidadTotal !== null
         ? [
             {
