@@ -44,9 +44,16 @@ export class OccupancyCalendar {
   protected readonly rangoLabel = computed<string | null>(() => {
     const [inicio, fin] = this.selection() ?? [];
     if (!inicio) return null;
-    return fin
-      ? `${toDisplayDate(inicio)} — ${toDisplayDate(fin)}`
-      : `Desde ${toDisplayDate(inicio)}…`;
+    if (!fin) return `Desde ${toDisplayDate(inicio)}…`;
+    return toIsoDate(inicio) === toIsoDate(fin)
+      ? toDisplayDate(inicio)
+      : `${toDisplayDate(inicio)} — ${toDisplayDate(fin)}`;
+  });
+
+  protected readonly esFechaUnica = computed<boolean>(() => {
+    const [inicio, fin] = this.selection() ?? [];
+    if (!inicio || !fin) return false;
+    return toIsoDate(inicio) === toIsoDate(fin);
   });
 
   protected onSelectionChange(value: Date[] | null): void {

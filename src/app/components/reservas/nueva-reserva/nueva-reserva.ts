@@ -16,11 +16,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
-  ConfirmDialogComponent,
   ConfirmDialogService,
   CurrencyFormatPipe,
   emailValido,
-  ErrorDialogComponent,
   ErrorDialogService,
   FormActions,
   FormField,
@@ -41,6 +39,7 @@ import {
   TIPO_CLIENTE_FORM_OPTIONS,
 } from '../../clientes/models/cliente.model';
 import { ClientesService } from '../../clientes/services/cliente.service';
+import { ClienteValidacionesService } from '../../clientes/services/cliente-validaciones.service';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
   TIPO_RESERVA_OPTIONS,
@@ -62,8 +61,6 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
     FormActions,
     AppButton,
     OccupancyCalendar,
-    ConfirmDialogComponent,
-    ErrorDialogComponent,
     CurrencyFormatPipe,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
@@ -77,6 +74,7 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly reservasService = inject(ReservasService);
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
+  private readonly clienteValidaciones = inject(ClienteValidacionesService);
 
   private readonly buscarClienteTrigger = new Subject<string>();
 
@@ -92,6 +90,8 @@ export class NuevaReserva extends ReservaFormBase {
         servicioId: new FormControl<string | null>(null, Validators.required),
         fechaInicio: new FormControl<string | null>(null, Validators.required),
         fechaFin: new FormControl<string | null>(null, Validators.required),
+        horaInicio: new FormControl<string | null>(null),
+        horaFin: new FormControl<string | null>(null),
         cantidadTotal: new FormControl<string | null>(null),
         cantidadMenores: new FormControl<string | null>(null, Validators.min(0)),
         cantidad: new FormControl<string | null>(null),
@@ -109,6 +109,11 @@ export class NuevaReserva extends ReservaFormBase {
 
     this.form.get('email')?.addValidators(emailValido);
     this.form.get('email')?.updateValueAndValidity({ emitEvent: false });
+
+    this.form
+      .get('cedula')
+      ?.addValidators(this.clienteValidaciones.cedulaValida.bind(this.clienteValidaciones));
+    this.form.get('cedula')?.updateValueAndValidity({ emitEvent: false });
 
     // Punto de entrada desde el listado de clientes: precarga del cliente (readonly).
     const clienteId = this.route.snapshot.queryParamMap.get('clienteId');
@@ -211,11 +216,10 @@ export class NuevaReserva extends ReservaFormBase {
   }
 
   protected buscarCliente(): void {
-    const cedula = (this.form.get('cedula')?.value as string | null)?.trim();
-    if (!cedula) {
-      this.onFieldBlur('cedula');
-      return;
-    }
+    const cedulaControl = this.form.get('cedula');
+    const cedula = (cedulaControl?.value as string | null)?.trim();
+    cedulaControl?.markAsTouched();
+    if (!cedula || cedulaControl?.invalid) return;
     this.loading.set(true);
     this.buscarClienteTrigger.next(cedula);
   }
@@ -282,7 +286,7 @@ export class NuevaReserva extends ReservaFormBase {
 
   protected readonly cantidadTotalField: FormFieldConfig = {
     key: 'cantidadTotal',
-    label: 'Cantidad total',
+    label: 'Cantidad total de personas',
     type: 'number',
     required: true,
   };
@@ -297,6 +301,20 @@ export class NuevaReserva extends ReservaFormBase {
     key: 'cantidad',
     label: 'Cantidad',
     type: 'number',
+    required: true,
+  };
+
+  protected readonly horaInicioField: FormFieldConfig = {
+    key: 'horaInicio',
+    label: 'Hora de inicio',
+    type: 'time',
+    required: true,
+  };
+
+  protected readonly horaFinField: FormFieldConfig = {
+    key: 'horaFin',
+    label: 'Hora de fin',
+    type: 'time',
     required: true,
   };
 
@@ -467,6 +485,8 @@ export class NuevaReserva extends ReservaFormBase {
       servicioId: Number(this.controlValue('servicioId')),
       fechaInicio: this.controlValue('fechaInicio')!,
       fechaFin: this.controlValue('fechaFin')!,
+      horaInicio: this.modoHora() ? this.controlValue('horaInicio') : null,
+      horaFin: this.modoHora() ? this.controlValue('horaFin') : null,
       cantidadTotal: this.modoCapacidad()
         ? parseNumberOrNull(this.controlValue('cantidadTotal'))
         : null,

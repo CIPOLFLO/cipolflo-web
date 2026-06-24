@@ -916,6 +916,8 @@ Crea una nueva reserva. Soporta tres variantes de cliente:
   "servicioId": 3,
   "fechaInicio": "2026-08-10",
   "fechaFin": "2026-08-15",
+  "horaInicio": null,
+  "horaFin": null,
   "cantidadTotal": 4,
   "cantidadMenores": 1,
   "cantidad": null,
@@ -938,6 +940,8 @@ Crea una nueva reserva. Soporta tres variantes de cliente:
 | `servicioId`      | integer       | Sí          | > 0, el servicio debe existir y estar habilitado                                                                  |
 | `fechaInicio`     | string (date) | Sí          | `yyyy-MM-dd`, no puede ser anterior a hoy                                                                         |
 | `fechaFin`        | string (date) | Sí          | `yyyy-MM-dd`, no puede ser anterior a `fechaInicio`                                                               |
+| `horaInicio`      | string (time) | Condicional | `HH:mm`, requerido si el servicio tiene modalidad `POR_HORA`                                                      |
+| `horaFin`         | string (time) | Condicional | `HH:mm`, requerido si el servicio tiene modalidad `POR_HORA`                                                      |
 | `cantidadTotal`   | integer       | No          | >= 0                                                                                                              |
 | `cantidadMenores` | integer       | No          | >= 0                                                                                                              |
 | `cantidad`        | integer       | No          | >= 0                                                                                                              |
@@ -1059,6 +1063,8 @@ Retorna el detalle completo de una reserva.
   servicioId: number             // obligatorio, > 0
   fechaInicio: string            // obligatorio, LocalDate yyyy-MM-dd
   fechaFin: string               // obligatorio, LocalDate yyyy-MM-dd
+  horaInicio?: string | null     // condicional, HH:mm — requerido si modalidadPrecio === 'POR_HORA'
+  horaFin?: string | null        // condicional, HH:mm — requerido si modalidadPrecio === 'POR_HORA'
   cantidadTotal?: number         // opcional, >= 0
   cantidadMenores?: number       // opcional, >= 0
   cantidad?: number              // opcional, >= 0

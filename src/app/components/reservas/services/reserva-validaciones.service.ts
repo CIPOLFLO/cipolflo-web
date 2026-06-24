@@ -28,6 +28,14 @@ export class ReservaValidacionesService {
       'La cantidad total es obligatoria.',
     );
     this.addRequiredError(errors, form, submitted, 'cantidad', 'La cantidad es obligatoria.');
+    this.addRequiredError(
+      errors,
+      form,
+      submitted,
+      'horaInicio',
+      'La hora de inicio es obligatoria.',
+    );
+    this.addRequiredError(errors, form, submitted, 'horaFin', 'La hora de fin es obligatoria.');
 
     // El error de cantidad negativa se muestra de inmediato, sin esperar blur/submit.
     for (const key of ['cantidadTotal', 'cantidadMenores', 'cantidad']) {
@@ -43,6 +51,11 @@ export class ReservaValidacionesService {
     this.addRequiredError(errors, form, submitted, 'cedula', 'La cédula es obligatoria.');
     this.addRequiredError(errors, form, submitted, 'nombre', 'El nombre es obligatorio.');
     this.addRequiredError(errors, form, submitted, 'celular', 'El celular es obligatorio.');
+
+    const cedula = form.get('cedula');
+    if (this.shouldShowError(cedula, submitted) && cedula?.hasError('cedulaInvalida')) {
+      errors['cedula'] = 'La cédula ingresada no es válida.';
+    }
 
     const email = form.get('email');
     if (this.shouldShowError(email, submitted) && email?.hasError('emailInvalido')) {
