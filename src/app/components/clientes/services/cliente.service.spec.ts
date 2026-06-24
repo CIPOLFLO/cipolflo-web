@@ -14,6 +14,7 @@ import {
   TipoCliente,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
+import { FileDownloadService } from 'src/app/core/services/file-download.service';
 
 const BASE = `${environment.apiUrl}/clientes`;
 
@@ -360,8 +361,9 @@ describe('ClientesService', () => {
         );
       expect(errorStatus).toBe(400);
     });
+  });
 
-    describe('registrarPagoCuota', () => {
+  describe('registrarPagoCuota', () => {
     const dto: RegistroPagoCuotaRequestDto = {
       cantidadCuotas: 2,
       importeTotal: 10000,
@@ -429,5 +431,33 @@ describe('ClientesService', () => {
       expect(errorStatus).toBe(400);
     });
   });
+
+  describe('exportar', () => {
+    it('realiza POST a /clientes/exportar y llama a fileDownloadService.download', () => {
+      const fileDownloadService = TestBed.inject(FileDownloadService);
+      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockImplementation(() => {});
+
+      const filters = { estado: 'ACTIVO', nombre: null };
+
+      service.exportar(filters).subscribe();
+
+      const req = httpMock.expectOne(`${BASE}/exportar`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(filters);
+      req.flush(new Blob(['test'], { type: 'application/vnd.ms-excel' }));
+
+      expect(downloadSpy).toHaveBeenCalledWith(expect.any(Blob), 'clientes.xlsx');
+    });
+
+    it('propaga error 500 cuando el servidor falla al exportar', () => {
+      let errorStatus = 0;
+      service.exportar({}).subscribe({ error: (e) => (errorStatus = e.status) });
+
+      httpMock
+        .expectOne(`${BASE}/exportar`)
+        .flush(null, { status: 500, statusText: 'Internal Server Error' });
+
+      expect(errorStatus).toBe(500);
+    });
   });
 });
