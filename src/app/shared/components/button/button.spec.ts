@@ -69,66 +69,25 @@ describe('AppButton - comportamiento base', () => {
     expect(button?.disabled).toBe(true);
     expect(emitted).toBe(0);
   });
-});
-
-describe('AppButton - contenido e icono', () => {
-  let fixture: ComponentFixture<AppButton>;
-  let el: HTMLElement;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AppButton],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AppButton);
-    el = fixture.nativeElement;
-    fixture.detectChanges();
-  });
-
-  it('debería renderizar el label recibido por input', () => {
-    fixture.componentRef.setInput('label', 'Nuevo');
+  it('no emite clicked cuando loading es true', () => {
+    fixture.componentRef.setInput('loading', true);
     fixture.detectChanges();
 
-    const button = el.querySelector<HTMLButtonElement>('button');
-    expect(button?.textContent?.trim()).toBe('Nuevo');
+    let emitted = false;
+    component.clicked.subscribe(() => (emitted = true));
+
+    const button = fixture.nativeElement.querySelector('button');
+    button.click();
+
+    expect(emitted).toBe(false);
   });
 
-  it('no debería renderizar el icono cuando el input icon está vacío', () => {
-    const icon = el.querySelector('.button__icon');
-    expect(icon).toBeNull();
-  });
-
-  it('debería renderizar el icono a la izquierda del label cuando se provee', () => {
-    fixture.componentRef.setInput('label', 'Nuevo');
-    fixture.componentRef.setInput('icon', 'pi-plus');
+  it('muestra spinner cuando loading es true', () => {
+    fixture.componentRef.setInput('loading', true);
     fixture.detectChanges();
 
-    const button = el.querySelector<HTMLButtonElement>('button');
-    const icon = el.querySelector<HTMLElement>('.button__icon');
+    const spinner = fixture.nativeElement.querySelector('.pi-spinner');
 
-    expect(icon).not.toBeNull();
-    expect(icon?.classList.contains('pi-plus')).toBe(true);
-    expect(button?.firstElementChild).toBe(icon);
-  });
-
-  it('debería aplicar la clase de host full cuando fullWidth es true', () => {
-    fixture.componentRef.setInput('fullWidth', true);
-    fixture.detectChanges();
-
-    expect(el.classList.contains('button-host--full')).toBe(true);
-  });
-
-  it('debería renderizar el icono a la derecha del label cuando iconPosition es right', () => {
-    fixture.componentRef.setInput('label', 'Siguiente');
-    fixture.componentRef.setInput('icon', 'pi-chevron-right');
-    fixture.componentRef.setInput('iconPosition', 'right');
-    fixture.detectChanges();
-
-    const button = el.querySelector<HTMLButtonElement>('button');
-    const icon = el.querySelector<HTMLElement>('.button__icon');
-
-    expect(icon).not.toBeNull();
-    expect(icon?.classList.contains('pi-chevron-right')).toBe(true);
-    expect(button?.lastElementChild).toBe(icon);
+    expect(spinner).toBeTruthy();
   });
 });

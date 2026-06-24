@@ -91,7 +91,7 @@ export interface FinanzaDetalleRespuestaDto extends AuditInfoDto {
   id: number;
   codigo: string;
   procedencia: Procedencia;
-  servicio: string;
+  concepto: Concepto;
   fecha: string;
   importe: number;
   formaPago: string;

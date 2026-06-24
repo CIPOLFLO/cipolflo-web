@@ -69,6 +69,9 @@ export abstract class ReservaFormBase {
   protected readonly modoCantidad = computed(
     () => (this.servicioSeleccionado()?.cantidad ?? null) !== null,
   );
+  protected readonly modoHora = computed(
+    () => this.servicioSeleccionado()?.modalidadPrecio === 'POR_HORA',
+  );
 
   protected readonly esSocio = computed(() => this.tipoClienteValue() === TipoCliente.Socio);
 
@@ -220,6 +223,18 @@ export abstract class ReservaFormBase {
     }
     total?.updateValueAndValidity({ emitEvent: false });
     cantidad?.updateValueAndValidity({ emitEvent: false });
+
+    const horaInicio = this.form.get('horaInicio');
+    const horaFin = this.form.get('horaFin');
+    if (this.modoHora()) {
+      horaInicio?.setValidators([Validators.required]);
+      horaFin?.setValidators([Validators.required]);
+    } else {
+      horaInicio?.clearValidators();
+      horaFin?.clearValidators();
+    }
+    horaInicio?.updateValueAndValidity({ emitEvent: false });
+    horaFin?.updateValueAndValidity({ emitEvent: false });
   }
 
   /** Activa los validadores de la sección de cliente según el tipo de reserva. */
