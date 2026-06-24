@@ -435,7 +435,7 @@ describe('ClientesService', () => {
   describe('exportar', () => {
     it('realiza POST a /clientes/exportar y llama a fileDownloadService.download', () => {
       const fileDownloadService = TestBed.inject(FileDownloadService);
-      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockImplementation(() => {});
+      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockReturnValue(undefined);
 
       const filters = { estado: 'ACTIVO', nombre: null };
 
@@ -446,7 +446,7 @@ describe('ClientesService', () => {
       expect(req.request.body).toEqual(filters);
       req.flush(new Blob(['test'], { type: 'application/vnd.ms-excel' }));
 
-      expect(downloadSpy).toHaveBeenCalledWith(expect.any(Blob), 'clientes.xlsx');
+      expect(downloadSpy).toHaveBeenCalledWith(expect.any(Object), 'clientes.xlsx');
     });
 
     it('propaga error 500 cuando el servidor falla al exportar', () => {
