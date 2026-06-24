@@ -34,7 +34,6 @@ export class ClientesService extends BaseHttpService {
     return this.get<ClienteDetalleRespuestaDto>(`clientes/${id}`);
   }
 
-  // TODO: reemplazar cuando el backend esté disponible
   getCostoCuota(): number {
     return 5000;
   }
