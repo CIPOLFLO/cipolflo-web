@@ -1,0 +1,96 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.nueva-reserva__cedula {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  align-self: start;
+}
+
+.nueva-reserva__cedula-field {
+  flex: 1;
+}
+
+/* Alinea lupita + chip con el input salteando la altura del label, de modo que el
+   mensaje de error debajo del input no los desplace hacia abajo. */
+.nueva-reserva__cedula-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.375rem;
+}
+
+.nueva-reserva__verif {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  background-color: var(--tag-gray-bg);
+  color: var(--tag-gray-color);
+}
+
+.nueva-reserva__verif--ok {
+  background-color: var(--tag-green-bg);
+  color: var(--tag-green-color);
+}
+
+.nueva-reserva__sin-cliente {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.nueva-reserva__calendario {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nueva-reserva__calendario-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nueva-reserva__costo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.nueva-reserva__costo-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.nueva-reserva__costo-valor {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.nueva-reserva__campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nueva-reserva__advertencia {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--amber-600, #d97706);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  line-height: 1.4;
+}

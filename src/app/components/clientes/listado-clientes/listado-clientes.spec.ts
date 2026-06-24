@@ -173,6 +173,21 @@ describe('ListadoClientes', () => {
     expect(actions.some((action) => action.label === 'Pago de cuota')).toBe(false);
   });
 
+  it('rowActions incluye "Nueva Reserva" para un cliente que no está dado de baja', () => {
+    const particular = mockPageResponse.content[1];
+    const actions = component['rowActions'](particular);
+    expect(actions.some((action) => action.label === 'Nueva Reserva')).toBe(true);
+  });
+
+  it('rowActions no incluye "Nueva Reserva" para un cliente dado de baja', () => {
+    const socioDeBaja: ClienteRespuestaDto = {
+      ...mockPageResponse.content[0],
+      estado: EstadoSocio.Baja,
+    };
+    const actions = component['rowActions'](socioDeBaja);
+    expect(actions.some((action) => action.label === 'Nueva Reserva')).toBe(false);
+  });
+
   it('el comando de "Ver detalle" navega correctamente', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     const cliente: ClienteRespuestaDto = mockPageResponse.content[0];

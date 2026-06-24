@@ -12,14 +12,15 @@ import { FormGroup, PristineChangeEvent } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, filter, map } from 'rxjs';
-import { type DetailRegistroData, type FormFieldConfig } from '../../shared';
-import { ErrorHandlerService } from '../../core/services/error-handler.service';
-import { ClientesService } from './services/cliente.service';
 import {
-  patchClienteForm,
   applySectionChange,
   markFieldAsTouched,
-} from './helpers/cliente-form.helper';
+  type DetailRegistroData,
+  type FormFieldConfig,
+} from '../../shared';
+import { ErrorHandlerService } from '../../core/services/error-handler.service';
+import { ClientesService } from './services/cliente.service';
+import { patchClienteForm } from './helpers/cliente-form.helper';
 import { ClienteDetalleRespuestaDto, TipoCliente } from './models/cliente.model';
 import { ClienteValidacionesService } from './services/cliente-validaciones.service';
 

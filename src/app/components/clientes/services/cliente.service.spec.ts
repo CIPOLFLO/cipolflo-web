@@ -67,6 +67,15 @@ describe('ClientesService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('getEstadoSocio hace GET /clientes/socios/{id}/estado', () => {
+    let estado: EstadoSocio | undefined;
+    service.getEstadoSocio(1).subscribe((e) => (estado = e.estado));
+    const req = httpMock.expectOne(`${BASE}/socios/1/estado`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ id: 1, estado: EstadoSocio.Baja, numeroSocio: 5 });
+    expect(estado).toBe(EstadoSocio.Baja);
+  });
+
   it('getAll realiza GET a /clientes con page y size', () => {
     service.getAll({ page: 0, size: 10, filters: {} }).subscribe();
 

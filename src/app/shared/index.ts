@@ -10,6 +10,11 @@ export type { ButtonIntent, ButtonType, IconPosition } from './components/button
 export { FilterPanel } from './components/filter-panel/filter-panel';
 export { DetailSection } from './components/detail-section/detail-section';
 export { DetailRegistroSection } from './components/detail-registro-section/detail-registro-section';
+export { OccupancyCalendar } from './components/occupancy-calendar/occupancy-calendar';
+export type {
+  OccupiedRange,
+  DateRangeSelection,
+} from './components/occupancy-calendar/occupancy-calendar.models';
 
 // Form Components
 export { FormLayout } from './components/form-layout/form-layout';
@@ -60,6 +65,14 @@ export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
 
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
+
+// Utils
+export { applySectionChange, markFieldAsTouched } from './utils/form-section.helper';
+export { parseNumberOrNull } from './utils/parse-number.helper';
+export { parseIsoDate, startOfToday, toDisplayDate, toIsoDate } from './utils/date.helper';
+
+// Validators
+export { emailValido } from './validators/email.validator';
 
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';

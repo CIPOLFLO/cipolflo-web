@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+
+.occupancy-calendar__rango {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.occupancy-calendar__rango-label {
+  font-weight: 500;
+}

@@ -28,22 +28,6 @@ describe('ClienteValidacionesService', () => {
     });
   });
 
-  describe('emailValido', () => {
-    it('retorna null si no hay valor', () => {
-      expect(service.emailValido(new FormControl(null))).toBeNull();
-    });
-
-    it('retorna null con email válido', () => {
-      expect(service.emailValido(new FormControl('cliente@example.com'))).toBeNull();
-    });
-
-    it('retorna { emailInvalido: true } con email inválido', () => {
-      expect(service.emailValido(new FormControl('email-invalido'))).toEqual({
-        emailInvalido: true,
-      });
-    });
-  });
-
   describe('cedulaValida', () => {
     it('retorna null si no hay valor', () => {
       expect(service.cedulaValida(new FormControl(null))).toBeNull();
