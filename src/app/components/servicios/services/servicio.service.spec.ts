@@ -317,6 +317,18 @@ describe('ServicioService', () => {
     });
   });
 
+  describe('getFechasOcupadas', () => {
+    it('hace GET /servicios/{id}/fechas-ocupadas con desde y hasta', () => {
+      service.getFechasOcupadas(1, '2026-01-01', '2026-12-31').subscribe();
+      const req = httpMock.expectOne(
+        (r) => r.url === `${environment.apiUrl}/servicios/1/fechas-ocupadas`,
+      );
+      expect(req.request.params.get('desde')).toBe('2026-01-01');
+      expect(req.request.params.get('hasta')).toBe('2026-12-31');
+      req.flush([]);
+    });
+  });
+
   describe('actualizarHabilitacion', () => {
     const urlHabilitacion = (id: number) => `${environment.apiUrl}/servicios/${id}/habilitacion`;
 

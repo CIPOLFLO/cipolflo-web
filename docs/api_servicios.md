@@ -14,8 +14,11 @@
 4. [Servicios — DTOs](#servicios--dtos)
 5. [Clientes — Endpoints](#clientes--endpoints)
 6. [Clientes — DTOs](#clientes--dtos)
-7. [Finanzas -DTOs](#finanzas--dtos)
-8. [Manejo de errores](#manejo-de-errores)
+7. [Reservas — Endpoints](#reservas--endpoints)
+8. [Reservas — DTOs](#reservas--dtos)
+9. [Finanzas — Endpoints](#finanzas--endpoints)
+10. [Finanzas — DTOs](#finanzas--dtos)
+11. [Manejo de errores](#manejo-de-errores)
 
 ---
 
@@ -63,10 +66,22 @@ ACTIVO | INACTIVO | DE_BAJA
 COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO
 ```
 
-### `FormaPago`
+### `TipoMovimiento`
 
 ```
-EFECTIVO | TRANSFERENCIA
+INGRESO | EGRESO
+```
+
+### `TipoReserva`
+
+```
+COMUN | COLABORACION_SIN_FINES_DE_LUCRO
+```
+
+### `Concepto`
+
+```
+PAGO_RESERVA | PAGO_CUOTA | UTE | OSE | ANTEL | SUELDOS | BARRACA | OTROS
 ```
 
 ---
@@ -281,22 +296,72 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
   {
     "id": 12,
     "clienteId": 5,
-    "fechaEntrada": "2025-06-01T14:00:00Z",
-    "fechaSalida": "2025-06-03T12:00:00Z",
+    "fechaEntrada": "2025-06-01",
+    "fechaSalida": "2025-06-03",
     "pago": true,
     "estado": "CONFIRMADA"
   }
 ]
 ```
 
-| Campo          | Tipo             | Descripción                 |
-| -------------- | ---------------- | --------------------------- |
-| `id`           | integer          | ID de la reserva            |
-| `clienteId`    | integer          | ID del cliente              |
-| `fechaEntrada` | string (Instant) | Fecha/hora de entrada UTC   |
-| `fechaSalida`  | string (Instant) | Fecha/hora de salida UTC    |
-| `pago`         | boolean          | Si la reserva fue pagada    |
-| `estado`       | `EstadoReserva`  | Estado actual de la reserva |
+| Campo          | Tipo               | Descripción                   |
+| -------------- | ------------------ | ----------------------------- |
+| `id`           | integer            | ID de la reserva              |
+| `clienteId`    | integer            | ID del cliente                |
+| `fechaEntrada` | string `LocalDate` | Día de entrada (`yyyy-MM-dd`) |
+| `fechaSalida`  | string `LocalDate` | Día de salida (`yyyy-MM-dd`)  |
+| `pago`         | boolean            | Si la reserva fue pagada      |
+| `estado`       | `EstadoReserva`    | Estado actual de la reserva   |
+
+---
+
+### `GET /api/v1/servicios/{id}/fechas-ocupadas`
+
+Retorna las reservas activas del servicio que se solapan con la ventana `[desde, hasta]`, para alimentar el calendario de reservas (días ocupados). Devuelve una fila por reserva (rango `[fechaInicio, fechaFin]`), no un día por fila.
+
+**Path param:** `id` — integer positivo
+
+**Query params:**
+
+| Param   | Tipo                | Descripción                              |
+| ------- | ------------------- | ---------------------------------------- |
+| `desde` | string `yyyy-MM-dd` | obligatorio, inicio de la ventana        |
+| `hasta` | string `yyyy-MM-dd` | obligatorio, fin de la ventana inclusive |
+
+**Reglas:**
+
+- Solo se incluyen reservas en estado `PENDIENTE`, `CONFIRMADA` o `EN_CURSO`.
+- Una reserva es ocupante si su rango `[entrada, salida]` se solapa con la ventana (solapamiento inclusivo: el día de salida cuenta como ocupado).
+- Las fechas se devuelven completas, aunque la reserva empiece antes de `desde` o termine después de `hasta`.
+- `desde` debe ser ≤ `hasta` → si no, 400 (`RANGO_FECHAS_INVALIDO`).
+
+**Respuesta 200:**
+
+```json
+[
+  {
+    "reservaId": 12,
+    "estado": "CONFIRMADA",
+    "fechaInicio": "2026-06-10",
+    "fechaFin": "2026-06-12"
+  }
+]
+```
+
+| Campo         | Tipo               | Descripción                   |
+| ------------- | ------------------ | ----------------------------- |
+| `reservaId`   | integer            | ID de la reserva ocupante     |
+| `estado`      | `EstadoReserva`    | Estado de la reserva          |
+| `fechaInicio` | string `LocalDate` | Día de entrada (`yyyy-MM-dd`) |
+| `fechaFin`    | string `LocalDate` | Día de salida (`yyyy-MM-dd`)  |
+
+**Errores:**
+
+| Status | Código                   | Caso                       |
+| ------ | ------------------------ | -------------------------- |
+| 400    | `ID_INVALIDO`            | `id` no es entero positivo |
+| 400    | `RANGO_FECHAS_INVALIDO`  | `desde` > `hasta`          |
+| 404    | `SERVICIO_NO_ENCONTRADO` | el servicio no existe      |
 
 ---
 
@@ -393,10 +458,21 @@ Retorna las reservas futuras/activas asociadas al servicio (útil antes de desha
 {
   id: number;
   clienteId: number;
-  fechaEntrada: string; // Instant ISO-8601 UTC
-  fechaSalida: string; // Instant ISO-8601 UTC
+  fechaEntrada: string; // LocalDate yyyy-MM-dd
+  fechaSalida: string; // LocalDate yyyy-MM-dd
   pago: boolean;
   estado: EstadoReserva;
+}
+```
+
+#### `ServicioReservaOcupacionDto` — ítem en fechas ocupadas
+
+```typescript
+{
+  reservaId: number;
+  estado: EstadoReserva;
+  fechaInicio: string; // LocalDate yyyy-MM-dd
+  fechaFin: string; // LocalDate yyyy-MM-dd
 }
 ```
 
@@ -486,17 +562,11 @@ Retorna el detalle completo de un cliente.
   "createdAt": "2024-03-01T10:00:00Z",
   "updatedAt": "2024-03-15T14:00:00Z",
   "createdBy": "admin@cipolflo.com",
-  "updatedBy": "admin@cipolflo.com",
-  "ultimaCuotaPaga": {
-    "mesCorrespondiente": "Marzo 2026",
-    "fechaPago": "2026-03-15T14:30:00Z",
-    "formaPago": "TRANSFERENCIA"
-  }
+  "updatedBy": "admin@cipolflo.com"
 }
 ```
 
 > Los campos `fechaNacimiento`, `metodoPago`, `pais`, `departamento`, `ciudad`, `direccion`, `numeroSocio` y `estado` son `null` para clientes de tipo `PARTICULAR`.
-> `ultimaCuotaPaga` solo aplica a clientes de tipo `SOCIO`. Para clientes `PARTICULAR` es `null`. Si el socio aún no tiene pagos registrados, los campos internos pueden venir sin información.
 
 ---
 
@@ -514,6 +584,31 @@ Da de baja a un socio y cancela automáticamente todas sus reservas futuras en e
 | ----------- | --------------------- | -------------------------------- |
 | 400         | `ID_INVALIDO`         | El `id` no es un número positivo |
 | 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id`  |
+
+---
+
+### `GET /api/v1/clientes/socios/{id}/estado`
+
+Devuelve el estado actual de un socio puntual (`ACTIVO`, `INACTIVO` o `DE_BAJA`) sin traer su detalle completo. Es de solo lectura: no modifica ningún dato.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:**
+
+```json
+{
+  "id": 1,
+  "estado": "ACTIVO",
+  "numeroSocio": 5
+}
+```
+
+**Errores:**
+
+| HTTP Status | Código                | Cuándo ocurre                                                               |
+| ----------- | --------------------- | --------------------------------------------------------------------------- |
+| 400         | `ID_INVALIDO`         | El `id` no es un número positivo                                            |
+| 404         | `SOCIO_NO_ENCONTRADO` | No existe un socio con ese `id` (inexistente o corresponde a un particular) |
 
 ---
 
@@ -652,6 +747,43 @@ Registra un nuevo cliente de tipo socio.
 
 ---
 
+### `POST /api/v1/clientes/particulares`
+
+Registra un nuevo cliente de tipo particular.
+
+**Body** (`application/json`):
+
+```json
+{
+  "cedula": "1.234.567-8",
+  "nombre": "Laura Fernández",
+  "celular": "099222222",
+  "mail": "laura@mail.com"
+}
+```
+
+| Campo     | Tipo   | Obligatorio | Validación                     |
+| --------- | ------ | ----------- | ------------------------------ |
+| `cedula`  | string | Sí          | no vacío, cédula válida, única |
+| `nombre`  | string | Sí          | no vacío                       |
+| `celular` | string | Sí          | no vacío                       |
+| `mail`    | string | No          | —                              |
+
+> El campo celular se persiste como telefono. La cédula se normaliza automáticamente, eliminando puntos y guion.
+
+**Respuesta 201:** mismo body que GET `/api/v1/clientes/{id}`
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                              |
+| ----------- | -------------------- | ------------------------------------------ |
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o vacío         |
+| 400         | `CEDULA_INVALIDA`    | La cédula no cumple la validación definida |
+| 400         | `CEDULA_DUPLICADA`   | Ya existe un cliente con esa cédula        |
+| 401         | —                    | Token ausente, inválido o expirado         |
+
+---
+
 ## Clientes — DTOs
 
 ### Request DTOs
@@ -736,21 +868,10 @@ Registra un nuevo cliente de tipo socio.
   tipoCliente: TipoCliente;
   estado: EstadoSocio | null; // null para Particulares
   observaciones: string | null;
-  ultimaCuotaPaga: UltimaCuotaPagaDto | null;
   createdAt: string; // Instant ISO-8601 UTC
   updatedAt: string; // Instant ISO-8601 UTC
   createdBy: string;
   updatedBy: string;
-}
-```
-
-#### `UltimaCuotaPagaDto`
-
-```typescript
-{
-  mesCorrespondiente: string | null;
-  fechaPago: string | null; // Instant ISO-8601 UTC
-  formaPago: FormaPago | null;
 }
 ```
 
@@ -770,37 +891,172 @@ Registra un nuevo cliente de tipo socio.
 
 ---
 
+## Reservas — Endpoints
+
+### `POST /api/v1/reservas`
+
+Crea una nueva reserva. Soporta tres variantes de cliente:
+
+- **Cliente existente**: enviar `clienteId`.
+- **Crear cliente en el momento**: enviar `crearCliente: true` con los datos del cliente.
+- **Colaboración sin cliente del sistema**: enviar `rut` (solo válido para `tipoReserva: COLABORACION_SIN_FINES_DE_LUCRO`).
+
+**Body** (`application/json`):
+
+```json
+{
+  "tipoReserva": "COMUN",
+  "procedencia": "CAMPING",
+  "servicioId": 3,
+  "fechaInicio": "2026-08-10",
+  "fechaFin": "2026-08-15",
+  "horaInicio": null,
+  "horaFin": null,
+  "cantidadTotal": 4,
+  "cantidadMenores": 1,
+  "cantidad": null,
+  "clienteId": 12,
+  "crearCliente": false,
+  "tipoCliente": null,
+  "cedula": null,
+  "nombre": null,
+  "celular": null,
+  "email": null,
+  "rut": null,
+  "notas": "Llegan a las 14hs"
+}
+```
+
+| Campo             | Tipo          | Obligatorio | Validación                                                                                                        |
+| ----------------- | ------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| `tipoReserva`     | `TipoReserva` | Sí          | —                                                                                                                 |
+| `procedencia`     | `Procedencia` | Sí          | —                                                                                                                 |
+| `servicioId`      | integer       | Sí          | > 0, el servicio debe existir y estar habilitado                                                                  |
+| `fechaInicio`     | string (date) | Sí          | `yyyy-MM-dd`, no puede ser anterior a hoy                                                                         |
+| `fechaFin`        | string (date) | Sí          | `yyyy-MM-dd`, no puede ser anterior a `fechaInicio`                                                               |
+| `horaInicio`      | string (time) | Condicional | `HH:mm`, requerido si el servicio tiene modalidad `POR_HORA`                                                      |
+| `horaFin`         | string (time) | Condicional | `HH:mm`, requerido si el servicio tiene modalidad `POR_HORA`                                                      |
+| `cantidadTotal`   | integer       | No          | >= 0                                                                                                              |
+| `cantidadMenores` | integer       | No          | >= 0                                                                                                              |
+| `cantidad`        | integer       | No          | >= 0                                                                                                              |
+| `clienteId`       | integer       | Condicional | Requerido si `crearCliente` no es `true` y no se envía `rut`                                                      |
+| `crearCliente`    | boolean       | No          | Si `true`, se crea un nuevo cliente particular con los campos siguientes                                          |
+| `tipoCliente`     | `TipoCliente` | No          | Indica el tipo de cliente a crear (pendiente de uso en cálculo de costo)                                          |
+| `cedula`          | string        | Condicional | Requerido si `crearCliente: true`                                                                                 |
+| `nombre`          | string        | Condicional | Requerido si `crearCliente: true`                                                                                 |
+| `celular`         | string        | Condicional | Requerido si `crearCliente: true`                                                                                 |
+| `email`           | string        | No          | Solo usado si `crearCliente: true`                                                                                |
+| `rut`             | string        | Condicional | Solo válido con `tipoReserva: COLABORACION_SIN_FINES_DE_LUCRO`; requerido si no hay `clienteId` ni `crearCliente` |
+| `notas`           | string        | No          | —                                                                                                                 |
+
+**Estado inicial según tipo de reserva:**
+
+| `tipoReserva`                     | Estado inicial | Importe inicial                    |
+| --------------------------------- | -------------- | ---------------------------------- |
+| `COMUN`                           | `PENDIENTE`    | null (se asigna al registrar pago) |
+| `COLABORACION_SIN_FINES_DE_LUCRO` | `CONFIRMADA`   | `0`                                |
+
+**Respuesta 201:**
+
+```json
+{
+  "id": 42
+}
+```
+
+**Errores:**
+
+| HTTP Status | Código                                 | Cuándo ocurre                                                                       |
+| ----------- | -------------------------------------- | ----------------------------------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`                   | Campo obligatorio faltante o con formato inválido (validación Bean Validation)      |
+| 400         | `FECHA_PASADA`                         | `fechaInicio` es anterior a hoy                                                     |
+| 400         | `FECHA_FIN_ANTERIOR_A_INICIO`          | `fechaFin` < `fechaInicio`                                                          |
+| 400         | `SERVICIO_NO_DISPONIBLE`               | El servicio no existe o está deshabilitado                                          |
+| 400         | `FECHAS_SOLAPADAS`                     | El servicio ya tiene una reserva activa en ese período                              |
+| 400         | `CLIENTE_REQUERIDO`                    | No se envió `clienteId`, `crearCliente` ni `rut`                                    |
+| 400         | `NOMBRE_REQUERIDO_PARA_CREAR_CLIENTE`  | `crearCliente: true` pero `nombre` está vacío                                       |
+| 400         | `CEDULA_REQUERIDA_PARA_CREAR_CLIENTE`  | `crearCliente: true` pero `cedula` está vacío                                       |
+| 400         | `CELULAR_REQUERIDO_PARA_CREAR_CLIENTE` | `crearCliente: true` pero `celular` está vacío                                      |
+| 400         | `RUT_SOLO_VALIDO_EN_COLABORACION`      | Se envió `rut` con un tipo de reserva distinto de `COLABORACION_SIN_FINES_DE_LUCRO` |
+| 400         | `CEDULA_INVALIDA`                      | La cédula del nuevo cliente no pasa la validación del algoritmo uruguayo            |
+| 400         | `CEDULA_DUPLICADA`                     | La cédula del nuevo cliente ya existe en el sistema                                 |
+| 401         | —                                      | Token ausente, inválido o expirado                                                  |
+
+---
+
+## Reservas — DTOs
+
+### Request DTOs
+
+#### `ReservaCreacionRequestDto` — body en `POST /api/v1/reservas`
+
+```typescript
+{
+  tipoReserva: TipoReserva       // obligatorio
+  procedencia: Procedencia       // obligatorio
+  servicioId: number             // obligatorio, > 0
+  fechaInicio: string            // obligatorio, LocalDate yyyy-MM-dd
+  fechaFin: string               // obligatorio, LocalDate yyyy-MM-dd
+  horaInicio?: string | null     // condicional, HH:mm — requerido si modalidadPrecio === 'POR_HORA'
+  horaFin?: string | null        // condicional, HH:mm — requerido si modalidadPrecio === 'POR_HORA'
+  cantidadTotal?: number         // opcional, >= 0
+  cantidadMenores?: number       // opcional, >= 0
+  cantidad?: number              // opcional, >= 0
+  clienteId?: number             // condicional
+  crearCliente?: boolean         // opcional
+  tipoCliente?: TipoCliente      // opcional (pendiente de uso en cálculo de costo)
+  cedula?: string                // condicional (requerido si crearCliente: true)
+  nombre?: string                // condicional (requerido si crearCliente: true)
+  celular?: string               // condicional (requerido si crearCliente: true)
+  email?: string                 // opcional
+  rut?: string                   // condicional (solo para COLABORACION_SIN_FINES_DE_LUCRO)
+  notas?: string                 // opcional
+}
+```
+
+### Response DTOs
+
+#### `ReservaCreacionResponseDto` — respuesta de `POST /api/v1/reservas`
+
+```typescript
+{
+  id: number; // ID de la reserva creada
+}
+```
+
+---
+
 ## Finanzas — Endpoints
 
 ### `POST /api/v1/finanzas`
 
-Registra manualmente un movimiento financiero.
+Registra manualmente un ingreso o egreso.
 
 **Body** (`application/json`):
 
 ```json
 {
   "tipoMovimiento": "INGRESO",
-  "procedencia": "SEDE",
-  "concepto": "PAGO_RESERVA",
-  "fecha": "2026-06-15",
+  "fecha": "2026-06-20",
   "importe": 1500.0,
+  "concepto": "PAGO_RESERVA",
+  "procedencia": "SEDE",
   "formaPago": "EFECTIVO",
-  "notas": "Alta manual"
+  "notas": "Pago realizado en administración"
 }
 ```
 
 | Campo            | Tipo             | Obligatorio | Validación   |
 | ---------------- | ---------------- | ----------- | ------------ |
 | `tipoMovimiento` | `TipoMovimiento` | Sí          | —            |
-| `procedencia`    | `Procedencia`    | Sí          | —            |
-| `concepto`       | `Concepto`       | Sí          | —            |
 | `fecha`          | string (date)    | No          | `yyyy-MM-dd` |
 | `importe`        | number (decimal) | Sí          | > 0          |
+| `concepto`       | `Concepto`       | Sí          | —            |
+| `procedencia`    | `Procedencia`    | Sí          | —            |
 | `formaPago`      | `FormaPago`      | Sí          | —            |
 | `notas`          | string           | No          | —            |
 
-> Si `fecha` no se informa, se utiliza la fecha actual.
+> Si no se envía `fecha`, se utilizará la fecha actual del sistema.
 
 **Respuesta 201:**
 
@@ -808,49 +1064,23 @@ Registra manualmente un movimiento financiero.
 {
   "id": 1,
   "tipoMovimiento": "INGRESO",
-  "procedencia": "SEDE",
-  "concepto": "PAGO_RESERVA",
-  "fecha": "2026-06-15",
+  "fecha": "2026-06-20",
   "importe": 1500.0,
-  "formaPago": "EFECTIVO",
-  "notas": "Alta manual"
-}
-```
-
----
-
-### `GET /api/v1/finanzas/{id}`
-
-Retorna el detalle completo de una finanza.
-
-**Path param:** `id` — integer positivo
-
-**Respuesta 200:**
-
-```json
-{
-  "id": 1,
-  "tipoMovimiento": "INGRESO",
-  "procedencia": "SEDE",
   "concepto": "PAGO_RESERVA",
-  "fecha": "2026-06-15",
-  "importe": 1500.0,
+  "procedencia": "SEDE",
   "formaPago": "EFECTIVO",
-  "notas": "Alta manual",
-  "createdAt": "2026-06-15T10:00:00Z",
-  "updatedAt": "2026-06-15T10:00:00Z",
-  "createdBy": "admin@cipolflo.com",
-  "updatedBy": "admin@cipolflo.com"
+  "notas": "Pago realizado en administración",
+  "reservaId": null,
+  "pagoCuotaId": null
 }
 ```
 
 **Errores:**
 
-| HTTP Status | Código                  | Cuándo ocurre                      |
-| ----------- | ----------------------- | ---------------------------------- |
-| 400         | `ID_INVALIDO`           | El id no es un número positivo     |
-| 404         | `FINANZA_NO_ENCONTRADA` | No existe una finanza con ese id   |
-| 401         | —                       | Token ausente, inválido o expirado |
+| HTTP Status | Código               | Cuándo ocurre                               |
+| ----------- | -------------------- | ------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o valor inválido |
+| 401         | —                    | Token ausente, inválido o expirado          |
 
 ---
 
@@ -863,10 +1093,10 @@ Retorna el detalle completo de una finanza.
 ```typescript
 {
   tipoMovimiento: TipoMovimiento
-  procedencia: Procedencia
-  concepto: Concepto
   fecha?: string
   importe: number
+  concepto: Concepto
+  procedencia: Procedencia
   formaPago: FormaPago
   notas?: string
 }
@@ -874,40 +1104,24 @@ Retorna el detalle completo de una finanza.
 
 ### Response DTOs
 
-#### `FinanzaResponseDto` — respuesta de creación
+#### `FinanzaResponseDto`
 
 ```typescript
 {
-  id: number
-  tipoMovimiento: TipoMovimiento
-  procedencia: Procedencia
-  concepto: Concepto
-  fecha: string
-  importe: number
-  formaPago: FormaPago
-  notas?: string | null
+  id: number;
+  tipoMovimiento: TipoMovimiento;
+  fecha: string;
+  importe: number;
+  concepto: Concepto;
+  procedencia: Procedencia;
+  formaPago: FormaPago;
+  notas: string | null;
+  reservaId: number | null;
+  pagoCuotaId: number | null;
 }
 ```
 
-#### `FinanzaDetalleResponseDto` — respuesta de detalle
-
-```typescript
-{
-  id: number
-  tipoMovimiento: TipoMovimiento
-  procedencia: Procedencia
-  concepto: Concepto
-  fecha: string
-  importe: number
-  formaPago: FormaPago
-  notas?: string | null
-
-  createdAt: string
-  updatedAt: string
-  createdBy: string
-  updatedBy: string
-}
-```
+---
 
 ## Manejo de errores
 

@@ -6,6 +6,7 @@ import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   ClienteDetalleRespuestaDto,
   ClienteRespuestaDto,
+  EstadoSocioDto,
   ModificacionParticularRequestDto,
   ModificacionSocioRequestDto,
   RegistroSocioRequestDto,
@@ -34,6 +35,19 @@ export class ClientesService extends BaseHttpService {
     return this.get<ClienteDetalleRespuestaDto>(`clientes/${id}`);
   }
 
+  getByCedula(cedula: string): Observable<PageResponse<ClienteRespuestaDto>> {
+    return this.get<PageResponse<ClienteRespuestaDto>>('clientes', {
+      size: 1,
+      identificador: cedula,
+    });
+  }
+
+  /** Estado puntual de un socio (ACTIVO / INACTIVO / DE_BAJA), de sólo lectura. */
+  getEstadoSocio(id: number): Observable<EstadoSocioDto> {
+    return this.get<EstadoSocioDto>(`clientes/socios/${id}/estado`);
+  }
+
+  // TODO: reemplazar cuando el backend esté disponible
   getCostoCuota(): number {
     return 5000;
   }

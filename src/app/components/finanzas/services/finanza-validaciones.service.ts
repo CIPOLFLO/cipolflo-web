@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, FormGroup, ValidationErrors } from '@angular/forms';
+import { parseIsoDate } from '../../../shared';
 
 @Injectable({ providedIn: 'root' })
 export class FinanzaValidacionesService {
   fechaNoFutura(control: AbstractControl): ValidationErrors | null {
     const value = control.value as string | null;
     if (!value) return null;
-    const [year, month, day] = value.split('-').map(Number);
-    if (!year || !month || !day) return { fechaInvalida: true };
-    const fecha = new Date(year, month - 1, day);
+    const fecha = parseIsoDate(value);
+    if (!fecha) return { fechaInvalida: true };
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     fecha.setHours(0, 0, 0, 0);

@@ -45,10 +45,16 @@ export const ESTADO_SOCIO_OPTIONS = [
   { label: 'De baja', value: EstadoSocio.Baja },
 ];
 
-export const TIPO_CLIENTE_OPTIONS = [
-  { label: 'Todos', value: '' },
+/** Opciones de tipo de cliente para selects de formulario (obligatorios, sin "Todos"). */
+export const TIPO_CLIENTE_FORM_OPTIONS: FormFieldOption[] = [
   { label: 'Socio', value: TipoCliente.Socio },
   { label: 'Particular', value: TipoCliente.Particular },
+];
+
+/** Opciones de tipo de cliente para filtros (incluye "Todos"). */
+export const TIPO_CLIENTE_OPTIONS: FormFieldOption[] = [
+  { label: 'Todos', value: '' },
+  ...TIPO_CLIENTE_FORM_OPTIONS,
 ];
 
 export const FORMA_PAGO_LABEL: Record<FormaPago, string> = {
@@ -147,4 +153,11 @@ export interface UltimaCuotaDto {
   mes: number;
   nombreMes: string;
   descripcion: string;
+}
+
+/** Estado puntual de un socio (GET /clientes/socios/{id}/estado). */
+export interface EstadoSocioDto {
+  id: number;
+  estado: EstadoSocio;
+  numeroSocio: number | null;
 }

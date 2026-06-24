@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
+import { parseIsoDate } from '../../../shared';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteValidacionesService {
   mayorDeEdad(control: AbstractControl): ValidationErrors | null {
     const value = control.value as string | null;
     if (!value) return null;
-    const [year, month, day] = value.split('-').map(Number);
-    if (!year || !month || !day) {
+    const fechaNacimiento = parseIsoDate(value);
+    if (!fechaNacimiento) {
       return { fechaInvalida: true };
     }
-    const fechaNacimiento = new Date(year, month - 1, day);
     const hoy = new Date();
     let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
     const mes = hoy.getMonth() - fechaNacimiento.getMonth();
@@ -18,26 +18,6 @@ export class ClienteValidacionesService {
       edad--;
     }
     return edad >= 18 ? null : { menorDeEdad: true };
-  }
-
-  emailValido(control: AbstractControl): ValidationErrors | null {
-    const value = control.value as string | null;
-
-    if (!value) return null;
-
-    const trimmed = value.trim();
-    const atIndex = trimmed.indexOf('@');
-    const lastAtIndex = trimmed.lastIndexOf('@');
-    const lastDotIndex = trimmed.lastIndexOf('.');
-
-    const isValid =
-      atIndex > 0 &&
-      atIndex === lastAtIndex &&
-      lastDotIndex > atIndex + 1 &&
-      lastDotIndex < trimmed.length - 1 &&
-      !trimmed.includes(' ');
-
-    return isValid ? null : { emailInvalido: true };
   }
 
   cedulaValida(control: AbstractControl): ValidationErrors | null {
