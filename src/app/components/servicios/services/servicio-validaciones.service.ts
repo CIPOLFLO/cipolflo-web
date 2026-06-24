@@ -71,6 +71,11 @@ export class ServicioValidacionesService {
       errs['modalidadPrecio'] = 'El tipo de cobro es obligatorio.';
     }
 
+    const costoExtra = form.get('costoPersonaExtra');
+    if (costoExtra && (submitted || costoExtra.touched) && costoExtra.hasError('min')) {
+      errs['costoPersonaExtra'] = 'El costo por persona extra no puede ser negativo.';
+    }
+
     return errs;
   }
 }

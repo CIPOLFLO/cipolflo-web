@@ -56,6 +56,11 @@ export class ServicioPresentacionService {
         label: 'Tipo de Cobro',
         value: MODALIDAD_PRECIO_DETALLE_LABEL[s.modalidadPrecio] ?? s.modalidadPrecio,
       },
+      {
+        key: 'costoPersonaExtra',
+        label: 'Costo por persona extra',
+        value: s.costoPersonaExtra != null ? `$ ${s.costoPersonaExtra}` : '---',
+      },
     ];
   }
 
@@ -135,6 +140,13 @@ export class ServicioPresentacionService {
         placeholder: 'Seleccionar tipo de cobro',
         options: modalidades,
         defaultValue: s?.modalidadPrecio,
+      },
+      {
+        key: 'costoPersonaExtra',
+        label: 'Costo por persona extra',
+        type: 'currency',
+        placeholder: '0.00',
+        defaultValue: s?.costoPersonaExtra != null ? String(s.costoPersonaExtra) : undefined,
       },
     ];
   }

@@ -49,6 +49,7 @@ export class NuevoServicio {
       ]),
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
+      costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
     },
     {
       validators: [
@@ -124,6 +125,12 @@ export class NuevoServicio {
       placeholder: 'Seleccionar tipo de cobro',
       options: this.modalidades(),
     },
+    {
+      key: 'costoPersonaExtra',
+      label: 'Costo por persona extra',
+      type: 'currency',
+      placeholder: '0.00',
+    },
   ]);
 
   protected readonly infoErrors = computed<Record<string, string>>(() => {
@@ -164,6 +171,7 @@ export class NuevoServicio {
       precioParticular: toNumber(values['precioParticular']),
       precioSocio: toNumber(values['precioSocio']),
       modalidadPrecio: values['modalidadPrecio'] ?? null,
+      costoPersonaExtra: toNumber(values['costoPersonaExtra']),
     });
     this.form.markAsDirty();
   }
@@ -189,6 +197,7 @@ export class NuevoServicio {
       precioParticular,
       precioSocio,
       modalidadPrecio,
+      costoPersonaExtra,
     } = this.form.getRawValue();
 
     this.loading.set(true);
@@ -201,6 +210,7 @@ export class NuevoServicio {
         precioParticular: precioParticular!,
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
+        costoPersonaExtra,
       })
       .subscribe({
         next: () => {

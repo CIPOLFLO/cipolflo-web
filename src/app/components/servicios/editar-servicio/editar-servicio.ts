@@ -80,6 +80,7 @@ export class EditarServicio implements OnInit {
       ]),
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
+      costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
     },
     {
       validators: [
@@ -119,6 +120,7 @@ export class EditarServicio implements OnInit {
         precioParticular: s.precioParticular,
         precioSocio: s.precioSocio,
         modalidadPrecio: s.modalidadPrecio,
+        costoPersonaExtra: s.costoPersonaExtra,
       });
     });
 
@@ -203,10 +205,13 @@ export class EditarServicio implements OnInit {
       precioParticular: number | null;
       precioSocio: number | null;
       modalidadPrecio: string | null;
+      costoPersonaExtra: number | null;
     }> = {};
     if ('precioParticular' in values) patch.precioParticular = toNumber(values['precioParticular']);
     if ('precioSocio' in values) patch.precioSocio = toNumber(values['precioSocio']);
     if ('modalidadPrecio' in values) patch.modalidadPrecio = values['modalidadPrecio'] ?? null;
+    if ('costoPersonaExtra' in values)
+      patch.costoPersonaExtra = toNumber(values['costoPersonaExtra']);
     this.form.patchValue(patch);
     this.form.markAsDirty();
     for (const key of Object.keys(values)) {
@@ -231,6 +236,7 @@ export class EditarServicio implements OnInit {
       precioParticular,
       precioSocio,
       modalidadPrecio,
+      costoPersonaExtra,
     } = this.form.getRawValue();
 
     this.loading.set(true);
@@ -244,6 +250,7 @@ export class EditarServicio implements OnInit {
         precioParticular: precioParticular!,
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
+        costoPersonaExtra,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

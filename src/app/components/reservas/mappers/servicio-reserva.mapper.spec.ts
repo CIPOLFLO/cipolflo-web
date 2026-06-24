@@ -14,6 +14,7 @@ describe('mapServiciosReserva', () => {
     estado: EstadoServicio.Habilitado,
     capacidad: 80,
     cantidad: null,
+    costoPersonaExtra: null,
   };
 
   const page = (content: ServicioRespuestaDto[]): PageResponse<ServicioRespuestaDto> => ({
