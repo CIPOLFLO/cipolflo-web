@@ -92,7 +92,7 @@ const mockColaboracion: ReservaDetalleRespuestaDto = {
 async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42') {
   const getByIdSpy = vi.fn().mockReturnValue(of(reserva));
   const updateSpy = vi.fn().mockReturnValue(of(undefined));
-  const calcularCostoSpy = vi.fn().mockReturnValue(of({ costo: 0 }));
+  const calcularCostoSpy = vi.fn().mockReturnValue(of({ costoTotal: 0 }));
   const navigateSpy = vi.fn();
   const handleSpy = vi.fn();
   const getAllSpy = vi.fn().mockReturnValue(of(page([mockServicioCapacidad])));
@@ -288,7 +288,7 @@ describe('EditarReserva', () => {
               useValue: {
                 getById: vi.fn().mockReturnValue(throwError(() => error)),
                 update: vi.fn(),
-                calcularCosto: vi.fn().mockReturnValue(of({ costo: 0 })),
+                calcularCosto: vi.fn().mockReturnValue(of({ costoTotal: 0 })),
               },
             },
           ],

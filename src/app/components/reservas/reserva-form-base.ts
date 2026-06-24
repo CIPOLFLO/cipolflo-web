@@ -91,6 +91,11 @@ export abstract class ReservaFormBase {
 
   protected readonly esSocio = computed(() => this.tipoClienteValue() === TipoCliente.Socio);
 
+  /** Verdadero mientras aún no se buscó/confirmó el cliente y hay un costo estimado visible. */
+  protected readonly costoEsParaParticular = computed(
+    () => this.costo() !== null && !this.busquedaRealizada() && !this.esColaboracion(),
+  );
+
   protected readonly observacionesCliente = computed(() => {
     const obs = this.clienteBusqueda()?.observaciones?.trim();
     return obs ? obs : null;
@@ -230,6 +235,7 @@ export abstract class ReservaFormBase {
       this.form.get('cantidad')!.valueChanges,
       this.form.get('cantidadTotal')!.valueChanges,
       this.form.get('cantidadMenores')!.valueChanges,
+      this.form.get('tipoCliente')!.valueChanges,
     )
       .pipe(
         debounceTime(300),
@@ -249,6 +255,8 @@ export abstract class ReservaFormBase {
       servicioId,
       fechaInicio,
       fechaFin,
+      horaInicio: null,
+      horaFin: null,
       cantidadTotal: this.modoCapacidad()
         ? parseNumberOrNull(this.controlValue('cantidadTotal'))
         : null,
@@ -256,11 +264,12 @@ export abstract class ReservaFormBase {
         ? parseNumberOrNull(this.controlValue('cantidadMenores'))
         : null,
       cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+      tipoCliente: this.tipoClienteValue(),
     };
 
     this.costoCargando.set(true);
     return this.reservasService.calcularCosto(request).pipe(
-      map((respuesta) => respuesta.costo),
+      map((respuesta) => respuesta.costoTotal),
       catchError((err: unknown) => {
         this.errorHandler.handle(err);
         return of(null);

@@ -43,6 +43,12 @@
               } @else {
                 <span class="nueva-reserva__costo-valor">$ {{ costo() | currencyFormat }}</span>
               }
+              @if (costoEsParaParticular()) {
+                <span class="nueva-reserva__costo-nota"
+                  >Calculado a tarifa Particular. Si el cliente es Socio, el costo puede ser
+                  diferente.</span
+                >
+              }
             </div>
           }
         </div>

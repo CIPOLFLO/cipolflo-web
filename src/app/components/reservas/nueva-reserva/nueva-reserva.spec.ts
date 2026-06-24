@@ -116,7 +116,7 @@ describe('NuevaReserva', () => {
     };
     mockReservasService = {
       crear: vi.fn(() => of({ id: 99 })),
-      calcularCosto: vi.fn(() => of({ costo: 5000 })),
+      calcularCosto: vi.fn(() => of({ costoTotal: 5000 })),
     };
 
     await TestBed.configureTestingModule({

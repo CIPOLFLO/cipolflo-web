@@ -184,6 +184,7 @@ Retorna el detalle completo de un servicio.
   "precioSocio": 2500.0,
   "precioParticular": 5000.0,
   "capacidad": 4,
+  "costoPersonaExtra": null,
   "estado": "HABILITADO",
   "modalidadPrecio": "POR_HORA",
   "createdAt": "2025-01-10T09:00:00Z",
@@ -209,19 +210,21 @@ Registra un nuevo servicio.
   "precioParticular": 2000.0,
   "modalidadPrecio": "POR_DIA",
   "capacidad": 50,
-  "cantidad": null
+  "cantidad": null,
+  "costoPersonaExtra": null
 }
 ```
 
-| Campo              | Tipo              | Obligatorio | Validación      |
-| ------------------ | ----------------- | ----------- | --------------- |
-| `nombre`           | string            | Sí          | no vacío        |
-| `procedencia`      | `Procedencia`     | Sí          | —               |
-| `precioSocio`      | number (decimal)  | Sí          | > 0             |
-| `precioParticular` | number (decimal)  | Sí          | > 0             |
-| `modalidadPrecio`  | `ModalidadPrecio` | Sí          | —               |
-| `capacidad`        | integer           | No          | > 0 si se envía |
-| `cantidad`         | integer           | No          | > 0 si se envía |
+| Campo               | Tipo              | Obligatorio | Validación       |
+| ------------------- | ----------------- | ----------- | ---------------- |
+| `nombre`            | string            | Sí          | no vacío         |
+| `procedencia`       | `Procedencia`     | Sí          | —                |
+| `precioSocio`       | number (decimal)  | Sí          | > 0              |
+| `precioParticular`  | number (decimal)  | Sí          | > 0              |
+| `modalidadPrecio`   | `ModalidadPrecio` | Sí          | —                |
+| `capacidad`         | integer           | No          | > 0 si se envía  |
+| `cantidad`          | integer           | No          | > 0 si se envía  |
+| `costoPersonaExtra` | number (decimal)  | No          | >= 0 si se envía |
 
 > `capacidad` y `cantidad` son mutuamente excluyentes según el tipo de servicio. Enviar `null` o no incluir el campo que no aplica.
 
@@ -244,18 +247,20 @@ Reemplaza los datos de un servicio existente.
   "precioSocio": 1200.0,
   "modalidadPrecio": "POR_DIA",
   "capacidad": 60,
-  "cantidad": null
+  "cantidad": null,
+  "costoPersonaExtra": null
 }
 ```
 
-| Campo              | Tipo              | Obligatorio | Validación       |
-| ------------------ | ----------------- | ----------- | ---------------- |
-| `nombre`           | string            | Sí          | no vacío         |
-| `precioParticular` | number (decimal)  | Sí          | > 0              |
-| `precioSocio`      | number (decimal)  | Sí          | > 0              |
-| `modalidadPrecio`  | `ModalidadPrecio` | Sí          | —                |
-| `capacidad`        | integer           | No          | >= 0 si se envía |
-| `cantidad`         | integer           | No          | >= 0 si se envía |
+| Campo               | Tipo              | Obligatorio | Validación       |
+| ------------------- | ----------------- | ----------- | ---------------- |
+| `nombre`            | string            | Sí          | no vacío         |
+| `precioParticular`  | number (decimal)  | Sí          | > 0              |
+| `precioSocio`       | number (decimal)  | Sí          | > 0              |
+| `modalidadPrecio`   | `ModalidadPrecio` | Sí          | —                |
+| `capacidad`         | integer           | No          | >= 0 si se envía |
+| `cantidad`          | integer           | No          | >= 0 si se envía |
+| `costoPersonaExtra` | number (decimal)  | No          | >= 0 si se envía |
 
 > `procedencia` no es modificable. `capacidad` y `cantidad` son mutuamente excluyentes; enviar `null` o no incluir el que no aplica.
 
@@ -386,6 +391,7 @@ Retorna las reservas activas del servicio que se solapan con la ventana `[desde,
   modalidadPrecio: ModalidadPrecio // obligatorio
   capacidad?: number       // opcional, > 0
   cantidad?: number        // opcional, > 0
+  costoPersonaExtra?: number // opcional, >= 0; recargo por persona que exceda la capacidad
 }
 ```
 
@@ -399,6 +405,7 @@ Retorna las reservas activas del servicio que se solapan con la ventana `[desde,
   modalidadPrecio: ModalidadPrecio // obligatorio
   capacidad?: number       // opcional, >= 0
   cantidad?: number        // opcional, >= 0
+  costoPersonaExtra?: number // opcional, >= 0; recargo por persona que exceda la capacidad
 }
 ```
 
@@ -435,6 +442,7 @@ Retorna las reservas activas del servicio que se solapan con la ventana `[desde,
   precioSocio: number;
   precioParticular: number;
   capacidad: number | null;
+  costoPersonaExtra: number | null; // recargo por persona que exceda la capacidad; null si no aplica
   estado: EstadoServicio;
   modalidadPrecio: ModalidadPrecio;
   createdAt: string; // Instant ISO-8601 UTC
@@ -899,6 +907,63 @@ Registra un nuevo cliente de tipo particular.
 
 ## Reservas — Endpoints
 
+### `GET /api/v1/reservas`
+
+Retorna el listado paginado de reservas con filtros opcionales.
+
+**Query params** (todos opcionales):
+
+| Param           | Tipo            | Validación                                     |
+| --------------- | --------------- | ---------------------------------------------- |
+| `procedencia`   | `Procedencia`   | —                                              |
+| `servicioId`    | integer         | >= 0                                           |
+| `nombreCliente` | string          | máx 100 caracteres                             |
+| `estadoReserva` | `EstadoReserva` | —                                              |
+| `fechaDesde`    | string (date)   | `yyyy-MM-dd`                                   |
+| `fechaHasta`    | string (date)   | `yyyy-MM-dd`                                   |
+| `page`          | integer         | >= 0, default 0                                |
+| `size`          | integer         | 1–100, default 1                               |
+| `sortField`     | string          | `fechaEntrada`, `fechaSalida`, `nombreCliente` |
+| `sortOrder`     | string          | `ASC` o `DESC`, default `ASC`                  |
+
+> `fechaDesde` filtra reservas cuya `fechaEntrada` sea igual o posterior a esa fecha. `fechaHasta` filtra reservas cuya `fechaSalida` sea igual o anterior. El filtro `nombreCliente` busca por coincidencia parcial (case-insensitive) en el nombre completo del cliente; si varios clientes comparten el nombre, se incluyen las reservas de todos ellos.
+
+**Respuesta 200:**
+
+```json
+{
+  "content": [
+    {
+      "id": 42,
+      "clienteId": 12,
+      "nombreCliente": "Juan Pérez",
+      "servicioId": 3,
+      "servicioNombre": "Cabaña del río",
+      "fechaEntrada": "2026-08-10",
+      "fechaSalida": "2026-08-15",
+      "estadoReserva": "CONFIRMADA"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1,
+  "first": true,
+  "last": true
+}
+```
+
+> `clienteId` y `nombreCliente` son `null` cuando la reserva es de tipo `COLABORACION_SIN_FINES_DE_LUCRO` sin cliente asociado.
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                                       |
+| ----------- | -------------------- | --------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | `sortField` inválido o parámetro con valor inválido |
+| 401         | —                    | Token ausente, inválido o expirado                  |
+
+---
+
 ### `POST /api/v1/reservas`
 
 Crea una nueva reserva. Soporta tres variantes de cliente:
@@ -1046,9 +1111,84 @@ Retorna el detalle completo de una reserva.
 
 ---
 
+### `POST /api/v1/reservas/calcular-costo`
+
+Calcula el costo estimado de una reserva en tiempo real, sin efectos secundarios. Se invoca cada vez que el usuario modifica un campo relevante en el formulario de reserva.
+
+**Body** (`application/json`):
+
+```json
+{
+  "servicioId": 3,
+  "fechaInicio": "2026-08-10",
+  "fechaFin": "2026-08-15",
+  "horaInicio": null,
+  "horaFin": null,
+  "cantidadTotal": 4,
+  "cantidadMenores": 1,
+  "cantidad": null,
+  "tipoCliente": "SOCIO"
+}
+```
+
+| Campo             | Tipo          | Obligatorio | Validación                                                                      |
+| ----------------- | ------------- | ----------- | ------------------------------------------------------------------------------- |
+| `servicioId`      | integer       | Sí          | > 0, el servicio debe existir                                                   |
+| `fechaInicio`     | string (date) | Sí          | `yyyy-MM-dd`                                                                    |
+| `fechaFin`        | string (date) | Sí          | `yyyy-MM-dd`, no puede ser anterior a `fechaInicio`                             |
+| `horaInicio`      | string (time) | No          | `HH:mm`; obligatorio si el servicio es `POR_HORA`                               |
+| `horaFin`         | string (time) | No          | `HH:mm`; obligatorio si el servicio es `POR_HORA`                               |
+| `cantidadTotal`   | integer       | No          | >= 0; personas totales (para modalidades `POR_PERSONA` y `POR_DIA_POR_PERSONA`) |
+| `cantidadMenores` | integer       | No          | >= 0; menores de 10 años (no generan recargo por excedente de capacidad)        |
+| `cantidad`        | integer       | No          | >= 0; unidades alquiladas (para modalidad `POR_UNIDAD`)                         |
+| `tipoCliente`     | `TipoCliente` | No          | Si no se envía, se asume `PARTICULAR`                                           |
+
+> El costo se calcula según la `modalidadPrecio` del servicio:
+>
+> - **`POR_DIA`**: `precioBase × numeroDias`, donde `numeroDias = fechaFin − fechaInicio + 1`.
+> - **`POR_HORA`**: `precioBase × numeroHoras`, donde `numeroHoras = horaFin − horaInicio`. Requiere `horaInicio` y `horaFin`.
+> - **`POR_UNIDAD`**: `precioBase × cantidad` (si `cantidad` es null se asume `1`).
+> - **`POR_PERSONA`**: `precioBase + costoPersonaExtra × excedente`, donde `excedente = max(0, cantidadTotal − cantidadMenores − capacidad)`.
+> - **`POR_DIA_POR_PERSONA`**: igual que `POR_PERSONA` pero multiplicado por `numeroDias`.
+>
+> `precioBase` es `precioSocio` si `tipoCliente = SOCIO`, o `precioParticular` en caso contrario.
+
+**Respuesta 200:**
+
+```json
+{
+  "costoTotal": 12600.0
+}
+```
+
+**Errores:**
+
+| HTTP Status | Código                                     | Cuándo ocurre                                                    |
+| ----------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`                       | Campo obligatorio faltante o con formato inválido                |
+| 400         | `FECHA_FIN_ANTERIOR_A_INICIO`              | `fechaFin` < `fechaInicio`                                       |
+| 400         | `HORAS_REQUERIDAS_PARA_MODALIDAD_POR_HORA` | Servicio `POR_HORA` pero no se enviaron `horaInicio` y `horaFin` |
+| 404         | `SERVICIO_NO_ENCONTRADO`                   | No existe un servicio con el `servicioId` indicado               |
+| 401         | —                                          | Token ausente, inválido o expirado                               |
+
+---
+
 ## Reservas — DTOs
 
 ### Request DTOs
+
+#### `ListadoReservasRequestDto` — query params en `GET /api/v1/reservas`
+
+```typescript
+{
+  procedencia?: Procedencia     // opcional
+  servicioId?: number           // opcional, >= 0
+  nombreCliente?: string        // opcional, máx 100 chars
+  estadoReserva?: EstadoReserva // opcional
+  fechaDesde?: string           // opcional, LocalDate yyyy-MM-dd
+  fechaHasta?: string           // opcional, LocalDate yyyy-MM-dd
+}
+```
 
 #### `ReservaCreacionRequestDto` — body en `POST /api/v1/reservas`
 
@@ -1074,13 +1214,52 @@ Retorna el detalle completo de una reserva.
 }
 ```
 
+#### `CalculoCostoRequestDto` — body en `POST /api/v1/reservas/calcular-costo`
+
+```typescript
+{
+  servicioId: number             // obligatorio, > 0
+  fechaInicio: string            // obligatorio, LocalDate yyyy-MM-dd
+  fechaFin: string               // obligatorio, LocalDate yyyy-MM-dd
+  horaInicio?: string            // opcional, LocalTime HH:mm; obligatorio para servicios POR_HORA
+  horaFin?: string               // opcional, LocalTime HH:mm; obligatorio para servicios POR_HORA
+  cantidadTotal?: number         // opcional, >= 0; personas totales
+  cantidadMenores?: number       // opcional, >= 0; menores de 10 años (no generan recargo)
+  cantidad?: number              // opcional, >= 0; unidades para modalidad POR_UNIDAD
+  tipoCliente?: TipoCliente      // opcional; default PARTICULAR si no se envía
+}
+```
+
 ### Response DTOs
+
+#### `ListadoReservasResponseDto` — ítem dentro del listado paginado
+
+```typescript
+{
+  id: number;
+  clienteId: number | null; // null para reservas de colaboración sin cliente
+  nombreCliente: string | null; // null para reservas de colaboración sin cliente
+  servicioId: number;
+  servicioNombre: string;
+  fechaEntrada: string; // LocalDate yyyy-MM-dd
+  fechaSalida: string; // LocalDate yyyy-MM-dd
+  estadoReserva: EstadoReserva;
+}
+```
 
 #### `ReservaCreacionResponseDto` — respuesta de `POST /api/v1/reservas`
 
 ```typescript
 {
   id: number; // ID de la reserva creada
+}
+```
+
+#### `CalculoCostoResponseDto` — respuesta de `POST /api/v1/reservas/calcular-costo`
+
+```typescript
+{
+  costoTotal: number; // costo estimado de la reserva según la modalidad del servicio
 }
 ```
 
