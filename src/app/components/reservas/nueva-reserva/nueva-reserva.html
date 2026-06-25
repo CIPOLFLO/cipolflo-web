@@ -199,6 +199,7 @@
         <app-form-field
           [config]="rutField"
           [value]="controlValue('rut')"
+          [error]="colaboracionErrors()['rut']"
           (valueChange)="onControlChange('rut', $event)"
           (blurred)="onFieldBlur('rut')"
         />

@@ -240,6 +240,7 @@ export class NuevaReserva extends ReservaFormBase {
     key: 'rut',
     label: 'RUT del cliente',
     type: 'text',
+    required: true,
   };
 
   protected readonly nombreColaboracionField: FormFieldConfig = {

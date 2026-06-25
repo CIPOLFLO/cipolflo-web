@@ -32,6 +32,7 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {

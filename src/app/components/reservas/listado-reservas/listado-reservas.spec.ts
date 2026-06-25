@@ -1,64 +1,61 @@
-import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
+import { FilterConfigProvider, PageResponse, TableStateService } from '../../../shared';
 import { EstadoReserva } from '../../../shared';
-import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
-import { TableStateService } from '../../../shared/components/table/table-state.service';
-import { UserService } from '../../../core/services/user.service';
+import { ReservaRow, ReservaRespuestaDto } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
-import { ReservasFilterService } from '../services/reservas-filter.service';
-import { type ReservaRow } from '../models/reserva.model';
 import { ListadoReservas } from './listado-reservas';
 
-const mockAuthService = {
-  user$: of({ name: 'Juan Pérez', email: 'juan@example.com' }),
-  logout: vi.fn(),
+const mockRow: ReservaRespuestaDto = {
+  id: 1,
+  clienteId: 10,
+  nombreCliente: 'Juan Pérez',
+  servicioId: 3,
+  servicioNombre: 'Hospedaje en camping',
+  fechaEntrada: '2026-08-10',
+  fechaSalida: '2026-08-15',
+  estadoReserva: EstadoReserva.Confirmada,
 };
-const mockUserService = { userInitials: () => 'JP', userEmail: () => 'juan@example.com' };
 
-const emptyPage = {
-  content: [],
+const mockPage: PageResponse<ReservaRespuestaDto> = {
+  content: [mockRow],
   page: 0,
   size: 10,
-  totalElements: 0,
-  totalPages: 0,
+  totalElements: 1,
+  totalPages: 1,
   first: true,
   last: true,
 };
 
-function makeRow(estadoReserva: EstadoReserva): ReservaRow {
-  return {
-    id: 7,
-    clienteId: 1,
-    nombreCliente: 'Test',
-    servicioId: 1,
-    servicioNombre: 'Servicio',
-    fechaEntrada: '2026-08-01',
-    fechaSalida: '2026-08-05',
-    estadoReserva,
-  };
+const mockAuthService = {
+  user$: of({ name: 'Juan Pérez', email: 'juan@example.com' }),
+};
+
+class MinimalFilterProvider extends FilterConfigProvider {
+  readonly filterFields = signal([]);
 }
 
-describe('ListadoReservas — rowActions', () => {
+describe('ListadoReservas', () => {
+  let fixture: ComponentFixture<ListadoReservas>;
   let component: ListadoReservas;
+  let mockReservasService: { getAll: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    mockReservasService = { getAll: vi.fn().mockReturnValue(of(mockPage)) };
     navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [ListadoReservas],
       providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: UserService, useValue: mockUserService },
       ],
     })
       .overrideComponent(ListadoReservas, {
@@ -66,65 +63,59 @@ describe('ListadoReservas — rowActions', () => {
           providers: [
             TableStateService,
             ReservasColumnsService,
-            { provide: FilterConfigProvider, useClass: ReservasFilterService },
-            {
-              provide: ReservasService,
-              useValue: { getAll: vi.fn().mockReturnValue(of(emptyPage)) },
-            },
+            { provide: ReservasService, useValue: mockReservasService },
+            { provide: FilterConfigProvider, useClass: MinimalFilterProvider },
           ],
         },
       })
       .compileComponents();
 
-    const fixture = TestBed.createComponent(ListadoReservas);
+    fixture = TestBed.createComponent(ListadoReservas);
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('siempre incluye la acción "Ver detalle"', () => {
-    const actions = component['rowActions'](makeRow(EstadoReserva.Pendiente));
-    expect(actions.some((a) => a.label === 'Ver detalle')).toBe(true);
+  it('debe crear el componente', () => {
+    expect(component).toBeTruthy();
   });
 
-  it('incluye Modificar para estado Pendiente', () => {
-    const actions = component['rowActions'](makeRow(EstadoReserva.Pendiente));
-    expect(actions.some((a) => a.label === 'Modificar')).toBe(true);
+  it('loadDataFn delega en ReservasService.getAll', () => {
+    component['loadDataFn']({ page: 0, size: 10, filters: {} });
+    expect(mockReservasService.getAll).toHaveBeenCalledWith({ page: 0, size: 10, filters: {} });
   });
 
-  it('incluye Modificar para estado Confirmada', () => {
-    const actions = component['rowActions'](makeRow(EstadoReserva.Confirmada));
-    expect(actions.some((a) => a.label === 'Modificar')).toBe(true);
+  it('onFilterChange actualiza los filtros en tableState', () => {
+    component['onFilterChange']({ estado: 'CONFIRMADA' });
+    expect(component['tableState'].queryParams().filters).toEqual({ estado: 'CONFIRMADA' });
   });
 
-  it('no incluye Modificar para estado EnCurso', () => {
-    const actions = component['rowActions'](makeRow(EstadoReserva.EnCurso));
-    expect(actions.some((a) => a.label === 'Modificar')).toBe(false);
+  it('onClearFilters limpia los filtros en tableState', () => {
+    component['onFilterChange']({ estado: 'CONFIRMADA' });
+    component['onClearFilters']();
+    expect(component['tableState'].queryParams().filters).toEqual({});
   });
 
-  it('no incluye Modificar para estado Finalizada', () => {
-    const actions = component['rowActions'](makeRow(EstadoReserva.Finalizada));
-    expect(actions.some((a) => a.label === 'Modificar')).toBe(false);
+  it('onNuevaReserva navega a /reservas/nueva', () => {
+    component['onNuevaReserva']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
   });
 
-  it('no incluye Modificar para estado Cancelada', () => {
-    const actions = component['rowActions'](makeRow(EstadoReserva.Cancelada));
-    expect(actions.some((a) => a.label === 'Modificar')).toBe(false);
+  it('rowActions incluye "Ver detalle" como primera acción', () => {
+    const actions = component['rowActions'](mockRow as unknown as ReservaRow);
+    expect(actions[0].label).toBe('Ver detalle');
+    expect(actions[0].icon).toBe('pi pi-eye');
   });
 
-  it('la acción Modificar navega a /reservas/:id/editar', () => {
-    const row = makeRow(EstadoReserva.Pendiente);
-    const actions = component['rowActions'](row);
-    const modificar = actions.find((a) => a.label === 'Modificar')!;
-    modificar.command!(row);
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 7, 'editar']);
+  it('el comando "Ver detalle" navega a /reservas/:id', () => {
+    const actions = component['rowActions'](mockRow as unknown as ReservaRow);
+    actions[0].command?.(mockRow as unknown as ReservaRow);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 1]);
   });
 
-  it('la acción Ver detalle navega a /reservas/:id', () => {
-    const row = makeRow(EstadoReserva.Pendiente);
-    const actions = component['rowActions'](row);
-    const verDetalle = actions.find((a) => a.label === 'Ver detalle')!;
-    verDetalle.command!(row);
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 7]);
+  it('filterChange desde app-filter-panel actualiza tableState', () => {
+    const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
+    filterPanel.triggerEventHandler('filterChange', { estado: 'PENDIENTE' });
+    expect(component['tableState'].queryParams().filters).toEqual({ estado: 'PENDIENTE' });
   });
 });

@@ -148,6 +148,7 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   pago: boolean;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
+  nombre: string | null;
   rut: string | null;
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;

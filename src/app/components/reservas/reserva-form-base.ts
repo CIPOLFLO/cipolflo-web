@@ -342,7 +342,7 @@ export abstract class ReservaFormBase {
   protected aplicarValidadoresCliente(): void {
     // El tipo de cliente se deriva de la búsqueda (Particular si no existe).
     const requeridosComun = ['cedula', 'nombre', 'celular'];
-    const requeridosColab = ['nombreColaboracion'];
+    const requeridosColab = ['rut', 'nombreColaboracion'];
     const colaboracion = this.esColaboracion();
 
     for (const key of requeridosComun) {

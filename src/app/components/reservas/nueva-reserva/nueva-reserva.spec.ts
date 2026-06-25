@@ -307,10 +307,11 @@ describe('NuevaReserva', () => {
     expect(component['form'].get('nombre')?.value).toBeNull();
   });
 
-  it('en Colaboración sólo se exige el nombre del cliente', () => {
+  it('en Colaboración se exigen el RUT y el nombre del cliente', () => {
     component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
     component['submitted'].set(true);
     fixture.detectChanges();
+    expect(component['colaboracionErrors']()['rut']).toBeTruthy();
     expect(component['colaboracionErrors']()['nombreColaboracion']).toBeTruthy();
   });
 
@@ -469,6 +470,7 @@ describe('NuevaReserva', () => {
     component['form'].get('fechaInicio')?.setValue('2026-08-01');
     component['form'].get('fechaFin')?.setValue('2026-08-05');
     component['form'].get('cantidadTotal')?.setValue('4');
+    component['form'].get('rut')?.setValue('211111110018');
     component['form'].get('nombreColaboracion')?.setValue('Fondo Social');
     component['onConfirmar']();
     expect(mockReservasService.crear).toHaveBeenCalled();
