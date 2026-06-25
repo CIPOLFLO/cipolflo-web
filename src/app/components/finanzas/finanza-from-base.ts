@@ -137,25 +137,26 @@ export abstract class FinanzaFormBase {
   }
 
   protected onMovimientoChange(values: Record<string, string | null>): void {
-  if (this.tipoMovimientoDisabled) return;
+    if (this.tipoMovimientoDisabled) return;
 
-  const tipoMovimiento = (values['tipoMovimiento'] ?? null) as TipoMovimiento | null;
-  const conceptoActual = this.form.get('concepto')?.value?? null;
+    const tipoMovimiento = (values['tipoMovimiento'] ?? null) as TipoMovimiento | null;
+    const conceptoActual = this.form.get('concepto')?.value ?? null;
 
-  const conceptosPermitidos = getConceptoOptionsByTipoMovimiento(tipoMovimiento).map(
-    (option) => option.value,
-  );
+    const conceptosPermitidos = getConceptoOptionsByTipoMovimiento(tipoMovimiento).map(
+      (option) => option.value,
+    );
 
-  const conceptoEsValido = conceptoActual !== null && conceptosPermitidos.includes(conceptoActual);
+    const conceptoEsValido =
+      conceptoActual !== null && conceptosPermitidos.includes(conceptoActual);
 
-  this.form.patchValue({
-    tipoMovimiento,
-    concepto: conceptoEsValido ? conceptoActual : Concepto.Otro,
-  });
+    this.form.patchValue({
+      tipoMovimiento,
+      concepto: conceptoEsValido ? conceptoActual : Concepto.Otro,
+    });
 
-  this.form.markAsDirty();
-  this.dataVersion.update((n) => n + 1);
-}
+    this.form.markAsDirty();
+    this.dataVersion.update((n) => n + 1);
+  }
 
   protected onInfoChange(values: Record<string, string | null>): void {
     this.form.patchValue({

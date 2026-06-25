@@ -1,5 +1,4 @@
-import { type FormFieldOption, Procedencia } from '../../../shared';
-import { type AuditInfoDto } from '../../../shared';
+import { type FormFieldOption, type AuditInfoDto, Procedencia } from '../../../shared';
 
 export enum TipoMovimiento {
   Ingreso = 'INGRESO',
@@ -25,7 +24,7 @@ export enum Concepto {
   Antel = 'ANTEL',
   Sueldos = 'SUELDOS',
   Barraca = 'BARRACA',
-  Otro = 'Otro'
+  Otro = 'Otro',
 }
 
 export const CONCEPTO_LABEL: Record<Concepto, string> = {
@@ -36,7 +35,7 @@ export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.Antel]: 'ANTEL',
   [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
-   [Concepto.Otro]: 'Otro',
+  [Concepto.Otro]: 'Otro',
 };
 
 export interface FinanzaRespuestaDto {
@@ -74,10 +73,7 @@ export const TIPO_MOVIMIENTO_FORM_OPTIONS: FormFieldOption[] = [
   { label: 'Egreso', value: TipoMovimiento.Egreso },
 ];
 
-export const CONCEPTOS_INGRESO = [
-  Concepto.PagoReserva,
-  Concepto.Otro
-];
+export const CONCEPTOS_INGRESO = [Concepto.PagoReserva, Concepto.Otro];
 
 export const CONCEPTOS_EGRESO = [
   Concepto.Ute,
@@ -102,7 +98,6 @@ export function getConceptoOptionsByTipoMovimiento(
     value: concepto,
   }));
 }
-
 
 export interface FinanzaCrearDto {
   tipoMovimiento: TipoMovimiento;
@@ -134,3 +129,10 @@ export interface FinanzaModificarDto {
   formaPago: FormaPago;
   notas?: string | null;
 }
+
+export const CONCEPTO_KEYWORDS: { keyword: string; concepto: Concepto }[] = [
+  { keyword: 'UTE', concepto: Concepto.Ute },
+  { keyword: 'ANTEL', concepto: Concepto.Antel },
+  { keyword: 'OSE', concepto: Concepto.Ose },
+  { keyword: 'BARRACA', concepto: Concepto.Barraca },
+];

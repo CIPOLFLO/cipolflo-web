@@ -1,7 +1,7 @@
 export enum Procedencia {
   Sede = 'SEDE',
   Camping = 'CAMPING',
-  Ambos = 'Ambos'
+  Ambos = 'AMBOS',
 }
 
 export const PROCEDENCIA_LABEL: Record<string, string> = {

@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, map, of, filter, switchMap } from 'rxjs';
+import { catchError, map, of, filter, switchMap, Subscription } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -18,19 +18,20 @@ import {
   RowAction,
   TableStateService,
   ConfirmDialogService,
-  Procedencia,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { FinanzasColumnsService } from '../services/finanzas-columns.service';
 import { FinanzasFilterService } from '../services/finanzas-filter.service';
 import { FinanzaService } from '../services/finanza.service';
-import { FinanzaRow, TipoMovimiento, FinanzaCrearDto, Concepto, FormaPago } from '../models/finanza.model';
+import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
-import { DocumentIntelligenceService, DocumentoAnalizadoResponse } from '../../documentos/services/document-intelligence.service';
+import { FacturaFinanzaMapperService } from '../services/factura-finanza-mapper.service';
+import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
+import { LoadingDialog } from '../../../shared';
 
 @Component({
   selector: 'app-listado-finanzas',
-  imports: [PageLayout, FilterPanel, AppTable, AppButton],
+  imports: [PageLayout, FilterPanel, AppTable, AppButton, LoadingDialog],
   providers: [
     TableStateService,
     FinanzasColumnsService,
@@ -50,7 +51,8 @@ export class ListadoFinanzas {
   private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly documentoAzureService = inject(DocumentIntelligenceService);
-
+  private readonly facturaFinanzaMapper = inject(FacturaFinanzaMapperService);
+  private facturaSubscription?: Subscription;
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -191,7 +193,7 @@ export class ListadoFinanzas {
 
     if (!tiposPermitidos.includes(file.type)) {
       this.errorHandler.handle(
-        new Error('Formato no permitido. Usá PDF, JPG, PNG, BMP, TIFF o HEIF.')
+        new Error('Formato no permitido. Usá PDF, JPG, PNG, BMP, TIFF o HEIF.'),
       );
       return;
     }
@@ -199,9 +201,7 @@ export class ListadoFinanzas {
     const maxSizeBytes = 4 * 1024 * 1024;
 
     if (file.size > maxSizeBytes) {
-      this.errorHandler.handle(
-        new Error('El archivo supera el límite de 4 MB.')
-      );
+      this.errorHandler.handle(new Error('El archivo supera el límite de 4 MB.'));
       return;
     }
 
@@ -214,7 +214,7 @@ export class ListadoFinanzas {
         next: (documento) => {
           this.analizandoFactura.set(false);
 
-          const datosPrecargados = this.mapearDocumentoAFinanza(documento);
+          const datosPrecargados = this.facturaFinanzaMapper.mapear(documento);
 
           this.router.navigate(['/finanzas', 'nuevo'], {
             state: {
@@ -230,64 +230,9 @@ export class ListadoFinanzas {
 
     input.value = '';
   }
-
-  private extraerImporteTotal(content: string): number | undefined {
-    const match = content.match(/IMPORTE TOTAL\s*\$?([\d.]+,\d{2})/i);
-
-    if (!match?.[1]) return undefined;
-
-    return Number(match[1].replace(/\./g, '').replace(',', '.'));
+  protected onCancelarAnalisisFactura(): void {
+    this.facturaSubscription?.unsubscribe();
+    this.facturaSubscription = undefined;
+    this.analizandoFactura.set(false);
   }
-
-  private extraerNumeroFactura(content: string): string | null {
-    const match = content.match(/Nº de Factura\s+.*?\n([A-Z]\s*\d+)/i);
-
-    return match?.[1]?.replace(/\s+/g, ' ') ?? null;
-  }
-
-  private detectarConcepto(content: string): Concepto {
-    const texto = content.toUpperCase();
-
-    if (texto.includes('UTE')) return Concepto.Ute;
-    if (texto.includes('ANTEL')) return Concepto.Antel;
-    if (texto.includes('OSE')) return Concepto.Ose;
-    if (texto.includes('BARRACA')) return Concepto.Barraca;
-
-    return Concepto.Otro;
-  }
-
-  private extraerFechaEmision(content: string): string | null {
-    const match = content.match(/Fecha de Emisión\s+(\d{2}\/\d{2}\/\d{4})/i);
-
-    if (!match?.[1]) return null;
-
-    const [dia, mes, anio] = match[1].split('/');
-    return `${anio}-${mes}-${dia}`;
-  }
-  private mapearDocumentoAFinanza(documento: DocumentoAnalizadoResponse): Partial<FinanzaCrearDto> {
-    const resultado = JSON.parse(documento.resultadoJson);
-    const content: string = resultado.content ?? '';
-
-    const importe = this.extraerImporteTotal(content);
-    const numeroFactura = this.extraerNumeroFactura(content);
-    const concepto = this.detectarConcepto(content);
-
-    const fechaEmision = this.extraerFechaEmision(content);
-    const fechaHoy = new Date().toISOString().slice(0, 10);
-
-    const fecha =
-      [Concepto.Ute, Concepto.Ose, Concepto.Antel].includes(concepto)
-        ? fechaHoy
-        : fechaEmision ?? fechaHoy;
-    return {
-      tipoMovimiento: TipoMovimiento.Egreso,
-      procedencia: Procedencia.Ambos,
-      concepto,
-      fecha: fecha,
-      importe,
-      notas: `Factura cargada: ${documento.nombreArchivo}${numeroFactura ? ` - Nº ${numeroFactura}` : ''}`,
-    };
-  }
-
-
 }

@@ -1,15 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-
-export interface DocumentoAnalizadoResponse {
-  id: number;
-  nombreArchivo: string;
-  tipoContenido: string;
-  modeloUsado: string;
-  fechaAnalisis: string;
-  resultadoJson: string;
-}
+import { DocumentoAnalizadoResponse } from '../models/document-intelligence.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,9 +11,6 @@ export class DocumentIntelligenceService extends BaseHttpService {
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.post<DocumentoAnalizadoResponse>(
-      'documentos/analizar-factura',
-      formData,
-    );
+    return this.post<DocumentoAnalizadoResponse>('documentos/analizar-factura', formData);
   }
 }
