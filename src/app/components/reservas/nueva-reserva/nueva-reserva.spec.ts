@@ -49,7 +49,7 @@ const serviciosSede = [
 const detalleSocio = {
   id: 1,
   nombre: 'Juan Pérez',
-  cedula: '12345678',
+  cedula: '12345672', // dígito verificador correcto: 2
   tipoCliente: TipoCliente.Socio,
   numeroSocio: 5,
   estado: EstadoSocio.Activo,
@@ -60,7 +60,7 @@ const detalleSocio = {
 const detalleParticular = {
   id: 2,
   nombre: 'Laura Fernández',
-  cedula: '67890123',
+  cedula: '67890127', // dígito verificador correcto: 7
   tipoCliente: TipoCliente.Particular,
   numeroSocio: null,
   estado: null,
@@ -110,7 +110,7 @@ describe('NuevaReserva', () => {
       getAll: vi.fn((params: { filters?: Record<string, string> }) =>
         of(page(params.filters?.['identificador'] === '12345678' ? [{ id: 1 }] : [])),
       ),
-      getByCedula: vi.fn((cedula: string) => of(page(cedula === '12345678' ? [{ id: 1 }] : []))),
+      getByCedula: vi.fn((cedula: string) => of(page(cedula === '12345672' ? [{ id: 1 }] : []))),
       getById: vi.fn((id: number) => of(id === 2 ? detalleParticular : detalleSocio)),
       getEstadoSocio: vi.fn(() => of({ id: 1, estado: EstadoSocio.Activo, numeroSocio: 5 })),
     };
@@ -246,7 +246,7 @@ describe('NuevaReserva', () => {
   });
 
   it('buscarCliente con cédula existente completa los datos y los deja readonly', () => {
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     expect(mockClientesService.getById).toHaveBeenCalledWith(1);
     expect(component['clienteBusqueda']()?.nombre).toBe('Juan Pérez');
@@ -255,7 +255,7 @@ describe('NuevaReserva', () => {
   });
 
   it('al encontrar cliente por cédula muestra el tipo en sólo lectura (no se puede elegir)', () => {
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     const tipo = tipoClienteField();
     expect(tipo?.displayOnly()).toBe(true);
@@ -287,7 +287,7 @@ describe('NuevaReserva', () => {
   });
 
   it('con cliente encontrado el DTO no marca crearCliente y envía el clienteId', () => {
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     const dto = component['construirDto']();
     expect(dto.crearCliente).toBe(false);
@@ -295,7 +295,7 @@ describe('NuevaReserva', () => {
   });
 
   it('editar la cédula después de verificar invalida la búsqueda y limpia los datos', () => {
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     expect(component['busquedaRealizada']()).toBe(true);
     expect(component['clienteBusqueda']()).not.toBeNull();
@@ -363,7 +363,7 @@ describe('NuevaReserva', () => {
   });
 
   it('mostrarObservaciones es true cuando el cliente encontrado tiene observaciones', () => {
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     expect(component['observacionesCliente']()).toBe('Cliente frecuente.');
     expect(component['mostrarObservaciones']()).toBe(true);
@@ -452,7 +452,7 @@ describe('NuevaReserva', () => {
     const error = new Error('Network error');
     mockClientesService.getByCedula.mockReturnValue(throwError(() => error));
     const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     expect(handleSpy).toHaveBeenCalledWith(error);
   });
@@ -476,7 +476,7 @@ describe('NuevaReserva', () => {
   });
 
   it('onConfirmar COMUN con socio encontrado delega a verificarSocioYGuardar', () => {
-    component['form'].get('cedula')?.setValue('12345678');
+    component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     component['form'].get('servicioId')?.setValue('2');
@@ -487,5 +487,51 @@ describe('NuevaReserva', () => {
     expect(mockClientesService.getEstadoSocio).toHaveBeenCalledWith(1);
     expect(mockReservasService.crear).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('buscarCliente con cédula de formato inválido no dispara la búsqueda y muestra el error', () => {
+    component['form'].get('cedula')?.setValue('12345678'); // verificador incorrecto: esperado 2, tiene 8
+    component['buscarCliente']();
+    expect(mockClientesService.getByCedula).not.toHaveBeenCalled();
+    expect(component['form'].get('cedula')?.hasError('cedulaInvalida')).toBe(true);
+  });
+
+  it('servicio con modalidadPrecio POR_HORA activa el modo hora', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3'); // Cancha: POR_HORA
+    expect(component['modoHora']()).toBe(true);
+  });
+
+  it('servicio sin modalidad POR_HORA no activa el modo hora', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('2'); // Salón: POR_DIA
+    expect(component['modoHora']()).toBe(false);
+  });
+
+  it('en modo hora, horaInicio y horaFin son requeridos', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['submitted'].set(true);
+    fixture.detectChanges();
+    expect(component['reservaErrors']()['horaInicio']).toBe('La hora de inicio es obligatoria.');
+    expect(component['reservaErrors']()['horaFin']).toBe('La hora de fin es obligatoria.');
+  });
+
+  it('construirDto envía horaInicio y horaFin cuando la modalidad es POR_HORA', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['onControlChange']('horaInicio', '09:00');
+    component['onControlChange']('horaFin', '11:00');
+    const dto = component['construirDto']();
+    expect(dto.horaInicio).toBe('09:00');
+    expect(dto.horaFin).toBe('11:00');
+  });
+
+  it('construirDto envía null para horaInicio y horaFin cuando la modalidad no es POR_HORA', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('2'); // Salón: POR_DIA
+    const dto = component['construirDto']();
+    expect(dto.horaInicio).toBeNull();
+    expect(dto.horaFin).toBeNull();
   });
 });

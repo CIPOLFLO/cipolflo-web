@@ -49,13 +49,20 @@
       }
 
       @if (modoCapacidad()) {
-        <app-form-field
-          [config]="cantidadTotalField"
-          [value]="controlValue('cantidadTotal')"
-          [error]="reservaErrors()['cantidadTotal']"
-          (valueChange)="onControlChange('cantidadTotal', $event)"
-          (blurred)="onFieldBlur('cantidadTotal')"
-        />
+        <div class="nueva-reserva__campo-grupo">
+          <app-form-field
+            [config]="cantidadTotalField"
+            [value]="controlValue('cantidadTotal')"
+            [error]="reservaErrors()['cantidadTotal']"
+            (valueChange)="onControlChange('cantidadTotal', $event)"
+            (blurred)="onFieldBlur('cantidadTotal')"
+          />
+          <p class="nueva-reserva__advertencia">
+            <i class="pi pi-info-circle"></i>
+            La capacidad máxima de este servicio es de
+            <strong>{{ servicioSeleccionado()!.capacidad }}</strong> personas.
+          </p>
+        </div>
         <app-form-field
           [config]="cantidadMenoresField"
           [value]="controlValue('cantidadMenores')"
@@ -65,12 +72,35 @@
         />
       }
       @if (modoCantidad()) {
+        <div class="nueva-reserva__campo-grupo">
+          <app-form-field
+            [config]="cantidadField"
+            [value]="controlValue('cantidad')"
+            [error]="reservaErrors()['cantidad']"
+            (valueChange)="onControlChange('cantidad', $event)"
+            (blurred)="onFieldBlur('cantidad')"
+          />
+          <p class="nueva-reserva__advertencia">
+            <i class="pi pi-info-circle"></i>
+            Actualmente hay <strong>{{ servicioSeleccionado()!.cantidad }}</strong> unidades
+            disponibles en existencia.
+          </p>
+        </div>
+      }
+      @if (modoHora()) {
         <app-form-field
-          [config]="cantidadField"
-          [value]="controlValue('cantidad')"
-          [error]="reservaErrors()['cantidad']"
-          (valueChange)="onControlChange('cantidad', $event)"
-          (blurred)="onFieldBlur('cantidad')"
+          [config]="horaInicioField"
+          [value]="controlValue('horaInicio')"
+          [error]="reservaErrors()['horaInicio']"
+          (valueChange)="onControlChange('horaInicio', $event)"
+          (blurred)="onFieldBlur('horaInicio')"
+        />
+        <app-form-field
+          [config]="horaFinField"
+          [value]="controlValue('horaFin')"
+          [error]="reservaErrors()['horaFin']"
+          (valueChange)="onControlChange('horaFin', $event)"
+          (blurred)="onFieldBlur('horaFin')"
         />
       }
     </app-form-section>
@@ -204,7 +234,4 @@
       />
     </app-form-actions>
   </app-form-layout>
-
-  <app-confirm-dialog />
-  <app-error-dialog />
 </app-page-layout>

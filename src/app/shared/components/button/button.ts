@@ -21,10 +21,11 @@ export class AppButton {
   fullWidth = input<boolean>(false);
   type = input<ButtonType>('button');
   tooltip = input<string>('');
-
+  loading = input<boolean>(false);
   clicked = output<MouseEvent>();
 
   protected handleClick(event: MouseEvent): void {
+    if (this.disabled() || this.loading()) return;
     this.clicked.emit(event);
   }
 }

@@ -14,6 +14,8 @@ export class TableStateService {
   private readonly size = signal(10);
   private readonly sortField = signal<string | undefined>(undefined);
   private readonly sortOrder = signal<'asc' | 'desc'>('asc');
+  private readonly _totalElements = signal(0);
+  private readonly _loading = signal(false);
 
   readonly queryParams: Signal<TableQueryParams> = computed(() => ({
     filters: this.filters(),
@@ -22,6 +24,9 @@ export class TableStateService {
     sortField: this.sortField(),
     sortOrder: this.sortOrder(),
   }));
+  readonly totalElements = this._totalElements.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly hasResults = computed(() => this._totalElements() > 0);
 
   updateFilters(f: Record<string, string | null>): void {
     this.filters.set(f);
@@ -47,5 +52,12 @@ export class TableStateService {
     this.sortField.set(undefined);
     this.sortOrder.set('asc');
     this.page.set(0);
+  }
+  setResult(totalElements: number): void {
+    this._totalElements.set(totalElements);
+  }
+
+  setLoading(value: boolean): void {
+    this._loading.set(value);
   }
 }

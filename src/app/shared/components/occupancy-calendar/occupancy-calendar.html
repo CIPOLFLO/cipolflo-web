@@ -11,6 +11,9 @@
 
 @if (rangoLabel(); as label) {
   <p class="occupancy-calendar__rango">
-    <span class="occupancy-calendar__rango-label">Período seleccionado:</span> {{ label }}
+    <span class="occupancy-calendar__rango-label">
+      {{ esFechaUnica() ? 'Fecha seleccionada:' : 'Período seleccionado:' }}
+    </span>
+    {{ label }}
   </p>
 }
