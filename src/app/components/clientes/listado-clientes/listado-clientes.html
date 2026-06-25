@@ -2,6 +2,13 @@
   pageTitle="Listado de Clientes"
   pageDescription="Gestiona y consulta información de todos los clientes del sistema"
 >
+  <app-button
+    actions
+    label="Nuevo Socio"
+    intent="primary"
+    icon="pi-plus"
+    (clicked)="onNuevoCliente()"
+  />
   @if (!breakpoint.isMobile()) {
     <app-button
       actions
@@ -13,13 +20,6 @@
       (clicked)="onExportar()"
     />
   }
-  <app-button
-    actions
-    label="Nuevo Socio"
-    intent="primary"
-    icon="pi-plus"
-    (clicked)="onNuevoCliente()"
-  />
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />

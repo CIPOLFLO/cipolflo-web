@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -41,10 +49,11 @@ export class ListadoClientes {
   private readonly router = inject(Router);
   private readonly errorHandler = inject(ErrorHandlerService);
   protected readonly breakpoint = inject(BreakpointService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
   protected readonly exportando = signal(false);
   protected readonly puedeExportar = computed(
-    () => this.tableState.hasResults() && !this.tableState.loading(),
+    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
   );
 
   constructor() {
@@ -134,13 +143,19 @@ export class ListadoClientes {
   }
 
   protected onExportar(): void {
-    if (!this.puedeExportar() || this.exportando()) return;
+    if (!this.puedeExportar()) return;
     this.exportando.set(true);
     const filters = this.tableState.queryParams().filters;
-    this.clientesService.exportar(filters).subscribe({
-      next: () => this.exportando.set(false),
-      error: () => this.exportando.set(false),
-    });
+    this.clientesService
+      .exportar(filters)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.exportando.set(false),
+        error: (err) => {
+          this.exportando.set(false);
+          this.errorHandler.handle(err);
+        },
+      });
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {

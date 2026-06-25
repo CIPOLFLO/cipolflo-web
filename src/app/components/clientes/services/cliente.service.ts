@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-import { FileDownloadService } from '../../../core/services/file-download.service';
+import { BlobExportService } from '../../../core/services/blob-export.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   ClienteDetalleRespuestaDto,
@@ -14,7 +14,7 @@ import {
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
-  private readonly fileDownloadService = inject(FileDownloadService);
+  private readonly blobExport = inject(BlobExportService);
 
   getAll({
     page,
@@ -80,10 +80,6 @@ export class ClientesService extends BaseHttpService {
     return this.post<PagoCuotaResponseDto[]>(`clientes/${id}/cuotas`, dto);
   }
   exportar(filters: Record<string, string | null>): Observable<void> {
-    return this.postBlob('clientes/exportar', filters).pipe(
-      map((response) => {
-        this.fileDownloadService.download(response, 'clientes.xlsx');
-      }),
-    );
+    return this.blobExport.export('clientes/exportar', filters, 'clientes.xlsx');
   }
 }
