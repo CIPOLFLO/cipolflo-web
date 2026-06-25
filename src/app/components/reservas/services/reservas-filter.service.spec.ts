@@ -17,6 +17,7 @@ const mockServicio: ServicioRespuestaDto = {
   estado: EstadoServicio.Habilitado,
   capacidad: null,
   cantidad: null,
+  costoPersonaExtra: null,
 };
 
 const mockPage: PageResponse<ServicioRespuestaDto> = {
