@@ -9,6 +9,22 @@
     icon="pi-plus"
     (clicked)="onNuevoMovimiento()"
   />
+  <input
+  #facturaInput
+  type="file"
+  hidden
+  accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff,.heif"
+  (change)="onFacturaSeleccionada($event)"
+/>
+
+<app-button
+  actions
+  label="Cargar factura"
+  intent="secondary"
+  icon="pi-upload"
+  [loading]="analizandoFactura()"
+  (clicked)="onCargarFacturaClick(facturaInput)"
+/>
 
   <app-button
     actions

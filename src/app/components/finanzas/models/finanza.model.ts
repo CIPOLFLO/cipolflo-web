@@ -25,7 +25,7 @@ export enum Concepto {
   Antel = 'ANTEL',
   Sueldos = 'SUELDOS',
   Barraca = 'BARRACA',
-  Otros = 'OTROS',
+  Otro = 'Otro'
 }
 
 export const CONCEPTO_LABEL: Record<Concepto, string> = {
@@ -36,7 +36,7 @@ export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.Antel]: 'ANTEL',
   [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
-  [Concepto.Otros]: 'Otros',
+   [Concepto.Otro]: 'Otro',
 };
 
 export interface FinanzaRespuestaDto {
@@ -66,6 +66,7 @@ export enum FormaPago {
 export const FORMA_PAGO_OPTIONS: FormFieldOption[] = [
   { label: 'Efectivo', value: FormaPago.Efectivo },
   { label: 'Transferencia', value: FormaPago.Transferencia },
+  { label: 'Debito', value: FormaPago.Debito },
 ];
 
 export const TIPO_MOVIMIENTO_FORM_OPTIONS: FormFieldOption[] = [
@@ -73,9 +74,35 @@ export const TIPO_MOVIMIENTO_FORM_OPTIONS: FormFieldOption[] = [
   { label: 'Egreso', value: TipoMovimiento.Egreso },
 ];
 
-export const CONCEPTO_OPTIONS: FormFieldOption[] = (
-  Object.entries(CONCEPTO_LABEL) as [Concepto, string][]
-).map(([value, label]) => ({ label, value }));
+export const CONCEPTOS_INGRESO = [
+  Concepto.PagoReserva,
+  Concepto.Otro
+];
+
+export const CONCEPTOS_EGRESO = [
+  Concepto.Ute,
+  Concepto.Antel,
+  Concepto.Ose,
+  Concepto.Barraca,
+  Concepto.Otro,
+];
+
+export function getConceptoOptionsByTipoMovimiento(
+  tipoMovimiento: TipoMovimiento | null | undefined,
+): FormFieldOption[] {
+  const conceptos =
+    tipoMovimiento === TipoMovimiento.Ingreso
+      ? CONCEPTOS_INGRESO
+      : tipoMovimiento === TipoMovimiento.Egreso
+        ? CONCEPTOS_EGRESO
+        : Object.values(Concepto);
+
+  return conceptos.map((concepto) => ({
+    label: CONCEPTO_LABEL[concepto],
+    value: concepto,
+  }));
+}
+
 
 export interface FinanzaCrearDto {
   tipoMovimiento: TipoMovimiento;
