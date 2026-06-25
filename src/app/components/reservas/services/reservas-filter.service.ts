@@ -32,13 +32,13 @@ export class ReservasFilterService extends FilterConfigProvider {
       disabled: this._servicioDisabled(),
     },
     {
-      key: 'cliente',
-      label: 'Cliente (Cédula)',
+      key: 'nombreCliente',
+      label: 'Nombre de cliente',
       type: 'text',
-      placeholder: 'Buscar por cédula...',
+      placeholder: 'Buscar por nombre...',
     },
     {
-      key: 'estado',
+      key: 'estadoReserva',
       label: 'Estado',
       type: 'select',
       placeholder: 'Seleccionar estado',

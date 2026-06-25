@@ -55,8 +55,8 @@ describe('ReservasFilterService', () => {
     expect(field?.options?.[0]).toEqual({ label: 'Todos', value: '' });
   });
 
-  it('estado incluye "Todos" como primera opción', () => {
-    const field = service.filterFields().find((f) => f.key === 'estado');
+  it('estadoReserva incluye "Todos" como primera opción', () => {
+    const field = service.filterFields().find((f) => f.key === 'estadoReserva');
     expect(field?.options?.[0]).toEqual({ label: 'Todos', value: '' });
   });
 
@@ -71,12 +71,12 @@ describe('ReservasFilterService', () => {
   });
 
   it('onValueChange con key distinto a procedencia devuelve void', () => {
-    const result = service.onValueChange('estado', 'PENDIENTE');
+    const result = service.onValueChange('estadoReserva', 'PENDIENTE');
     expect(result).toBeUndefined();
   });
 
   it('onValueChange con key distinto a procedencia no llama a ServicioService', () => {
-    service.onValueChange('estado', 'PENDIENTE');
+    service.onValueChange('estadoReserva', 'PENDIENTE');
     TestBed.flushEffects();
     expect(mockServicioService.getAll).not.toHaveBeenCalled();
   });
