@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
+import { BlobExportService } from '../../../core/services/blob-export.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   ClienteDetalleRespuestaDto,
@@ -13,6 +14,8 @@ import {
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
+  private readonly blobExport = inject(BlobExportService);
+
   getAll({
     page,
     size,
@@ -70,11 +73,13 @@ export class ClientesService extends BaseHttpService {
   registrarSocio(dto: RegistroSocioRequestDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes/socios', dto);
   }
-
   registrarPagoCuota(
-    socioId: number,
+    id: number,
     dto: RegistroPagoCuotaRequestDto,
   ): Observable<PagoCuotaResponseDto[]> {
-    return this.post<PagoCuotaResponseDto[]>(`clientes/socios/${socioId}/pago-cuota`, dto);
+    return this.post<PagoCuotaResponseDto[]>(`clientes/${id}/cuotas`, dto);
+  }
+  exportar(filters: Record<string, string | null>): Observable<void> {
+    return this.blobExport.export('clientes/exportar', filters, 'clientes.xlsx');
   }
 }
