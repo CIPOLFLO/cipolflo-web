@@ -5,16 +5,18 @@
   backButtonLink="/reservas"
 >
   <app-form-layout>
-    <app-detail-section title="Información de la Reserva" [fields]="reservaFields" />
+    <app-detail-section title="Información de la Reserva" [fields]="reservaFields()" />
 
-    <app-detail-section title="Información del Cliente" [fields]="clienteFields" />
+    <app-detail-section title="Información del Cliente" [fields]="clienteFields()" />
 
-    <app-detail-section title="Información Adicional" [fields]="adicionalFields" />
+    <app-detail-section title="Información Adicional" [fields]="adicionalFields()" />
 
-    <app-detail-registro-section [data]="registroData()" />
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
 
     <app-form-actions actions>
-      <app-button label="Editar" icon="pi-pencil" (clicked)="onEditar()" />
+      <app-button label="Modificar" icon="pi-pencil" (clicked)="onModificar()" />
     </app-form-actions>
   </app-form-layout>
 </app-page-layout>

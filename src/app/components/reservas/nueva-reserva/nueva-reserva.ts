@@ -16,11 +16,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
-  ConfirmDialogComponent,
   ConfirmDialogService,
   CurrencyFormatPipe,
   emailValido,
-  ErrorDialogComponent,
   ErrorDialogService,
   FormActions,
   FormField,
@@ -63,8 +61,6 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
     FormActions,
     AppButton,
     OccupancyCalendar,
-    ConfirmDialogComponent,
-    ErrorDialogComponent,
     CurrencyFormatPipe,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
