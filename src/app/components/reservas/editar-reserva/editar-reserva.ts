@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { finalize, map } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -14,14 +13,11 @@ import {
   FormSection,
   OccupancyCalendar,
   PageLayout,
-  parseNumberOrNull,
   Procedencia,
-  PROCEDENCIA_OPTIONS,
   type DateRangeSelection,
   type DetailFieldConfig,
   type DetailRegistroData,
   type FormFieldConfig,
-  type FormFieldOption,
 } from '../../../shared';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
@@ -61,27 +57,7 @@ export class EditarReserva extends ReservaFormBase {
   protected readonly reserva = signal<ReservaDetalleRespuestaDto | undefined>(undefined);
 
   constructor() {
-    super(
-      new FormGroup({
-        tipoReserva: new FormControl<string | null>(TipoReserva.Comun),
-        procedencia: new FormControl<string | null>(null, Validators.required),
-        servicioId: new FormControl<string | null>(null, Validators.required),
-        fechaInicio: new FormControl<string | null>(null, Validators.required),
-        fechaFin: new FormControl<string | null>(null, Validators.required),
-        cantidadTotal: new FormControl<string | null>(null),
-        cantidadMenores: new FormControl<string | null>(null, Validators.min(0)),
-        cantidad: new FormControl<string | null>(null),
-        tipoCliente: new FormControl<string | null>(null),
-        cedula: new FormControl<string | null>(null),
-        nombre: new FormControl<string | null>(null),
-        celular: new FormControl<string | null>(null),
-        email: new FormControl<string | null>(null),
-        numeroSocio: new FormControl<string | null>(null),
-        rut: new FormControl<string | null>(null),
-        nombreColaboracion: new FormControl<string | null>(null),
-        notas: new FormControl<string | null>(null),
-      }),
-    );
+    super(ReservaFormBase.buildReservaForm());
 
     this.form.get('email')?.addValidators(emailValido);
     this.form.get('email')?.updateValueAndValidity({ emitEvent: false });
@@ -196,13 +172,7 @@ export class EditarReserva extends ReservaFormBase {
       servicioId: Number(this.controlValue('servicioId')),
       fechaInicio: this.controlValue('fechaInicio')!,
       fechaFin: this.controlValue('fechaFin')!,
-      cantidadTotal: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
-        : null,
-      cantidadMenores: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
-        : null,
-      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+      ...this.buildCantidades(),
       notas: this.controlValue('notas'),
     };
   }
@@ -219,57 +189,6 @@ export class EditarReserva extends ReservaFormBase {
     label: 'Tipo de reserva',
     type: 'text',
     locked: true,
-  };
-
-  protected readonly procedenciaField: FormFieldConfig = {
-    key: 'procedencia',
-    label: 'Procedencia',
-    type: 'select',
-    required: true,
-    placeholder: 'Seleccione una procedencia',
-    options: PROCEDENCIA_OPTIONS,
-  };
-
-  protected readonly servicioOptions = computed<FormFieldOption[]>(() =>
-    this.servicios().map((s) => ({ label: s.nombre, value: String(s.id) })),
-  );
-
-  protected readonly servicioField = computed<FormFieldConfig>(() => ({
-    key: 'servicioId',
-    label: 'Servicio',
-    type: 'select',
-    required: true,
-    disabled: this.servicios().length === 0,
-    placeholder:
-      this.servicios().length === 0 ? 'Elija primero una procedencia' : 'Seleccione un servicio',
-    options: this.servicioOptions(),
-  }));
-
-  protected readonly cantidadTotalField: FormFieldConfig = {
-    key: 'cantidadTotal',
-    label: 'Cantidad total',
-    type: 'number',
-    required: true,
-  };
-
-  protected readonly cantidadMenoresField: FormFieldConfig = {
-    key: 'cantidadMenores',
-    label: 'Cantidad de menores',
-    type: 'number',
-  };
-
-  protected readonly cantidadField: FormFieldConfig = {
-    key: 'cantidad',
-    label: 'Cantidad',
-    type: 'number',
-    required: true,
-  };
-
-  protected readonly notasField: FormFieldConfig = {
-    key: 'notas',
-    label: 'Notas / Observaciones',
-    type: 'textarea',
-    fullWidth: true,
   };
 
   protected readonly initialCalendarRange = computed<DateRangeSelection>(() => ({
