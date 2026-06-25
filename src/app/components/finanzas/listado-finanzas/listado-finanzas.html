@@ -10,9 +10,11 @@
     (clicked)="onNuevoMovimiento()"
   />
   <input
+    id="facturaInput"
     #facturaInput
     type="file"
     hidden
+    aria-label="Seleccionar factura"
     accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff,.heif"
     (change)="onFacturaSeleccionada($event)"
   />
