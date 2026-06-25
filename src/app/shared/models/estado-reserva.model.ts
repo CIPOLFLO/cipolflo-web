@@ -6,6 +6,14 @@ export enum EstadoReserva {
   Cancelada = 'CANCELADA',
 }
 
+export const ESTADO_RESERVA_OPTIONS = [
+  { label: 'Pendiente', value: EstadoReserva.Pendiente },
+  { label: 'Confirmada', value: EstadoReserva.Confirmada },
+  { label: 'En curso', value: EstadoReserva.EnCurso },
+  { label: 'Finalizada', value: EstadoReserva.Finalizada },
+  { label: 'Cancelada', value: EstadoReserva.Cancelada },
+];
+
 export const ESTADO_RESERVA_LABEL: Record<EstadoReserva, string> = {
   [EstadoReserva.Pendiente]: 'Pendiente',
   [EstadoReserva.Confirmada]: 'Confirmada',

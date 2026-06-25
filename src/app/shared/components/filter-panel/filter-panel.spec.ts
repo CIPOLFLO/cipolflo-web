@@ -134,6 +134,60 @@ describe('FilterPanel', () => {
   });
 });
 
+describe('FilterPanel con hooks onValueChange y onClear en el provider', () => {
+  const fields: FormFieldConfig[] = [
+    { key: 'procedencia', label: 'Procedencia', type: 'select', options: [] },
+    { key: 'servicio', label: 'Servicio', type: 'select', options: [] },
+  ];
+
+  class MockProviderWithHooks extends FilterConfigProvider {
+    readonly filterFields = signal(fields);
+    readonly onValueChangeSpy = vi.fn().mockReturnValue({ resetKeys: ['servicio'] });
+    readonly onClearSpy = vi.fn();
+
+    override onValueChange(key: string, value: string | null) {
+      return this.onValueChangeSpy(key, value);
+    }
+
+    override onClear() {
+      this.onClearSpy();
+    }
+  }
+
+  let fixture: ComponentFixture<FilterPanel>;
+  let api: FilterPanelTestApi;
+  let mockProvider: MockProviderWithHooks;
+
+  beforeEach(async () => {
+    mockProvider = new MockProviderWithHooks();
+
+    await TestBed.configureTestingModule({
+      imports: [FilterPanel],
+      providers: [{ provide: FilterConfigProvider, useValue: mockProvider }],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(FilterPanel);
+    api = fixture.componentInstance as unknown as FilterPanelTestApi;
+    fixture.detectChanges();
+  });
+
+  it('debe llamar a onValueChange del provider al actualizar un valor', () => {
+    api.updateValue('procedencia', 'SEDE');
+    expect(mockProvider.onValueChangeSpy).toHaveBeenCalledWith('procedencia', 'SEDE');
+  });
+
+  it('debe resetear en filterValues los keys indicados por onValueChange', () => {
+    api.updateValue('servicio', 'servicio-1');
+    api.updateValue('procedencia', 'SEDE');
+    expect(api.filterValues()['servicio']).toBeNull();
+  });
+
+  it('debe llamar a onClear del provider al limpiar filtros', () => {
+    api.onClear();
+    expect(mockProvider.onClearSpy).toHaveBeenCalled();
+  });
+});
+
 describe('FilterPanel con campos que tienen defaultValue', () => {
   const fieldsWithDefault: FormFieldConfig[] = [
     { key: 'nombre', label: 'Nombre', type: 'text' },

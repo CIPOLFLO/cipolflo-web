@@ -66,6 +66,7 @@ export class ReservaValidacionesService {
 
   getColaboracionErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errors: Record<string, string> = {};
+    this.addRequiredError(errors, form, submitted, 'rut', 'El RUT es obligatorio.');
     this.addRequiredError(
       errors,
       form,

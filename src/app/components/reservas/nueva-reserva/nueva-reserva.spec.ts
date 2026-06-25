@@ -307,10 +307,11 @@ describe('NuevaReserva', () => {
     expect(component['form'].get('nombre')?.value).toBeNull();
   });
 
-  it('en Colaboración sólo se exige el nombre del cliente', () => {
+  it('en Colaboración se exigen el RUT y el nombre del cliente', () => {
     component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
     component['submitted'].set(true);
     fixture.detectChanges();
+    expect(component['colaboracionErrors']()['rut']).toBeTruthy();
     expect(component['colaboracionErrors']()['nombreColaboracion']).toBeTruthy();
   });
 
