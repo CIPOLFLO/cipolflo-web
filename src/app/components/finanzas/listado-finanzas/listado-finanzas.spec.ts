@@ -409,4 +409,4 @@ describe('ListadoFinanzas', () => {
       expect(component['facturaSubscription']).toBeUndefined();
     });
   });
-});
+});    

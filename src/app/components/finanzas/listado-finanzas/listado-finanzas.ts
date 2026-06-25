@@ -175,7 +175,6 @@ export class ListadoFinanzas {
   protected onCargarFacturaClick(input: HTMLInputElement): void {
     input.click();
   }
-
   protected onFacturaSeleccionada(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -207,12 +206,13 @@ export class ListadoFinanzas {
 
     this.analizandoFactura.set(true);
 
-    this.documentoAzureService
+    this.facturaSubscription = this.documentoAzureService
       .analizarFactura(file)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (documento) => {
           this.analizandoFactura.set(false);
+          this.facturaSubscription = undefined;
 
           const datosPrecargados = this.facturaFinanzaMapper.mapear(documento);
 
@@ -224,12 +224,14 @@ export class ListadoFinanzas {
         },
         error: (err) => {
           this.analizandoFactura.set(false);
+          this.facturaSubscription = undefined;
           this.errorHandler.handle(err);
         },
       });
 
     input.value = '';
   }
+
   protected onCancelarAnalisisFactura(): void {
     this.facturaSubscription?.unsubscribe();
     this.facturaSubscription = undefined;
