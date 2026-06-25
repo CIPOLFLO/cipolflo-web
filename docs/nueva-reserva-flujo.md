@@ -40,19 +40,39 @@ Al elegir una **procedencia** (SEDE / CAMPING):
 - Se pide `GET /api/v1/servicios?procedencia=X&estado=HABILITADO&size=100` (mock hoy, real ya implementado)
 - El selector de servicio se habilita con la lista obtenida
 
-Al elegir un **servicio**, se determinan dos modos mutuamente excluyentes según los campos del servicio:
+Al elegir un **servicio**, se determinan dos modos de cantidad (mutuamente excluyentes) y un modo de hora (independiente):
 
-| Modo          | Condición                     | Campos que aparecen                                         |
-| ------------- | ----------------------------- | ----------------------------------------------------------- |
-| **Capacidad** | `servicio.capacidad !== null` | Cantidad total (requerido) + Cantidad de menores (opcional) |
-| **Cantidad**  | `servicio.cantidad !== null`  | Cantidad (requerido)                                        |
-| **Sin modo**  | Ambos `null`                  | Ningún campo extra                                          |
+| Modo          | Condición                                 | Campos que aparecen                                                          |
+| ------------- | ----------------------------------------- | ---------------------------------------------------------------------------- |
+| **Capacidad** | `servicio.capacidad !== null`             | Cantidad total de personas (requerido) + Cantidad de menores (opcional)      |
+| **Cantidad**  | `servicio.cantidad !== null`              | Cantidad (requerido)                                                         |
+| **Sin modo**  | Ambos `null`                              | Ningún campo extra de cantidad                                               |
+| **Hora**      | `servicio.modalidadPrecio === 'POR_HORA'` | Hora de inicio (requerido) + Hora de fin (requerido) — además de lo anterior |
+
+> **Modo Hora** es ortogonal a los modos de cantidad: un servicio `POR_HORA` puede tener también `capacidad` o `cantidad`, en cuyo caso aparecen ambos grupos de campos.
+
+**Advertencias informativas**
+
+Cuando el servicio tiene `capacidad` o `cantidad`, se muestra una advertencia (no bloqueante) debajo del campo correspondiente para orientar al operador:
+
+- Modo capacidad → _"La capacidad máxima de este servicio es de X personas."_
+- Modo cantidad → _"Actualmente hay X unidades disponibles en existencia."_
+
+El operador puede igualmente ingresar un valor mayor; la advertencia es solo informativa.
 
 Adicionalmente se carga el calendario de fechas ocupadas con `GET /api/v1/servicios/{id}/fechas-ocupadas`.
 
 ### Fechas
 
 El calendario bloquea los rangos ya ocupados. Al seleccionar un rango se actualizan `fechaInicio` y `fechaFin` en el form.
+
+La etiqueta del período seleccionado se adapta al tipo de selección:
+
+| Selección                | Etiqueta mostrada                               |
+| ------------------------ | ----------------------------------------------- |
+| Solo fecha de inicio     | `Desde dd/MM/yyyy…`                             |
+| Inicio = Fin (mismo día) | `Fecha seleccionada: dd/MM/yyyy`                |
+| Rango de días distintos  | `Período seleccionado: dd/MM/yyyy — dd/MM/yyyy` |
 
 ### Costo en tiempo real
 
@@ -90,12 +110,13 @@ Hay tres sub-escenarios según cómo se entró al formulario y el resultado de l
 
 #### Escenario 2 — Búsqueda por cédula: cliente encontrado
 
-1. Usuario escribe la cédula y presiona la lupita (o Enter si se implementa)
-2. Se llama a `GET /api/v1/clientes?size=1&identificador=<cedula>` (`ClientesService.getByCedula`)
-3. Si hay resultado, se llama a `GET /api/v1/clientes/{id}` para traer el detalle completo
-4. Los datos se precargan en readonly
-5. El badge cambia a "✓ Verificada"
-6. Si el usuario edita la cédula posteriormente, toda la sección se **resetea** (campos vacíos, badge vuelve a "Sin verificar")
+1. Usuario escribe la cédula y presiona la lupita
+2. **Validación previa**: se verifica el formato de la cédula (dígito verificador módulo 10, 7-8 dígitos). Si es inválida, se muestra el error _"La cédula ingresada no es válida."_ y la búsqueda no se dispara
+3. Si la cédula es válida, se llama a `GET /api/v1/clientes?size=1&identificador=<cedula>` (`ClientesService.getByCedula`)
+4. Si hay resultado, se llama a `GET /api/v1/clientes/{id}` para traer el detalle completo
+5. Los datos se precargan en readonly
+6. El badge cambia a "✓ Verificada"
+7. Si el usuario edita la cédula posteriormente, toda la sección se **resetea** (campos vacíos, badge vuelve a "Sin verificar")
 
 > Si el cliente tiene observaciones, se muestra un campo de texto en readonly debajo de los datos.
 
@@ -176,6 +197,8 @@ El método `construirDto()` resuelve los diferentes escenarios:
 | `cantidadTotal`   | solo si `modoCapacidad`     | —                                | —                             |
 | `cantidadMenores` | solo si `modoCapacidad`     | —                                | —                             |
 | `cantidad`        | solo si `modoCantidad`      | —                                | —                             |
+| `horaInicio`      | solo si `modoHora`          | solo si `modoHora`               | solo si `modoHora`            |
+| `horaFin`         | solo si `modoHora`          | solo si `modoHora`               | solo si `modoHora`            |
 
 ---
 
@@ -210,6 +233,7 @@ El método `construirDto()` resuelve los diferentes escenarios:
 
 ### Comportamiento de la cédula
 
+- Al presionar la lupita, se valida el formato de la cédula (algoritmo de dígito verificador módulo 10, 7-8 dígitos) **antes** de llamar al backend. Si falla la validación, se muestra el error en el campo y no se dispara la búsqueda.
 - La cédula se escribe en el form con `{ emitEvent: false }` cuando viene de una búsqueda (`aplicarCliente`), para no disparar el listener que invalidaría la verificación recién hecha.
 - Cualquier otra edición de la cédula (hecha por el usuario) **sí** emite y resetea todo: `busquedaRealizada → false`, `clienteBusqueda → null`, campos a `null`.
 
@@ -220,7 +244,11 @@ Los validadores `required` de `cedula`, `nombre`, `celular` se activan/desactiva
 - **Común**: `cedula`, `nombre`, `celular` son requeridos
 - **Colaboración**: `nombreColaboracion` es requerido; los anteriores se limpian
 
+El campo `cedula` lleva además el validador `cedulaValida` (algoritmo uruguayo) de forma permanente.
+
 Los validadores de `cantidadTotal` y `cantidad` se activan/desactivan según el modo del servicio seleccionado. `cantidadMenores` siempre tiene solo `min(0)`.
+
+Los validadores de `horaInicio` y `horaFin` (`required`) se activan cuando `modoHora` es `true` (servicio con `modalidadPrecio === 'POR_HORA'`) y se limpian en cualquier otro modo.
 
 ### Errores de validación
 

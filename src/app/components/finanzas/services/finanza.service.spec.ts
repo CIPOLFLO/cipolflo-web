@@ -10,16 +10,28 @@ import {
   FinanzaModificarDto,
 } from '../models/finanza.model';
 import { FinanzaService } from './finanza.service';
+import { BlobExportService } from '../../../core/services/blob-export.service';
+import { of } from 'rxjs';
 
 const PARAMS_BASE = { page: 0, size: 10, filters: {} };
 
 describe('FinanzaService', () => {
   let service: FinanzaService;
   let httpMock: HttpTestingController;
+  let blobExportService: { export: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    blobExportService = {
+      export: vi.fn().mockReturnValue(of(undefined)),
+    };
+
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), FinanzaService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        FinanzaService,
+        { provide: BlobExportService, useValue: blobExportService },
+      ],
     });
 
     service = TestBed.inject(FinanzaService);
@@ -35,17 +47,63 @@ describe('FinanzaService', () => {
   });
 
   describe('getAll', () => {
-    it('retorna una página vacía porque el listado aún no está conectado al backend', async () => {
+    it('llama a GET /finanzas con paginación', () => {
       service.getAll(PARAMS_BASE).subscribe((result) => {
-        expect(result.totalElements).toBe(0);
-        expect(result.content).toHaveLength(0);
+        expect(result.totalElements).toBe(1);
+        expect(result.content).toHaveLength(1);
+        expect(result.content[0].tipoMovimiento).toBe(TipoMovimiento.Ingreso);
+      });
+
+      const req = httpMock.expectOne(
+        (request) =>
+          request.method === 'GET' &&
+          request.url.includes('finanzas') &&
+          request.params.get('page') === '0' &&
+          request.params.get('size') === '10',
+      );
+
+      req.flush({
+        content: [
+          {
+            id: 1,
+            concepto: Concepto.PagoReserva,
+            fecha: '2026-06-18',
+            importe: 5000,
+            notas: null,
+            tipoMovimiento: TipoMovimiento.Ingreso,
+          },
+        ],
+        page: 0,
+        size: 10,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true,
       });
     });
 
-    it('refleja los parámetros de paginación recibidos', async () => {
+    it('refleja los parámetros de paginación recibidos', () => {
       service.getAll({ page: 2, size: 5, filters: {} }).subscribe((result) => {
         expect(result.page).toBe(2);
         expect(result.size).toBe(5);
+      });
+
+      const req = httpMock.expectOne(
+        (request) =>
+          request.method === 'GET' &&
+          request.url.includes('finanzas') &&
+          request.params.get('page') === '2' &&
+          request.params.get('size') === '5',
+      );
+
+      req.flush({
+        content: [],
+        page: 2,
+        size: 5,
+        totalElements: 0,
+        totalPages: 0,
+        first: true,
+        last: true,
       });
     });
   });
@@ -148,5 +206,17 @@ describe('FinanzaService', () => {
 
       req.flush(null);
     });
+  });
+
+  it('exportar delega en BlobExportService con el endpoint y filename correctos', () => {
+    const filters = { concepto: 'PAGO_RESERVA' };
+
+    service.exportar(filters).subscribe();
+
+    expect(blobExportService.export).toHaveBeenCalledWith(
+      'finanzas/export',
+      filters,
+      'finanzas.xlsx',
+    );
   });
 });

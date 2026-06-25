@@ -1,14 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { catchError, EMPTY, filter, finalize, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
-  ConfirmDialogComponent,
   ConfirmDialogService,
   CurrencyFormatPipe,
   emailValido,
-  ErrorDialogComponent,
   ErrorDialogService,
   FormActions,
   FormField,
@@ -16,12 +13,9 @@ import {
   FormSection,
   OccupancyCalendar,
   PageLayout,
-  parseNumberOrNull,
   Procedencia,
-  PROCEDENCIA_OPTIONS,
   type DateRangeSelection,
   type FormFieldConfig,
-  type FormFieldOption,
 } from '../../../shared';
 import {
   EstadoSocio,
@@ -29,6 +23,7 @@ import {
   TIPO_CLIENTE_FORM_OPTIONS,
 } from '../../clientes/models/cliente.model';
 import { ClientesService } from '../../clientes/services/cliente.service';
+import { ClienteValidacionesService } from '../../clientes/services/cliente-validaciones.service';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
   TIPO_RESERVA_OPTIONS,
@@ -50,8 +45,6 @@ import { Subject } from 'rxjs';
     FormActions,
     AppButton,
     OccupancyCalendar,
-    ConfirmDialogComponent,
-    ErrorDialogComponent,
     CurrencyFormatPipe,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
@@ -64,34 +57,20 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly errorDialog = inject(ErrorDialogService);
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
+  private readonly clienteValidaciones = inject(ClienteValidacionesService);
 
   private readonly buscarClienteTrigger = new Subject<string>();
 
   constructor() {
-    super(
-      new FormGroup({
-        tipoReserva: new FormControl<string | null>(TipoReserva.Comun),
-        procedencia: new FormControl<string | null>(null, Validators.required),
-        servicioId: new FormControl<string | null>(null, Validators.required),
-        fechaInicio: new FormControl<string | null>(null, Validators.required),
-        fechaFin: new FormControl<string | null>(null, Validators.required),
-        cantidadTotal: new FormControl<string | null>(null),
-        cantidadMenores: new FormControl<string | null>(null, Validators.min(0)),
-        cantidad: new FormControl<string | null>(null),
-        tipoCliente: new FormControl<string | null>(null),
-        cedula: new FormControl<string | null>(null),
-        nombre: new FormControl<string | null>(null),
-        celular: new FormControl<string | null>(null),
-        email: new FormControl<string | null>(null),
-        numeroSocio: new FormControl<string | null>(null),
-        rut: new FormControl<string | null>(null),
-        nombreColaboracion: new FormControl<string | null>(null),
-        notas: new FormControl<string | null>(null),
-      }),
-    );
+    super(ReservaFormBase.buildReservaForm());
 
     this.form.get('email')?.addValidators(emailValido);
     this.form.get('email')?.updateValueAndValidity({ emitEvent: false });
+
+    this.form
+      .get('cedula')
+      ?.addValidators(this.clienteValidaciones.cedulaValida.bind(this.clienteValidaciones));
+    this.form.get('cedula')?.updateValueAndValidity({ emitEvent: false });
 
     // Punto de entrada desde el listado de clientes: precarga del cliente (readonly).
     const clienteId = this.route.snapshot.queryParamMap.get('clienteId');
@@ -141,11 +120,10 @@ export class NuevaReserva extends ReservaFormBase {
   }
 
   protected buscarCliente(): void {
-    const cedula = (this.form.get('cedula')?.value as string | null)?.trim();
-    if (!cedula) {
-      this.onFieldBlur('cedula');
-      return;
-    }
+    const cedulaControl = this.form.get('cedula');
+    const cedula = (cedulaControl?.value as string | null)?.trim();
+    cedulaControl?.markAsTouched();
+    if (!cedula || cedulaControl?.invalid) return;
     this.loading.set(true);
     this.buscarClienteTrigger.next(cedula);
   }
@@ -172,7 +150,7 @@ export class NuevaReserva extends ReservaFormBase {
     });
   }
 
-  // --- Configuración de campos de la sección "Información de la Reserva" ---
+  // --- Campos específicos de la sección "Información de la Reserva" ---
 
   protected readonly tipoReservaField = computed<FormFieldConfig>(() => ({
     key: 'tipoReserva',
@@ -186,47 +164,17 @@ export class NuevaReserva extends ReservaFormBase {
     defaultValue: TipoReserva.Comun,
   }));
 
-  protected readonly procedenciaField: FormFieldConfig = {
-    key: 'procedencia',
-    label: 'Procedencia',
-    type: 'select',
-    required: true,
-    placeholder: 'Seleccione una procedencia',
-    options: PROCEDENCIA_OPTIONS,
-  };
-
-  protected readonly servicioOptions = computed<FormFieldOption[]>(() =>
-    this.servicios().map((s) => ({ label: s.nombre, value: String(s.id) })),
-  );
-
-  protected readonly servicioField = computed<FormFieldConfig>(() => ({
-    key: 'servicioId',
-    label: 'Servicio',
-    type: 'select',
-    required: true,
-    disabled: this.servicios().length === 0,
-    placeholder:
-      this.servicios().length === 0 ? 'Elija primero una procedencia' : 'Seleccione un servicio',
-    options: this.servicioOptions(),
-  }));
-
-  protected readonly cantidadTotalField: FormFieldConfig = {
-    key: 'cantidadTotal',
-    label: 'Cantidad total',
-    type: 'number',
+  protected readonly horaInicioField: FormFieldConfig = {
+    key: 'horaInicio',
+    label: 'Hora de inicio',
+    type: 'time',
     required: true,
   };
 
-  protected readonly cantidadMenoresField: FormFieldConfig = {
-    key: 'cantidadMenores',
-    label: 'Cantidad de menores',
-    type: 'number',
-  };
-
-  protected readonly cantidadField: FormFieldConfig = {
-    key: 'cantidad',
-    label: 'Cantidad',
-    type: 'number',
+  protected readonly horaFinField: FormFieldConfig = {
+    key: 'horaFin',
+    label: 'Hora de fin',
+    type: 'time',
     required: true,
   };
 
@@ -292,6 +240,7 @@ export class NuevaReserva extends ReservaFormBase {
     key: 'rut',
     label: 'RUT del cliente',
     type: 'text',
+    required: true,
   };
 
   protected readonly nombreColaboracionField: FormFieldConfig = {
@@ -299,13 +248,6 @@ export class NuevaReserva extends ReservaFormBase {
     label: 'Nombre del cliente',
     type: 'text',
     required: true,
-  };
-
-  protected readonly notasField: FormFieldConfig = {
-    key: 'notas',
-    label: 'Notas / Observaciones',
-    type: 'textarea',
-    fullWidth: true,
   };
 
   protected readonly lupitaVisible = computed(
@@ -393,13 +335,9 @@ export class NuevaReserva extends ReservaFormBase {
       servicioId: Number(this.controlValue('servicioId')),
       fechaInicio: this.controlValue('fechaInicio')!,
       fechaFin: this.controlValue('fechaFin')!,
-      cantidadTotal: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
-        : null,
-      cantidadMenores: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
-        : null,
-      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+      ...this.buildCantidades(),
+      horaInicio: this.modoHora() ? this.controlValue('horaInicio') : null,
+      horaFin: this.modoHora() ? this.controlValue('horaFin') : null,
       clienteId: cliente?.id ?? null,
       // Reserva común sin cliente encontrado: se enviaron datos básicos para que el backend lo cree.
       crearCliente: !colaboracion && cliente === null,

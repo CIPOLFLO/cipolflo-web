@@ -50,6 +50,8 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   procedencia: Procedencia.Camping,
   fechaEntrada: '2026-08-10',
   fechaSalida: '2026-08-15',
+  horaInicio: '14:00',
+  horaFin: '10:00',
   cantidadTotal: 4,
   cantidadMenores: 1,
   cantidad: null,
@@ -58,6 +60,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {

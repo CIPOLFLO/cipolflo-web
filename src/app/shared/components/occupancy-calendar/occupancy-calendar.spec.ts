@@ -51,4 +51,29 @@ describe('OccupancyCalendar', () => {
     expect(sel![0].getMonth()).toBe(7); // agosto = índice 7
     expect(sel![1].getDate()).toBe(15);
   });
+
+  it('rangoLabel muestra la fecha sola cuando inicio y fin coinciden', () => {
+    component['onSelectionChange']([new Date(2026, 6, 1), new Date(2026, 6, 1)]);
+    expect(component['rangoLabel']()).toBe('01/07/2026');
+  });
+
+  it('esFechaUnica es true cuando inicio y fin son el mismo día', () => {
+    component['onSelectionChange']([new Date(2026, 6, 1), new Date(2026, 6, 1)]);
+    expect(component['esFechaUnica']()).toBe(true);
+  });
+
+  it('rangoLabel muestra el rango cuando inicio y fin son distintos', () => {
+    component['onSelectionChange']([new Date(2026, 6, 1), new Date(2026, 6, 3)]);
+    expect(component['rangoLabel']()).toBe('01/07/2026 — 03/07/2026');
+  });
+
+  it('esFechaUnica es false cuando inicio y fin son días distintos', () => {
+    component['onSelectionChange']([new Date(2026, 6, 1), new Date(2026, 6, 3)]);
+    expect(component['esFechaUnica']()).toBe(false);
+  });
+
+  it('rangoLabel muestra "Desde…" cuando sólo hay fecha de inicio', () => {
+    component['onSelectionChange']([new Date(2026, 6, 1)]);
+    expect(component['rangoLabel']()).toBe('Desde 01/07/2026…');
+  });
 });

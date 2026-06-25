@@ -78,3 +78,19 @@
   font-weight: 700;
   color: var(--color-text-primary);
 }
+
+.nueva-reserva__campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nueva-reserva__advertencia {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--amber-600, #d97706);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  line-height: 1.4;
+}

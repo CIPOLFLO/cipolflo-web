@@ -62,10 +62,6 @@ export class ListadoReservas {
     this.tableState.updateFilters(filters);
   }
 
-  protected onApplyFilters(filters: Record<string, string>): void {
-    this.tableState.updateFilters(filters);
-  }
-
   protected onSearchChange(search: string): void {
     this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
   }
@@ -76,9 +72,5 @@ export class ListadoReservas {
 
   protected onNuevaReserva(): void {
     this.router.navigate(['/reservas/nueva']);
-  }
-
-  private recargarTabla(): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
 }

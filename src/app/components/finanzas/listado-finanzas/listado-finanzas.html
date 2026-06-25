@@ -10,6 +10,16 @@
     (clicked)="onNuevoMovimiento()"
   />
 
+  <app-button
+    actions
+    label="Descargar listado"
+    intent="secondary"
+    icon="pi-download"
+    [disabled]="!puedeExportar()"
+    [loading]="exportando()"
+    (clicked)="onDescargarListado()"
+  />
+
   <app-filter-panel (filterChange)="onFilterChange($event)" />
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
 </app-page-layout>
