@@ -32,10 +32,11 @@ export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.PagoCuota]: 'Pago de cuota',
   [Concepto.Ute]: 'UTE',
   [Concepto.Ose]: 'OSE',
+  [Concepto.Otro]: 'OTRO',
   [Concepto.Antel]: 'ANTEL',
   [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
-  [Concepto.Otro]: 'Otro',
+
 };
 
 export interface FinanzaRespuestaDto {
