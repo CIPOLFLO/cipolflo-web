@@ -65,7 +65,7 @@ describe('PagoReserva', () => {
   it('debería mostrar los datos básicos de la reserva', () => {
     expect(fixture.nativeElement.textContent).toContain('Juan Pérez');
     expect(fixture.nativeElement.textContent).toContain('Salón principal');
-    expect(fixture.nativeElement.textContent).toContain('5000');
+    expect(fixture.nativeElement.textContent).toContain('5.000,00');
   });
 
   it('debería precargar el importe con montoImpago y pago total activo', () => {

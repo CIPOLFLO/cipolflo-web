@@ -100,6 +100,11 @@ describe('ReservasService', () => {
       fechaEntrada: '2026-08-10',
       fechaSalida: '2026-08-15',
       estadoReserva: EstadoReserva.Confirmada,
+      tipoReserva: TipoReserva.Comun,
+      montoImpago: 5000,
+      fechaLimitePago: null,
+      pago: false,
+      pendienteDocumentacion: false,
     };
 
     const mockPage = {
