@@ -28,7 +28,10 @@
       />
       @if (servicioSeleccionado()) {
         <div class="editar-reserva__calendario">
-          <span class="editar-reserva__calendario-label">Fechas de la reserva *</span>
+          <span class="editar-reserva__calendario-label"
+            >Fechas de la reserva
+            <span class="editar-reserva__required" aria-hidden="true">*</span></span
+          >
           <app-occupancy-calendar
             [occupiedRanges]="fechasOcupadas()"
             [initialRange]="initialCalendarRange()"
@@ -48,13 +51,20 @@
       }
 
       @if (modoCapacidad()) {
-        <app-form-field
-          [config]="cantidadTotalField"
-          [value]="controlValue('cantidadTotal')"
-          [error]="reservaErrors()['cantidadTotal']"
-          (valueChange)="onControlChange('cantidadTotal', $event)"
-          (blurred)="onFieldBlur('cantidadTotal')"
-        />
+        <div class="editar-reserva__campo-grupo">
+          <app-form-field
+            [config]="cantidadTotalField"
+            [value]="controlValue('cantidadTotal')"
+            [error]="reservaErrors()['cantidadTotal']"
+            (valueChange)="onControlChange('cantidadTotal', $event)"
+            (blurred)="onFieldBlur('cantidadTotal')"
+          />
+          <p class="editar-reserva__advertencia">
+            <i class="pi pi-info-circle"></i>
+            La capacidad máxima de este servicio es de
+            <strong>{{ servicioSeleccionado()!.capacidad }}</strong> personas.
+          </p>
+        </div>
         <app-form-field
           [config]="cantidadMenoresField"
           [value]="controlValue('cantidadMenores')"
@@ -64,13 +74,20 @@
         />
       }
       @if (modoCantidad()) {
-        <app-form-field
-          [config]="cantidadField"
-          [value]="controlValue('cantidad')"
-          [error]="reservaErrors()['cantidad']"
-          (valueChange)="onControlChange('cantidad', $event)"
-          (blurred)="onFieldBlur('cantidad')"
-        />
+        <div class="editar-reserva__campo-grupo">
+          <app-form-field
+            [config]="cantidadField"
+            [value]="controlValue('cantidad')"
+            [error]="reservaErrors()['cantidad']"
+            (valueChange)="onControlChange('cantidad', $event)"
+            (blurred)="onFieldBlur('cantidad')"
+          />
+          <p class="editar-reserva__advertencia">
+            <i class="pi pi-info-circle"></i>
+            Actualmente hay <strong>{{ servicioSeleccionado()!.cantidad }}</strong> unidades
+            disponibles en existencia.
+          </p>
+        </div>
       }
     </app-form-section>
 

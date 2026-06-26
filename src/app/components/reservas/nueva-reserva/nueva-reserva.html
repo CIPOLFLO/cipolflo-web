@@ -30,7 +30,10 @@
       />
       @if (servicioSeleccionado()) {
         <div class="nueva-reserva__calendario">
-          <span class="nueva-reserva__calendario-label">Fechas de la reserva *</span>
+          <span class="nueva-reserva__calendario-label"
+            >Fechas de la reserva
+            <span class="nueva-reserva__required" aria-hidden="true">*</span></span
+          >
           <app-occupancy-calendar
             [occupiedRanges]="fechasOcupadas()"
             (rangeSelected)="onRangoSeleccionado($event)"

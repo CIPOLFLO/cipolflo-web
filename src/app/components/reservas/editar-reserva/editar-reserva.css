@@ -28,6 +28,26 @@
   color: var(--color-text-secondary);
 }
 
+.editar-reserva__required {
+  color: var(--color-danger);
+}
+
+.editar-reserva__campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.editar-reserva__advertencia {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--amber-600, #d97706);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  line-height: 1.4;
+}
+
 .editar-reserva__costo-valor {
   font-size: 1.125rem;
   font-weight: 700;
