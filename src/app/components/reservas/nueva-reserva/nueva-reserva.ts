@@ -116,6 +116,7 @@ export class NuevaReserva extends ReservaFormBase {
           this.clienteBusqueda.set(null);
           this.habilitarCamposManuales();
         }
+        this.recalcularCosto.next();
       });
   }
 

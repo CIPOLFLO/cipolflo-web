@@ -12,8 +12,7 @@ export const RESERVAS_ROUTES: Routes = [
   },
   {
     path: ':id/modificar',
-    loadComponent: () =>
-      import('./editar-reserva/editar-reserva').then((m) => m.EditarReserva),
+    loadComponent: () => import('./editar-reserva/editar-reserva').then((m) => m.EditarReserva),
   },
   {
     path: ':id',

@@ -10,6 +10,7 @@ import {
   merge,
   Observable,
   of,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -71,6 +72,8 @@ export abstract class ReservaFormBase {
   protected readonly clienteBusqueda = signal<ClienteBusquedaReservaDto | null>(null);
   protected readonly clientePrellenado = signal(false);
   protected readonly busquedaRealizada = signal(false);
+
+  protected readonly recalcularCosto = new Subject<void>();
 
   protected readonly tipoReservaValue = signal<TipoReserva>(TipoReserva.Comun);
   protected readonly servicioIdValue = signal<number | null>(null);
@@ -273,7 +276,8 @@ export abstract class ReservaFormBase {
       this.form.get('cantidadMenores')!.valueChanges,
       this.form.get('tipoCliente')!.valueChanges,
       this.form.get('horaInicio')!.valueChanges,
-      this.form.get('horaFin')!.valueChanges  
+      this.form.get('horaFin')!.valueChanges,
+      this.recalcularCosto,
     )
       .pipe(
         debounceTime(300),

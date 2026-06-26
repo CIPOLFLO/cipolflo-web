@@ -110,10 +110,13 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
         provide: ActivatedRoute,
         useValue: {
           paramMap: of(convertToParamMap({ id })),
-          snapshot: { paramMap: { get: (key: string) => (key === 'id' ? id : null) } },
+          snapshot: {
+            paramMap: { get: (key: string) => (key === 'id' ? id : null) },
+            queryParamMap: { get: () => null },
+          },
         },
       },
-      { provide: Router, useValue: { navigate: navigateSpy } },
+      { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateSpy } },
       { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
       {
         provide: ServicioService,
@@ -136,6 +139,7 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
     .compileComponents();
 
   const fixture: ComponentFixture<EditarReserva> = TestBed.createComponent(EditarReserva);
+  fixture.componentRef.setInput('id', id);
   const component = fixture.componentInstance;
   fixture.detectChanges();
   await fixture.whenStable();
@@ -243,13 +247,13 @@ describe('EditarReserva', () => {
         notas: 'Llegan a las 14hs',
       }),
     );
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42']);
+    expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
   });
 
   it('onCancelar navega a /reservas/:id (detalle)', async () => {
     const { component, navigateSpy } = await setup();
     component['onCancelar']();
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42']);
+    expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
   });
 
   it('getById con error: llama al errorHandler y navega a /reservas', async () => {
@@ -267,10 +271,13 @@ describe('EditarReserva', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: of(convertToParamMap({ id: '99' })),
-            snapshot: { paramMap: { get: (key: string) => (key === 'id' ? '99' : null) } },
+            snapshot: {
+              paramMap: { get: (key: string) => (key === 'id' ? '99' : null) },
+              queryParamMap: { get: () => null },
+            },
           },
         },
-        { provide: Router, useValue: { navigate: navigateSpy } },
+        { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateSpy } },
         { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
         {
           provide: ServicioService,
@@ -300,6 +307,7 @@ describe('EditarReserva', () => {
       .compileComponents();
 
     const fixture = TestBed.createComponent(EditarReserva);
+    fixture.componentRef.setInput('id', '99');
     fixture.detectChanges();
     await fixture.whenStable();
 
