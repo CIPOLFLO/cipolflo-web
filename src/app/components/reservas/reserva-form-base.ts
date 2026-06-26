@@ -1,4 +1,4 @@
-import { computed, DestroyRef, Directive, inject, signal, Signal } from '@angular/core';
+import { computed, DestroyRef, Directive, inject, input, signal, Signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -75,6 +75,12 @@ export abstract class ReservaFormBase {
   protected readonly tipoReservaValue = signal<TipoReserva>(TipoReserva.Comun);
   protected readonly servicioIdValue = signal<number | null>(null);
   protected readonly tipoClienteValue = signal<TipoCliente | null>(null);
+
+  readonly id = input<string>('');
+  protected readonly backLink = computed<string>(() => {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    return from === 'listado' ? '/reservas' : `/reservas/${this.id()}`;
+  });
 
   protected readonly esColaboracion = computed(
     () => this.tipoReservaValue() === TipoReserva.ColaboracionSinFines,
