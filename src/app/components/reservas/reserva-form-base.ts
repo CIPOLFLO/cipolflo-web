@@ -266,6 +266,8 @@ export abstract class ReservaFormBase {
       this.form.get('cantidadTotal')!.valueChanges,
       this.form.get('cantidadMenores')!.valueChanges,
       this.form.get('tipoCliente')!.valueChanges,
+      this.form.get('horaInicio')!.valueChanges,
+      this.form.get('horaFin')!.valueChanges  
     )
       .pipe(
         debounceTime(300),
@@ -279,14 +281,17 @@ export abstract class ReservaFormBase {
     const servicioId = this.servicioIdValue();
     const fechaInicio = this.controlValue('fechaInicio');
     const fechaFin = this.controlValue('fechaFin');
-    if (!servicioId || !fechaInicio || !fechaFin) return of(null);
+    const horaInicio = this.controlValue('horaInicio');
+    const horaFin = this.controlValue('horaFin');
+    const horasCorrectas = !this.modoHora() || (horaInicio && horaFin);
+    if (!servicioId || !fechaInicio || !fechaFin || !horasCorrectas) return of(null);
 
     const request: CostoReservaRequestDto = {
       servicioId,
       fechaInicio,
       fechaFin,
-      horaInicio: null,
-      horaFin: null,
+      horaInicio: horaInicio || null,
+      horaFin: horaFin || null,
       cantidadTotal: this.modoCapacidad()
         ? parseNumberOrNull(this.controlValue('cantidadTotal'))
         : null,
