@@ -7,7 +7,7 @@ export const RESERVAS_ROUTES: Routes = [
       import('./listado-reservas/listado-reservas').then((m) => m.ListadoReservas),
   },
   {
-    path: 'nuevo',
+    path: 'nueva',
     loadComponent: () => import('./nueva-reserva/nueva-reserva').then((m) => m.NuevaReserva),
   },
   {
