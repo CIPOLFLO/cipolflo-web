@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject,signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
@@ -9,7 +9,7 @@ import { FilterConfigProvider } from '../../../shared/services/filter-config.pro
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
-import { ReservaRow, TipoReserva  } from '../models/reserva.model';
+import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
@@ -32,7 +32,7 @@ export class ListadoReservas {
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
   private readonly columnsService = inject(ReservasColumnsService);
-protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
+  protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
@@ -55,14 +55,14 @@ protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
         ]
       : []),
     ...(this.puedeConfirmarPago(row)
-  ? [
-      {
-        label: 'Confirmar pago',
-        icon: 'pi pi-dollar',
-        command: () => this.onConfirmarPago(row),
-      } satisfies RowAction<ReservaRow>,
-    ]
-  : []),
+      ? [
+          {
+            label: 'Confirmar pago',
+            icon: 'pi pi-dollar',
+            command: () => this.onConfirmarPago(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
     // { label: 'Eliminar', ... },
   ];
 
@@ -83,30 +83,27 @@ protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   }
 
   protected onConfirmarPago(row: ReservaRow): void {
-  this.reservaPagoSeleccionada.set(row);
-}
+    this.reservaPagoSeleccionada.set(row);
+  }
 
-protected onCerrarPagoReserva(): void {
-  this.reservaPagoSeleccionada.set(null);
-}
+  protected onCerrarPagoReserva(): void {
+    this.reservaPagoSeleccionada.set(null);
+  }
 
-protected onPagoReservaRegistrado(): void {
-  this.reservaPagoSeleccionada.set(null);
-  this.recargarTabla();
-}
+  protected onPagoReservaRegistrado(): void {
+    this.reservaPagoSeleccionada.set(null);
+    this.recargarTabla();
+  }
 
-private recargarTabla(): void {
-  this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
-}
+  private recargarTabla(): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+  }
 
-private puedeConfirmarPago(row: ReservaRow): boolean {
-  return (
-    row.estadoReserva !== EstadoReserva.Finalizada &&
-    row.estadoReserva !== EstadoReserva.Cancelada &&
-    row.tipoReserva !== TipoReserva.ColaboracionSinFines
-  );
-}
-
-
-
+  private puedeConfirmarPago(row: ReservaRow): boolean {
+    return (
+      row.estadoReserva !== EstadoReserva.Finalizada &&
+      row.estadoReserva !== EstadoReserva.Cancelada &&
+      row.tipoReserva !== TipoReserva.ColaboracionSinFines
+    );
+  }
 }

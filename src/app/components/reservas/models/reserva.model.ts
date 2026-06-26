@@ -163,7 +163,7 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   servicio: ServicioDetalleReservaDto;
 }
 
-export interface ReservaRespuestaDto extends ReservaRow {}
+export type ReservaRespuestaDto = ReservaRow;
 
 export interface RegistroPagoReservaRequestDto {
   importe: number;

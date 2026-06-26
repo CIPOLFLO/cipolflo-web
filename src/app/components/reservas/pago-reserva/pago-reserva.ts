@@ -92,20 +92,20 @@ export class PagoReserva {
   }
 
   protected onCancelar(): void {
-  this.onCerrar();
-}
+    this.onCerrar();
+  }
 
-protected importeInvalido(): boolean {
-  return this.campoInvalido('importe');
-}
+  protected importeInvalido(): boolean {
+    return this.campoInvalido('importe');
+  }
 
-protected formaPagoInvalida(): boolean {
-  return this.campoInvalido('formaPago');
-}
+  protected formaPagoInvalida(): boolean {
+    return this.campoInvalido('formaPago');
+  }
 
-protected confirmDisabled(): boolean {
-  return this.form.invalid || this.guardando();
-}
+  protected confirmDisabled(): boolean {
+    return this.form.invalid || this.guardando();
+  }
 
   protected onConfirmar(): void {
     const reserva = this.reserva();
