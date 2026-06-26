@@ -1,0 +1,102 @@
+<p-dialog
+  [visible]="reserva() !== null"
+  [modal]="true"
+  [closable]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [style]="{ width: '560px', minHeight: '520px' }"
+>
+  @if (reserva(); as reserva) {
+    <div class="pago-reserva">
+      <header class="pago-reserva__header">
+        <h2>Confirmar pago de reserva</h2>
+        <p>Registre el pago correspondiente a la reserva seleccionada</p>
+      </header>
+
+      <section class="pago-reserva__reserva">
+        <p class="pago-reserva__reserva-item">
+          <i class="pi pi-hashtag"></i>
+          <span>Reserva N° {{ reserva.id }}</span>
+        </p>
+
+        <p class="pago-reserva__reserva-item">
+          <i class="pi pi-user"></i>
+          <span>Cliente: {{ reserva.nombreCliente }}</span>
+        </p>
+
+        <p class="pago-reserva__reserva-item">
+          <i class="pi pi-building"></i>
+          <span>Servicio: {{ reserva.servicioNombre }}</span>
+        </p>
+
+        <p class="pago-reserva__reserva-item">
+          <i class="pi pi-calendar"></i>
+          <span>Desde {{ reserva.fechaEntrada }} hasta {{ reserva.fechaSalida }}</span>
+        </p>
+
+        <p class="pago-reserva__reserva-item">
+          <i class="pi pi-info-circle"></i>
+          <span>Estado: {{ reserva.estadoReserva }}</span>
+        </p>
+      </section>
+
+      <section class="pago-reserva__monto">
+        <span>Monto que falta pagar</span>
+        <strong>{{ reserva.montoImpago | currencyFormat }}</strong>
+      </section>
+
+      <form [formGroup]="form" class="pago-reserva__form">
+        <label for="esPagoTotal" class="pago-reserva__check">
+          <input id="esPagoTotal" type="checkbox" formControlName="esPagoTotal" />
+          <span>Pago total</span>
+        </label>
+
+        <label for="importe">Importe *</label>
+        <p-inputnumber
+          inputId="importe"
+          formControlName="importe"
+          mode="currency"
+          currency="UYU"
+          locale="es-UY"
+          [min]="1"
+          [max]="reserva.montoImpago"
+        />
+
+        @if (importeInvalido()) {
+          <small class="pago-reserva__error">
+            El importe es obligatorio y no puede superar el monto pendiente.
+          </small>
+        }
+
+        <label for="formaPago">Forma de pago *</label>
+        <p-select
+          inputId="formaPago"
+          formControlName="formaPago"
+          [options]="formaPagoOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar"
+        />
+
+        @if (formaPagoInvalida()) {
+          <small class="pago-reserva__error">La forma de pago es obligatoria.</small>
+        }
+
+        <label for="notas">Notas</label>
+        <textarea id="notas" formControlName="notas" rows="3" class="pago-reserva__textarea"></textarea>
+      </form>
+
+      <footer class="pago-reserva__actions">
+        <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
+        <app-button
+          label="Confirmar pago"
+          intent="primary"
+          [disabled]="confirmDisabled()"
+          [loading]="guardando()"
+          [tooltip]="confirmDisabled() ? 'Complete todos los campos correctamente' : ''"
+          (clicked)="onConfirmar()"
+        />
+      </footer>
+    </div>
+  }
+</p-dialog>
