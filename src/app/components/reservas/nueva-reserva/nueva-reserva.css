@@ -85,6 +85,10 @@
   gap: 0.25rem;
 }
 
+.nueva-reserva__required {
+  color: var(--color-danger);
+}
+
 .nueva-reserva__advertencia {
   margin: 0;
   font-size: 0.75rem;
