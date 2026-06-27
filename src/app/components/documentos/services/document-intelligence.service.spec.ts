@@ -1,9 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import {
-  DocumentIntelligenceService,
-  DocumentoAnalizadoResponse,
-} from './document-intelligence.service';
+import { DocumentIntelligenceService } from './document-intelligence.service';
+import { DocumentoAnalizadoResponse } from '../models/document-intelligence.model';
 
 describe('DocumentIntelligenceService', () => {
   let service: DocumentIntelligenceService;

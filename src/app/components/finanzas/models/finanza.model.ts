@@ -36,7 +36,6 @@ export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.Antel]: 'ANTEL',
   [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
-
 };
 
 export interface FinanzaRespuestaDto {

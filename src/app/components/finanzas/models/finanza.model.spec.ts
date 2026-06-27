@@ -17,7 +17,7 @@ describe('finanza.model', () => {
       { label: 'UTE', value: Concepto.Ute },
       { label: 'ANTEL', value: Concepto.Antel },
       { label: 'OSE', value: Concepto.Ose },
-      { label: 'BARRACA', value: Concepto.Barraca },
+      { label: 'Barraca', value: Concepto.Barraca },
       { label: 'OTRO', value: Concepto.Otro },
     ]);
   });
