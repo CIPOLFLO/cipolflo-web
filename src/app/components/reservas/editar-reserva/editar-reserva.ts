@@ -157,13 +157,13 @@ export class EditarReserva extends ReservaFormBase {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: () => this.router.navigate(['/reservas', String(id)]),
+        next: () => this.router.navigateByUrl(this.backLink()),
         error: (err: unknown) => this.errorHandler.handle(err),
       });
   }
 
   override onCancelar(): void {
-    this.router.navigate(['/reservas', this.reservaId()]);
+    this.router.navigateByUrl(this.backLink());
   }
 
   private construirDto(): ReservaActualizacionRequestDto {

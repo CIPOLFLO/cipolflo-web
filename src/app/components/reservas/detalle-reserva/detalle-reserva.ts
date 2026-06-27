@@ -196,7 +196,7 @@ export class DetalleReserva {
   });
 
   protected onModificar(): void {
-    this.router.navigate(['/reservas', this.reservaId(), 'editar'], {
+    this.router.navigate(['/reservas', this.reservaId(), 'modificar'], {
       queryParams: { from: 'detalle' },
     });
   }

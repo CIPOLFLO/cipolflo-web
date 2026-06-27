@@ -19,6 +19,7 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   estado: EstadoServicio.Habilitado,
   capacidad: 4,
   cantidad: null,
+  costoPersonaExtra: null,
   createdAt: '2026-01-15T10:30:00Z',
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
@@ -121,6 +122,7 @@ describe('EditarServicio', () => {
     expect(component['form'].get('precioParticular')?.value).toBe(1200);
     expect(component['form'].get('precioSocio')?.value).toBe(800);
     expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_DIA');
+    expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
   });
 
   it('pageDescription debería mostrar el nombre del servicio', () => {

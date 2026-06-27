@@ -149,6 +149,7 @@ describe('ServicioValidacionesService', () => {
             Validators.min(1),
           ]),
           modalidadPrecio: new FormControl<string | null>(null, Validators.required),
+          costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
         },
         { validators: [(g) => service.precioSocioMenorQueParticular(g)] },
       );
@@ -199,6 +200,26 @@ describe('ServicioValidacionesService', () => {
       expect(errs['precioParticular']).toBeDefined();
       expect(errs['precioSocio']).toBeDefined();
       expect(errs['modalidadPrecio']).toBeDefined();
+    });
+
+    it('no muestra error de costoPersonaExtra cuando el valor es null', () => {
+      const form = makePreciosForm();
+      form.get('costoPersonaExtra')!.markAsTouched();
+      expect(service.getPreciosErrors(form, false)['costoPersonaExtra']).toBeUndefined();
+    });
+
+    it('muestra error min de costoPersonaExtra cuando el valor es negativo', () => {
+      const form = makePreciosForm();
+      form.get('costoPersonaExtra')!.setValue(-1);
+      form.get('costoPersonaExtra')!.markAsTouched();
+      expect(service.getPreciosErrors(form, false)['costoPersonaExtra']).toMatch(/negativo/);
+    });
+
+    it('no muestra error de costoPersonaExtra cuando el valor es 0', () => {
+      const form = makePreciosForm();
+      form.get('costoPersonaExtra')!.setValue(0);
+      form.get('costoPersonaExtra')!.markAsTouched();
+      expect(service.getPreciosErrors(form, false)['costoPersonaExtra']).toBeUndefined();
     });
   });
 

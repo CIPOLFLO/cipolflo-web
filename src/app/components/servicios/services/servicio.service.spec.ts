@@ -34,6 +34,7 @@ const mockDetalle: ServicioDetalleRespuestaDto = {
   estado: EstadoServicio.Habilitado,
   capacidad: null,
   cantidad: null,
+  costoPersonaExtra: null,
   createdAt: '2026-01-15T10:30:00Z',
   updatedAt: '2026-01-15T10:30:00Z',
   createdBy: 'María González',

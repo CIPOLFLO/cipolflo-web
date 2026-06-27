@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-import { PageResponse, parseIsoDate, TableQueryParams } from '../../../shared';
+import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   CostoReservaRequestDto,
   CostoReservaRespuestaDto,
@@ -43,22 +43,6 @@ export class ReservasService extends BaseHttpService {
   }
 
   calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {
-    // TODO: reemplazar cuando el backend exponga el cálculo de costo (POST /reservas/costo).
-    // return this.post<CostoReservaRespuestaDto>('reservas/costo', dto);
-    return of({ costo: costoMock(dto) });
+    return this.post<CostoReservaRespuestaDto>('reservas/calcular-costo', dto);
   }
-}
-
-/**
- * Costo provisorio en base a noches y cantidad, para que la pantalla sea dinámica
- * mientras no exista el endpoint real (que sí conoce los precios del servicio).
- */
-function costoMock(dto: CostoReservaRequestDto): number {
-  const TARIFA_POR_NOCHE = 1500;
-  const inicio = parseIsoDate(dto.fechaInicio);
-  const fin = parseIsoDate(dto.fechaFin);
-  if (!inicio || !fin) return 0;
-  const noches = Math.max(1, Math.round((fin.getTime() - inicio.getTime()) / 86_400_000));
-  const cantidad = Math.max(1, dto.cantidad ?? dto.cantidadTotal ?? 1);
-  return noches * TARIFA_POR_NOCHE * cantidad;
 }

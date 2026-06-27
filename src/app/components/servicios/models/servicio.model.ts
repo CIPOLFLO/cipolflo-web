@@ -42,6 +42,7 @@ export interface ServicioCrearDto {
   modalidadPrecio: string;
   cantidad?: number | null;
   capacidad?: number | null;
+  costoPersonaExtra?: number | null;
 }
 
 export interface ServicioActualizarDto {
@@ -53,6 +54,7 @@ export interface ServicioActualizarDto {
   modalidadPrecio: string;
   cantidad?: number | null;
   capacidad?: number | null;
+  costoPersonaExtra?: number | null;
 }
 
 export interface ServicioRespuestaDto {
@@ -65,6 +67,7 @@ export interface ServicioRespuestaDto {
   estado: EstadoServicio;
   capacidad: number | null;
   cantidad: number | null;
+  costoPersonaExtra: number | null;
 }
 
 export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
@@ -75,6 +78,7 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
   precioSocio: number;
   precioParticular: number;
   capacidad: number | null;
+  costoPersonaExtra: number | null;
   estado: EstadoServicio;
   modalidadPrecio: string;
 }

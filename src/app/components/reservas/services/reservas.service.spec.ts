@@ -9,6 +9,7 @@ import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
 import {
   TipoReserva,
+  type CostoReservaRequestDto,
   type ReservaActualizacionRequestDto,
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
@@ -197,51 +198,37 @@ describe('ReservasService', () => {
     });
   });
 
-  describe('calcularCosto (mock dinámico)', () => {
-    const base = {
-      servicioId: 1,
-      cantidadTotal: 2,
-      cantidadMenores: null,
+  describe('calcularCosto', () => {
+    const dto: CostoReservaRequestDto = {
+      servicioId: 3,
+      fechaInicio: '2026-08-10',
+      fechaFin: '2026-08-15',
+      horaInicio: null,
+      horaFin: null,
+      cantidadTotal: 4,
+      cantidadMenores: 1,
       cantidad: null,
+      tipoCliente: TipoCliente.Socio,
     };
 
-    it('devuelve un costo mayor cuando el rango de fechas es más largo', () => {
-      let corto = 0;
-      let largo = 0;
-      service
-        .calcularCosto({ ...base, fechaInicio: '2026-07-01', fechaFin: '2026-07-02' })
-        .subscribe((r) => (corto = r.costo));
-      service
-        .calcularCosto({ ...base, fechaInicio: '2026-07-01', fechaFin: '2026-07-06' })
-        .subscribe((r) => (largo = r.costo));
-      expect(corto).toBeGreaterThan(0);
-      expect(largo).toBeGreaterThan(corto);
+    it('realiza POST a reservas/calcular-costo con el DTO completo', () => {
+      service.calcularCosto(dto).subscribe();
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/calcular-costo') && r.method === 'POST',
+      );
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush({ costoTotal: 12600 });
     });
 
-    it('devuelve un costo mayor cuando aumenta la cantidad', () => {
-      let pocos = 0;
-      let muchos = 0;
-      service
-        .calcularCosto({
-          servicioId: 1,
-          fechaInicio: '2026-07-01',
-          fechaFin: '2026-07-03',
-          cantidadTotal: null,
-          cantidadMenores: null,
-          cantidad: 1,
-        })
-        .subscribe((r) => (pocos = r.costo));
-      service
-        .calcularCosto({
-          servicioId: 1,
-          fechaInicio: '2026-07-01',
-          fechaFin: '2026-07-03',
-          cantidadTotal: null,
-          cantidadMenores: null,
-          cantidad: 5,
-        })
-        .subscribe((r) => (muchos = r.costo));
-      expect(muchos).toBeGreaterThan(pocos);
+    it('devuelve el costoTotal de la respuesta del servidor', () => {
+      let resultado = 0;
+      service.calcularCosto(dto).subscribe((r) => (resultado = r.costoTotal));
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/calcular-costo') && r.method === 'POST',
+      );
+      req.flush({ costoTotal: 9000 });
+      expect(resultado).toBe(9000);
     });
   });
 });

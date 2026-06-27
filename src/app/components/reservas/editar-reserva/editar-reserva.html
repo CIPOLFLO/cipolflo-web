@@ -2,7 +2,7 @@
   pageTitle="Editar Reserva"
   pageDescription="Modifique los datos de la reserva"
   [showBackButton]="true"
-  [backButtonLink]="'/reservas/' + reservaId()"
+  [backButtonLink]="backLink()"
 >
   <app-form-layout>
     <!-- Información de la Reserva -->
@@ -44,6 +44,12 @@
                 <span class="editar-reserva__costo-valor">Calculando…</span>
               } @else {
                 <span class="editar-reserva__costo-valor">$ {{ costo() | currencyFormat }}</span>
+              }
+              @if (costoEsParaParticular()) {
+                <span class="editar-reserva__costo-nota"
+                  >Calculado a tarifa Particular. Si el cliente es Socio, el costo puede ser
+                  diferente.</span
+                >
               }
             </div>
           }

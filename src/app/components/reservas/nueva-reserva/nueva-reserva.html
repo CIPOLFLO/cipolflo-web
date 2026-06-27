@@ -2,7 +2,7 @@
   pageTitle="Nueva Reserva"
   pageDescription="Complete los datos para registrar una nueva reserva"
   [showBackButton]="true"
-  backButtonLink="/reservas"
+  backButtonLink="backLink()"
 >
   <app-form-layout>
     <!-- Información de la Reserva -->
@@ -45,6 +45,12 @@
                 <span class="nueva-reserva__costo-valor">Calculando…</span>
               } @else {
                 <span class="nueva-reserva__costo-valor">$ {{ costo() | currencyFormat }}</span>
+              }
+              @if (costoEsParaParticular()) {
+                <span class="nueva-reserva__costo-nota"
+                  >Calculado a tarifa Particular. Si el cliente es Socio, el costo puede ser
+                  diferente.</span
+                >
               }
             </div>
           }
