@@ -1,4 +1,4 @@
-import { computed, DestroyRef, Directive, inject, signal, Signal } from '@angular/core';
+import { computed, DestroyRef, Directive, inject, input, signal, Signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -10,6 +10,7 @@ import {
   merge,
   Observable,
   of,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -72,9 +73,17 @@ export abstract class ReservaFormBase {
   protected readonly clientePrellenado = signal(false);
   protected readonly busquedaRealizada = signal(false);
 
+  protected readonly recalcularCosto = new Subject<void>();
+
   protected readonly tipoReservaValue = signal<TipoReserva>(TipoReserva.Comun);
   protected readonly servicioIdValue = signal<number | null>(null);
   protected readonly tipoClienteValue = signal<TipoCliente | null>(null);
+
+  readonly id = input<string>('');
+  protected readonly backLink = computed<string>(() => {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    return from === 'listado' ? '/reservas' : `/reservas/${this.id()}`;
+  });
 
   protected readonly esColaboracion = computed(
     () => this.tipoReservaValue() === TipoReserva.ColaboracionSinFines,
@@ -266,6 +275,9 @@ export abstract class ReservaFormBase {
       this.form.get('cantidadTotal')!.valueChanges,
       this.form.get('cantidadMenores')!.valueChanges,
       this.form.get('tipoCliente')!.valueChanges,
+      this.form.get('horaInicio')!.valueChanges,
+      this.form.get('horaFin')!.valueChanges,
+      this.recalcularCosto,
     )
       .pipe(
         debounceTime(300),
@@ -279,14 +291,17 @@ export abstract class ReservaFormBase {
     const servicioId = this.servicioIdValue();
     const fechaInicio = this.controlValue('fechaInicio');
     const fechaFin = this.controlValue('fechaFin');
-    if (!servicioId || !fechaInicio || !fechaFin) return of(null);
+    const horaInicio = this.controlValue('horaInicio');
+    const horaFin = this.controlValue('horaFin');
+    const horasCorrectas = !this.modoHora() || (horaInicio && horaFin);
+    if (!servicioId || !fechaInicio || !fechaFin || !horasCorrectas) return of(null);
 
     const request: CostoReservaRequestDto = {
       servicioId,
       fechaInicio,
       fechaFin,
-      horaInicio: null,
-      horaFin: null,
+      horaInicio: horaInicio || null,
+      horaFin: horaFin || null,
       cantidadTotal: this.modoCapacidad()
         ? parseNumberOrNull(this.controlValue('cantidadTotal'))
         : null,

@@ -13,6 +13,8 @@ import {
   RegistroSocioRequestDto,
   TipoCliente,
 } from '../models/cliente.model';
+import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
+import { FileDownloadService } from 'src/app/core/services/file-download.service';
 
 const BASE = `${environment.apiUrl}/clientes`;
 
@@ -367,6 +369,107 @@ describe('ClientesService', () => {
           { status: 400, statusText: 'Bad Request' },
         );
       expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('registrarPagoCuota', () => {
+    const dto: RegistroPagoCuotaRequestDto = {
+      cantidadCuotas: 2,
+      importeTotal: 10000,
+      metodoCobro: MetodoCobro.Efectivo,
+      fechaPago: '2026-06-24',
+      observaciones: null,
+    };
+
+    const mockResponse: PagoCuotaResponseDto[] = [
+      {
+        id: 1,
+        socioId: 1,
+        anio: 2026,
+        mes: 7,
+        nombreMes: 'julio',
+        descripcion: 'Julio 2026',
+        fechaPago: '2026-06-24T00:00:00Z',
+        importe: 5000,
+        metodoCobro: MetodoCobro.Efectivo,
+      },
+      {
+        id: 2,
+        socioId: 1,
+        anio: 2026,
+        mes: 8,
+        nombreMes: 'agosto',
+        descripcion: 'Agosto 2026',
+        fechaPago: '2026-06-24T00:00:00Z',
+        importe: 5000,
+        metodoCobro: MetodoCobro.Efectivo,
+      },
+    ];
+
+    it('realiza POST a /clientes/:id/cuotas y retorna la lista de cuotas registradas', () => {
+      service.registrarPagoCuota(1, dto).subscribe((result) => {
+        expect(result).toEqual(mockResponse);
+      });
+      const req = httpMock.expectOne(`${BASE}/1/cuotas`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockResponse, { status: 201, statusText: 'Created' });
+    });
+
+    it('propaga error 404 cuando el socio no existe', () => {
+      let errorStatus = 0;
+      service.registrarPagoCuota(9999, dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/9999/cuotas`)
+        .flush(
+          { codigo: 'SOCIO_NO_ENCONTRADO', descripcion: 'No existe un socio con ese id' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      expect(errorStatus).toBe(404);
+    });
+
+    it('propaga error 400 cuando el dto es inválido', () => {
+      let errorStatus = 0;
+      service.registrarPagoCuota(1, dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/1/cuotas`)
+        .flush(
+          { codigo: 'SOLICITUD_INVALIDA', descripcion: 'Cantidad de cuotas inválida' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('exportar', () => {
+    it('realiza POST a /clientes/exportar y llama a fileDownloadService.download', () => {
+      const fileDownloadService = TestBed.inject(FileDownloadService);
+      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockReturnValue(undefined);
+
+      const filters = { estado: 'ACTIVO', nombre: null };
+
+      service.exportar(filters).subscribe();
+
+      const req = httpMock.expectOne(`${BASE}/exportar`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(filters);
+      req.flush(new Blob(['test'], { type: 'application/vnd.ms-excel' }));
+
+      expect(downloadSpy).toHaveBeenCalledWith(expect.any(Object), 'clientes.xlsx');
+    });
+
+    it('propaga error 500 cuando el servidor falla al exportar', () => {
+      let errorStatus = 0;
+      service.exportar({}).subscribe({ error: (e) => (errorStatus = e.status) });
+
+      httpMock
+        .expectOne(`${BASE}/exportar`)
+        .flush(null, { status: 500, statusText: 'Internal Server Error' });
+
+      expect(errorStatus).toBe(500);
+    });
+    it('getCostoCuota retorna 5000', () => {
+      expect(service.getCostoCuota()).toBe(5000);
     });
   });
 });

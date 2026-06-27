@@ -50,7 +50,10 @@ export class ListadoReservas {
           {
             label: 'Modificar',
             icon: 'pi pi-pencil',
-            command: () => this.router.navigate(['/reservas', row.id, 'editar']),
+            command: () =>
+              this.router.navigate(['/reservas', row.id, 'modificar'], {
+                queryParams: { from: 'listado' },
+              }),
           } satisfies RowAction<ReservaRow>,
         ]
       : []),

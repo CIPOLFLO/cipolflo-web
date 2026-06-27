@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -18,6 +26,7 @@ import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
 
 @Component({
   selector: 'app-listado-clientes',
@@ -39,7 +48,13 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   private readonly router = inject(Router);
   private readonly errorHandler = inject(ErrorHandlerService);
+  protected readonly breakpoint = inject(BreakpointService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+  protected readonly exportando = signal(false);
+  protected readonly puedeExportar = computed(
+    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
+  );
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -125,6 +140,22 @@ export class ListadoClientes {
   protected onCerrarPagoCuota(): void {
     this.clientePagoSeleccionado.set(null);
     this.recargarTabla();
+  }
+
+  protected onExportar(): void {
+    if (!this.puedeExportar()) return;
+    this.exportando.set(true);
+    const filters = this.tableState.queryParams().filters;
+    this.clientesService
+      .exportar(filters)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.exportando.set(false),
+        error: (err) => {
+          this.exportando.set(false);
+          this.errorHandler.handle(err);
+        },
+      });
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {

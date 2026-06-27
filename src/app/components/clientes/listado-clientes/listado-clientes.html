@@ -2,7 +2,6 @@
   pageTitle="Listado de Clientes"
   pageDescription="Gestiona y consulta información de todos los clientes del sistema"
 >
-  <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
   <app-button
     actions
     label="Nuevo Socio"
@@ -10,6 +9,17 @@
     icon="pi-plus"
     (clicked)="onNuevoCliente()"
   />
+  @if (!breakpoint.isMobile()) {
+    <app-button
+      actions
+      label="Descargar listado"
+      intent="secondary"
+      icon="pi-download"
+      [disabled]="!puedeExportar()"
+      [loading]="exportando()"
+      (clicked)="onExportar()"
+    />
+  }
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />

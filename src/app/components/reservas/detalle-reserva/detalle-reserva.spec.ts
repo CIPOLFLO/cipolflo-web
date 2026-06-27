@@ -274,7 +274,7 @@ describe('DetalleReserva', () => {
   it('onModificar navega a /reservas/:id/editar con queryParam from=detalle', async () => {
     const { component, navigateSpy } = await setup();
     component['onModificar']();
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42', 'editar'], {
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42', 'modificar'], {
       queryParams: { from: 'detalle' },
     });
   });

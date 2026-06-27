@@ -224,6 +224,8 @@ describe('NuevaReserva', () => {
       component['form'].get('procedencia')?.setValue(Procedencia.Sede);
       component['form'].get('servicioId')?.setValue('3');
       component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      component['form'].get('horaInicio')?.setValue('10:00');
+      component['form'].get('horaFin')?.setValue('12:00');
       vi.advanceTimersByTime(300);
       mockReservasService.calcularCosto.mockClear();
 

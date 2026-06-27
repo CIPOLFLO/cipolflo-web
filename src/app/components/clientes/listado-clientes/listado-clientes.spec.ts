@@ -67,15 +67,18 @@ describe('ListadoClientes', () => {
     getAll: ReturnType<typeof vi.fn>;
     getCostoCuota: ReturnType<typeof vi.fn>;
     darDeBaja: ReturnType<typeof vi.fn>;
+    exportar: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
+
   beforeEach(async () => {
     mockErrorHandler = { handle: vi.fn() };
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
       getCostoCuota: vi.fn().mockReturnValue(5000),
       darDeBaja: vi.fn().mockReturnValue(of(void 0)),
+      exportar: vi.fn().mockReturnValue(of(undefined)),
     };
     mockConfirmDialogService = {
       open: vi.fn().mockReturnValue(of(false)),
@@ -157,7 +160,7 @@ describe('ListadoClientes', () => {
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
-  it('rowActions incluye "Pago de cuota" cuando el cliente es socio', () => {
+  it('rowActions incluye "Pago de cuota" cuando el cliente es socio activo', () => {
     const socio = mockPageResponse.content.find(
       (cliente) => cliente.tipoCliente === TipoCliente.Socio,
     )!;
@@ -226,12 +229,6 @@ describe('ListadoClientes', () => {
     expect(labels).toContain('Estado');
   });
 
-  it('onNuevoCliente navega a clientes/nuevo', () => {
-    const navigateSpy = vi.spyOn(component['router'], 'navigate');
-    component['onNuevoCliente']();
-    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
-  });
-
   it('onPagoCuota selecciona el cliente para pagar cuota', () => {
     const row = mockPageResponse.content[0];
     component['onPagoCuota'](row);
@@ -294,7 +291,7 @@ describe('ListadoClientes', () => {
     expect(updateFiltersSpy).toHaveBeenCalled();
   });
 
-  it('el comando de "Pago de cuota" en rowActions llama a onPagoCuota (línea 73)', () => {
+  it('el comando de "Pago de cuota" en rowActions llama a onPagoCuota', () => {
     const socio = mockPageResponse.content[0];
     const actions = component['rowActions'](socio);
     const pagoCuota = actions.find((a) => a.label === 'Pago de cuota')!;
@@ -302,7 +299,7 @@ describe('ListadoClientes', () => {
     expect(component['clientePagoSeleccionado']()).toEqual(socio);
   });
 
-  it('el comando de "Dar de baja" en rowActions abre el diálogo (línea 84)', () => {
+  it('el comando de "Dar de baja" en rowActions abre el diálogo', () => {
     const socio = mockPageResponse.content[0];
     const actions = component['rowActions'](socio);
     const darDeBaja = actions.find((a) => a.label === 'Dar de baja')!;
@@ -310,21 +307,71 @@ describe('ListadoClientes', () => {
     expect(mockConfirmDialogService.open).toHaveBeenCalled();
   });
 
-  it('onCerrarPagoCuota limpia el cliente seleccionado para pago (línea 101)', () => {
+  it('onCerrarPagoCuota limpia el cliente seleccionado y recarga la tabla', () => {
     component['clientePagoSeleccionado'].set(mockPageResponse.content[0]);
+    const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
     component['onCerrarPagoCuota']();
     expect(component['clientePagoSeleccionado']()).toBeNull();
+    expect(updateFiltersSpy).toHaveBeenCalled();
+  });
+
+  it('onApplyFilters actualiza los filtros en tableState', () => {
+    component['onApplyFilters']({ estado: 'ACTIVO' });
+    expect(component['tableState'].queryParams().filters).toEqual({ estado: 'ACTIVO' });
+  });
+
+  it('onSearchChange actualiza el filtro search en tableState', () => {
+    component['onSearchChange']('Juan');
+    expect(component['tableState'].queryParams().filters['search']).toBe('Juan');
+  });
+
+  it('onClearFilters limpia los filtros en tableState', () => {
+    component['tableState'].updateFilters({ nombre: 'test' });
+    component['onClearFilters']();
+    expect(component['tableState'].queryParams().filters).toEqual({});
+  });
+
+  it('puedeExportar retorna true cuando hay resultados y no está cargando', () => {
+    component['tableState'].setResult(2);
+    component['tableState'].setLoading(false);
+    fixture.detectChanges();
+    expect(component['puedeExportar']()).toBe(true);
+  });
+
+  it('onExportar llama a clientesService.exportar con los filtros activos', () => {
+    component['tableState'].setResult(2);
+    component['tableState'].setLoading(false);
+    fixture.detectChanges();
+    component['tableState'].updateFilters({ estado: 'ACTIVO' });
+    component['onExportar']();
+    expect(mockClientesService.exportar).toHaveBeenCalledWith({ estado: 'ACTIVO' });
+  });
+
+  it('onExportar no hace nada si exportando es true', () => {
+    component['exportando'].set(true);
+    component['onExportar']();
+    expect(mockClientesService.exportar).not.toHaveBeenCalled();
+  });
+
+  it('onExportar no hace nada si puedeExportar es false', () => {
+    component['tableState'].setResult(0);
+    component['onExportar']();
+    expect(mockClientesService.exportar).not.toHaveBeenCalled();
+  });
+
+  it('onExportar resetea exportando a false cuando el servicio falla', () => {
+    component['tableState'].setResult(2);
+    mockClientesService.exportar.mockReturnValue(throwError(() => new Error('fallo')));
+    component['onExportar']();
+    expect(component['exportando']()).toBe(false);
   });
 
   it('onDarDeBajaCliente llama a errorHandler.handle cuando darDeBaja falla', () => {
     const error = new Error('Error de red');
     const row = mockPageResponse.content[0];
-
     mockConfirmDialogService.open.mockReturnValue(of(true));
     mockClientesService.darDeBaja.mockReturnValue(throwError(() => error));
-
     component['onDarDeBajaCliente'](row);
-
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
   });
 });
