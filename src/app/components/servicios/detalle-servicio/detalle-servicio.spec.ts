@@ -19,6 +19,7 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   estado: EstadoServicio.Habilitado,
   capacidad: 4,
   cantidad: null,
+  costoPersonaExtra: null,
   createdAt: '2026-01-15T10:30:00Z',
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
@@ -126,6 +127,18 @@ describe('DetalleServicio', () => {
   it('debería mostrar "---" para cantidad cuando es null', () => {
     const { el } = setup();
     expect(el.textContent).toContain('---');
+  });
+
+  it('debería mostrar "---" para costo por persona extra cuando es null', () => {
+    const { el } = setup();
+    expect(el.textContent).toContain('Costo por persona extra');
+    expect(el.textContent).toContain('---');
+  });
+
+  it('debería mostrar el costo por persona extra cuando tiene valor', () => {
+    const conCostoExtra: ServicioDetalleRespuestaDto = { ...mockServicio, costoPersonaExtra: 500 };
+    const { el } = setup({ getById: vi.fn().mockReturnValue(of(conCostoExtra)) });
+    expect(el.textContent).toContain('$ 500');
   });
 
   it('debería mostrar la sección "Precio particular" con su precio', () => {

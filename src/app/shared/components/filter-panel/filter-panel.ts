@@ -38,6 +38,14 @@ export class FilterPanel {
 
   protected updateValue(key: string, value: string | null): void {
     this.filterValues.update((prev) => ({ ...prev, [key]: value }));
+    const result = this.filterConfigProvider.onValueChange?.(key, value);
+    if (result?.resetKeys?.length) {
+      this.filterValues.update((prev) => {
+        const next = { ...prev };
+        result.resetKeys!.forEach((k) => (next[k] = null));
+        return next;
+      });
+    }
     const field = this.filterFields().find((f) => f.key === key);
     if (field?.type === 'select') {
       this.emitFilters();
@@ -61,6 +69,7 @@ export class FilterPanel {
       clearTimeout(this._debounceTimer);
       this._debounceTimer = null;
     }
+    this.filterConfigProvider.onClear?.();
     this.filterValues.set({});
     this.filterChange.emit({});
   }

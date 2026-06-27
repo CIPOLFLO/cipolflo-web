@@ -1,18 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import {
-  catchError,
-  debounceTime,
-  EMPTY,
-  filter,
-  finalize,
-  map,
-  merge,
-  Observable,
-  of,
-  Subject,
-  switchMap,
-} from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { catchError, EMPTY, filter, finalize, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
@@ -26,12 +13,9 @@ import {
   FormSection,
   OccupancyCalendar,
   PageLayout,
-  parseNumberOrNull,
   Procedencia,
-  PROCEDENCIA_OPTIONS,
   type DateRangeSelection,
   type FormFieldConfig,
-  type FormFieldOption,
 } from '../../../shared';
 import {
   EstadoSocio,
@@ -44,11 +28,11 @@ import { ReservaFormBase } from '../reserva-form-base';
 import {
   TIPO_RESERVA_OPTIONS,
   TipoReserva,
-  type CostoReservaRequestDto,
   type ReservaCreacionRequestDto,
 } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
+import { Subject } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -71,41 +55,14 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
 export class NuevaReserva extends ReservaFormBase {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly errorDialog = inject(ErrorDialogService);
-  private readonly reservasService = inject(ReservasService);
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
   private readonly clienteValidaciones = inject(ClienteValidacionesService);
 
   private readonly buscarClienteTrigger = new Subject<string>();
 
-  /** Costo de la reserva devuelto por el backend (mock por ahora); null si aún no aplica. */
-  protected readonly costo = signal<number | null>(null);
-  protected readonly costoCargando = signal(false);
-
   constructor() {
-    super(
-      new FormGroup({
-        tipoReserva: new FormControl<string | null>(TipoReserva.Comun),
-        procedencia: new FormControl<string | null>(null, Validators.required),
-        servicioId: new FormControl<string | null>(null, Validators.required),
-        fechaInicio: new FormControl<string | null>(null, Validators.required),
-        fechaFin: new FormControl<string | null>(null, Validators.required),
-        horaInicio: new FormControl<string | null>(null),
-        horaFin: new FormControl<string | null>(null),
-        cantidadTotal: new FormControl<string | null>(null),
-        cantidadMenores: new FormControl<string | null>(null, Validators.min(0)),
-        cantidad: new FormControl<string | null>(null),
-        tipoCliente: new FormControl<string | null>(null),
-        cedula: new FormControl<string | null>(null),
-        nombre: new FormControl<string | null>(null),
-        celular: new FormControl<string | null>(null),
-        email: new FormControl<string | null>(null),
-        numeroSocio: new FormControl<string | null>(null),
-        rut: new FormControl<string | null>(null),
-        nombreColaboracion: new FormControl<string | null>(null),
-        notas: new FormControl<string | null>(null),
-      }),
-    );
+    super(ReservaFormBase.buildReservaForm());
 
     this.form.get('email')?.addValidators(emailValido);
     this.form.get('email')?.updateValueAndValidity({ emitEvent: false });
@@ -134,60 +91,7 @@ export class NuevaReserva extends ReservaFormBase {
         if (this.busquedaRealizada()) this.resetearBusquedaCliente();
       });
 
-    this.escucharCostoReserva();
     this.inicializarBusquedaCliente();
-  }
-
-  /**
-   * Recalcula el costo cada vez que cambian el servicio, el rango de fechas o las
-   * cantidades. El debounce evita una llamada por cada tecla en los inputs numéricos.
-   */
-  private escucharCostoReserva(): void {
-    merge(
-      this.form.get('servicioId')!.valueChanges,
-      this.form.get('fechaInicio')!.valueChanges,
-      this.form.get('fechaFin')!.valueChanges,
-      this.form.get('cantidad')!.valueChanges,
-      this.form.get('cantidadTotal')!.valueChanges,
-      this.form.get('cantidadMenores')!.valueChanges,
-    )
-      .pipe(
-        debounceTime(300),
-        switchMap(() => this.calcularCosto()),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((costo) => this.costo.set(costo));
-  }
-
-  /** Pide el costo al backend si hay servicio y rango completos; si no, lo limpia. */
-  private calcularCosto(): Observable<number | null> {
-    const servicioId = this.servicioIdValue();
-    const fechaInicio = this.controlValue('fechaInicio');
-    const fechaFin = this.controlValue('fechaFin');
-    if (!servicioId || !fechaInicio || !fechaFin) return of(null);
-
-    const request: CostoReservaRequestDto = {
-      servicioId,
-      fechaInicio,
-      fechaFin,
-      cantidadTotal: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
-        : null,
-      cantidadMenores: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
-        : null,
-      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
-    };
-
-    this.costoCargando.set(true);
-    return this.reservasService.calcularCosto(request).pipe(
-      map((respuesta) => respuesta.costo),
-      catchError((err: unknown) => {
-        this.errorHandler.handle(err);
-        return of(null);
-      }),
-      finalize(() => this.costoCargando.set(false)),
-    );
   }
 
   private inicializarBusquedaCliente(): void {
@@ -212,6 +116,7 @@ export class NuevaReserva extends ReservaFormBase {
           this.clienteBusqueda.set(null);
           this.habilitarCamposManuales();
         }
+        this.recalcularCosto.next();
       });
   }
 
@@ -246,7 +151,7 @@ export class NuevaReserva extends ReservaFormBase {
     });
   }
 
-  // --- Configuración de campos de la sección "Información de la Reserva" ---
+  // --- Campos específicos de la sección "Información de la Reserva" ---
 
   protected readonly tipoReservaField = computed<FormFieldConfig>(() => ({
     key: 'tipoReserva',
@@ -259,50 +164,6 @@ export class NuevaReserva extends ReservaFormBase {
       : TIPO_RESERVA_OPTIONS,
     defaultValue: TipoReserva.Comun,
   }));
-
-  protected readonly procedenciaField: FormFieldConfig = {
-    key: 'procedencia',
-    label: 'Procedencia',
-    type: 'select',
-    required: true,
-    placeholder: 'Seleccione una procedencia',
-    options: PROCEDENCIA_OPTIONS,
-  };
-
-  protected readonly servicioOptions = computed<FormFieldOption[]>(() =>
-    this.servicios().map((s) => ({ label: s.nombre, value: String(s.id) })),
-  );
-
-  protected readonly servicioField = computed<FormFieldConfig>(() => ({
-    key: 'servicioId',
-    label: 'Servicio',
-    type: 'select',
-    required: true,
-    disabled: this.servicios().length === 0,
-    placeholder:
-      this.servicios().length === 0 ? 'Elija primero una procedencia' : 'Seleccione un servicio',
-    options: this.servicioOptions(),
-  }));
-
-  protected readonly cantidadTotalField: FormFieldConfig = {
-    key: 'cantidadTotal',
-    label: 'Cantidad total de personas',
-    type: 'number',
-    required: true,
-  };
-
-  protected readonly cantidadMenoresField: FormFieldConfig = {
-    key: 'cantidadMenores',
-    label: 'Cantidad de menores',
-    type: 'number',
-  };
-
-  protected readonly cantidadField: FormFieldConfig = {
-    key: 'cantidad',
-    label: 'Cantidad',
-    type: 'number',
-    required: true,
-  };
 
   protected readonly horaInicioField: FormFieldConfig = {
     key: 'horaInicio',
@@ -380,6 +241,7 @@ export class NuevaReserva extends ReservaFormBase {
     key: 'rut',
     label: 'RUT del cliente',
     type: 'text',
+    required: true,
   };
 
   protected readonly nombreColaboracionField: FormFieldConfig = {
@@ -389,20 +251,9 @@ export class NuevaReserva extends ReservaFormBase {
     required: true,
   };
 
-  protected readonly notasField: FormFieldConfig = {
-    key: 'notas',
-    label: 'Notas / Observaciones',
-    type: 'textarea',
-    fullWidth: true,
-  };
-
   protected readonly lupitaVisible = computed(
     () => !this.clientePrellenado() && !this.esColaboracion(),
   );
-
-  protected controlValue(key: string): string | null {
-    return (this.form.get(key)?.value as string | null) ?? null;
-  }
 
   protected onRangoSeleccionado(rango: DateRangeSelection): void {
     this.onControlChange('fechaInicio', rango.inicio);
@@ -485,15 +336,9 @@ export class NuevaReserva extends ReservaFormBase {
       servicioId: Number(this.controlValue('servicioId')),
       fechaInicio: this.controlValue('fechaInicio')!,
       fechaFin: this.controlValue('fechaFin')!,
+      ...this.buildCantidades(),
       horaInicio: this.modoHora() ? this.controlValue('horaInicio') : null,
       horaFin: this.modoHora() ? this.controlValue('horaFin') : null,
-      cantidadTotal: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
-        : null,
-      cantidadMenores: this.modoCapacidad()
-        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
-        : null,
-      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
       clienteId: cliente?.id ?? null,
       // Reserva común sin cliente encontrado: se enviaron datos básicos para que el backend lo cree.
       crearCliente: !colaboracion && cliente === null,

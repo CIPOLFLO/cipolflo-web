@@ -74,7 +74,7 @@ export class DetalleReserva {
   protected readonly reservaFields = computed<DetailFieldConfig[]>(() => {
     const e = this.reserva();
     if (!e) return [];
-    return [
+    const fields: DetailFieldConfig[] = [
       { key: 'tipoReserva', label: 'Tipo de Reserva', value: TIPO_RESERVA_LABEL[e.tipoReserva] },
       {
         key: 'estado',
@@ -143,13 +143,21 @@ export class DetalleReserva {
           ]
         : []),
     ];
+
+    const CAMPOS_PAGO = ['importe', 'formaPago', 'pago'];
+    return e.tipoReserva === TipoReserva.ColaboracionSinFines
+      ? fields.filter((f) => !CAMPOS_PAGO.includes(f.key))
+      : fields;
   });
 
   protected readonly clienteFields = computed<DetailFieldConfig[]>(() => {
     const e = this.reserva();
     if (!e) return [];
     if (e.tipoReserva === TipoReserva.ColaboracionSinFines) {
-      return [{ key: 'rut', label: 'RUT', value: e.rut }];
+      return [
+        { key: 'rut', label: 'RUT', value: e.rut },
+        { key: 'nombre', label: 'Nombre', value: e.nombre },
+      ];
     }
     const c = e.cliente;
     if (!c) return [];
@@ -188,7 +196,7 @@ export class DetalleReserva {
   });
 
   protected onModificar(): void {
-    this.router.navigate(['/reservas', this.reservaId(), 'editar'], {
+    this.router.navigate(['/reservas', this.reservaId(), 'modificar'], {
       queryParams: { from: 'detalle' },
     });
   }

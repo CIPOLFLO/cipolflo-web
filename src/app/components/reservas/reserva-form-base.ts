@@ -1,14 +1,29 @@
-import { computed, DestroyRef, Directive, inject, signal, Signal } from '@angular/core';
-import { FormGroup, Validators } from '@angular/forms';
+import { computed, DestroyRef, Directive, inject, input, signal, Signal } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  finalize,
+  map,
+  merge,
+  Observable,
+  of,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   applySectionChange,
   markFieldAsTouched,
+  parseNumberOrNull,
   Procedencia,
+  PROCEDENCIA_OPTIONS,
   startOfToday,
   toIsoDate,
+  type FormFieldConfig,
+  type FormFieldOption,
 } from '../../shared';
 import { TipoCliente } from '../clientes/models/cliente.model';
 import {
@@ -20,12 +35,17 @@ import { ServicioService } from '../servicios/services/servicio.service';
 import { mapServiciosReserva } from './mappers/servicio-reserva.mapper';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { ReservaValidacionesService } from './services/reserva-validaciones.service';
-import { ClienteBusquedaReservaDto, TipoReserva } from './models/reserva.model';
+import {
+  ClienteBusquedaReservaDto,
+  CostoReservaRequestDto,
+  TipoReserva,
+} from './models/reserva.model';
+import { ReservasService } from './services/reservas.service';
 
 /**
  * Lógica común del formulario de reserva: orquestación de servicios/fechas según
- * procedencia y servicio, modo capacidad/cantidad, validadores condicionales y estado
- * de la sección de cliente (señales de búsqueda/precarga y computed derivados).
+ * procedencia y servicio, modo capacidad/cantidad, validadores condicionales, estado
+ * de la sección de cliente y cálculo de costo.
  * La lógica de búsqueda activa de cliente es responsabilidad de cada subclase.
  */
 @Directive()
@@ -33,6 +53,7 @@ export abstract class ReservaFormBase {
   protected readonly router = inject(Router);
   protected readonly route = inject(ActivatedRoute);
   protected readonly servicioService = inject(ServicioService);
+  protected readonly reservasService = inject(ReservasService);
   protected readonly validaciones = inject(ReservaValidacionesService);
   protected readonly errorHandler = inject(ErrorHandlerService);
   protected readonly destroyRef = inject(DestroyRef);
@@ -43,6 +64,8 @@ export abstract class ReservaFormBase {
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
+  protected readonly costo = signal<number | null>(null);
+  protected readonly costoCargando = signal(false);
 
   protected readonly servicios = signal<ServicioRespuestaDto[]>([]);
   protected readonly fechasOcupadas = signal<ServicioFechaOcupadaDto[]>([]);
@@ -50,9 +73,17 @@ export abstract class ReservaFormBase {
   protected readonly clientePrellenado = signal(false);
   protected readonly busquedaRealizada = signal(false);
 
+  protected readonly recalcularCosto = new Subject<void>();
+
   protected readonly tipoReservaValue = signal<TipoReserva>(TipoReserva.Comun);
   protected readonly servicioIdValue = signal<number | null>(null);
   protected readonly tipoClienteValue = signal<TipoCliente | null>(null);
+
+  readonly id = input<string>('');
+  protected readonly backLink = computed<string>(() => {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    return from === 'listado' ? '/reservas' : `/reservas/${this.id()}`;
+  });
 
   protected readonly esColaboracion = computed(
     () => this.tipoReservaValue() === TipoReserva.ColaboracionSinFines,
@@ -74,6 +105,11 @@ export abstract class ReservaFormBase {
   );
 
   protected readonly esSocio = computed(() => this.tipoClienteValue() === TipoCliente.Socio);
+
+  /** Verdadero mientras aún no se buscó/confirmó el cliente y hay un costo estimado visible. */
+  protected readonly costoEsParaParticular = computed(
+    () => this.costo() !== null && !this.busquedaRealizada() && !this.esColaboracion(),
+  );
 
   protected readonly observacionesCliente = computed(() => {
     const obs = this.clienteBusqueda()?.observaciones?.trim();
@@ -111,6 +147,30 @@ export abstract class ReservaFormBase {
 
   protected readonly confirmDisabled: Signal<boolean>;
 
+  protected static buildReservaForm(): FormGroup {
+    return new FormGroup({
+      tipoReserva: new FormControl<string | null>(TipoReserva.Comun),
+      procedencia: new FormControl<string | null>(null, Validators.required),
+      servicioId: new FormControl<string | null>(null, Validators.required),
+      fechaInicio: new FormControl<string | null>(null, Validators.required),
+      fechaFin: new FormControl<string | null>(null, Validators.required),
+      horaInicio: new FormControl<string | null>(null),
+      horaFin: new FormControl<string | null>(null),
+      cantidadTotal: new FormControl<string | null>(null),
+      cantidadMenores: new FormControl<string | null>(null, Validators.min(0)),
+      cantidad: new FormControl<string | null>(null),
+      tipoCliente: new FormControl<string | null>(null),
+      cedula: new FormControl<string | null>(null),
+      nombre: new FormControl<string | null>(null),
+      celular: new FormControl<string | null>(null),
+      email: new FormControl<string | null>(null),
+      numeroSocio: new FormControl<string | null>(null),
+      rut: new FormControl<string | null>(null),
+      nombreColaboracion: new FormControl<string | null>(null),
+      notas: new FormControl<string | null>(null),
+    });
+  }
+
   // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(form: FormGroup) {
     this.form = form;
@@ -128,6 +188,7 @@ export abstract class ReservaFormBase {
     this.escucharCambios();
     this.aplicarValidadoresMonto();
     this.aplicarValidadoresCliente();
+    this.escucharCostoReserva();
   }
 
   private escucharCambios(): void {
@@ -147,25 +208,12 @@ export abstract class ReservaFormBase {
           this.form.get('servicioId')?.setValue(null, { emitEvent: true });
         }),
         switchMap((procedencia: Procedencia | null) =>
-          procedencia
-            ? this.servicioService
-                .getAll({
-                  page: 0,
-                  size: 100,
-                  filters: { procedencia, estado: EstadoServicio.Habilitado },
-                })
-                .pipe(
-                  catchError((err: unknown) => {
-                    this.errorHandler.handle(err);
-                    return of(null);
-                  }),
-                )
-            : of(null),
+          procedencia ? this.cargarServiciosPorProcedencia(procedencia) : of(null),
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((respuesta) => {
-        if (respuesta) this.servicios.set(mapServiciosReserva(respuesta));
+      .subscribe((lista) => {
+        if (lista) this.servicios.set(lista);
       });
 
     this.form
@@ -196,6 +244,83 @@ export abstract class ReservaFormBase {
       .get('tipoCliente')
       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((tipo: TipoCliente | null) => this.tipoClienteValue.set(tipo));
+  }
+
+  /**
+   * Devuelve el observable de servicios habilitados para una procedencia.
+   * El cascade del listener de procedencia lo usa con switchMap (cancela requests anteriores).
+   * La carga inicial de EditarReserva lo llama directamente con emitEvent:false en procedencia,
+   * para poder setear servicioId en el callback sin que el cascade lo resetee.
+   */
+  protected cargarServiciosPorProcedencia(
+    procedencia: Procedencia,
+  ): Observable<ServicioRespuestaDto[] | null> {
+    return this.servicioService
+      .getAll({ page: 0, size: 100, filters: { procedencia, estado: EstadoServicio.Habilitado } })
+      .pipe(
+        map(mapServiciosReserva),
+        catchError((err: unknown) => {
+          this.errorHandler.handle(err);
+          return of(null);
+        }),
+      );
+  }
+
+  private escucharCostoReserva(): void {
+    merge(
+      this.form.get('servicioId')!.valueChanges,
+      this.form.get('fechaInicio')!.valueChanges,
+      this.form.get('fechaFin')!.valueChanges,
+      this.form.get('cantidad')!.valueChanges,
+      this.form.get('cantidadTotal')!.valueChanges,
+      this.form.get('cantidadMenores')!.valueChanges,
+      this.form.get('tipoCliente')!.valueChanges,
+      this.form.get('horaInicio')!.valueChanges,
+      this.form.get('horaFin')!.valueChanges,
+      this.recalcularCosto,
+    )
+      .pipe(
+        debounceTime(300),
+        switchMap(() => this.calcularCosto()),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((costo) => this.costo.set(costo));
+  }
+
+  private calcularCosto(): Observable<number | null> {
+    const servicioId = this.servicioIdValue();
+    const fechaInicio = this.controlValue('fechaInicio');
+    const fechaFin = this.controlValue('fechaFin');
+    const horaInicio = this.controlValue('horaInicio');
+    const horaFin = this.controlValue('horaFin');
+    const horasCorrectas = !this.modoHora() || (horaInicio && horaFin);
+    if (!servicioId || !fechaInicio || !fechaFin || !horasCorrectas) return of(null);
+
+    const request: CostoReservaRequestDto = {
+      servicioId,
+      fechaInicio,
+      fechaFin,
+      horaInicio: horaInicio || null,
+      horaFin: horaFin || null,
+      cantidadTotal: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
+        : null,
+      cantidadMenores: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
+        : null,
+      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+      tipoCliente: this.tipoClienteValue(),
+    };
+
+    this.costoCargando.set(true);
+    return this.reservasService.calcularCosto(request).pipe(
+      map((respuesta) => respuesta.costoTotal),
+      catchError((err: unknown) => {
+        this.errorHandler.handle(err);
+        return of(null);
+      }),
+      finalize(() => this.costoCargando.set(false)),
+    );
   }
 
   private ventanaDesde(): string {
@@ -238,10 +363,10 @@ export abstract class ReservaFormBase {
   }
 
   /** Activa los validadores de la sección de cliente según el tipo de reserva. */
-  private aplicarValidadoresCliente(): void {
-    // El tipo de cliente ya no se elige: se deriva de la búsqueda (Particular si no existe).
+  protected aplicarValidadoresCliente(): void {
+    // El tipo de cliente se deriva de la búsqueda (Particular si no existe).
     const requeridosComun = ['cedula', 'nombre', 'celular'];
-    const requeridosColab = ['nombreColaboracion'];
+    const requeridosColab = ['rut', 'nombreColaboracion'];
     const colaboracion = this.esColaboracion();
 
     for (const key of requeridosComun) {
@@ -285,11 +410,80 @@ export abstract class ReservaFormBase {
     this.blurCount.update((v) => v + 1);
   }
 
+  protected controlValue(key: string): string | null {
+    return (this.form.get(key)?.value as string | null) ?? null;
+  }
+
   protected onCancelar(): void {
     this.router.navigate(['/reservas']);
   }
 
   protected onConfirmar(): void {
     this.submitted.set(true);
+  }
+
+  // --- Configuración de campos compartida entre alta y edición ---
+
+  protected readonly procedenciaField: FormFieldConfig = {
+    key: 'procedencia',
+    label: 'Procedencia',
+    type: 'select',
+    required: true,
+    placeholder: 'Seleccione una procedencia',
+    options: PROCEDENCIA_OPTIONS,
+  };
+
+  protected readonly servicioOptions = computed<FormFieldOption[]>(() =>
+    this.servicios().map((s) => ({ label: s.nombre, value: String(s.id) })),
+  );
+
+  protected readonly servicioField = computed<FormFieldConfig>(() => ({
+    key: 'servicioId',
+    label: 'Servicio',
+    type: 'select',
+    required: true,
+    disabled: this.servicios().length === 0,
+    placeholder:
+      this.servicios().length === 0 ? 'Elija primero una procedencia' : 'Seleccione un servicio',
+    options: this.servicioOptions(),
+  }));
+
+  protected readonly cantidadTotalField: FormFieldConfig = {
+    key: 'cantidadTotal',
+    label: 'Cantidad total de personas',
+    type: 'number',
+    required: true,
+  };
+
+  protected readonly cantidadMenoresField: FormFieldConfig = {
+    key: 'cantidadMenores',
+    label: 'Cantidad de menores',
+    type: 'number',
+  };
+
+  protected readonly cantidadField: FormFieldConfig = {
+    key: 'cantidad',
+    label: 'Cantidad',
+    type: 'number',
+    required: true,
+  };
+
+  protected readonly notasField: FormFieldConfig = {
+    key: 'notas',
+    label: 'Notas / Observaciones',
+    type: 'textarea',
+    fullWidth: true,
+  };
+
+  protected buildCantidades() {
+    return {
+      cantidadTotal: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadTotal'))
+        : null,
+      cantidadMenores: this.modoCapacidad()
+        ? parseNumberOrNull(this.controlValue('cantidadMenores'))
+        : null,
+      cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
+    };
   }
 }

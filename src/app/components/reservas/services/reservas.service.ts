@@ -1,273 +1,32 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
-import { PageResponse, parseIsoDate, TableQueryParams } from '../../../shared';
+import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   CostoReservaRequestDto,
   CostoReservaRespuestaDto,
+  ReservaActualizacionRequestDto,
   ReservaCreacionRequestDto,
   ReservaCreacionRespuestaDto,
   ReservaDetalleRespuestaDto,
-  ReservaRow,
+  ReservaRespuestaDto,
 } from '../models/reserva.model';
-
-const MOCK_RESERVAS: ReservaRow[] = [
-  {
-    id: 1,
-    cliente: 'María González',
-    servicio: 'Hospedaje',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-03-24',
-    fechaHasta: '2026-03-28',
-  },
-  {
-    id: 2,
-    cliente: 'Carlos Rodríguez',
-    servicio: 'Eventos',
-    estado: 'EN_CURSO',
-    fechaDesde: '2026-03-27',
-    fechaHasta: '2026-03-27',
-  },
-  {
-    id: 3,
-    cliente: 'Ana Martínez',
-    servicio: 'Tours',
-    estado: 'EN_CURSO',
-    fechaDesde: '2026-03-21',
-    fechaHasta: '2026-03-23',
-  },
-  {
-    id: 4,
-    cliente: 'Luis Fernández',
-    servicio: 'Servicios',
-    estado: 'CANCELADA',
-    fechaDesde: '2026-03-31',
-    fechaHasta: '2026-04-02',
-  },
-  {
-    id: 5,
-    cliente: 'Patricia López',
-    servicio: 'Hospedaje',
-    estado: 'FINALIZADA',
-    fechaDesde: '2026-03-19',
-    fechaHasta: '2026-03-22',
-  },
-  {
-    id: 6,
-    cliente: 'Roberto Sánchez',
-    servicio: 'Tours',
-    estado: 'PENDIENTE',
-    fechaDesde: '2026-04-04',
-    fechaHasta: '2026-04-06',
-  },
-  {
-    id: 7,
-    cliente: 'Elena Ramírez',
-    servicio: 'Eventos',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-03-29',
-    fechaHasta: '2026-03-30',
-  },
-  {
-    id: 8,
-    cliente: 'Diego Torres',
-    servicio: 'Hospedaje',
-    estado: 'EN_CURSO',
-    fechaDesde: '2026-04-09',
-    fechaHasta: '2026-04-12',
-  },
-  {
-    id: 9,
-    cliente: 'Sofía Herrera',
-    servicio: 'Servicios',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-04-14',
-    fechaHasta: '2026-04-14',
-  },
-  {
-    id: 10,
-    cliente: 'Martín Díaz',
-    servicio: 'Hospedaje',
-    estado: 'PENDIENTE',
-    fechaDesde: '2026-04-17',
-    fechaHasta: '2026-04-20',
-  },
-  {
-    id: 11,
-    cliente: 'Valentina Cruz',
-    servicio: 'Tours',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-04-22',
-    fechaHasta: '2026-04-24',
-  },
-  {
-    id: 12,
-    cliente: 'Andrés Morales',
-    servicio: 'Eventos',
-    estado: 'CANCELADA',
-    fechaDesde: '2026-04-05',
-    fechaHasta: '2026-04-05',
-  },
-  {
-    id: 13,
-    cliente: 'Camila Vargas',
-    servicio: 'Hospedaje',
-    estado: 'FINALIZADA',
-    fechaDesde: '2026-03-10',
-    fechaHasta: '2026-03-15',
-  },
-  {
-    id: 14,
-    cliente: 'Nicolás Ruiz',
-    servicio: 'Tours',
-    estado: 'EN_CURSO',
-    fechaDesde: '2026-04-25',
-    fechaHasta: '2026-04-27',
-  },
-  {
-    id: 15,
-    cliente: 'Florencia Medina',
-    servicio: 'Servicios',
-    estado: 'PENDIENTE',
-    fechaDesde: '2026-05-02',
-    fechaHasta: '2026-05-02',
-  },
-  {
-    id: 16,
-    cliente: 'Sebastián Rojas',
-    servicio: 'Hospedaje',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-05-08',
-    fechaHasta: '2026-05-12',
-  },
-  {
-    id: 17,
-    cliente: 'Lucía Pérez',
-    servicio: 'Eventos',
-    estado: 'PENDIENTE',
-    fechaDesde: '2026-05-15',
-    fechaHasta: '2026-05-16',
-  },
-  {
-    id: 18,
-    cliente: 'Tomás Castillo',
-    servicio: 'Tours',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-05-20',
-    fechaHasta: '2026-05-22',
-  },
-  {
-    id: 19,
-    cliente: 'Isabella Navarro',
-    servicio: 'Hospedaje',
-    estado: 'CANCELADA',
-    fechaDesde: '2026-04-30',
-    fechaHasta: '2026-05-03',
-  },
-  {
-    id: 20,
-    cliente: 'Emilio Guerrero',
-    servicio: 'Servicios',
-    estado: 'FINALIZADA',
-    fechaDesde: '2026-03-05',
-    fechaHasta: '2026-03-05',
-  },
-  {
-    id: 21,
-    cliente: 'Renata Acosta',
-    servicio: 'Hospedaje',
-    estado: 'EN_CURSO',
-    fechaDesde: '2026-05-25',
-    fechaHasta: '2026-05-30',
-  },
-  {
-    id: 22,
-    cliente: 'Joaquín Silva',
-    servicio: 'Tours',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-06-02',
-    fechaHasta: '2026-06-04',
-  },
-  {
-    id: 23,
-    cliente: 'Pilar Mendoza',
-    servicio: 'Eventos',
-    estado: 'PENDIENTE',
-    fechaDesde: '2026-06-10',
-    fechaHasta: '2026-06-10',
-  },
-  {
-    id: 24,
-    cliente: 'Ignacio Flores',
-    servicio: 'Hospedaje',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-06-14',
-    fechaHasta: '2026-06-18',
-  },
-  {
-    id: 25,
-    cliente: 'Agustina Ríos',
-    servicio: 'Servicios',
-    estado: 'CANCELADA',
-    fechaDesde: '2026-05-28',
-    fechaHasta: '2026-05-28',
-  },
-  {
-    id: 26,
-    cliente: 'Mateo Jiménez',
-    servicio: 'Tours',
-    estado: 'FINALIZADA',
-    fechaDesde: '2026-03-18',
-    fechaHasta: '2026-03-20',
-  },
-  {
-    id: 27,
-    cliente: 'Julieta Reyes',
-    servicio: 'Hospedaje',
-    estado: 'PENDIENTE',
-    fechaDesde: '2026-06-22',
-    fechaHasta: '2026-06-25',
-  },
-  {
-    id: 28,
-    cliente: 'Facundo Romero',
-    servicio: 'Eventos',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-07-01',
-    fechaHasta: '2026-07-01',
-  },
-  {
-    id: 29,
-    cliente: 'Celeste Ortega',
-    servicio: 'Hospedaje',
-    estado: 'EN_CURSO',
-    fechaDesde: '2026-06-28',
-    fechaHasta: '2026-07-03',
-  },
-  {
-    id: 30,
-    cliente: 'Bruno Delgado',
-    servicio: 'Tours',
-    estado: 'CONFIRMADA',
-    fechaDesde: '2026-07-07',
-    fechaHasta: '2026-07-09',
-  },
-];
 
 @Injectable()
 export class ReservasService extends BaseHttpService {
-  getDatos(params: TableQueryParams): Observable<PageResponse<ReservaRow>> {
-    // TODO: reemplazar cuando el backend exponga el listado de reservas
-    const start = params.page * params.size;
-    const content = MOCK_RESERVAS.slice(start, start + params.size);
-    return of({
-      content,
-      page: params.page,
-      size: params.size,
-      totalElements: MOCK_RESERVAS.length,
-      totalPages: Math.ceil(MOCK_RESERVAS.length / params.size),
-      first: params.page === 0,
-      last: start + params.size >= MOCK_RESERVAS.length,
+  getAll({
+    page,
+    size,
+    filters,
+    sortField,
+    sortOrder,
+  }: TableQueryParams): Observable<PageResponse<ReservaRespuestaDto>> {
+    return this.get<PageResponse<ReservaRespuestaDto>>('reservas', {
+      page,
+      size,
+      ...filters,
+      sortField,
+      sortOrder: sortField ? sortOrder?.toUpperCase() : undefined,
     });
   }
 
@@ -279,23 +38,11 @@ export class ReservasService extends BaseHttpService {
     return this.post<ReservaCreacionRespuestaDto>('reservas', dto);
   }
 
-  calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {
-    // TODO: reemplazar cuando el backend exponga el cálculo de costo (POST /reservas/costo).
-    // return this.post<CostoReservaRespuestaDto>('reservas/costo', dto);
-    return of({ costo: costoMock(dto) });
+  update(id: number, dto: ReservaActualizacionRequestDto): Observable<void> {
+    return this.put<void>(`reservas/${id}`, dto);
   }
-}
 
-/**
- * Costo provisorio en base a noches y cantidad, para que la pantalla sea dinámica
- * mientras no exista el endpoint real (que sí conoce los precios del servicio).
- */
-function costoMock(dto: CostoReservaRequestDto): number {
-  const TARIFA_POR_NOCHE = 1500;
-  const inicio = parseIsoDate(dto.fechaInicio);
-  const fin = parseIsoDate(dto.fechaFin);
-  if (!inicio || !fin) return 0;
-  const noches = Math.max(1, Math.round((fin.getTime() - inicio.getTime()) / 86_400_000));
-  const cantidad = Math.max(1, dto.cantidad ?? dto.cantidadTotal ?? 1);
-  return noches * TARIFA_POR_NOCHE * cantidad;
+  calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {
+    return this.post<CostoReservaRespuestaDto>('reservas/calcular-costo', dto);
+  }
 }

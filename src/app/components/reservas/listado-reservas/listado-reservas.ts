@@ -8,8 +8,10 @@ import { TableStateService } from '../../../shared/components/table/table-state.
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
-import { ColumnConfig, LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
+import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
 import { ReservaRow } from '../models/reserva.model';
+import { ReservasColumnsService } from '../services/reserva-columns.service';
+import { EstadoReserva } from '../../../shared';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -17,6 +19,7 @@ import { ReservaRow } from '../models/reserva.model';
   providers: [
     TableStateService,
     ReservasService,
+    ReservasColumnsService,
     { provide: FilterConfigProvider, useClass: ReservasFilterService },
   ],
   templateUrl: './listado-reservas.html',
@@ -27,28 +30,12 @@ export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
+  private readonly columnsService = inject(ReservasColumnsService);
 
-  protected readonly columns: ColumnConfig[] = [
-    { key: 'cliente', label: 'Cliente' },
-    { key: 'servicio', label: 'Servicio', sortable: true },
-    { key: 'fechaDesde', label: 'Fecha Desde', sortable: true, cellType: 'date' },
-    { key: 'fechaHasta', label: 'Fecha Hasta', cellType: 'date' },
-    {
-      key: 'estado',
-      label: 'Estado',
-      cellType: 'tag',
-      tagMap: {
-        CONFIRMADA: { styleClass: 'tag--green', label: 'Confirmada' },
-        EN_CURSO: { styleClass: 'tag--blue', label: 'En curso' },
-        FINALIZADA: { styleClass: 'tag--purple', label: 'Finalizada' },
-        CANCELADA: { styleClass: 'tag--gray', label: 'Cancelada' },
-        PENDIENTE: { styleClass: 'tag--yellow', label: 'Pendiente' },
-      },
-    },
-  ];
+  protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
-    this.reservasService.getDatos(params);
+    this.reservasService.getAll(params);
 
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
@@ -56,15 +43,34 @@ export class ListadoReservas {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/reservas', row.id]),
     },
-    {
-      label: 'Editar',
-      icon: 'pi pi-pencil',
-      command: () => console.log('Editar', row.id),
-    },
+    ...(row.estadoReserva === EstadoReserva.Pendiente ||
+    row.estadoReserva === EstadoReserva.Confirmada
+      ? [
+          {
+            label: 'Modificar',
+            icon: 'pi pi-pencil',
+            command: () =>
+              this.router.navigate(['/reservas', row.id, 'modificar'], {
+                queryParams: { from: 'listado' },
+              }),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    // { label: 'Habilitar/Deshabilitar', ... },
+    // { separator: true },
+    // { label: 'Eliminar', ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
+  }
+
+  protected onSearchChange(search: string): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
+  }
+
+  protected onClearFilters(): void {
+    this.tableState.updateFilters({});
   }
 
   protected onNuevaReserva(): void {

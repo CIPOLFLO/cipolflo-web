@@ -9,8 +9,11 @@ import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
 import {
   TipoReserva,
+  type CostoReservaRequestDto,
+  type ReservaActualizacionRequestDto,
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
+  type ReservaRespuestaDto,
 } from '../models/reserva.model';
 
 const mockDetalle: ReservaDetalleRespuestaDto = {
@@ -30,6 +33,7 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {
@@ -86,12 +90,60 @@ describe('ReservasService', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  it('getDatos devuelve la página de reservas (mock)', () => {
-    let total = 0;
-    service
-      .getDatos({ page: 0, size: 10, filters: {} })
-      .subscribe((p) => (total = p.totalElements));
-    expect(total).toBeGreaterThan(0);
+  describe('getAll', () => {
+    const mockRow: ReservaRespuestaDto = {
+      id: 1,
+      clienteId: 10,
+      nombreCliente: 'Juan Pérez',
+      servicioId: 3,
+      servicioNombre: 'Hospedaje en camping',
+      fechaEntrada: '2026-08-10',
+      fechaSalida: '2026-08-15',
+      estadoReserva: EstadoReserva.Confirmada,
+    };
+
+    const mockPage = {
+      content: [mockRow],
+      page: 0,
+      size: 10,
+      totalElements: 1,
+      totalPages: 1,
+      first: true,
+      last: true,
+    };
+
+    it('llama a GET /reservas con los parámetros de paginación', () => {
+      service.getAll({ page: 0, size: 10, filters: {} }).subscribe();
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      expect(req.request.params.get('page')).toBe('0');
+      expect(req.request.params.get('size')).toBe('10');
+      req.flush(mockPage);
+    });
+
+    it('devuelve el DTO con los nuevos campos del backend', () => {
+      let resultado: ReservaRespuestaDto | undefined;
+      service.getAll({ page: 0, size: 10, filters: {} }).subscribe((p) => {
+        resultado = p.content[0];
+      });
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      req.flush(mockPage);
+
+      expect(resultado?.nombreCliente).toBe('Juan Pérez');
+      expect(resultado?.servicioNombre).toBe('Hospedaje en camping');
+      expect(resultado?.fechaEntrada).toBe('2026-08-10');
+      expect(resultado?.fechaSalida).toBe('2026-08-15');
+      expect(resultado?.estadoReserva).toBe(EstadoReserva.Confirmada);
+    });
+
+    it('pasa los filtros activos como query params', () => {
+      service.getAll({ page: 0, size: 10, filters: { estadoReserva: 'PENDIENTE' } }).subscribe();
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      expect(req.request.params.get('estadoReserva')).toBe('PENDIENTE');
+      req.flush(mockPage);
+    });
   });
 
   it('crear llama a POST /reservas y devuelve el id', () => {
@@ -126,51 +178,57 @@ describe('ReservasService', () => {
     });
   });
 
-  describe('calcularCosto (mock dinámico)', () => {
-    const base = {
-      servicioId: 1,
-      cantidadTotal: 2,
-      cantidadMenores: null,
+  describe('update', () => {
+    const dtoActualizacion: ReservaActualizacionRequestDto = {
+      procedencia: Procedencia.Camping,
+      servicioId: 3,
+      fechaInicio: '2026-08-10',
+      fechaFin: '2026-08-20',
+      cantidadTotal: 4,
+      cantidadMenores: 1,
       cantidad: null,
+      notas: 'Fechas actualizadas',
     };
 
-    it('devuelve un costo mayor cuando el rango de fechas es más largo', () => {
-      let corto = 0;
-      let largo = 0;
-      service
-        .calcularCosto({ ...base, fechaInicio: '2026-07-01', fechaFin: '2026-07-02' })
-        .subscribe((r) => (corto = r.costo));
-      service
-        .calcularCosto({ ...base, fechaInicio: '2026-07-01', fechaFin: '2026-07-06' })
-        .subscribe((r) => (largo = r.costo));
-      expect(corto).toBeGreaterThan(0);
-      expect(largo).toBeGreaterThan(corto);
+    it('llama a PUT /reservas/:id con el DTO de actualización', () => {
+      service.update(42, dtoActualizacion).subscribe();
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas/42') && r.method === 'PUT');
+      expect(req.request.body).toEqual(dtoActualizacion);
+      req.flush(null);
+    });
+  });
+
+  describe('calcularCosto', () => {
+    const dto: CostoReservaRequestDto = {
+      servicioId: 3,
+      fechaInicio: '2026-08-10',
+      fechaFin: '2026-08-15',
+      horaInicio: null,
+      horaFin: null,
+      cantidadTotal: 4,
+      cantidadMenores: 1,
+      cantidad: null,
+      tipoCliente: TipoCliente.Socio,
+    };
+
+    it('realiza POST a reservas/calcular-costo con el DTO completo', () => {
+      service.calcularCosto(dto).subscribe();
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/calcular-costo') && r.method === 'POST',
+      );
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush({ costoTotal: 12600 });
     });
 
-    it('devuelve un costo mayor cuando aumenta la cantidad', () => {
-      let pocos = 0;
-      let muchos = 0;
-      service
-        .calcularCosto({
-          servicioId: 1,
-          fechaInicio: '2026-07-01',
-          fechaFin: '2026-07-03',
-          cantidadTotal: null,
-          cantidadMenores: null,
-          cantidad: 1,
-        })
-        .subscribe((r) => (pocos = r.costo));
-      service
-        .calcularCosto({
-          servicioId: 1,
-          fechaInicio: '2026-07-01',
-          fechaFin: '2026-07-03',
-          cantidadTotal: null,
-          cantidadMenores: null,
-          cantidad: 5,
-        })
-        .subscribe((r) => (muchos = r.costo));
-      expect(muchos).toBeGreaterThan(pocos);
+    it('devuelve el costoTotal de la respuesta del servidor', () => {
+      let resultado = 0;
+      service.calcularCosto(dto).subscribe((r) => (resultado = r.costoTotal));
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/calcular-costo') && r.method === 'POST',
+      );
+      req.flush({ costoTotal: 9000 });
+      expect(resultado).toBe(9000);
     });
   });
 });

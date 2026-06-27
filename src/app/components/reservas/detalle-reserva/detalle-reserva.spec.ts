@@ -28,6 +28,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {
@@ -202,6 +203,19 @@ describe('DetalleReserva', () => {
       const field = component['reservaFields']().find((f) => f.key === 'formaPago');
       expect(field).toBeUndefined();
     });
+
+    it('oculta pago, importe y formaPago en reserva ColaboracionSinFines', async () => {
+      const { component } = await setup({
+        ...mockReserva,
+        tipoReserva: TipoReserva.ColaboracionSinFines,
+        cliente: null,
+        rut: '21-123456-7',
+      });
+      const fields = component['reservaFields']();
+      expect(fields.find((f) => f.key === 'pago')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'importe')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'formaPago')).toBeUndefined();
+    });
   });
 
   describe('clienteFields — reserva COMUN', () => {
@@ -221,6 +235,7 @@ describe('DetalleReserva', () => {
       ...mockReserva,
       tipoReserva: TipoReserva.ColaboracionSinFines,
       cliente: null,
+      nombre: 'Organización Ejemplo',
       rut: '21-123456-7',
     };
 
@@ -230,11 +245,17 @@ describe('DetalleReserva', () => {
       expect(fields.find((f) => f.key === 'rut')?.value).toBe('21-123456-7');
     });
 
+    it('muestra el nombre del cliente', async () => {
+      const { component } = await setup(mockColaboracion);
+      const fields = component['clienteFields']();
+      expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Organización Ejemplo');
+    });
+
     it('no incluye campos de cliente COMUN', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
       expect(fields.find((f) => f.key === 'cedula')).toBeUndefined();
-      expect(fields.find((f) => f.key === 'nombre')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'tipoCliente')).toBeUndefined();
     });
   });
 
@@ -253,7 +274,7 @@ describe('DetalleReserva', () => {
   it('onModificar navega a /reservas/:id/editar con queryParam from=detalle', async () => {
     const { component, navigateSpy } = await setup();
     component['onModificar']();
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42', 'editar'], {
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42', 'modificar'], {
       queryParams: { from: 'detalle' },
     });
   });

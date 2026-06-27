@@ -9,11 +9,13 @@ import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
 
 export interface ReservaRow extends Record<string, unknown> {
   id: number;
-  cliente: string;
-  servicio: string;
-  estado: string;
-  fechaDesde: string;
-  fechaHasta: string;
+  clienteId: number;
+  nombreCliente: string;
+  servicioId: number;
+  servicioNombre: string;
+  fechaEntrada: string;
+  fechaSalida: string;
+  estadoReserva: EstadoReserva;
 }
 
 export enum TipoReserva {
@@ -88,18 +90,32 @@ export interface ReservaCreacionRespuestaDto {
   id: number;
 }
 
-/** Parámetros para calcular el costo de una reserva (depende del servicio y las cantidades). */
-export interface CostoReservaRequestDto {
+export interface ReservaActualizacionRequestDto {
+  procedencia: Procedencia;
   servicioId: number;
   fechaInicio: string;
   fechaFin: string;
   cantidadTotal: number | null;
   cantidadMenores: number | null;
   cantidad: number | null;
+  notas: string | null;
+}
+
+/** Parámetros para calcular el costo de una reserva (depende del servicio y las cantidades). */
+export interface CostoReservaRequestDto {
+  servicioId: number;
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string | null;
+  horaFin: string | null;
+  cantidadTotal: number | null;
+  cantidadMenores: number | null;
+  cantidad: number | null;
+  tipoCliente: TipoCliente | null;
 }
 
 export interface CostoReservaRespuestaDto {
-  costo: number;
+  costoTotal: number;
 }
 
 export interface ClienteDetalleReservaDto {
@@ -135,8 +151,20 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   pago: boolean;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
+  nombre: string | null;
   rut: string | null;
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;
   servicio: ServicioDetalleReservaDto;
+}
+
+export interface ReservaRespuestaDto extends Record<string, unknown> {
+  id: number;
+  clienteId: number;
+  nombreCliente: string;
+  servicioId: number;
+  servicioNombre: string;
+  fechaEntrada: string;
+  fechaSalida: string;
+  estadoReserva: EstadoReserva;
 }

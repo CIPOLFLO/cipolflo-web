@@ -2,25 +2,116 @@
   pageTitle="Editar Reserva"
   pageDescription="Modifique los datos de la reserva"
   [showBackButton]="true"
-  [backButtonLink]="'/reservas/' + reservaId()"
+  [backButtonLink]="backLink()"
 >
   <app-form-layout>
-    <app-form-section title="Información de la Reserva" [fields]="reservaFields" />
+    <!-- Información de la Reserva -->
+    <app-form-section title="Información de la Reserva">
+      <app-form-field
+        [config]="tipoReservaDisplayField"
+        [displayOnly]="true"
+        [value]="tipoReservaLabel()"
+      />
+      <app-form-field
+        [config]="procedenciaField"
+        [value]="controlValue('procedencia')"
+        [error]="reservaErrors()['procedencia']"
+        (valueChange)="onControlChange('procedencia', $event)"
+        (blurred)="onFieldBlur('procedencia')"
+      />
+      <app-form-field
+        [config]="servicioField()"
+        [value]="controlValue('servicioId')"
+        [error]="reservaErrors()['servicioId']"
+        (valueChange)="onControlChange('servicioId', $event)"
+        (blurred)="onFieldBlur('servicioId')"
+      />
+      @if (servicioSeleccionado()) {
+        <div class="editar-reserva__calendario">
+          <span class="editar-reserva__calendario-label">Fechas de la reserva *</span>
+          <app-occupancy-calendar
+            [occupiedRanges]="fechasOcupadas()"
+            [initialRange]="initialCalendarRange()"
+            (rangeSelected)="onRangoSeleccionado($event)"
+          />
+          @if (costoCargando() || costo() !== null) {
+            <div class="editar-reserva__costo">
+              <span class="editar-reserva__costo-label">Costo de la reserva</span>
+              @if (costoCargando()) {
+                <span class="editar-reserva__costo-valor">Calculando…</span>
+              } @else {
+                <span class="editar-reserva__costo-valor">$ {{ costo() | currencyFormat }}</span>
+              }
+              @if (costoEsParaParticular()) {
+                <span class="editar-reserva__costo-nota"
+                  >Calculado a tarifa Particular. Si el cliente es Socio, el costo puede ser
+                  diferente.</span
+                >
+              }
+            </div>
+          }
+        </div>
+      }
 
+      @if (modoCapacidad()) {
+        <app-form-field
+          [config]="cantidadTotalField"
+          [value]="controlValue('cantidadTotal')"
+          [error]="reservaErrors()['cantidadTotal']"
+          (valueChange)="onControlChange('cantidadTotal', $event)"
+          (blurred)="onFieldBlur('cantidadTotal')"
+        />
+        <app-form-field
+          [config]="cantidadMenoresField"
+          [value]="controlValue('cantidadMenores')"
+          [error]="reservaErrors()['cantidadMenores']"
+          (valueChange)="onControlChange('cantidadMenores', $event)"
+          (blurred)="onFieldBlur('cantidadMenores')"
+        />
+      }
+      @if (modoCantidad()) {
+        <app-form-field
+          [config]="cantidadField"
+          [value]="controlValue('cantidad')"
+          [error]="reservaErrors()['cantidad']"
+          (valueChange)="onControlChange('cantidad', $event)"
+          (blurred)="onFieldBlur('cantidad')"
+        />
+      }
+    </app-form-section>
+
+    <!-- Información del Cliente -->
     <app-detail-section
       title="Información del Cliente"
-      [fields]="clienteFields"
+      [fields]="clienteFields()"
       [locked]="true"
-      note="La información del cliente no puede ser modificada desde esta pantalla"
+      note="La información del cliente no puede modificarse desde esta pantalla"
     />
 
-    <app-form-section title="Información Adicional" [fields]="adicionalFields" />
+    <!-- Información Adicional -->
+    <app-form-section title="Información Adicional">
+      <app-form-field
+        [config]="notasField"
+        [value]="controlValue('notas')"
+        (valueChange)="onControlChange('notas', $event)"
+        (blurred)="onFieldBlur('notas')"
+      />
+    </app-form-section>
 
-    <app-detail-registro-section [data]="registroData()" />
+    @if (registroData()) {
+      <app-detail-registro-section [data]="registroData()!" />
+    }
 
     <app-form-actions actions>
       <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
-      <app-button label="Confirmar" icon="pi-check" (clicked)="onConfirmar()" />
+      <app-button
+        label="Guardar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        tooltip="Complete los datos requeridos para continuar"
+        (clicked)="onConfirmar()"
+      />
     </app-form-actions>
   </app-form-layout>
 </app-page-layout>
