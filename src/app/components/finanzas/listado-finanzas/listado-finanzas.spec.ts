@@ -8,7 +8,6 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
 import { Concepto, TipoMovimiento } from '../models/finanza.model';
 import { FinanzaService } from '../services/finanza.service';
-import { FacturaFinanzaMapperService } from '../services/factura-finanza-mapper.service';
 import { ListadoFinanzas } from './listado-finanzas';
 
 describe('ListadoFinanzas', () => {
@@ -52,10 +51,6 @@ describe('ListadoFinanzas', () => {
     analizarFactura: ReturnType<typeof vi.fn>;
   };
 
-  let mockFacturaFinanzaMapper: {
-    mapear: ReturnType<typeof vi.fn>;
-  };
-
   beforeEach(async () => {
     mockFinanzaService = {
       getAll: vi.fn().mockReturnValue(
@@ -85,14 +80,6 @@ describe('ListadoFinanzas', () => {
       analizarFactura: vi.fn(),
     };
 
-    mockFacturaFinanzaMapper = {
-      mapear: vi.fn().mockReturnValue({
-        tipoMovimiento: TipoMovimiento.Egreso,
-        concepto: Concepto.Ute,
-        importe: 3203,
-      }),
-    };
-
     await TestBed.configureTestingModule({
       imports: [ListadoFinanzas],
       providers: [
@@ -103,7 +90,6 @@ describe('ListadoFinanzas', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
         { provide: DocumentIntelligenceService, useValue: mockDocumentIntelligenceService },
-        { provide: FacturaFinanzaMapperService, useValue: mockFacturaFinanzaMapper },
       ],
     }).compileComponents();
 
@@ -293,27 +279,22 @@ describe('ListadoFinanzas', () => {
         tipoContenido: 'application/pdf',
         modeloUsado: 'prebuilt-invoice',
         fechaAnalisis: '2026-06-25T10:00:00Z',
-        resultadoJson: '{}',
-      };
-
-      const datosMapeados = {
-        tipoMovimiento: TipoMovimiento.Egreso,
-        concepto: Concepto.Ute,
-        importe: 3203,
+        resultadoJson: JSON.stringify({ content: 'UTE\nIMPORTE TOTAL\n$3.203,00' }),
       };
 
       mockDocumentIntelligenceService.analizarFactura.mockReturnValue(of(documento));
-      mockFacturaFinanzaMapper.mapear.mockReturnValue(datosMapeados);
 
       const navigateSpy = vi.spyOn(router, 'navigate');
 
       component['onFacturaSeleccionada'](event);
 
       expect(mockDocumentIntelligenceService.analizarFactura).toHaveBeenCalledWith(file);
-      expect(mockFacturaFinanzaMapper.mapear).toHaveBeenCalledWith(documento);
       expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', 'nuevo'], {
         state: {
-          facturaAnalizada: datosMapeados,
+          facturaAnalizada: expect.objectContaining({
+            tipoMovimiento: TipoMovimiento.Egreso,
+            concepto: Concepto.Ute,
+          }),
         },
       });
     });

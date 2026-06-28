@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { DocumentIntelligenceService } from './document-intelligence.service';
 import { DocumentoAnalizadoResponse } from '../models/document-intelligence.model';
@@ -7,7 +9,9 @@ describe('DocumentIntelligenceService', () => {
   let service: DocumentIntelligenceService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(DocumentIntelligenceService);
   });
 

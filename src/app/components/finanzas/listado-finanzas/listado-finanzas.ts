@@ -25,7 +25,7 @@ import { FinanzasFilterService } from '../services/finanzas-filter.service';
 import { FinanzaService } from '../services/finanza.service';
 import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
-import { FacturaFinanzaMapperService } from '../services/factura-finanza-mapper.service';
+import { mapFacturaToFinanza } from '../mappers/factura-finanza.mapper';
 import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
 import { LoadingDialog } from '../../../shared';
 
@@ -51,7 +51,6 @@ export class ListadoFinanzas {
   private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly documentoAzureService = inject(DocumentIntelligenceService);
-  private readonly facturaFinanzaMapper = inject(FacturaFinanzaMapperService);
   private facturaSubscription?: Subscription;
 
   constructor() {
@@ -156,7 +155,6 @@ export class ListadoFinanzas {
     this.exportando.set(true);
 
     const filters = this.tableState.queryParams().filters;
-    console.log('Filtros exportación:', filters);
 
     this.finanzaService
       .exportar(filters)
@@ -214,13 +212,14 @@ export class ListadoFinanzas {
           this.analizandoFactura.set(false);
           this.facturaSubscription = undefined;
 
-          const datosPrecargados = this.facturaFinanzaMapper.mapear(documento);
-
-          this.router.navigate(['/finanzas', 'nuevo'], {
-            state: {
-              facturaAnalizada: datosPrecargados,
-            },
-          });
+          try {
+            const datosPrecargados = mapFacturaToFinanza(documento);
+            this.router.navigate(['/finanzas', 'nuevo'], {
+              state: { facturaAnalizada: datosPrecargados },
+            });
+          } catch (err) {
+            this.errorHandler.handle(err);
+          }
         },
         error: (err) => {
           this.analizandoFactura.set(false);
