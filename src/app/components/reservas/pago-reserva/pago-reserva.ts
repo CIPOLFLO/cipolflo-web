@@ -109,7 +109,7 @@ export class PagoReserva {
 
   protected onConfirmar(): void {
     const reserva = this.reserva();
- 
+
     if (!reserva || this.form.invalid || this.guardando()) {
       this.form.markAllAsTouched();
       return;
