@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
@@ -12,6 +20,7 @@ import { LoadDataFn, RowAction } from '../../../shared/components/table/table.mo
 import { ReservaRow } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -29,8 +38,15 @@ import { EstadoReserva } from '../../../shared';
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
+  private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly tableState = inject(TableStateService);
   private readonly columnsService = inject(ReservasColumnsService);
+
+  protected readonly exportando = signal(false);
+  protected readonly puedeExportar = computed(
+    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
+  );
 
   protected readonly columns = this.columnsService.columns;
 
@@ -56,9 +72,6 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
-    // { label: 'Habilitar/Deshabilitar', ... },
-    // { separator: true },
-    // { label: 'Eliminar', ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -75,5 +88,21 @@ export class ListadoReservas {
 
   protected onNuevaReserva(): void {
     this.router.navigate(['/reservas/nueva']);
+  }
+
+  protected onExportar(): void {
+    if (!this.puedeExportar()) return;
+    this.exportando.set(true);
+    const filters = this.tableState.queryParams().filters;
+    this.reservasService
+      .exportar(filters)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.exportando.set(false),
+        error: (err) => {
+          this.exportando.set(false);
+          this.errorHandler.handle(err);
+        },
+      });
   }
 }

@@ -2,7 +2,15 @@
   pageTitle="Listado de Reservas"
   pageDescription="Listado y gestión del módulo de reservas"
 >
-  <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
+  <app-button
+    actions
+    label="Exportar"
+    intent="secondary"
+    icon="pi-download"
+    [disabled]="!puedeExportar()"
+    [loading]="exportando()"
+    (clicked)="onExportar()"
+  />
   <app-button
     actions
     label="Nueva Reserva"

@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
 import { FilterConfigProvider, PageResponse, TableStateService } from '../../../shared';
@@ -11,6 +11,7 @@ import { ReservaRow, ReservaRespuestaDto } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ListadoReservas } from './listado-reservas';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const mockRow: ReservaRespuestaDto = {
   id: 1,
@@ -44,11 +45,17 @@ class MinimalFilterProvider extends FilterConfigProvider {
 describe('ListadoReservas', () => {
   let fixture: ComponentFixture<ListadoReservas>;
   let component: ListadoReservas;
-  let mockReservasService: { getAll: ReturnType<typeof vi.fn> };
+  let mockReservasService: {
+    getAll: ReturnType<typeof vi.fn>;
+    exportar: ReturnType<typeof vi.fn>;
+  };
   let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    mockReservasService = { getAll: vi.fn().mockReturnValue(of(mockPage)) };
+    mockReservasService = {
+      getAll: vi.fn().mockReturnValue(of(mockPage)),
+      exportar: vi.fn().mockReturnValue(of(undefined)),
+    };
     navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
@@ -117,5 +124,47 @@ describe('ListadoReservas', () => {
     const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
     filterPanel.triggerEventHandler('filterChange', { estado: 'PENDIENTE' });
     expect(component['tableState'].queryParams().filters).toEqual({ estado: 'PENDIENTE' });
+  });
+
+  describe('exportar', () => {
+    it('puedeExportar es false cuando no hay resultados', () => {
+      component['tableState'].setResult(0);
+      fixture.detectChanges();
+
+      expect(component['puedeExportar']()).toBe(false);
+    });
+
+    it('puedeExportar es true cuando hay resultados y no está exportando', () => {
+      component['tableState'].setResult(1);
+      component['tableState'].setLoading(false);
+      fixture.detectChanges();
+
+      expect(component['puedeExportar']()).toBe(true);
+      expect(component['exportando']()).toBe(false);
+    });
+
+    it('onExportar llama a reservasService.exportar con los filtros actuales', () => {
+      component['tableState'].setResult(1);
+      component['tableState'].setLoading(false);
+      fixture.detectChanges();
+      component['tableState'].updateFilters({ estadoReserva: 'PENDIENTE' });
+      component['onExportar']();
+
+      expect(mockReservasService.exportar).toHaveBeenCalledWith({ estadoReserva: 'PENDIENTE' });
+    });
+
+    it('onExportar setea exportando en false si el service falla', () => {
+      component['tableState'].setResult(1);
+      component['tableState'].setLoading(false);
+      fixture.detectChanges();
+      const errorHandler = TestBed.inject(ErrorHandlerService);
+      const handleSpy = vi.spyOn(errorHandler, 'handle').mockImplementation(() => undefined);
+      mockReservasService.exportar = vi.fn().mockReturnValue(throwError(() => new Error('error')));
+
+      component['onExportar']();
+
+      expect(component['exportando']()).toBe(false);
+      expect(handleSpy).toHaveBeenCalled();
+    });
   });
 });
