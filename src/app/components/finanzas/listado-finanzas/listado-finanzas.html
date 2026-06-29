@@ -9,6 +9,31 @@
     icon="pi-plus"
     (clicked)="onNuevoMovimiento()"
   />
+  <input
+    id="facturaInput"
+    #facturaInput
+    type="file"
+    hidden
+    aria-label="Seleccionar factura"
+    accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff,.heif"
+    (change)="onFacturaSeleccionada($event)"
+  />
+
+  <app-button
+    actions
+    label="Cargar factura"
+    intent="secondary"
+    icon="pi-upload"
+    [loading]="analizandoFactura()"
+    (clicked)="onCargarFacturaClick(facturaInput)"
+  />
+  <app-loading-dialog
+    [visible]="analizandoFactura()"
+    title="Analizando factura"
+    message="Estamos procesando la factura. No cierres esta pantalla hasta que finalice el análisis."
+    cancelLabel="Cancelar"
+    (cancelled)="onCancelarAnalisisFactura()"
+  />
 
   <app-button
     actions

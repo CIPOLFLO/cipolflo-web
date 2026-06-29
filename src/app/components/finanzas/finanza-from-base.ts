@@ -5,9 +5,9 @@ import { Procedencia, PROCEDENCIA_OPTIONS, type FormFieldConfig } from '../../sh
 import { FinanzaValidacionesService } from './services/finanza-validaciones.service';
 import {
   Concepto,
-  CONCEPTO_OPTIONS,
   FormaPago,
   FORMA_PAGO_OPTIONS,
+  getConceptoOptionsByTipoMovimiento,
   TipoMovimiento,
   TIPO_MOVIMIENTO_FORM_OPTIONS,
 } from './models/finanza.model';
@@ -75,7 +75,7 @@ export abstract class FinanzaFormBase {
         type: 'select',
         required: true,
         defaultValue: this.form.get('concepto')?.value ?? undefined,
-        options: CONCEPTO_OPTIONS,
+        options: getConceptoOptionsByTipoMovimiento(this.form.get('tipoMovimiento')?.value),
       },
       {
         key: 'fecha',
@@ -139,10 +139,23 @@ export abstract class FinanzaFormBase {
   protected onMovimientoChange(values: Record<string, string | null>): void {
     if (this.tipoMovimientoDisabled) return;
 
+    const tipoMovimiento = (values['tipoMovimiento'] ?? null) as TipoMovimiento | null;
+    const conceptoActual = this.form.get('concepto')?.value ?? null;
+
+    const conceptosPermitidos = getConceptoOptionsByTipoMovimiento(tipoMovimiento).map(
+      (option) => option.value,
+    );
+
+    const conceptoEsValido =
+      conceptoActual !== null && conceptosPermitidos.includes(conceptoActual);
+
     this.form.patchValue({
-      tipoMovimiento: (values['tipoMovimiento'] ?? null) as TipoMovimiento | null,
+      tipoMovimiento,
+      concepto: conceptoEsValido ? conceptoActual : Concepto.Otro,
     });
+
     this.form.markAsDirty();
+    this.dataVersion.update((n) => n + 1);
   }
 
   protected onInfoChange(values: Record<string, string | null>): void {

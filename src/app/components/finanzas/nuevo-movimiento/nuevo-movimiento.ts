@@ -23,6 +23,10 @@ export class NuevoMovimiento extends FinanzaFormBase {
   constructor() {
     super();
     this.inicializarValidaciones();
+    const facturaAnalizada = history.state?.facturaAnalizada;
+    if (facturaAnalizada) {
+      this.form.patchValue(facturaAnalizada);
+    }
   }
   protected onCancelar(): void {
     this.router.navigate(['/finanzas']);
