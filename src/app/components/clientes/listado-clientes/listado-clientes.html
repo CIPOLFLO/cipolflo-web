@@ -15,8 +15,8 @@
       label="Descargar listado"
       intent="secondary"
       icon="pi-download"
-      [disabled]="!puedeExportar()"
-      [loading]="exportando()"
+      [disabled]="!tableExport.puedeExportar()"
+      [loading]="tableExport.exportando()"
       (clicked)="onExportar()"
     />
   }

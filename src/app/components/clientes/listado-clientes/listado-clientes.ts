@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { filter, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -18,6 +10,7 @@ import {
   PageLayout,
   RowAction,
   TableStateService,
+  TableExportService,
 } from '../../../shared';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
@@ -33,6 +26,7 @@ import { BreakpointService } from '../../../core/services/breakpoint.service';
   imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota],
   providers: [
     TableStateService,
+    TableExportService,
     ClientesColumnsService,
     { provide: FilterConfigProvider, useClass: ClientesFilterService },
   ],
@@ -46,15 +40,11 @@ export class ListadoClientes {
   private readonly filterConfigProvider = inject(FilterConfigProvider);
   private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   private readonly router = inject(Router);
   private readonly errorHandler = inject(ErrorHandlerService);
   protected readonly breakpoint = inject(BreakpointService);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
-  protected readonly exportando = signal(false);
-  protected readonly puedeExportar = computed(
-    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
-  );
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -143,19 +133,8 @@ export class ListadoClientes {
   }
 
   protected onExportar(): void {
-    if (!this.puedeExportar()) return;
-    this.exportando.set(true);
     const filters = this.tableState.queryParams().filters;
-    this.clientesService
-      .exportar(filters)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => this.exportando.set(false),
-        error: (err) => {
-          this.exportando.set(false);
-          this.errorHandler.handle(err);
-        },
-      });
+    this.tableExport.exportar(() => this.clientesService.exportar(filters));
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {

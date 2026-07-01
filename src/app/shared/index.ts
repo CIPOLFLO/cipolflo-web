@@ -25,6 +25,7 @@ export { FormActions } from './components/form-actions/form-actions';
 // Table
 export { AppTable } from './components/table/table';
 export { TableStateService } from './components/table/table-state.service';
+export { TableExportService } from './components/table/table-export.service';
 export type {
   ColumnConfig,
   CellType,

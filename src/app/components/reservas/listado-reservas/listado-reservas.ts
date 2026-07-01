@@ -5,6 +5,7 @@ import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
 import { AppTable } from '../../../shared/components/table/table';
 import { TableStateService } from '../../../shared/components/table/table-state.service';
+import { TableExportService } from '../../../shared/components/table/table-export.service';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
@@ -19,6 +20,7 @@ import { PagoReserva } from '../pago-reserva/pago-reserva';
   imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoReserva],
   providers: [
     TableStateService,
+    TableExportService,
     ReservasService,
     ReservasColumnsService,
     { provide: FilterConfigProvider, useClass: ReservasFilterService },
@@ -31,7 +33,9 @@ export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
+
   protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
 
@@ -83,6 +87,11 @@ export class ListadoReservas {
 
   protected onNuevaReserva(): void {
     this.router.navigate(['/reservas/nueva']);
+  }
+
+  protected onExportar(): void {
+    const filters = this.tableState.queryParams().filters;
+    this.tableExport.exportar(() => this.reservasService.exportar(filters));
   }
 
   protected onConfirmarPago(row: ReservaRow): void {

@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { of } from 'rxjs';
 import { ReservasService } from './reservas.service';
+import { BlobExportService } from '../../../core/services/blob-export.service';
 import { EstadoReserva, Procedencia } from '../../../shared';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
@@ -81,10 +83,20 @@ const dto: ReservaCreacionRequestDto = {
 describe('ReservasService', () => {
   let service: ReservasService;
   let httpTesting: HttpTestingController;
+  let blobExportService: { export: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    blobExportService = {
+      export: vi.fn().mockReturnValue(of(undefined)),
+    };
+
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), ReservasService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        ReservasService,
+        { provide: BlobExportService, useValue: blobExportService },
+      ],
     });
     service = TestBed.inject(ReservasService);
     httpTesting = TestBed.inject(HttpTestingController);
@@ -235,6 +247,20 @@ describe('ReservasService', () => {
       );
       req.flush({ costoTotal: 9000 });
       expect(resultado).toBe(9000);
+    });
+  });
+
+  describe('exportar', () => {
+    it('delega en BlobExportService con el endpoint, los filtros y el filename correctos', () => {
+      const filters = { estadoReserva: 'PENDIENTE' };
+
+      service.exportar(filters).subscribe();
+
+      expect(blobExportService.export).toHaveBeenCalledWith(
+        'reservas/exportar',
+        filters,
+        'reservas.xlsx',
+      );
     });
   });
 });

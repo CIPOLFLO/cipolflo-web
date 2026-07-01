@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
+import { BlobExportService } from '../../../core/services/blob-export.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
 import {
   CostoReservaRequestDto,
@@ -14,6 +15,8 @@ import {
 
 @Injectable()
 export class ReservasService extends BaseHttpService {
+  private readonly blobExport = inject(BlobExportService);
+
   getAll({
     page,
     size,
@@ -44,5 +47,9 @@ export class ReservasService extends BaseHttpService {
 
   calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {
     return this.post<CostoReservaRespuestaDto>('reservas/calcular-costo', dto);
+  }
+
+  exportar(filters: Record<string, string | null>): Observable<void> {
+    return this.blobExport.export('reservas/exportar', filters, 'reservas.xlsx');
   }
 }
