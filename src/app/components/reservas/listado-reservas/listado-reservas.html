@@ -10,6 +10,11 @@
     icon="pi-plus"
     (clicked)="onNuevaReserva()"
   />
+  <app-pago-reserva
+    [reserva]="reservaPagoSeleccionada()"
+    (closed)="onCerrarPagoReserva()"
+    (pagoRegistrado)="onPagoReservaRegistrado()"
+  />
 
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 

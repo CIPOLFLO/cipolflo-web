@@ -100,6 +100,11 @@ describe('ReservasService', () => {
       fechaEntrada: '2026-08-10',
       fechaSalida: '2026-08-15',
       estadoReserva: EstadoReserva.Confirmada,
+      tipoReserva: TipoReserva.Comun,
+      montoImpago: 5000,
+      fechaLimitePago: null,
+      pago: false,
+      pendienteDocumentacion: false,
     };
 
     const mockPage = {
@@ -160,7 +165,8 @@ describe('ReservasService', () => {
     it('llama a GET /reservas/:id', () => {
       service.getById(42).subscribe();
 
-      const req = httpTesting.expectOne((r) => r.url.includes('reservas/42') && r.method === 'GET');
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas/42'));
+      expect(req.request.method).toBe('GET');
       req.flush(mockDetalle);
     });
 
