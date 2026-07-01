@@ -17,14 +17,15 @@ import { FilterConfigProvider } from '../../../shared/services/filter-config.pro
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
-import { ReservaRow } from '../models/reserva.model';
+import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { PagoReserva } from '../pago-reserva/pago-reserva';
 
 @Component({
   selector: 'app-listado-reservas',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable],
+  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoReserva],
   providers: [
     TableStateService,
     ReservasService,
@@ -48,6 +49,7 @@ export class ListadoReservas {
     () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
   );
 
+  protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
@@ -72,6 +74,16 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+    ...(this.puedeConfirmarPago(row)
+      ? [
+          {
+            label: 'Confirmar pago',
+            icon: 'pi pi-dollar',
+            command: () => this.onConfirmarPago(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    // { label: 'Eliminar', ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -104,5 +116,31 @@ export class ListadoReservas {
           this.errorHandler.handle(err);
         },
       });
+  }
+
+  protected onConfirmarPago(row: ReservaRow): void {
+    this.reservaPagoSeleccionada.set(row);
+  }
+
+  protected onCerrarPagoReserva(): void {
+    this.reservaPagoSeleccionada.set(null);
+  }
+
+  protected onPagoReservaRegistrado(): void {
+    this.reservaPagoSeleccionada.set(null);
+    this.recargarTabla();
+  }
+
+  private recargarTabla(): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+  }
+
+  private puedeConfirmarPago(row: ReservaRow): boolean {
+    return (
+      !row.pago &&
+      row.estadoReserva !== EstadoReserva.Finalizada &&
+      row.estadoReserva !== EstadoReserva.Cancelada &&
+      row.tipoReserva !== TipoReserva.ColaboracionSinFines
+    );
   }
 }

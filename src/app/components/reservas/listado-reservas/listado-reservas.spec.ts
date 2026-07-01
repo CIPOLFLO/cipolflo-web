@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
 import { FilterConfigProvider, PageResponse, TableStateService } from '../../../shared';
 import { EstadoReserva } from '../../../shared';
-import { ReservaRow, ReservaRespuestaDto } from '../models/reserva.model';
+import { ReservaRow, ReservaRespuestaDto, TipoReserva } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ListadoReservas } from './listado-reservas';
@@ -22,6 +22,11 @@ const mockRow: ReservaRespuestaDto = {
   fechaEntrada: '2026-08-10',
   fechaSalida: '2026-08-15',
   estadoReserva: EstadoReserva.Confirmada,
+  tipoReserva: TipoReserva.Comun,
+  montoImpago: 5000,
+  fechaLimitePago: null,
+  pago: false,
+  pendienteDocumentacion: false,
 };
 
 const mockPage: PageResponse<ReservaRespuestaDto> = {
@@ -165,6 +170,74 @@ describe('ListadoReservas', () => {
 
       expect(component['exportando']()).toBe(false);
       expect(handleSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('confirmar pago', () => {
+    it('debería incluir la acción Confirmar pago cuando la reserva aplica', () => {
+      const actions = component['rowActions'](mockRow);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(true);
+    });
+
+    it('no debería incluir Confirmar pago si la reserva está finalizada', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Finalizada,
+      };
+
+      const actions = component['rowActions'](row);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('no debería incluir Confirmar pago si la reserva está cancelada', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Cancelada,
+      };
+
+      const actions = component['rowActions'](row);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('no debería incluir Confirmar pago si es colaboración sin fines de lucro', () => {
+      const row = {
+        ...mockRow,
+        tipoReserva: TipoReserva.ColaboracionSinFines,
+      };
+
+      const actions = component['rowActions'](row);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('debería abrir el modal de pago al ejecutar Confirmar pago', () => {
+      const action = component['rowActions'](mockRow).find((a) => a.label === 'Confirmar pago');
+
+      action?.command?.(mockRow);
+
+      expect(component['reservaPagoSeleccionada']()).toEqual(mockRow);
+    });
+
+    it('debería cerrar el modal de pago', () => {
+      component['onConfirmarPago'](mockRow);
+
+      component['onCerrarPagoReserva']();
+
+      expect(component['reservaPagoSeleccionada']()).toBeNull();
+    });
+
+    it('debería cerrar el modal y refrescar la tabla cuando se registra el pago', () => {
+      const tableState = component['tableState'];
+      const updateFiltersSpy = vi.spyOn(tableState, 'updateFilters');
+
+      component['onConfirmarPago'](mockRow);
+      component['onPagoReservaRegistrado']();
+
+      expect(component['reservaPagoSeleccionada']()).toBeNull();
+      expect(updateFiltersSpy).toHaveBeenCalledWith(tableState.queryParams().filters);
     });
   });
 });
