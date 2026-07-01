@@ -104,6 +104,7 @@ export class ListadoReservas {
 
   private puedeConfirmarPago(row: ReservaRow): boolean {
     return (
+      !row.pago &&
       row.estadoReserva !== EstadoReserva.Finalizada &&
       row.estadoReserva !== EstadoReserva.Cancelada &&
       row.tipoReserva !== TipoReserva.ColaboracionSinFines

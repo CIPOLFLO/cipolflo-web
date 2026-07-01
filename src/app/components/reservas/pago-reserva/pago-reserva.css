@@ -65,6 +65,10 @@
   font-size: 22px;
 }
 
+.pago-reserva__required {
+  color: var(--color-danger);
+}
+
 .pago-reserva__form {
   display: flex;
   flex-direction: column;
