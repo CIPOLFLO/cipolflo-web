@@ -410,7 +410,7 @@ describe('ClientesService', () => {
       service.registrarPagoCuota(1, dto).subscribe((result) => {
         expect(result).toEqual(mockResponse);
       });
-      const req = httpMock.expectOne(`${BASE}/1/cuotas`);
+      const req = httpMock.expectOne(`${BASE}/socios/1/pago-cuota`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockResponse, { status: 201, statusText: 'Created' });
