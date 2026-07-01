@@ -52,7 +52,7 @@ export class PagoCuota {
   protected readonly costoCuota = this.clientesService.getCostoCuota();
   protected readonly pagoConfirmado = signal<PagoCuotaResponseDto[] | null>(null);
   protected readonly hoy = new Date();
-  
+
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
       nonNullable: true,
@@ -137,15 +137,15 @@ export class PagoCuota {
 
   protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota);
 
-protected readonly fechaEsFutura = computed(() => {
-  const fechaPago = new Date(this.fechaPago());
-  const hoy = new Date();
+  protected readonly fechaEsFutura = computed(() => {
+    const fechaPago = new Date(this.fechaPago());
+    const hoy = new Date();
 
-  fechaPago.setHours(0, 0, 0, 0);
-  hoy.setHours(0, 0, 0, 0);
+    fechaPago.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
 
-  return fechaPago > hoy;
-});
+    return fechaPago > hoy;
+  });
 
   protected cerrarConfirmacion(): void {
     this.cerrar();
