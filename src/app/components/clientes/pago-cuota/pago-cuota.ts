@@ -51,7 +51,8 @@ export class PagoCuota {
   protected readonly metodosCobro = METODO_COBRO_OPTIONS;
   protected readonly costoCuota = this.clientesService.getCostoCuota();
   protected readonly pagoConfirmado = signal<PagoCuotaResponseDto[] | null>(null);
-
+  protected readonly hoy = new Date();
+  
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
       nonNullable: true,
@@ -105,10 +106,6 @@ export class PagoCuota {
     );
   });
 
-  protected getTotal(): number {
-    return this.form.controls.cantidadCuotas.value * this.costoCuota;
-  }
-
   protected onCancelar(): void {
     this.cerrar();
   }
@@ -122,7 +119,7 @@ export class PagoCuota {
 
     const request = {
       cantidadCuotas: this.form.controls.cantidadCuotas.value,
-      importeTotal: this.getTotal(),
+      importeTotal: this.total(),
       metodoCobro: this.form.controls.metodoCobro.value,
       fechaPago: this.toDateString(this.form.controls.fechaPago.value),
       observaciones: this.form.controls.observaciones.value,
@@ -138,15 +135,17 @@ export class PagoCuota {
     });
   }
 
-  protected fechaEsFutura(): boolean {
-    const fechaPago = new Date(this.fechaPago());
-    const hoy = new Date();
+  protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota);
 
-    fechaPago.setHours(0, 0, 0, 0);
-    hoy.setHours(0, 0, 0, 0);
+protected readonly fechaEsFutura = computed(() => {
+  const fechaPago = new Date(this.fechaPago());
+  const hoy = new Date();
 
-    return fechaPago > hoy;
-  }
+  fechaPago.setHours(0, 0, 0, 0);
+  hoy.setHours(0, 0, 0, 0);
+
+  return fechaPago > hoy;
+});
 
   protected cerrarConfirmacion(): void {
     this.cerrar();
@@ -168,8 +167,7 @@ export class PagoCuota {
       const hoy = new Date();
       return new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     }
-
-    return new Date(ultimaCuota.anio, ultimaCuota.mes, 1);
+    return this.sumarMeses(new Date(ultimaCuota.anio, ultimaCuota.mes - 1, 1), 1);
   }
 
   private sumarMeses(fecha: Date, meses: number): Date {

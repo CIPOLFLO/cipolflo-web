@@ -1,142 +1,108 @@
-<p-dialog
-  [visible]="true"
-  [modal]="true"
-  [closable]="false"
-  [resizable]="false"
-  [draggable]="false"
-  [style]="{ width: '520px', minHeight: '560px' }"
->
+<p-dialog [visible]="true" [modal]="true" [closable]="false" [resizable]="false" [draggable]="false"
+  [style]="{ width: '520px', minHeight: '560px' }">
   @if (cliente(); as cliente) {
-    <div class="pago-cuota">
-      <header class="pago-cuota__header">
-        <h2>Pago de Cuota</h2>
-        <p>Registre el pago de cuotas del socio</p>
-      </header>
+  <div class="pago-cuota">
+    <header class="pago-cuota__header">
+      <h2>Pago de Cuota</h2>
+      <p>Registre el pago de cuotas del socio</p>
+    </header>
 
-      <section class="pago-cuota__socio">
-        <p>Socio: {{ cliente.nombreCompleto }}</p>
-        <p>N° de Socio: {{ cliente.numeroSocio }}</p>
-        <p>Última cuota paga: {{ ultimaCuotaDescripcion() }}</p>
-        <p>Costo por cuota: {{ costoCuota | currencyFormat }}</p>
-      </section>
+    <section class="pago-cuota__socio">
+      <p>Socio: {{ cliente.nombreCompleto }}</p>
+      <p>N° de Socio: {{ cliente.numeroSocio }}</p>
+      <p>Última cuota paga: {{ ultimaCuotaDescripcion() }}</p>
+      <p>Costo por cuota: {{ costoCuota | currencyFormat }}</p>
+    </section>
 
-      <form [formGroup]="form" class="pago-cuota__form">
-        <label for="cantidadCuotas">Cantidad de cuotas a pagar *</label>
-        <p-inputnumber
-          inputId="cantidadCuotas"
-          formControlName="cantidadCuotas"
-          [showButtons]="true"
-          [min]="1"
-          [max]="12"
-        />
+    <form [formGroup]="form" class="pago-cuota__form">
+      <label for="cantidadCuotas">Cantidad de cuotas a pagar *</label>
+      <p-inputnumber inputId="cantidadCuotas" formControlName="cantidadCuotas" [showButtons]="true" [min]="1"
+        [max]="12" />
 
-        @if (cantidadInvalida()) {
-          <small class="pago-cuota__error">La cantidad debe ser entre 1 y 12.</small>
-        }
+      @if (cantidadInvalida()) {
+      <small class="pago-cuota__error">La cantidad debe ser entre 1 y 12.</small>
+      }
 
-        <label for="metodoCobro">Método de cobro *</label>
-        <p-select
-          inputId="metodoCobro"
-          formControlName="metodoCobro"
-          [options]="metodosCobro"
-          optionLabel="label"
-          optionValue="value"
-        />
+      <label for="metodoCobro">Método de cobro *</label>
+      <p-select inputId="metodoCobro" formControlName="metodoCobro" [options]="metodosCobro" optionLabel="label"
+        optionValue="value" />
 
-        <label for="fechaPago">Fecha de pago *</label>
-        <p-datepicker
-          inputId="fechaPago"
-          formControlName="fechaPago"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-        />
+      <label for="fechaPago">Fecha de pago *</label>
+      <p-datepicker inputId="fechaPago" formControlName="fechaPago" dateFormat="dd/mm/yy" [showIcon]="true"
+        [maxDate]="hoy" />
 
-        @if (fechaEsFutura()) {
-          <small class="pago-cuota__error">La fecha de pago no puede ser posterior a hoy.</small>
-        }
+      @if (fechaEsFutura()) {
+      <small class="pago-cuota__error">La fecha de pago no puede ser posterior a hoy.</small>
+      }
 
-        <label for="observaciones">Observaciones</label>
-        <textarea
-          id="observaciones"
-          formControlName="observaciones"
-          rows="3"
-          class="pago-cuota__textarea"
-        ></textarea>
-      </form>
+      <label for="observaciones">Observaciones</label>
+      <textarea id="observaciones" formControlName="observaciones" rows="3" class="pago-cuota__textarea"></textarea>
+    </form>
 
-      <section class="pago-cuota__resumen">
-        <div>
-          <span>Cuotas a pagar:</span>
-          <strong>
-            {{ cantidadCuotas() }}
-            {{ cantidadCuotas() === 1 ? 'cuota' : 'cuotas' }}
-          </strong>
+    <section class="pago-cuota__resumen">
+      <div>
+        <span>Cuotas a pagar:</span>
+        <strong>
+          {{ cantidadCuotas() || 0 }}
+          {{ cantidadCuotas() === 1 ? 'cuota' : 'cuotas' }}
+        </strong>
+      </div>
+
+      <div class="pago-cuota__fila">
+        <span>Meses cubiertos:</span>
+
+        <div class="pago-cuota__periodos">
+          @if (periodosCubiertos().length > 0) {
+          @for (periodo of periodosCubiertos(); track periodo) {
+          <span>{{ periodo }}</span>
+          }
+          } @else {
+          <span>-</span>
+          }
         </div>
+      </div>
 
-        <div>
-          <span>Meses cubiertos:</span>
-          <strong>
-            @for (periodo of periodosCubiertos(); track periodo) {
-              <span>{{ periodo }}</span>
-              @if (!$last) {
-                <span>, </span>
-              }
-            }
-          </strong>
-        </div>
+      <div>
+        <span>Costo por cuota:</span>
+        <strong>{{ costoCuota | currencyFormat }}</strong>
+      </div>
 
-        <div>
-          <span>Costo por cuota:</span>
-          <strong>{{ costoCuota | currencyFormat }}</strong>
-        </div>
+      <div class="pago-cuota__total">
+        <span>Total a pagar:</span>
+        <strong>{{ total() | currencyFormat }}</strong>
+      </div>
+    </section>
 
-        <div class="pago-cuota__total">
-          <span>Total a pagar:</span>
-          <strong>{{ getTotal() | currencyFormat }}</strong>
-        </div>
-      </section>
-
-      <footer class="pago-cuota__actions">
-        <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
-        <app-button
-          label="Confirmar pago"
-          intent="primary"
-          [disabled]="confirmDisabled()"
-          [tooltip]="confirmDisabled() ? 'Complete todos los campos correctamente' : ''"
-          (clicked)="onConfirmar()"
-        />
-      </footer>
-    </div>
+    <footer class="pago-cuota__actions">
+      <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
+      <app-button label="Confirmar pago" intent="primary" [disabled]="confirmDisabled()"
+        [tooltip]="confirmDisabled() ? 'Complete todos los campos correctamente' : ''" (clicked)="onConfirmar()" />
+    </footer>
+  </div>
   }
 </p-dialog>
 
-<p-dialog
-  [visible]="pagoConfirmado() !== null"
-  [modal]="true"
-  [closable]="false"
-  [resizable]="false"
-  [draggable]="false"
-  [style]="{ width: '420px' }"
->
+<p-dialog [visible]="pagoConfirmado() !== null" [modal]="true" [closable]="false" [resizable]="false"
+  [draggable]="false" [style]="{ width: '420px' }">
   @if (pagoConfirmado(); as pagos) {
-    <div class="pago-confirmado">
-      <div class="pago-confirmado__icon">
-        <i class="pi pi-check-circle"></i>
-      </div>
-
-      <h3>Pago registrado</h3>
-      <p>El pago de cuota fue registrado correctamente.</p>
-
-      <p><strong>Total:</strong> {{ getTotal() | currencyFormat }}</p>
-
-      <p><strong>Cuotas registradas:</strong></p>
-      <ul>
-        @for (pago of pagos; track pago.id) {
-          <li>{{ pago.descripcion }} — {{ pago.importe | currencyFormat }}</li>
-        }
-      </ul>
-
-      <app-button label="Aceptar" intent="primary" (clicked)="cerrarConfirmacion()" />
+  <div class="pago-confirmado">
+    <div class="pago-confirmado__icon">
+      <i class="pi pi-check-circle"></i>
     </div>
+
+    <h3>Pago registrado</h3>
+    <p>El pago de cuota fue registrado correctamente.</p>
+
+    <p><strong>Total:</strong> {{ total() | currencyFormat }}</p>
+
+    <p><strong>Cuotas registradas:</strong></p>
+    <ul>
+      @for (pago of pagos; track pago.id) {
+      <li>{{ pago.descripcion }} — {{ pago.importe | currencyFormat }}</li>
+      }
+    </ul>
+
+    <app-button label="Aceptar" intent="primary" (clicked)="cerrarConfirmacion()" />
+  </div>
   }
 </p-dialog>
