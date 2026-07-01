@@ -78,7 +78,7 @@ export class ClientesService extends BaseHttpService {
     id: number,
     dto: RegistroPagoCuotaRequestDto,
   ): Observable<PagoCuotaResponseDto[]> {
-    return this.post<PagoCuotaResponseDto[]>(`clientes/${id}/cuotas`, dto);
+    return this.post<PagoCuotaResponseDto[]>(`clientes/socios/${id}/pago-cuota`, dto);
   }
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('clientes/exportar', filters, 'clientes.xlsx');

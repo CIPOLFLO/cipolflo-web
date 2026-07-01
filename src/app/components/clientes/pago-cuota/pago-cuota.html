@@ -74,18 +74,11 @@
           </strong>
         </div>
 
-        <div class="pago-cuota__fila">
+        <div>
           <span>Meses cubiertos:</span>
-
-          <div class="pago-cuota__periodos">
-            @if (periodosCubiertos().length > 0) {
-              @for (periodo of periodosCubiertos(); track periodo) {
-                <span>{{ periodo }}</span>
-              }
-            } @else {
-              <span>-</span>
-            }
-          </div>
+          <strong class="pago-cuota__meses">
+            {{ descripcionPeriodos() }}
+          </strong>
         </div>
 
         <div>

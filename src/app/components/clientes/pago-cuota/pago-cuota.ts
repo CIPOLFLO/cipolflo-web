@@ -187,4 +187,16 @@ export class PagoCuota {
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   }
+
+  protected readonly descripcionPeriodos = computed(() => {
+    const periodos = this.periodosCubiertos();
+
+    if (periodos.length === 0) return '-';
+
+    if (periodos.length <= 2) {
+      return periodos.join(', ');
+    }
+
+    return `${periodos[0]} - ${periodos[periodos.length - 1]}`;
+  });
 }

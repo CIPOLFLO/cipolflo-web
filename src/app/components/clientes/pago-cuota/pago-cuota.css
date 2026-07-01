@@ -141,11 +141,6 @@
   gap: 16px;
 }
 
-.pago-cuota__periodos {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  text-align: right;
+.pago-cuota__meses {
   font-weight: 400;
 }
