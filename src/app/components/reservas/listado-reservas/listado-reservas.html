@@ -4,19 +4,19 @@
 >
   <app-button
     actions
-    label="Exportar"
-    intent="secondary"
-    icon="pi-download"
-    [disabled]="!puedeExportar()"
-    [loading]="exportando()"
-    (clicked)="onExportar()"
-  />
-  <app-button
-    actions
     label="Nueva Reserva"
     intent="primary"
     icon="pi-plus"
     (clicked)="onNuevaReserva()"
+  />
+  <app-button
+    actions
+    label="Descargar listado"
+    intent="secondary"
+    icon="pi-download"
+    [disabled]="!tableExport.puedeExportar()"
+    [loading]="tableExport.exportando()"
+    (clicked)="onExportar()"
   />
   <app-pago-reserva
     [reserva]="reservaPagoSeleccionada()"

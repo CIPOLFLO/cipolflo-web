@@ -5,7 +5,12 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
-import { FilterConfigProvider, PageResponse, TableStateService } from '../../../shared';
+import {
+  FilterConfigProvider,
+  PageResponse,
+  TableStateService,
+  TableExportService,
+} from '../../../shared';
 import { EstadoReserva } from '../../../shared';
 import { ReservaRow, ReservaRespuestaDto, TipoReserva } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
@@ -74,6 +79,7 @@ describe('ListadoReservas', () => {
         set: {
           providers: [
             TableStateService,
+            TableExportService,
             ReservasColumnsService,
             { provide: ReservasService, useValue: mockReservasService },
             { provide: FilterConfigProvider, useClass: MinimalFilterProvider },
@@ -132,22 +138,6 @@ describe('ListadoReservas', () => {
   });
 
   describe('exportar', () => {
-    it('puedeExportar es false cuando no hay resultados', () => {
-      component['tableState'].setResult(0);
-      fixture.detectChanges();
-
-      expect(component['puedeExportar']()).toBe(false);
-    });
-
-    it('puedeExportar es true cuando hay resultados y no está exportando', () => {
-      component['tableState'].setResult(1);
-      component['tableState'].setLoading(false);
-      fixture.detectChanges();
-
-      expect(component['puedeExportar']()).toBe(true);
-      expect(component['exportando']()).toBe(false);
-    });
-
     it('onExportar llama a reservasService.exportar con los filtros actuales', () => {
       component['tableState'].setResult(1);
       component['tableState'].setLoading(false);
@@ -168,7 +158,7 @@ describe('ListadoReservas', () => {
 
       component['onExportar']();
 
-      expect(component['exportando']()).toBe(false);
+      expect(component['tableExport'].exportando()).toBe(false);
       expect(handleSpy).toHaveBeenCalled();
     });
   });

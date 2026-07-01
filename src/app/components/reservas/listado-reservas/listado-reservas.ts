@@ -1,18 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
 import { AppTable } from '../../../shared/components/table/table';
 import { TableStateService } from '../../../shared/components/table/table-state.service';
+import { TableExportService } from '../../../shared/components/table/table-export.service';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
@@ -20,7 +13,6 @@ import { LoadDataFn, RowAction } from '../../../shared/components/table/table.mo
 import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
 
 @Component({
@@ -28,6 +20,7 @@ import { PagoReserva } from '../pago-reserva/pago-reserva';
   imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoReserva],
   providers: [
     TableStateService,
+    TableExportService,
     ReservasService,
     ReservasColumnsService,
     { provide: FilterConfigProvider, useClass: ReservasFilterService },
@@ -39,15 +32,9 @@ import { PagoReserva } from '../pago-reserva/pago-reserva';
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
-  private readonly errorHandler = inject(ErrorHandlerService);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
-
-  protected readonly exportando = signal(false);
-  protected readonly puedeExportar = computed(
-    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
-  );
 
   protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
@@ -103,19 +90,8 @@ export class ListadoReservas {
   }
 
   protected onExportar(): void {
-    if (!this.puedeExportar()) return;
-    this.exportando.set(true);
     const filters = this.tableState.queryParams().filters;
-    this.reservasService
-      .exportar(filters)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => this.exportando.set(false),
-        error: (err) => {
-          this.exportando.set(false);
-          this.errorHandler.handle(err);
-        },
-      });
+    this.tableExport.exportar(() => this.reservasService.exportar(filters));
   }
 
   protected onConfirmarPago(row: ReservaRow): void {

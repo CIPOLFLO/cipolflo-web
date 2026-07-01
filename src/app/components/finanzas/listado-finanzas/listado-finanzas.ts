@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, filter, switchMap, Subscription } from 'rxjs';
 import {
@@ -17,6 +10,7 @@ import {
   PageLayout,
   RowAction,
   TableStateService,
+  TableExportService,
   ConfirmDialogService,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -34,6 +28,7 @@ import { LoadingDialog } from '../../../shared';
   imports: [PageLayout, FilterPanel, AppTable, AppButton, LoadingDialog],
   providers: [
     TableStateService,
+    TableExportService,
     FinanzasColumnsService,
     { provide: FilterConfigProvider, useClass: FinanzasFilterService },
   ],
@@ -48,6 +43,7 @@ export class ListadoFinanzas {
   private readonly errorHandler = inject(ErrorHandlerService);
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly documentoAzureService = inject(DocumentIntelligenceService);
@@ -65,11 +61,7 @@ export class ListadoFinanzas {
     }
   }
   protected readonly analizandoFactura = signal(false);
-  protected readonly exportando = signal(false);
   protected readonly columns = this.columnsService.columns;
-  protected readonly puedeExportar = computed(
-    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
-  );
 
   protected readonly loadDataFn: LoadDataFn<FinanzaRow> = (params) =>
     this.finanzaService.getAll(params).pipe(
@@ -150,24 +142,8 @@ export class ListadoFinanzas {
   }
 
   protected onDescargarListado(): void {
-    if (!this.puedeExportar() || this.exportando()) return;
-
-    this.exportando.set(true);
-
     const filters = this.tableState.queryParams().filters;
-
-    this.finanzaService
-      .exportar(filters)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.exportando.set(false);
-        },
-        error: (err) => {
-          this.exportando.set(false);
-          this.errorHandler.handle(err);
-        },
-      });
+    this.tableExport.exportar(() => this.finanzaService.exportar(filters));
   }
 
   protected onCargarFacturaClick(input: HTMLInputElement): void {

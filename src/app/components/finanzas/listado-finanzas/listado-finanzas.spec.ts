@@ -220,27 +220,6 @@ describe('ListadoFinanzas', () => {
     expect(updateFiltersSpy).toHaveBeenCalledWith({ concepto: 'Servicio' });
   });
 
-  it('puedeExportar es false cuando no hay resultados', () => {
-    component['tableState'].setResult(0);
-    component['tableState'].setLoading(false);
-
-    expect(component['puedeExportar']()).toBe(false);
-  });
-
-  it('puedeExportar es false cuando la tabla está cargando', () => {
-    component['tableState'].setResult(10);
-    component['tableState'].setLoading(true);
-
-    expect(component['puedeExportar']()).toBe(false);
-  });
-
-  it('puedeExportar es true cuando hay resultados y no está cargando', () => {
-    component['tableState'].setResult(10);
-    component['tableState'].setLoading(false);
-
-    expect(component['puedeExportar']()).toBe(true);
-  });
-
   it('onDescargarListado llama a exportar con los filtros activos', () => {
     component['tableState'].updateFilters({ concepto: 'PAGO_RESERVA' });
     component['tableState'].setResult(10);
