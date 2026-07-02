@@ -1,0 +1,73 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="'Cancelación de reserva #' + numeroReserva()"
+  [style]="{ width: '560px' }"
+>
+  <div class="alert-warning">
+    <div class="alert-warning__header">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>Pagos asociados encontrados</span>
+    </div>
+    <p class="alert-warning__text">
+      Esta reserva tiene pagos asociados. Al cancelar, la reserva quedará en estado Cancelada.
+    </p>
+  </div>
+
+  <section class="pagos-list">
+    @for (pago of pagos(); track pago.id) {
+      <div class="pago-row">
+        <span class="pago-row__fecha">{{ pago.fecha | dateShortFormat }}</span>
+        <span class="pago-row__forma">{{ pago.formaPago }}</span>
+        <strong class="pago-row__importe">{{ pago.importe | currencyFormat }}</strong>
+      </div>
+    }
+  </section>
+
+  <div class="total-pagos">
+    <span>Total pagado:</span>
+    <strong>{{ importeTotalPagos() | currencyFormat }}</strong>
+  </div>
+
+  <div class="devolucion">
+    <p-checkbox
+      [binary]="true"
+      [ngModel]="generarDevolucion()"
+      (ngModelChange)="onGenerarDevolucionChange($event)"
+      inputId="generarDevolucion"
+    />
+    <label for="generarDevolucion">Generar devolución</label>
+  </div>
+
+  @if (generarDevolucion()) {
+    <label class="forma-pago" for="formaPago">
+      Forma de pago de la devolución *
+      <p-select
+        inputId="formaPago"
+        [ngModel]="formaPago()"
+        (ngModelChange)="formaPago.set($event)"
+        [options]="formaPagoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccionar"
+      />
+    </label>
+  }
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <app-button intent="secondary" label="Cancelar" (clicked)="cancelar.emit()" />
+      <app-button
+        intent="danger"
+        label="Confirmar cancelación"
+        [disabled]="confirmarDisabled()"
+        [tooltip]="confirmarDisabled() ? 'Seleccione la forma de pago de la devolución' : ''"
+        (clicked)="onConfirmar()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { HttpTestingController } from '@angular/common/http/testing';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { of } from 'rxjs';
 import { ReservasService } from './reservas.service';
 import { BlobExportService } from '../../../core/services/blob-export.service';
@@ -100,6 +99,10 @@ describe('ReservasService', () => {
     });
     service = TestBed.inject(ReservasService);
     httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpTesting?.verify();
   });
 
   describe('getAll', () => {
@@ -261,6 +264,71 @@ describe('ReservasService', () => {
         filters,
         'reservas.xlsx',
       );
+    });
+  });
+  describe('verificarCancelacion', () => {
+    it('llama a GET /reservas/:id/cancelacion y devuelve el check', () => {
+      const mockResponse = {
+        puedeCancelarseDirectamente: false,
+        pagosAsociados: [
+          {
+            id: 1,
+            fecha: '2026-07-01',
+            importe: 5000,
+            formaPago: FormaPago.Efectivo,
+          },
+        ],
+        importeTotalPagos: 5000,
+      };
+
+      let resultado: typeof mockResponse | undefined;
+
+      service.verificarCancelacion(42).subscribe((response) => {
+        resultado = response;
+      });
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/cancelacion') && r.method === 'GET',
+      );
+
+      req.flush(mockResponse);
+
+      expect(resultado).toEqual(mockResponse);
+    });
+  });
+
+  describe('cancelar', () => {
+    it('llama a PATCH /reservas/:id/cancelacion con el DTO', () => {
+      const dtoCancelacion = {
+        generarDevolucion: true,
+        formaPago: FormaPago.Efectivo,
+      };
+
+      service.cancelar(42, dtoCancelacion).subscribe();
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/cancelacion') && r.method === 'PATCH',
+      );
+
+      expect(req.request.body).toEqual(dtoCancelacion);
+
+      req.flush(null);
+    });
+
+    it('permite cancelar sin formaPago cuando no se genera devolución', () => {
+      const dtoCancelacion = {
+        generarDevolucion: false,
+      };
+
+      service.cancelar(42, dtoCancelacion).subscribe();
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/cancelacion') && r.method === 'PATCH',
+      );
+
+      expect(req.request.body).toEqual(dtoCancelacion);
+
+      req.flush(null);
     });
   });
 });

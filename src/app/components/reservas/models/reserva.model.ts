@@ -171,3 +171,21 @@ export interface RegistroPagoReservaRequestDto {
   formaPago: FormaPago;
   notas: string | null;
 }
+
+export interface PagoAsociadoReservaDto {
+  id: number;
+  fecha: string;
+  importe: number;
+  formaPago: FormaPago;
+}
+
+export interface ReservaCancelacionCheckResponseDto {
+  puedeCancelarseDirectamente: boolean;
+  pagosAsociados: PagoAsociadoReservaDto[];
+  importeTotalPagos: number;
+}
+
+export interface ReservaCancelacionRequestDto {
+  generarDevolucion: boolean;
+  formaPago?: FormaPago;
+}

@@ -11,6 +11,8 @@ import {
   ReservaCreacionRespuestaDto,
   ReservaDetalleRespuestaDto,
   ReservaRespuestaDto,
+  ReservaCancelacionCheckResponseDto,
+  ReservaCancelacionRequestDto,
 } from '../models/reserva.model';
 
 @Injectable()
@@ -51,5 +53,13 @@ export class ReservasService extends BaseHttpService {
 
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('reservas/exportar', filters, 'reservas.xlsx');
+  }
+
+  verificarCancelacion(id: number): Observable<ReservaCancelacionCheckResponseDto> {
+    return this.get<ReservaCancelacionCheckResponseDto>(`reservas/${id}/cancelacion`);
+  }
+
+  cancelar(id: number, dto: ReservaCancelacionRequestDto): Observable<void> {
+    return this.patch<void>(`reservas/${id}/cancelacion`, dto);
   }
 }
