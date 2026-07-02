@@ -168,6 +168,8 @@ export abstract class ReservaFormBase {
       rut: new FormControl<string | null>(null),
       nombreColaboracion: new FormControl<string | null>(null),
       notas: new FormControl<string | null>(null),
+      requiereDocumentacion: new FormControl<boolean>(false),
+      requiereSena: new FormControl<boolean>(false),
     });
   }
 
@@ -412,6 +414,22 @@ export abstract class ReservaFormBase {
 
   protected controlValue(key: string): string | null {
     return (this.form.get(key)?.value as string | null) ?? null;
+  }
+
+  /** Valor booleano de un control (usado por los checkboxes nativos, p. ej. requiereDocumentacion/requiereSena). */
+  protected controlChecked(key: string): boolean {
+    return Boolean(this.form.get(key)?.value);
+  }
+
+  /** Aplica el cambio de un checkbox nativo al FormGroup. */
+  protected onCheckboxChange(key: string, checked: boolean): void {
+    this.form.get(key)?.setValue(checked);
+    this.form.get(key)?.markAsDirty();
+  }
+
+  /** Extrae el estado checked de un evento de input[type=checkbox], para usar inline en el template. */
+  protected checkboxChecked(event: Event): boolean {
+    return (event.target as HTMLInputElement).checked;
   }
 
   protected onCancelar(): void {

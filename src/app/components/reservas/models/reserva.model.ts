@@ -16,6 +16,8 @@ export interface ReservaRow extends Record<string, unknown> {
   fechaEntrada: string;
   fechaSalida: string;
   estadoReserva: EstadoReserva;
+  requiereDocumentacion: boolean;
+  tieneDocumentacion: boolean;
 }
 
 export enum TipoReserva {
@@ -84,6 +86,8 @@ export interface ReservaCreacionRequestDto {
   email: string | null;
   rut: string | null;
   notas: string | null;
+  requiereDocumentacion: boolean;
+  requiereSena: boolean;
 }
 
 export interface ReservaCreacionRespuestaDto {
@@ -151,20 +155,10 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   pago: boolean;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
+  requiereSena: boolean;
   nombre: string | null;
   rut: string | null;
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;
   servicio: ServicioDetalleReservaDto;
-}
-
-export interface ReservaRespuestaDto extends Record<string, unknown> {
-  id: number;
-  clienteId: number;
-  nombreCliente: string;
-  servicioId: number;
-  servicioNombre: string;
-  fechaEntrada: string;
-  fechaSalida: string;
-  estadoReserva: EstadoReserva;
 }

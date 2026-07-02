@@ -9,7 +9,7 @@ import {
   ReservaCreacionRequestDto,
   ReservaCreacionRespuestaDto,
   ReservaDetalleRespuestaDto,
-  ReservaRespuestaDto,
+  ReservaRow,
 } from '../models/reserva.model';
 
 @Injectable()
@@ -20,8 +20,8 @@ export class ReservasService extends BaseHttpService {
     filters,
     sortField,
     sortOrder,
-  }: TableQueryParams): Observable<PageResponse<ReservaRespuestaDto>> {
-    return this.get<PageResponse<ReservaRespuestaDto>>('reservas', {
+  }: TableQueryParams): Observable<PageResponse<ReservaRow>> {
+    return this.get<PageResponse<ReservaRow>>('reservas', {
       page,
       size,
       ...filters,
@@ -44,5 +44,9 @@ export class ReservasService extends BaseHttpService {
 
   calcularCosto(dto: CostoReservaRequestDto): Observable<CostoReservaRespuestaDto> {
     return this.post<CostoReservaRespuestaDto>('reservas/calcular-costo', dto);
+  }
+
+  confirmarDocumentacion(id: number): Observable<void> {
+    return this.patch<void>(`reservas/${id}/documentacion`, null);
   }
 }

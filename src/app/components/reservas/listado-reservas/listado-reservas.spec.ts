@@ -7,12 +7,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
 import { FilterConfigProvider, PageResponse, TableStateService } from '../../../shared';
 import { EstadoReserva } from '../../../shared';
-import { ReservaRow, ReservaRespuestaDto } from '../models/reserva.model';
+import { ReservaRow } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ListadoReservas } from './listado-reservas';
 
-const mockRow: ReservaRespuestaDto = {
+const mockRow: ReservaRow = {
   id: 1,
   clienteId: 10,
   nombreCliente: 'Juan Pérez',
@@ -21,9 +21,11 @@ const mockRow: ReservaRespuestaDto = {
   fechaEntrada: '2026-08-10',
   fechaSalida: '2026-08-15',
   estadoReserva: EstadoReserva.Confirmada,
+  requiereDocumentacion: false,
+  tieneDocumentacion: false
 };
 
-const mockPage: PageResponse<ReservaRespuestaDto> = {
+const mockPage: PageResponse<ReservaRow> = {
   content: [mockRow],
   page: 0,
   size: 10,

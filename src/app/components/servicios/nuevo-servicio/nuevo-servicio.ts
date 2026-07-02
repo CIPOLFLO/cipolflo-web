@@ -50,7 +50,7 @@ export class NuevoServicio {
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
-    },
+requiereDocumentacion: new FormControl<boolean>(false, { nonNullable: true }),    },
     {
       validators: [
         (g) => this.validaciones.cantidadOCapacidadExcluyentes(g),
@@ -184,43 +184,50 @@ export class NuevoServicio {
   protected onCancelar(): void {
     this.router.navigate(['/servicios']);
   }
-
+protected onRequiereDocumentacionChange(event: Event): void {
+  this.form.patchValue({
+    requiereDocumentacion: (event.target as HTMLInputElement).checked,
+  });
+  this.form.markAsDirty();
+}
   protected onConfirmar(): void {
-    this.submitted.set(true);
-    if (this.form.invalid) return;
+  this.submitted.set(true);
+  if (this.form.invalid) return;
 
-    const {
-      procedencia,
-      nombre,
+  const {
+    procedencia,
+    nombre,
+    cantidad,
+    capacidad,
+    precioParticular,
+    precioSocio,
+    modalidadPrecio,
+    costoPersonaExtra,
+    requiereDocumentacion,
+  } = this.form.getRawValue();
+
+  this.loading.set(true);
+  this.servicioService
+    .create({
+      procedencia: procedencia!,
+      nombre: nombre!.trim(),
       cantidad,
       capacidad,
-      precioParticular,
-      precioSocio,
-      modalidadPrecio,
+      precioParticular: precioParticular!,
+      precioSocio: precioSocio!,
+      modalidadPrecio: modalidadPrecio!,
       costoPersonaExtra,
-    } = this.form.getRawValue();
-
-    this.loading.set(true);
-    this.servicioService
-      .create({
-        procedencia: procedencia!,
-        nombre: nombre!.trim(),
-        cantidad,
-        capacidad,
-        precioParticular: precioParticular!,
-        precioSocio: precioSocio!,
-        modalidadPrecio: modalidadPrecio!,
-        costoPersonaExtra,
-      })
-      .subscribe({
-        next: () => {
-          this.loading.set(false);
-          this.router.navigate(['/servicios']);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.errorHandler.handle(err);
-        },
-      });
-  }
+      requiereDocumentacion,
+    })
+    .subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/servicios']);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.errorHandler.handle(err);
+      },
+    });
+}
 }

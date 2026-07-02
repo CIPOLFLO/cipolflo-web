@@ -43,6 +43,7 @@ export interface ServicioCrearDto {
   cantidad?: number | null;
   capacidad?: number | null;
   costoPersonaExtra?: number | null;
+  requiereDocumentacion?: boolean;
 }
 
 export interface ServicioActualizarDto {
@@ -81,6 +82,7 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
   costoPersonaExtra: number | null;
   estado: EstadoServicio;
   modalidadPrecio: string;
+  requiereDocumentacion : boolean;
 }
 
 export interface ReservaProximaDto {

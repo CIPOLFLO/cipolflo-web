@@ -12,6 +12,7 @@ import { LoadDataFn, RowAction } from '../../../shared/components/table/table.mo
 import { ReservaRow } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -29,6 +30,7 @@ import { EstadoReserva } from '../../../shared';
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
   private readonly columnsService = inject(ReservasColumnsService);
 
@@ -56,9 +58,28 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
-    // { label: 'Habilitar/Deshabilitar', ... },
-    // { separator: true },
-    // { label: 'Eliminar', ... },
+    ...(row.requiereDocumentacion
+      ? [
+          {
+            label: 'Confirmar documentación',
+            icon: 'pi pi-file-check',
+            command: () => {
+              this.confirmDialogService
+                .open({
+                  title: 'Confirmar documentación',
+                  message:
+                    '¿Confirmás que la documentación de esta reserva fue entregada y está correcta?',
+                  variant: 'primary',
+                })
+                .subscribe((confirmed) => {
+                  if (confirmed) {
+                    this.reservasService.confirmarDocumentacion(row.id).subscribe();
+                  }
+                });
+            },
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {

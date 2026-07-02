@@ -13,7 +13,7 @@ import {
   type ReservaActualizacionRequestDto,
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
-  type ReservaRespuestaDto,
+  type ReservaRow,
 } from '../models/reserva.model';
 
 const mockDetalle: ReservaDetalleRespuestaDto = {
@@ -33,6 +33,7 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  requiereSena: false,
   nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
@@ -76,6 +77,8 @@ const dto: ReservaCreacionRequestDto = {
   email: null,
   rut: null,
   notas: null,
+  requiereDocumentacion: false,
+  requiereSena: false,
 };
 
 describe('ReservasService', () => {
@@ -91,7 +94,7 @@ describe('ReservasService', () => {
   });
 
   describe('getAll', () => {
-    const mockRow: ReservaRespuestaDto = {
+    const mockRow: ReservaRow = {
       id: 1,
       clienteId: 10,
       nombreCliente: 'Juan Pérez',
@@ -100,6 +103,8 @@ describe('ReservasService', () => {
       fechaEntrada: '2026-08-10',
       fechaSalida: '2026-08-15',
       estadoReserva: EstadoReserva.Confirmada,
+      requiereDocumentacion: false,
+      tieneDocumentacion: false,
     };
 
     const mockPage = {
@@ -122,7 +127,7 @@ describe('ReservasService', () => {
     });
 
     it('devuelve el DTO con los nuevos campos del backend', () => {
-      let resultado: ReservaRespuestaDto | undefined;
+      let resultado: ReservaRow | undefined;
       service.getAll({ page: 0, size: 10, filters: {} }).subscribe((p) => {
         resultado = p.content[0];
       });
@@ -135,6 +140,26 @@ describe('ReservasService', () => {
       expect(resultado?.fechaEntrada).toBe('2026-08-10');
       expect(resultado?.fechaSalida).toBe('2026-08-15');
       expect(resultado?.estadoReserva).toBe(EstadoReserva.Confirmada);
+    });
+
+    it('devuelve el flag tieneDocumentacion junto con requiereDocumentacion', () => {
+      const rowConDocumentacion: ReservaRow = {
+        ...mockRow,
+        requiereDocumentacion: true,
+        tieneDocumentacion: true,
+      };
+      const pageConDocumentacion = { ...mockPage, content: [rowConDocumentacion] };
+
+      let resultado: ReservaRow | undefined;
+      service.getAll({ page: 0, size: 10, filters: {} }).subscribe((p) => {
+        resultado = p.content[0];
+      });
+
+      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
+      req.flush(pageConDocumentacion);
+
+      expect(resultado?.requiereDocumentacion).toBe(true);
+      expect(resultado?.tieneDocumentacion).toBe(true);
     });
 
     it('pasa los filtros activos como query params', () => {
@@ -229,6 +254,17 @@ describe('ReservasService', () => {
       );
       req.flush({ costoTotal: 9000 });
       expect(resultado).toBe(9000);
+    });
+  });
+
+  describe('confirmarDocumentacion', () => {
+    it('llama a PATCH /reservas/:id/documentacion', () => {
+      service.confirmarDocumentacion(42).subscribe();
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/documentacion') && r.method === 'PATCH',
+      );
+      expect(req.request.method).toBe('PATCH');
+      req.flush(null);
     });
   });
 });
