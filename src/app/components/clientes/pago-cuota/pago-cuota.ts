@@ -15,7 +15,7 @@ import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { AppButton, CurrencyFormatPipe } from '../../../shared';
+import { AppButton, CurrencyFormatPipe, toIsoDate } from '../../../shared';
 import {
   ClienteRespuestaDto,
   MetodoCobro,
@@ -24,6 +24,10 @@ import {
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 import { ClientesService } from '../services/cliente.service';
+
+/** Límites de cuotas que se pueden pagar de una vez (única fuente de verdad). */
+const MIN_CUOTAS = 1;
+const MAX_CUOTAS = 12;
 
 @Component({
   selector: 'app-pago-cuota',
@@ -56,7 +60,7 @@ export class PagoCuota {
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
       nonNullable: true,
-      validators: [Validators.required, Validators.min(1), Validators.max(12)],
+      validators: [Validators.required, Validators.min(MIN_CUOTAS), Validators.max(MAX_CUOTAS)],
     }),
     metodoCobro: new FormControl<MetodoCobro>(MetodoCobro.Efectivo, {
       nonNullable: true,
@@ -86,7 +90,7 @@ export class PagoCuota {
   );
 
   protected readonly cantidadInvalida = computed(
-    () => this.cantidadCuotas() < 1 || this.cantidadCuotas() > 12,
+    () => this.cantidadCuotas() < MIN_CUOTAS || this.cantidadCuotas() > MAX_CUOTAS,
   );
 
   protected readonly ultimaCuotaDescripcion = computed(() => {
@@ -121,7 +125,7 @@ export class PagoCuota {
       cantidadCuotas: this.form.controls.cantidadCuotas.value,
       importeTotal: this.total(),
       metodoCobro: this.form.controls.metodoCobro.value,
-      fechaPago: this.toDateString(this.form.controls.fechaPago.value),
+      fechaPago: toIsoDate(this.form.controls.fechaPago.value)!,
       observaciones: this.form.controls.observaciones.value,
     };
 
@@ -179,13 +183,6 @@ export class PagoCuota {
     const mesCapitalizado = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
 
     return `${mesCapitalizado} ${fecha.getFullYear()}`;
-  }
-
-  private toDateString(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
   }
 
   protected readonly descripcionPeriodos = computed(() => {
