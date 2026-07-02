@@ -46,11 +46,11 @@ export class NuevoServicio {
       precioParticular: new FormControl<number | null>(null, [
         Validators.required,
         Validators.min(1),
-      ]),
+    ]),
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
-requiereDocumentacion: new FormControl<boolean>(false, { nonNullable: true }),    },
+    },
     {
       validators: [
         (g) => this.validaciones.cantidadOCapacidadExcluyentes(g),
@@ -184,12 +184,7 @@ requiereDocumentacion: new FormControl<boolean>(false, { nonNullable: true }),  
   protected onCancelar(): void {
     this.router.navigate(['/servicios']);
   }
-protected onRequiereDocumentacionChange(event: Event): void {
-  this.form.patchValue({
-    requiereDocumentacion: (event.target as HTMLInputElement).checked,
-  });
-  this.form.markAsDirty();
-}
+
   protected onConfirmar(): void {
   this.submitted.set(true);
   if (this.form.invalid) return;
@@ -203,7 +198,6 @@ protected onRequiereDocumentacionChange(event: Event): void {
     precioSocio,
     modalidadPrecio,
     costoPersonaExtra,
-    requiereDocumentacion,
   } = this.form.getRawValue();
 
   this.loading.set(true);
@@ -217,7 +211,6 @@ protected onRequiereDocumentacionChange(event: Event): void {
       precioSocio: precioSocio!,
       modalidadPrecio: modalidadPrecio!,
       costoPersonaExtra,
-      requiereDocumentacion,
     })
     .subscribe({
       next: () => {

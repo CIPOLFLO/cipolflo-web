@@ -21,15 +21,7 @@
       (fieldBlur)="onFieldBlur($event)"
     />
 
-    <div class="nuevo-servicio__checkbox-row">
-      <input
-        type="checkbox"
-        id="requiereDocumentacion"
-        [checked]="form.controls.requiereDocumentacion.value"
-        (change)="onRequiereDocumentacionChange($event)"
-      />
-      <label for="requiereDocumentacion">Este servicio requiere documentación</label>
-    </div>
+    
 
     <app-form-actions actions>
       <p class="nuevo-servicio__info">
