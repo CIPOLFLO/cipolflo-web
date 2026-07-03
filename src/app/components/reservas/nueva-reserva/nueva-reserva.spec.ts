@@ -97,6 +97,7 @@ describe('NuevaReserva', () => {
   let mockReservasService: {
     crear: ReturnType<typeof vi.fn>;
     calcularCosto: ReturnType<typeof vi.fn>;
+    descargarComprobante: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
@@ -117,6 +118,7 @@ describe('NuevaReserva', () => {
     mockReservasService = {
       crear: vi.fn(() => of({ id: 99 })),
       calcularCosto: vi.fn(() => of({ costoTotal: 5000 })),
+      descargarComprobante: vi.fn(() => of(undefined)),
     };
 
     await TestBed.configureTestingModule({
@@ -436,6 +438,31 @@ describe('NuevaReserva', () => {
     expect(handleSpy).toHaveBeenCalledWith(error);
   });
 
+  it('tras crear ofrece el comprobante y, si se confirma, lo descarga con el id y navega', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(true));
+    component['guardar']();
+    expect(mockReservasService.crear).toHaveBeenCalled();
+    expect(mockReservasService.descargarComprobante).toHaveBeenCalledWith(99);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('tras crear, si se rechaza la descarga navega al listado sin descargar', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
+    component['guardar']();
+    expect(mockReservasService.descargarComprobante).not.toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('si la descarga del comprobante falla, igualmente navega al listado', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(true));
+    const error = new Error('download error');
+    mockReservasService.descargarComprobante.mockReturnValue(throwError(() => error));
+    const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
+    component['guardar']();
+    expect(handleSpy).toHaveBeenCalledWith(error);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
   it('verificarSocioYGuardar con error en getEstadoSocio llama al errorHandler', () => {
     const error = new Error('Network error');
     mockClientesService.getEstadoSocio.mockReturnValue(throwError(() => error));
@@ -466,6 +493,7 @@ describe('NuevaReserva', () => {
   });
 
   it('onConfirmar en Colaboración con form válido llama a guardar directamente', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
     component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     component['form'].get('servicioId')?.setValue('2');
@@ -480,6 +508,7 @@ describe('NuevaReserva', () => {
   });
 
   it('onConfirmar COMUN con socio encontrado delega a verificarSocioYGuardar', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
     component['form'].get('cedula')?.setValue('12345672');
     component['buscarCliente']();
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);

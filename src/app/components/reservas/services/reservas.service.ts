@@ -52,4 +52,8 @@ export class ReservasService extends BaseHttpService {
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('reservas/exportar', filters, 'reservas.xlsx');
   }
+
+  descargarComprobante(id: number): Observable<void> {
+    return this.blobExport.download(`reservas/${id}/comprobante`, `comprobante-reserva-${id}.pdf`);
+  }
 }

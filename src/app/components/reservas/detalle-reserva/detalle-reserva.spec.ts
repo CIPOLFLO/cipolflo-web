@@ -63,6 +63,7 @@ const mockUserService = {
 
 async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42') {
   const getByIdSpy = vi.fn().mockReturnValue(of(reserva));
+  const descargarComprobanteSpy = vi.fn().mockReturnValue(of(undefined));
   const navigateSpy = vi.fn();
   const handleSpy = vi.fn();
 
@@ -77,7 +78,14 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
     ],
   })
     .overrideComponent(DetalleReserva, {
-      set: { providers: [{ provide: ReservasService, useValue: { getById: getByIdSpy } }] },
+      set: {
+        providers: [
+          {
+            provide: ReservasService,
+            useValue: { getById: getByIdSpy, descargarComprobante: descargarComprobanteSpy },
+          },
+        ],
+      },
     })
     .compileComponents();
 
@@ -86,7 +94,7 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component, getByIdSpy, navigateSpy, handleSpy };
+  return { fixture, component, getByIdSpy, descargarComprobanteSpy, navigateSpy, handleSpy };
 }
 
 describe('DetalleReserva', () => {
@@ -277,6 +285,20 @@ describe('DetalleReserva', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas', '42', 'modificar'], {
       queryParams: { from: 'detalle' },
     });
+  });
+
+  it('onDescargarComprobante dispara la descarga con el id de la reserva en pantalla', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    component['onDescargarComprobante']();
+    expect(descargarComprobanteSpy).toHaveBeenCalledWith(42);
+  });
+
+  it('un error en la descarga se maneja vía errorHandler sin romper la vista', async () => {
+    const { component, descargarComprobanteSpy, handleSpy } = await setup();
+    const error = new Error('download error');
+    descargarComprobanteSpy.mockReturnValue(throwError(() => error));
+    component['onDescargarComprobante']();
+    expect(handleSpy).toHaveBeenCalledWith(error);
   });
 
   it('debería manejar error en getById: llama a errorHandler y navega a /reservas', async () => {

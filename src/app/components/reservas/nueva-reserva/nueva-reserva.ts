@@ -320,9 +320,46 @@ export class NuevaReserva extends ReservaFormBase {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: () => this.router.navigate(['/reservas']),
+        next: (respuesta) => this.ofrecerComprobante(respuesta.id),
         error: (err: unknown) => this.errorHandler.handle(err),
       });
+  }
+
+  /**
+   * Tras crear la reserva ofrece descargar el comprobante. Se navega al listado en
+   * cualquier caso: si se descarga (al terminar o fallar la descarga) o si se rechaza.
+   */
+  private ofrecerComprobante(id: number): void {
+    this.confirmDialog
+      .open({
+        title: 'Reserva creada',
+        message: 'La reserva se creó correctamente. ¿Desea descargar el comprobante?',
+        confirmButtonLabel: 'Descargar comprobante',
+        cancelButtonLabel: 'No, gracias',
+        variant: 'success',
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((descargar) => {
+        if (descargar) {
+          this.descargarComprobante(id);
+        } else {
+          this.router.navigate(['/reservas']);
+        }
+      });
+  }
+
+  private descargarComprobante(id: number): void {
+    this.reservasService
+      .descargarComprobante(id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((err: unknown) => {
+          this.errorHandler.handle(err);
+          return EMPTY;
+        }),
+        finalize(() => this.router.navigate(['/reservas'])),
+      )
+      .subscribe();
   }
 
   private construirDto(): ReservaCreacionRequestDto {

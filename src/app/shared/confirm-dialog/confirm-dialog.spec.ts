@@ -46,33 +46,33 @@ describe('ConfirmDialogComponent', () => {
 
   describe('initial state', () => {
     it('should start with visible false', () => {
-      expect(component.visible).toBe(false);
+      expect(component.visible()).toBe(false);
     });
 
     it('should start with empty config', () => {
-      expect(component.config.title).toBe('');
-      expect(component.config.message).toBe('');
+      expect(component.config().title).toBe('');
+      expect(component.config().message).toBe('');
     });
   });
 
   describe('when service emits', () => {
     it('should set visible to true', () => {
       service.open(mockConfig);
-      expect(component.visible).toBe(true);
+      expect(component.visible()).toBe(true);
     });
 
     it('should update config with emitted data', () => {
       service.open(mockConfig);
-      expect(component.config.title).toBe(mockConfig.title);
-      expect(component.config.message).toBe(mockConfig.message);
+      expect(component.config().title).toBe(mockConfig.title);
+      expect(component.config().message).toBe(mockConfig.message);
     });
   });
 
   describe('onConfirm', () => {
     it('should set visible to false', () => {
-      component.visible = true;
+      component.visible.set(true);
       component.onConfirm();
-      expect(component.visible).toBe(false);
+      expect(component.visible()).toBe(false);
     });
 
     it('should call service.confirm()', () => {
@@ -83,9 +83,9 @@ describe('ConfirmDialogComponent', () => {
 
   describe('onCancel', () => {
     it('should set visible to false', () => {
-      component.visible = true;
+      component.visible.set(true);
       component.onCancel();
-      expect(component.visible).toBe(false);
+      expect(component.visible()).toBe(false);
     });
 
     it('should call service.cancel()', () => {
@@ -96,12 +96,12 @@ describe('ConfirmDialogComponent', () => {
 
   describe('confirmVariant', () => {
     it('should use variant when provided', () => {
-      component.config = { ...mockConfig, variant: 'danger' };
+      component.config.set({ ...mockConfig, variant: 'danger' });
       expect(component.confirmVariant).toBe('danger'); // ✅
     });
 
     it('should use default variant when not provided', () => {
-      component.config = { title: 'T', message: 'M' };
+      component.config.set({ title: 'T', message: 'M' });
       expect(component.confirmVariant).toBe('primary'); // ✅
     });
   });
@@ -116,7 +116,7 @@ describe('ConfirmDialogComponent', () => {
     it('should stop reacting after destroy', () => {
       component.ngOnDestroy();
       service.open(mockConfig);
-      expect(component.visible).toBe(false);
+      expect(component.visible()).toBe(false);
     });
   });
 });
