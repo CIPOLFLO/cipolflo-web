@@ -1,0 +1,57 @@
+:host {
+  display: block;
+}
+
+.loading-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+  background-color: rgba(15, 23, 42, 0.45);
+}
+
+.loading-dialog__container {
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 24px 24px;
+
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  text-align: center;
+}
+
+.loading-dialog__icon {
+  display: block;
+  margin-bottom: 16px;
+
+  font-size: 32px;
+  color: var(--color-primary);
+}
+
+.loading-dialog__title {
+  margin: 0 0 12px;
+
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.loading-dialog__message {
+  margin: 0 0 24px;
+
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.loading-dialog__actions {
+  display: flex;
+  justify-content: center;
+}

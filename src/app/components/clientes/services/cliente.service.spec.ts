@@ -406,11 +406,11 @@ describe('ClientesService', () => {
       },
     ];
 
-    it('realiza POST a /clientes/:id/cuotas y retorna la lista de cuotas registradas', () => {
+    it('realiza POST a /clientes/socios/:id/pago-cuota y retorna la lista de cuotas registradas', () => {
       service.registrarPagoCuota(1, dto).subscribe((result) => {
         expect(result).toEqual(mockResponse);
       });
-      const req = httpMock.expectOne(`${BASE}/1/cuotas`);
+      const req = httpMock.expectOne(`${BASE}/socios/1/pago-cuota`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockResponse, { status: 201, statusText: 'Created' });
@@ -420,7 +420,7 @@ describe('ClientesService', () => {
       let errorStatus = 0;
       service.registrarPagoCuota(9999, dto).subscribe({ error: (e) => (errorStatus = e.status) });
       httpMock
-        .expectOne(`${BASE}/9999/cuotas`)
+        .expectOne(`${BASE}/socios/9999/pago-cuota`)
         .flush(
           { codigo: 'SOCIO_NO_ENCONTRADO', descripcion: 'No existe un socio con ese id' },
           { status: 404, statusText: 'Not Found' },
@@ -432,7 +432,7 @@ describe('ClientesService', () => {
       let errorStatus = 0;
       service.registrarPagoCuota(1, dto).subscribe({ error: (e) => (errorStatus = e.status) });
       httpMock
-        .expectOne(`${BASE}/1/cuotas`)
+        .expectOne(`${BASE}/socios/1/pago-cuota`)
         .flush(
           { codigo: 'SOLICITUD_INVALIDA', descripcion: 'Cantidad de cuotas inválida' },
           { status: 400, statusText: 'Bad Request' },

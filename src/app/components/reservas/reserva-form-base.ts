@@ -448,7 +448,7 @@ export abstract class ReservaFormBase {
     type: 'select',
     required: true,
     placeholder: 'Seleccione una procedencia',
-    options: PROCEDENCIA_OPTIONS,
+    options: PROCEDENCIA_OPTIONS.filter((option) => option.value !== Procedencia.Ambos),
   };
 
   protected readonly servicioOptions = computed<FormFieldOption[]>(() =>

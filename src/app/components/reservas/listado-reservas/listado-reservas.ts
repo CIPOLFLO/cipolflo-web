@@ -1,24 +1,27 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
 import { AppTable } from '../../../shared/components/table/table';
 import { TableStateService } from '../../../shared/components/table/table-state.service';
+import { TableExportService } from '../../../shared/components/table/table-export.service';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
-import { ReservaRow } from '../models/reserva.model';
+import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
+import { PagoReserva } from '../pago-reserva/pago-reserva';
 
 @Component({
   selector: 'app-listado-reservas',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable],
+  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoReserva],
   providers: [
     TableStateService,
+    TableExportService,
     ReservasService,
     ReservasColumnsService,
     { provide: FilterConfigProvider, useClass: ReservasFilterService },
@@ -32,8 +35,10 @@ export class ListadoReservas {
   private readonly router = inject(Router);
   private readonly confirmDialogService = inject(ConfirmDialogService);
   protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
 
+  protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
@@ -83,6 +88,16 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+    ...(this.puedeConfirmarPago(row)
+      ? [
+          {
+            label: 'Confirmar pago',
+            icon: 'pi pi-dollar',
+            command: () => this.onConfirmarPago(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    // { label: 'Eliminar', ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -103,6 +118,35 @@ export class ListadoReservas {
 
   private recargarTabla(): void {
     this.tableState.reload();
+  protected onExportar(): void {
+    const filters = this.tableState.queryParams().filters;
+    this.tableExport.exportar(() => this.reservasService.exportar(filters));
+  }
+
+  protected onConfirmarPago(row: ReservaRow): void {
+    this.reservaPagoSeleccionada.set(row);
+  }
+
+  protected onCerrarPagoReserva(): void {
+    this.reservaPagoSeleccionada.set(null);
+  }
+
+  protected onPagoReservaRegistrado(): void {
+    this.reservaPagoSeleccionada.set(null);
+    this.recargarTabla();
+  }
+
+  private recargarTabla(): void {
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+  }
+
+  private puedeConfirmarPago(row: ReservaRow): boolean {
+    return (
+      !row.pago &&
+      row.estadoReserva !== EstadoReserva.Finalizada &&
+      row.estadoReserva !== EstadoReserva.Cancelada &&
+      row.tipoReserva !== TipoReserva.ColaboracionSinFines
+    );
   }
 }
 //A

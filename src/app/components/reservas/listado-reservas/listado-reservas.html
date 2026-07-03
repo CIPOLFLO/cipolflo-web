@@ -2,13 +2,26 @@
   pageTitle="Listado de Reservas"
   pageDescription="Listado y gestión del módulo de reservas"
 >
-  <app-button actions label="Exportar" intent="secondary" icon="pi-download" />
   <app-button
     actions
     label="Nueva Reserva"
     intent="primary"
     icon="pi-plus"
     (clicked)="onNuevaReserva()"
+  />
+  <app-button
+    actions
+    label="Descargar listado"
+    intent="secondary"
+    icon="pi-download"
+    [disabled]="!tableExport.puedeExportar()"
+    [loading]="tableExport.exportando()"
+    (clicked)="onExportar()"
+  />
+  <app-pago-reserva
+    [reserva]="reservaPagoSeleccionada()"
+    (closed)="onCerrarPagoReserva()"
+    (pagoRegistrado)="onPagoReservaRegistrado()"
   />
 
   <app-filter-panel (filterChange)="onFilterChange($event)" />

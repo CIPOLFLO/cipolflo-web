@@ -15,7 +15,7 @@ export type {
   OccupiedRange,
   DateRangeSelection,
 } from './components/occupancy-calendar/occupancy-calendar.models';
-
+export * from './components/loading-dialog/loading-dialog';
 // Form Components
 export { FormLayout } from './components/form-layout/form-layout';
 export { FormSection } from './components/form-section/form-section';
@@ -25,6 +25,7 @@ export { FormActions } from './components/form-actions/form-actions';
 // Table
 export { AppTable } from './components/table/table';
 export { TableStateService } from './components/table/table-state.service';
+export { TableExportService } from './components/table/table-export.service';
 export type {
   ColumnConfig,
   CellType,

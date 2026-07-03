@@ -15,7 +15,7 @@ import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { AppButton, CurrencyFormatPipe } from '../../../shared';
+import { AppButton, CurrencyFormatPipe, toIsoDate } from '../../../shared';
 import {
   ClienteRespuestaDto,
   MetodoCobro,
@@ -24,6 +24,10 @@ import {
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 import { ClientesService } from '../services/cliente.service';
+
+/** Límites de cuotas que se pueden pagar de una vez (única fuente de verdad). */
+const MIN_CUOTAS = 1;
+const MAX_CUOTAS = 12;
 
 @Component({
   selector: 'app-pago-cuota',
@@ -51,11 +55,12 @@ export class PagoCuota {
   protected readonly metodosCobro = METODO_COBRO_OPTIONS;
   protected readonly costoCuota = this.clientesService.getCostoCuota();
   protected readonly pagoConfirmado = signal<PagoCuotaResponseDto[] | null>(null);
+  protected readonly hoy = new Date();
 
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
       nonNullable: true,
-      validators: [Validators.required, Validators.min(1), Validators.max(12)],
+      validators: [Validators.required, Validators.min(MIN_CUOTAS), Validators.max(MAX_CUOTAS)],
     }),
     metodoCobro: new FormControl<MetodoCobro>(MetodoCobro.Efectivo, {
       nonNullable: true,
@@ -85,7 +90,7 @@ export class PagoCuota {
   );
 
   protected readonly cantidadInvalida = computed(
-    () => this.cantidadCuotas() < 1 || this.cantidadCuotas() > 12,
+    () => this.cantidadCuotas() < MIN_CUOTAS || this.cantidadCuotas() > MAX_CUOTAS,
   );
 
   protected readonly ultimaCuotaDescripcion = computed(() => {
@@ -105,10 +110,6 @@ export class PagoCuota {
     );
   });
 
-  protected getTotal(): number {
-    return this.form.controls.cantidadCuotas.value * this.costoCuota;
-  }
-
   protected onCancelar(): void {
     this.cerrar();
   }
@@ -122,9 +123,9 @@ export class PagoCuota {
 
     const request = {
       cantidadCuotas: this.form.controls.cantidadCuotas.value,
-      importeTotal: this.getTotal(),
+      importeTotal: this.total(),
       metodoCobro: this.form.controls.metodoCobro.value,
-      fechaPago: this.toDateString(this.form.controls.fechaPago.value),
+      fechaPago: toIsoDate(this.form.controls.fechaPago.value)!,
       observaciones: this.form.controls.observaciones.value,
     };
 
@@ -138,7 +139,9 @@ export class PagoCuota {
     });
   }
 
-  protected fechaEsFutura(): boolean {
+  protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota);
+
+  protected readonly fechaEsFutura = computed(() => {
     const fechaPago = new Date(this.fechaPago());
     const hoy = new Date();
 
@@ -146,7 +149,7 @@ export class PagoCuota {
     hoy.setHours(0, 0, 0, 0);
 
     return fechaPago > hoy;
-  }
+  });
 
   protected cerrarConfirmacion(): void {
     this.cerrar();
@@ -168,8 +171,7 @@ export class PagoCuota {
       const hoy = new Date();
       return new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     }
-
-    return new Date(ultimaCuota.anio, ultimaCuota.mes, 1);
+    return this.sumarMeses(new Date(ultimaCuota.anio, ultimaCuota.mes - 1, 1), 1);
   }
 
   private sumarMeses(fecha: Date, meses: number): Date {
@@ -183,10 +185,15 @@ export class PagoCuota {
     return `${mesCapitalizado} ${fecha.getFullYear()}`;
   }
 
-  private toDateString(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
+  protected readonly descripcionPeriodos = computed(() => {
+    const periodos = this.periodosCubiertos();
+
+    if (periodos.length === 0) return '-';
+
+    if (periodos.length <= 2) {
+      return periodos.join(', ');
+    }
+
+    return `${periodos[0]} - ${periodos[periodos.length - 1]}`;
+  });
 }

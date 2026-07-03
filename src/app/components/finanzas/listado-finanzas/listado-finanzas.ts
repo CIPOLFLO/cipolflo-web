@@ -1,13 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, map, of, filter, switchMap } from 'rxjs';
+import { catchError, map, of, filter, switchMap, Subscription } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -17,6 +10,7 @@ import {
   PageLayout,
   RowAction,
   TableStateService,
+  TableExportService,
   ConfirmDialogService,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -25,12 +19,16 @@ import { FinanzasFilterService } from '../services/finanzas-filter.service';
 import { FinanzaService } from '../services/finanza.service';
 import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
+import { mapFacturaToFinanza } from '../mappers/factura-finanza.mapper';
+import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
+import { LoadingDialog } from '../../../shared';
 
 @Component({
   selector: 'app-listado-finanzas',
-  imports: [PageLayout, FilterPanel, AppTable, AppButton],
+  imports: [PageLayout, FilterPanel, AppTable, AppButton, LoadingDialog],
   providers: [
     TableStateService,
+    TableExportService,
     FinanzasColumnsService,
     { provide: FilterConfigProvider, useClass: FinanzasFilterService },
   ],
@@ -45,8 +43,11 @@ export class ListadoFinanzas {
   private readonly errorHandler = inject(ErrorHandlerService);
   private readonly router = inject(Router);
   protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly documentoAzureService = inject(DocumentIntelligenceService);
+  private facturaSubscription?: Subscription;
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -59,12 +60,8 @@ export class ListadoFinanzas {
       this.tableState.updateFilters(defaults);
     }
   }
-
-  protected readonly exportando = signal(false);
+  protected readonly analizandoFactura = signal(false);
   protected readonly columns = this.columnsService.columns;
-  protected readonly puedeExportar = computed(
-    () => this.tableState.hasResults() && !this.tableState.loading() && !this.exportando(),
-  );
 
   protected readonly loadDataFn: LoadDataFn<FinanzaRow> = (params) =>
     this.finanzaService.getAll(params).pipe(
@@ -145,24 +142,74 @@ export class ListadoFinanzas {
   }
 
   protected onDescargarListado(): void {
-    if (!this.puedeExportar() || this.exportando()) return;
-
-    this.exportando.set(true);
-
     const filters = this.tableState.queryParams().filters;
-    console.log('Filtros exportación:', filters);
+    this.tableExport.exportar(() => this.finanzaService.exportar(filters));
+  }
 
-    this.finanzaService
-      .exportar(filters)
+  protected onCargarFacturaClick(input: HTMLInputElement): void {
+    input.click();
+  }
+  protected onFacturaSeleccionada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    const tiposPermitidos = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/bmp',
+      'image/tiff',
+      'image/heif',
+    ];
+
+    if (!tiposPermitidos.includes(file.type)) {
+      this.errorHandler.handle(
+        new Error('Formato no permitido. Usá PDF, JPG, PNG, BMP, TIFF o HEIF.'),
+      );
+      return;
+    }
+
+    const maxSizeBytes = 4 * 1024 * 1024;
+
+    if (file.size > maxSizeBytes) {
+      this.errorHandler.handle(new Error('El archivo supera el límite de 4 MB.'));
+      return;
+    }
+
+    this.analizandoFactura.set(true);
+
+    this.facturaSubscription = this.documentoAzureService
+      .analizarFactura(file)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
-          this.exportando.set(false);
+        next: (documento) => {
+          this.analizandoFactura.set(false);
+          this.facturaSubscription = undefined;
+
+          try {
+            const datosPrecargados = mapFacturaToFinanza(documento);
+            this.router.navigate(['/finanzas', 'nuevo'], {
+              state: { facturaAnalizada: datosPrecargados },
+            });
+          } catch (err) {
+            this.errorHandler.handle(err);
+          }
         },
         error: (err) => {
-          this.exportando.set(false);
+          this.analizandoFactura.set(false);
+          this.facturaSubscription = undefined;
           this.errorHandler.handle(err);
         },
       });
+
+    input.value = '';
+  }
+
+  protected onCancelarAnalisisFactura(): void {
+    this.facturaSubscription?.unsubscribe();
+    this.facturaSubscription = undefined;
+    this.analizandoFactura.set(false);
   }
 }

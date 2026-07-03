@@ -17,11 +17,6 @@ export enum MetodoCobro {
   EnSede = 'EN_SEDE',
   Efectivo = 'EFECTIVO',
 }
-export enum FormaPago {
-  Efectivo = 'EFECTIVO',
-  Transferencia = 'TRANSFERENCIA',
-}
-
 export const METODO_COBRO_OPTIONS: FormFieldOption[] = [
   { label: 'Cobradora', value: MetodoCobro.Cobradora },
   { label: 'Descuento salarial', value: MetodoCobro.DescuentoSalarial },
@@ -56,11 +51,6 @@ export const TIPO_CLIENTE_OPTIONS: FormFieldOption[] = [
   { label: 'Todos', value: '' },
   ...TIPO_CLIENTE_FORM_OPTIONS,
 ];
-
-export const FORMA_PAGO_LABEL: Record<FormaPago, string> = {
-  [FormaPago.Efectivo]: 'Efectivo',
-  [FormaPago.Transferencia]: 'Transferencia',
-};
 
 export interface ListadoClientesRequestDto {
   tipoCliente?: TipoCliente;

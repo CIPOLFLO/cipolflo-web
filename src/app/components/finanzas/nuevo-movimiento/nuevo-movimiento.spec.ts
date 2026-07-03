@@ -131,4 +131,109 @@ describe('NuevoMovimiento', () => {
       expect(component['loading']()).toBe(false);
     });
   });
+  describe('precarga desde factura analizada', () => {
+    it('debería precargar el formulario si viene una factura analizada en history.state', () => {
+      vi.spyOn(history, 'state', 'get').mockReturnValue({
+        facturaAnalizada: {
+          tipoMovimiento: TipoMovimiento.Egreso,
+          procedencia: Procedencia.Ambos,
+          concepto: Concepto.Ute,
+          fecha: '2026-06-25',
+          importe: 3203,
+          formaPago: FormaPago.Efectivo,
+          notas: 'Factura cargada',
+        },
+      });
+
+      fixture = TestBed.createComponent(NuevoMovimiento);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      expect(component['form'].get('concepto')?.value).toBe(Concepto.Ute);
+      expect(component['form'].get('importe')?.value).toBe(3203);
+      expect(component['form'].get('notas')?.value).toBe('Factura cargada');
+    });
+
+    it('no debería precargar el formulario si no viene factura analizada en history.state', () => {
+      vi.spyOn(history, 'state', 'get').mockReturnValue({});
+
+      fixture = TestBed.createComponent(NuevoMovimiento);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      expect(component['form'].get('concepto')?.value).toBe(Concepto.PagoReserva);
+      expect(component['form'].get('importe')?.value).toBeNull();
+      expect(component['form'].get('notas')?.value).toBeNull();
+    });
+  });
+  describe('FinanzaFormBase', () => {
+    it('onMovimientoChange debería cambiar a OTRO si el concepto actual no corresponde al tipo de movimiento', () => {
+      component['form'].patchValue({
+        tipoMovimiento: TipoMovimiento.Ingreso,
+        concepto: Concepto.PagoReserva,
+      });
+
+      component['onMovimientoChange']({
+        tipoMovimiento: TipoMovimiento.Egreso,
+      });
+
+      expect(component['form'].get('tipoMovimiento')?.value).toBe(TipoMovimiento.Egreso);
+      expect(component['form'].get('concepto')?.value).toBe(Concepto.Otro);
+    });
+
+    it('onMovimientoChange debería mantener el concepto si sigue siendo válido', () => {
+      component['form'].patchValue({
+        tipoMovimiento: TipoMovimiento.Egreso,
+        concepto: Concepto.Ute,
+      });
+
+      component['onMovimientoChange']({
+        tipoMovimiento: TipoMovimiento.Egreso,
+      });
+
+      expect(component['form'].get('concepto')?.value).toBe(Concepto.Ute);
+    });
+
+    it('onInfoChange debería actualizar los campos de información', () => {
+      component['onInfoChange']({
+        procedencia: Procedencia.Sede,
+        concepto: Concepto.Otro,
+        fecha: '2026-06-25',
+        importe: '1234',
+        formaPago: FormaPago.Efectivo,
+      });
+
+      expect(component['form'].get('procedencia')?.value).toBe(Procedencia.Sede);
+      expect(component['form'].get('concepto')?.value).toBe(Concepto.Otro);
+      expect(component['form'].get('fecha')?.value).toBe('2026-06-25');
+      expect(component['form'].get('importe')?.value).toBe(1234);
+      expect(component['form'].get('formaPago')?.value).toBe(FormaPago.Efectivo);
+    });
+
+    it('onInfoChange debería setear importe null si el valor no es numérico', () => {
+      component['onInfoChange']({
+        procedencia: Procedencia.Sede,
+        concepto: Concepto.Otro,
+        fecha: '2026-06-25',
+        importe: 'abc',
+        formaPago: FormaPago.Efectivo,
+      });
+
+      expect(component['form'].get('importe')?.value).toBeNull();
+    });
+
+    it('onAdicionalChange debería actualizar notas', () => {
+      component['onAdicionalChange']({
+        notas: 'Observación de prueba',
+      });
+
+      expect(component['form'].get('notas')?.value).toBe('Observación de prueba');
+    });
+
+    it('onFieldBlur debería marcar el campo como touched', () => {
+      component['onFieldBlur']('fecha');
+
+      expect(component['form'].get('fecha')?.touched).toBe(true);
+    });
+  });
 });

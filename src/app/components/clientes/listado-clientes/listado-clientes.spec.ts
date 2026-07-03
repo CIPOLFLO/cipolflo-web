@@ -10,6 +10,7 @@ import {
   FormFieldConfig,
   PageResponse,
   TableStateService,
+  TableExportService,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
@@ -331,13 +332,6 @@ describe('ListadoClientes', () => {
     expect(component['tableState'].queryParams().filters).toEqual({});
   });
 
-  it('puedeExportar retorna true cuando hay resultados y no está cargando', () => {
-    component['tableState'].setResult(2);
-    component['tableState'].setLoading(false);
-    fixture.detectChanges();
-    expect(component['puedeExportar']()).toBe(true);
-  });
-
   it('onExportar llama a clientesService.exportar con los filtros activos', () => {
     component['tableState'].setResult(2);
     component['tableState'].setLoading(false);
@@ -345,12 +339,6 @@ describe('ListadoClientes', () => {
     component['tableState'].updateFilters({ estado: 'ACTIVO' });
     component['onExportar']();
     expect(mockClientesService.exportar).toHaveBeenCalledWith({ estado: 'ACTIVO' });
-  });
-
-  it('onExportar no hace nada si exportando es true', () => {
-    component['exportando'].set(true);
-    component['onExportar']();
-    expect(mockClientesService.exportar).not.toHaveBeenCalled();
   });
 
   it('onExportar no hace nada si puedeExportar es false', () => {
@@ -363,7 +351,7 @@ describe('ListadoClientes', () => {
     component['tableState'].setResult(2);
     mockClientesService.exportar.mockReturnValue(throwError(() => new Error('fallo')));
     component['onExportar']();
-    expect(component['exportando']()).toBe(false);
+    expect(component['tableExport'].exportando()).toBe(false);
   });
 
   it('onDarDeBajaCliente llama a errorHandler.handle cuando darDeBaja falla', () => {
@@ -400,6 +388,7 @@ describe('ListadoClientes con filtros por defecto', () => {
         set: {
           providers: [
             TableStateService,
+            TableExportService,
             ClientesColumnsService,
             { provide: FilterConfigProvider, useClass: ConDefaultsFilterService },
           ],
@@ -444,6 +433,7 @@ describe('ListadoClientes sin filtros por defecto', () => {
         set: {
           providers: [
             TableStateService,
+            TableExportService,
             ClientesColumnsService,
             {
               provide: ClientesService,

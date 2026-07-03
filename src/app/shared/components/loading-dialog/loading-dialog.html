@@ -1,0 +1,22 @@
+@if (visible()) {
+  <div class="loading-dialog__overlay">
+    <div class="loading-dialog__container">
+      <i class="pi pi-spin pi-spinner loading-dialog__icon"></i>
+
+      <h2 class="loading-dialog__title">{{ title() }}</h2>
+
+      <p class="loading-dialog__message">{{ message() }}</p>
+
+      @if (showCancel()) {
+        <div class="loading-dialog__actions">
+          <app-button
+            [label]="cancelLabel()"
+            intent="secondary"
+            icon="pi-times"
+            (clicked)="onCancel()"
+          />
+        </div>
+      }
+    </div>
+  </div>
+}

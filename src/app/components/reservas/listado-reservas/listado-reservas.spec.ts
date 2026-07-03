@@ -2,16 +2,22 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
-import { FilterConfigProvider, PageResponse, TableStateService } from '../../../shared';
+import {
+  FilterConfigProvider,
+  PageResponse,
+  TableStateService,
+  TableExportService,
+} from '../../../shared';
 import { EstadoReserva } from '../../../shared';
-import { ReservaRow } from '../models/reserva.model';
+import { ReservaRow, ReservaRespuestaDto, TipoReserva } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { ListadoReservas } from './listado-reservas';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const mockRow: ReservaRow = {
   id: 1,
@@ -24,6 +30,11 @@ const mockRow: ReservaRow = {
   estadoReserva: EstadoReserva.Confirmada,
   requiereDocumentacion: false,
   tieneDocumentacion: false,
+  tipoReserva: TipoReserva.Comun,
+  montoImpago: 5000,
+  fechaLimitePago: null,
+  pago: false,
+  pendienteDocumentacion: false,
 };
 
 const mockRowRequiereDocSinConfirmar: ReservaRow = {
@@ -66,6 +77,8 @@ describe('ListadoReservas', () => {
     confirmarDocumentacion: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
+    exportar: ReturnType<typeof vi.fn>;
+  };
   let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
@@ -74,6 +87,8 @@ describe('ListadoReservas', () => {
       confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
     };
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
+      exportar: vi.fn().mockReturnValue(of(undefined)),
+    };
     navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
@@ -88,6 +103,7 @@ describe('ListadoReservas', () => {
         set: {
           providers: [
             TableStateService,
+            TableExportService,
             ReservasColumnsService,
             { provide: ReservasService, useValue: mockReservasService },
             { provide: FilterConfigProvider, useClass: MinimalFilterProvider },
@@ -205,6 +221,97 @@ describe('ListadoReservas', () => {
         estado: 'CONFIRMADA',
         search: 'Juan',
       });
+  describe('exportar', () => {
+    it('onExportar llama a reservasService.exportar con los filtros actuales', () => {
+      component['tableState'].setResult(1);
+      component['tableState'].setLoading(false);
+      fixture.detectChanges();
+      component['tableState'].updateFilters({ estadoReserva: 'PENDIENTE' });
+      component['onExportar']();
+
+      expect(mockReservasService.exportar).toHaveBeenCalledWith({ estadoReserva: 'PENDIENTE' });
+    });
+
+    it('onExportar setea exportando en false si el service falla', () => {
+      component['tableState'].setResult(1);
+      component['tableState'].setLoading(false);
+      fixture.detectChanges();
+      const errorHandler = TestBed.inject(ErrorHandlerService);
+      const handleSpy = vi.spyOn(errorHandler, 'handle').mockImplementation(() => undefined);
+      mockReservasService.exportar = vi.fn().mockReturnValue(throwError(() => new Error('error')));
+
+      component['onExportar']();
+
+      expect(component['tableExport'].exportando()).toBe(false);
+      expect(handleSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('confirmar pago', () => {
+    it('debería incluir la acción Confirmar pago cuando la reserva aplica', () => {
+      const actions = component['rowActions'](mockRow);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(true);
+    });
+
+    it('no debería incluir Confirmar pago si la reserva está finalizada', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Finalizada,
+      };
+
+      const actions = component['rowActions'](row);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('no debería incluir Confirmar pago si la reserva está cancelada', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Cancelada,
+      };
+
+      const actions = component['rowActions'](row);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('no debería incluir Confirmar pago si es colaboración sin fines de lucro', () => {
+      const row = {
+        ...mockRow,
+        tipoReserva: TipoReserva.ColaboracionSinFines,
+      };
+
+      const actions = component['rowActions'](row);
+
+      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('debería abrir el modal de pago al ejecutar Confirmar pago', () => {
+      const action = component['rowActions'](mockRow).find((a) => a.label === 'Confirmar pago');
+
+      action?.command?.(mockRow);
+
+      expect(component['reservaPagoSeleccionada']()).toEqual(mockRow);
+    });
+
+    it('debería cerrar el modal de pago', () => {
+      component['onConfirmarPago'](mockRow);
+
+      component['onCerrarPagoReserva']();
+
+      expect(component['reservaPagoSeleccionada']()).toBeNull();
+    });
+
+    it('debería cerrar el modal y refrescar la tabla cuando se registra el pago', () => {
+      const tableState = component['tableState'];
+      const updateFiltersSpy = vi.spyOn(tableState, 'updateFilters');
+
+      component['onConfirmarPago'](mockRow);
+      component['onPagoReservaRegistrado']();
+
+      expect(component['reservaPagoSeleccionada']()).toBeNull();
+      expect(updateFiltersSpy).toHaveBeenCalledWith(tableState.queryParams().filters);
     });
   });
 });

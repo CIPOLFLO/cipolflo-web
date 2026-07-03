@@ -18,6 +18,11 @@ export interface ReservaRow extends Record<string, unknown> {
   estadoReserva: EstadoReserva;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
+  tipoReserva: TipoReserva;
+  montoImpago: number;
+  fechaLimitePago: string | null;
+  pago: boolean;
+  pendienteDocumentacion: boolean;
 }
 
 export enum TipoReserva {
@@ -161,4 +166,13 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;
   servicio: ServicioDetalleReservaDto;
+}
+
+export type ReservaRespuestaDto = ReservaRow;
+
+export interface RegistroPagoReservaRequestDto {
+  importe: number;
+  esPagoTotal: boolean;
+  formaPago: FormaPago;
+  notas: string | null;
 }
