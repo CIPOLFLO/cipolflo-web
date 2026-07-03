@@ -46,7 +46,7 @@ export class NuevoServicio {
       precioParticular: new FormControl<number | null>(null, [
         Validators.required,
         Validators.min(1),
-    ]),
+      ]),
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
@@ -186,41 +186,41 @@ export class NuevoServicio {
   }
 
   protected onConfirmar(): void {
-  this.submitted.set(true);
-  if (this.form.invalid) return;
+    this.submitted.set(true);
+    if (this.form.invalid) return;
 
-  const {
-    procedencia,
-    nombre,
-    cantidad,
-    capacidad,
-    precioParticular,
-    precioSocio,
-    modalidadPrecio,
-    costoPersonaExtra,
-  } = this.form.getRawValue();
-
-  this.loading.set(true);
-  this.servicioService
-    .create({
-      procedencia: procedencia!,
-      nombre: nombre!.trim(),
+    const {
+      procedencia,
+      nombre,
       cantidad,
       capacidad,
-      precioParticular: precioParticular!,
-      precioSocio: precioSocio!,
-      modalidadPrecio: modalidadPrecio!,
+      precioParticular,
+      precioSocio,
+      modalidadPrecio,
       costoPersonaExtra,
-    })
-    .subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.router.navigate(['/servicios']);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.errorHandler.handle(err);
-      },
-    });
-}
+    } = this.form.getRawValue();
+
+    this.loading.set(true);
+    this.servicioService
+      .create({
+        procedencia: procedencia!,
+        nombre: nombre!.trim(),
+        cantidad,
+        capacidad,
+        precioParticular: precioParticular!,
+        precioSocio: precioSocio!,
+        modalidadPrecio: modalidadPrecio!,
+        costoPersonaExtra,
+      })
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.router.navigate(['/servicios']);
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.errorHandler.handle(err);
+        },
+      });
+  }
 }

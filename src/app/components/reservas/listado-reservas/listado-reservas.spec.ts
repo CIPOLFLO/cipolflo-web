@@ -10,6 +10,7 @@ import { EstadoReserva } from '../../../shared';
 import { ReservaRow } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { ListadoReservas } from './listado-reservas';
 
 const mockRow: ReservaRow = {
@@ -22,7 +23,21 @@ const mockRow: ReservaRow = {
   fechaSalida: '2026-08-15',
   estadoReserva: EstadoReserva.Confirmada,
   requiereDocumentacion: false,
-  tieneDocumentacion: false
+  tieneDocumentacion: false,
+};
+
+const mockRowRequiereDocSinConfirmar: ReservaRow = {
+  ...mockRow,
+  id: 2,
+  requiereDocumentacion: true,
+  tieneDocumentacion: false,
+};
+
+const mockRowRequiereDocYaConfirmada: ReservaRow = {
+  ...mockRow,
+  id: 3,
+  requiereDocumentacion: true,
+  tieneDocumentacion: true,
 };
 
 const mockPage: PageResponse<ReservaRow> = {
@@ -46,11 +61,19 @@ class MinimalFilterProvider extends FilterConfigProvider {
 describe('ListadoReservas', () => {
   let fixture: ComponentFixture<ListadoReservas>;
   let component: ListadoReservas;
-  let mockReservasService: { getAll: ReturnType<typeof vi.fn> };
+  let mockReservasService: {
+    getAll: ReturnType<typeof vi.fn>;
+    confirmarDocumentacion: ReturnType<typeof vi.fn>;
+  };
+  let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    mockReservasService = { getAll: vi.fn().mockReturnValue(of(mockPage)) };
+    mockReservasService = {
+      getAll: vi.fn().mockReturnValue(of(mockPage)),
+      confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
+    };
+    mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
@@ -58,6 +81,7 @@ describe('ListadoReservas', () => {
       providers: [
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: AuthService, useValue: mockAuthService },
+        { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
       ],
     })
       .overrideComponent(ListadoReservas, {
@@ -104,14 +128,14 @@ describe('ListadoReservas', () => {
   });
 
   it('rowActions incluye "Ver detalle" como primera acción', () => {
-    const actions = component['rowActions'](mockRow as unknown as ReservaRow);
+    const actions = component['rowActions'](mockRow);
     expect(actions[0].label).toBe('Ver detalle');
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
   it('el comando "Ver detalle" navega a /reservas/:id', () => {
-    const actions = component['rowActions'](mockRow as unknown as ReservaRow);
-    actions[0].command?.(mockRow as unknown as ReservaRow);
+    const actions = component['rowActions'](mockRow);
+    actions[0].command?.(mockRow);
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 1]);
   });
 
@@ -119,5 +143,68 @@ describe('ListadoReservas', () => {
     const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
     filterPanel.triggerEventHandler('filterChange', { estado: 'PENDIENTE' });
     expect(component['tableState'].queryParams().filters).toEqual({ estado: 'PENDIENTE' });
+  });
+
+  describe('acción "Confirmar documentación"', () => {
+    it('no aparece cuando la reserva no requiere documentación', () => {
+      const actions = component['rowActions'](mockRow);
+      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(false);
+    });
+
+    it('aparece cuando requiere documentación y todavía no la tiene', () => {
+      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
+      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(true);
+    });
+
+    it('no aparece cuando ya tiene la documentación confirmada', () => {
+      const actions = component['rowActions'](mockRowRequiereDocYaConfirmada);
+      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(false);
+    });
+
+    it('al confirmar en el diálogo, llama a confirmarDocumentacion y recarga la tabla', () => {
+      const reloadSpy = vi.spyOn(component['tableState'], 'reload');
+      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
+      const accion = actions.find((a) => a.label === 'Confirmar documentación');
+
+      accion?.command?.(mockRowRequiereDocSinConfirmar);
+
+      expect(mockConfirmDialogService.open).toHaveBeenCalled();
+      expect(mockReservasService.confirmarDocumentacion).toHaveBeenCalledWith(2);
+      expect(reloadSpy).toHaveBeenCalled();
+    });
+
+    it('si se cancela el diálogo, no llama a confirmarDocumentacion ni recarga', () => {
+      mockConfirmDialogService.open.mockReturnValue(of(false));
+      const reloadSpy = vi.spyOn(component['tableState'], 'reload');
+      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
+      const accion = actions.find((a) => a.label === 'Confirmar documentación');
+
+      accion?.command?.(mockRowRequiereDocSinConfirmar);
+
+      expect(mockReservasService.confirmarDocumentacion).not.toHaveBeenCalled();
+      expect(reloadSpy).not.toHaveBeenCalled();
+    });
+    it('rowActions incluye "Modificar" para estado Pendiente o Confirmada', () => {
+      const actions = component['rowActions'](mockRow);
+      expect(actions.some((a) => a.label === 'Modificar')).toBe(true);
+    });
+
+    it('el comando "Modificar" navega a /reservas/:id/modificar con queryParam from=listado', () => {
+      const actions = component['rowActions'](mockRow);
+      const accion = actions.find((a) => a.label === 'Modificar');
+      accion?.command?.(mockRow);
+      expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 1, 'modificar'], {
+        queryParams: { from: 'listado' },
+      });
+    });
+
+    it('onSearchChange actualiza el filtro search preservando los filtros existentes', () => {
+      component['onFilterChange']({ estado: 'CONFIRMADA' });
+      component['onSearchChange']('Juan');
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estado: 'CONFIRMADA',
+        search: 'Juan',
+      });
+    });
   });
 });

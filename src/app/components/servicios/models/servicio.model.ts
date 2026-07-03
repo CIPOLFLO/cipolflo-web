@@ -82,7 +82,6 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
   costoPersonaExtra: number | null;
   estado: EstadoServicio;
   modalidadPrecio: string;
-  requiereDocumentacion : boolean;
 }
 
 export interface ReservaProximaDto {

@@ -58,7 +58,7 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
-    ...(row.requiereDocumentacion
+    ...(row.requiereDocumentacion && !row.tieneDocumentacion
       ? [
           {
             label: 'Confirmar documentación',
@@ -72,9 +72,12 @@ export class ListadoReservas {
                   variant: 'primary',
                 })
                 .subscribe((confirmed) => {
-                  if (confirmed) {
-                    this.reservasService.confirmarDocumentacion(row.id).subscribe();
+                  if (!confirmed) {
+                    return;
                   }
+                  this.reservasService.confirmarDocumentacion(row.id).subscribe({
+                    next: () => this.recargarTabla(),
+                  });
                 });
             },
           } satisfies RowAction<ReservaRow>,
@@ -96,5 +99,9 @@ export class ListadoReservas {
 
   protected onNuevaReserva(): void {
     this.router.navigate(['/reservas/nueva']);
+  }
+
+  private recargarTabla(): void {
+    this.tableState.reload();
   }
 }
