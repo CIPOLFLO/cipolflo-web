@@ -10,7 +10,7 @@ import { UserService } from '../../../core/services/user.service';
 import { ReservasService } from '../services/reservas.service';
 import { TipoReserva, type ReservaDetalleRespuestaDto } from '../models/reserva.model';
 import { DetalleReserva } from './detalle-reserva';
-
+//a
 const mockReserva: ReservaDetalleRespuestaDto = {
   id: 42,
   tipoReserva: TipoReserva.Comun,
