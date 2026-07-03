@@ -1,8 +1,15 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
 import { ConfirmDialogService } from './confirm-dialog.service';
-import { ConfirmDialogData, ConfirmDialogVariant } from './confirm-dialog.model';
+import { ConfirmDialogData } from './confirm-dialog.model';
 import { AppButton } from '../components/button/button';
 
 @Component({
@@ -42,9 +49,5 @@ export class ConfirmDialogComponent implements OnInit, OnDestroy {
   onCancel(): void {
     this.visible.set(false);
     this.confirmDialogService.cancel();
-  }
-
-  get confirmVariant(): ConfirmDialogVariant {
-    return this.config().variant ?? 'primary';
   }
 }

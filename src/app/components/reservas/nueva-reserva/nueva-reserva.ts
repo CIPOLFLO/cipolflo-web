@@ -357,9 +357,8 @@ export class NuevaReserva extends ReservaFormBase {
           this.errorHandler.handle(err);
           return EMPTY;
         }),
-        finalize(() => this.router.navigate(['/reservas'])),
       )
-      .subscribe();
+      .subscribe({ complete: () => this.router.navigate(['/reservas']) });
   }
 
   private construirDto(): ReservaCreacionRequestDto {

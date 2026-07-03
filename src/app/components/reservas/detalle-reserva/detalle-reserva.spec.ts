@@ -24,6 +24,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   cantidadMenores: 1,
   cantidad: null,
   importe: 4500,
+  montoImpago: 0,
   formaPago: FormaPago.Efectivo,
   pago: false,
   requiereDocumentacion: true,

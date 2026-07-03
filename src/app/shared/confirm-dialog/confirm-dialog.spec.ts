@@ -94,18 +94,6 @@ describe('ConfirmDialogComponent', () => {
     });
   });
 
-  describe('confirmVariant', () => {
-    it('should use variant when provided', () => {
-      component.config.set({ ...mockConfig, variant: 'danger' });
-      expect(component.confirmVariant).toBe('danger'); // ✅
-    });
-
-    it('should use default variant when not provided', () => {
-      component.config.set({ title: 'T', message: 'M' });
-      expect(component.confirmVariant).toBe('primary'); // ✅
-    });
-  });
-
   describe('ngOnDestroy', () => {
     it('should unsubscribe on destroy', () => {
       const spy = vi.spyOn(component['subscription'], 'unsubscribe');
