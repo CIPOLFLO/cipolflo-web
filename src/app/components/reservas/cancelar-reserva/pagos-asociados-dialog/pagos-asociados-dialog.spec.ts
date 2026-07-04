@@ -44,7 +44,7 @@ describe('PagosAsociadosDialog', () => {
   it('debería mostrar los pagos asociados y el total', () => {
     const text = fixture.nativeElement.textContent;
 
-    expect(text).toContain('Pagos asociados encontrados');
+    expect(text).toContain('Se encontraron pagos asociados');
     expect(text).toContain('EFECTIVO');
     expect(text).toContain('TRANSFERENCIA');
     expect(text).toContain('8.000');
@@ -66,6 +66,7 @@ describe('PagosAsociadosDialog', () => {
     expect(confirmarSpy).toHaveBeenCalledWith({
       generarDevolucion: false,
       formaPago: undefined,
+      importeDevolucion: undefined,
     });
   });
 
@@ -86,6 +87,7 @@ describe('PagosAsociadosDialog', () => {
     expect(confirmarSpy).toHaveBeenCalledWith({
       generarDevolucion: true,
       formaPago: FormaPago.Efectivo,
+      importeDevolucion: 8000,
     });
   });
 
