@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
@@ -18,6 +10,7 @@ import {
   PagoAsociadoReservaDto,
   ReservaCancelacionRequestDto,
 } from '../../models/reserva.model';
+import { InputNumber } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-pagos-asociados-dialog',
@@ -29,6 +22,7 @@ import {
     FormsModule,
     AppButton,
     CurrencyFormatPipe,
+    InputNumber,
     DateShortFormatPipe,
   ],
   templateUrl: './pagos-asociados-dialog.html',
@@ -46,28 +40,31 @@ export class PagosAsociadosDialog {
 
   protected readonly generarDevolucion = signal(false);
   protected readonly formaPago = signal<FormaPago | null>(null);
+  protected readonly importeDevolucion = signal(0);
 
   protected readonly formaPagoOptions = Object.entries(FORMA_PAGO_RESERVA_LABEL).map(
     ([value, label]) => ({ value: value as FormaPago, label }),
   );
 
-  protected readonly confirmarDisabled = computed(
-    () => this.generarDevolucion() && this.formaPago() === null,
-  );
+  protected readonly confirmarDisabled = computed(() => {
+    if (!this.generarDevolucion()) return false;
 
-  constructor() {
-    effect(() => {
-      if (this.visible()) {
-        this.generarDevolucion.set(false);
-        this.formaPago.set(null);
-      }
-    });
-  }
+    return (
+      this.formaPago() === null ||
+      this.importeDevolucion() <= 0 ||
+      this.importeDevolucion() > this.importeTotalPagos()
+    );
+  });
 
   protected onGenerarDevolucionChange(checked: boolean): void {
     this.generarDevolucion.set(checked);
+    if (checked) {
+      this.importeDevolucion.set(this.importeTotalPagos());
+    }
+
     if (!checked) {
       this.formaPago.set(null);
+      this.importeDevolucion.set(0);
     }
   }
 
@@ -75,6 +72,7 @@ export class PagosAsociadosDialog {
     this.confirmar.emit({
       generarDevolucion: this.generarDevolucion(),
       formaPago: this.formaPago() ?? undefined,
+      importeDevolucion: this.generarDevolucion() ? this.importeDevolucion() : undefined,
     });
   }
 }

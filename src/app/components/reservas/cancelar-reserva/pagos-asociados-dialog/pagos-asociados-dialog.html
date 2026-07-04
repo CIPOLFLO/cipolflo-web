@@ -11,11 +11,8 @@
   <div class="alert-warning">
     <div class="alert-warning__header">
       <i class="pi pi-exclamation-circle"></i>
-      <span>Pagos asociados encontrados</span>
+      <span>Se encontraron pagos asociados</span>
     </div>
-    <p class="alert-warning__text">
-      Esta reserva tiene pagos asociados. Al cancelar, la reserva quedará en estado Cancelada.
-    </p>
   </div>
 
   <section class="pagos-list">
@@ -43,6 +40,13 @@
     <label for="generarDevolucion">Generar devolución</label>
   </div>
 
+  @if (!generarDevolucion()) {
+    <div class="aviso-sin-devolucion">
+      <strong>No se generará ninguna devolución.</strong>
+      <p>La reserva se cancelará y los pagos registrados permanecerán en el sistema.</p>
+    </div>
+  }
+
   @if (generarDevolucion()) {
     <label class="forma-pago" for="formaPago">
       Forma de pago de la devolución *
@@ -54,6 +58,18 @@
         optionLabel="label"
         optionValue="value"
         placeholder="Seleccionar"
+        appendTo="body"
+      />
+    </label>
+
+    <label class="forma-pago" for="importeDevolucion">
+      Monto a devolver *
+      <p-inputnumber
+        inputId="importeDevolucion"
+        [ngModel]="importeDevolucion()"
+        (ngModelChange)="importeDevolucion.set($event)"
+        [min]="1"
+        [max]="importeTotalPagos()"
       />
     </label>
   }

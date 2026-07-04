@@ -188,4 +188,5 @@ export interface ReservaCancelacionCheckResponseDto {
 export interface ReservaCancelacionRequestDto {
   generarDevolucion: boolean;
   formaPago?: FormaPago;
+  importeDevolucion?: number;
 }
