@@ -1119,14 +1119,9 @@ Retorna el detalle completo de una reserva.
 }
 ```
 
-<<<<<<< HEAD
-
-> # El campo `cliente` es `null` cuando la reserva es de tipo `COLABORACION_SIN_FINES_DE_LUCRO` sin cliente asociado (solo `rut`).
->
 > El campo `cliente` es `null` cuando la reserva es de tipo `COLABORACION_SIN_FINES_DE_LUCRO` sin cliente asociado (solo `rut`). En ese caso el campo `nombre` contiene el nombre de la organización _(temporal — hasta definir manejo de clientes RUT)_.
-> `importe` y `formaPago` son `null` mientras la reserva no haya sido pagada.
 >
-> > > > > > > origin/develop
+> `importe` se calcula al crear la reserva (para `COMUN`) y es `0` para `COLABORACION_SIN_FINES_DE_LUCRO`. El campo `pago` indica si la reserva está saldada.
 
 **Errores:**
 
