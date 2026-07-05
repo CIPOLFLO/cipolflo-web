@@ -1355,7 +1355,7 @@ Registra un pago sobre una reserva existente. Genera un ingreso en finanzas y ac
   cantidadTotal: number | null;
   cantidadMenores: number | null;
   cantidad: number | null;
-  importe: number | null; // null si es reserva de colaboración (monto 0)
+  importe: number | null; // 0 si es reserva de colaboración (monto 0)
   pago: boolean;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
