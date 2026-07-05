@@ -133,3 +133,14 @@
 .pago-confirmado app-button {
   margin-top: 12px;
 }
+
+.pago-cuota__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.pago-cuota__meses {
+  font-weight: 400;
+}

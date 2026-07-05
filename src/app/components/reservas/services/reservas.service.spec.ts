@@ -30,10 +30,12 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   cantidadMenores: 1,
   cantidad: null,
   importe: 4500,
+  montoImpago: 0,
   formaPago: FormaPago.Efectivo,
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  requiereSena: false,
   nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
@@ -77,16 +79,22 @@ const dto: ReservaCreacionRequestDto = {
   email: null,
   rut: null,
   notas: null,
+  requiereDocumentacion: false,
+  requiereSena: false,
 };
 
 describe('ReservasService', () => {
   let service: ReservasService;
   let httpTesting: HttpTestingController;
-  let blobExportService: { export: ReturnType<typeof vi.fn> };
+  let blobExportService: {
+    export: ReturnType<typeof vi.fn>;
+    download: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     blobExportService = {
       export: vi.fn().mockReturnValue(of(undefined)),
+      download: vi.fn().mockReturnValue(of(undefined)),
     };
 
     TestBed.configureTestingModule({
@@ -115,6 +123,8 @@ describe('ReservasService', () => {
       fechaEntrada: '2026-08-10',
       fechaSalida: '2026-08-15',
       estadoReserva: EstadoReserva.Confirmada,
+      requiereDocumentacion: false,
+      tieneDocumentacion: false,
       tipoReserva: TipoReserva.Comun,
       montoImpago: 5000,
       fechaLimitePago: null,
@@ -253,6 +263,18 @@ describe('ReservasService', () => {
     });
   });
 
+  describe('confirmarDocumentacion', () => {
+    it('llama a PATCH /reservas/:id/documentacion', () => {
+      service.confirmarDocumentacion(42).subscribe();
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/documentacion') && r.method === 'PATCH',
+      );
+      expect(req.request.method).toBe('PATCH');
+      req.flush(null);
+    });
+  });
+
   describe('exportar', () => {
     it('delega en BlobExportService con el endpoint, los filtros y el filename correctos', () => {
       const filters = { estadoReserva: 'PENDIENTE' };
@@ -329,6 +351,17 @@ describe('ReservasService', () => {
       expect(req.request.body).toEqual(dtoCancelacion);
 
       req.flush(null);
+    });
+  });
+
+  describe('descargarComprobante', () => {
+    it('delega en BlobExportService con la ruta del comprobante y el filename de fallback', () => {
+      service.descargarComprobante(42).subscribe();
+
+      expect(blobExportService.download).toHaveBeenCalledWith(
+        'reservas/42/comprobante',
+        'comprobante-reserva-42.pdf',
+      );
     });
   });
 });

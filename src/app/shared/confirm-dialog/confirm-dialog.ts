@@ -1,8 +1,15 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
 import { ConfirmDialogService } from './confirm-dialog.service';
-import { ConfirmDialogData, ConfirmDialogVariant } from './confirm-dialog.model';
+import { ConfirmDialogData } from './confirm-dialog.model';
 import { AppButton } from '../components/button/button';
 
 @Component({
@@ -11,10 +18,13 @@ import { AppButton } from '../components/button/button';
   imports: [Dialog, AppButton],
   templateUrl: './confirm-dialog.html',
   styleUrl: './confirm-dialog.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDialogComponent implements OnInit, OnDestroy {
-  visible = false;
-  config: ConfirmDialogData = { title: '', message: '' };
+  // Signals (no campos planos): al abrirse el diálogo tras una respuesta HTTP en una app
+  // zoneless, mutar signals programa la detección de cambios; un campo plano no lo haría.
+  readonly visible = signal(false);
+  readonly config = signal<ConfirmDialogData>({ title: '', message: '' });
 
   protected subscription: Subscription = new Subscription();
 
@@ -22,8 +32,8 @@ export class ConfirmDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.confirmDialogService.dialogState$.subscribe((config) => {
-      this.config = config;
-      this.visible = true;
+      this.config.set(config);
+      this.visible.set(true);
     });
   }
 
@@ -32,16 +42,12 @@ export class ConfirmDialogComponent implements OnInit, OnDestroy {
   }
 
   onConfirm(): void {
-    this.visible = false;
+    this.visible.set(false);
     this.confirmDialogService.confirm();
   }
 
   onCancel(): void {
-    this.visible = false;
+    this.visible.set(false);
     this.confirmDialogService.cancel();
-  }
-
-  get confirmVariant(): ConfirmDialogVariant {
-    return this.config.variant ?? 'primary';
   }
 }

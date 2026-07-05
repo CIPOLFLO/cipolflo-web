@@ -56,6 +56,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   cantidadMenores: 1,
   cantidad: null,
   importe: 4500,
+  montoImpago: 0,
   formaPago: FormaPago.Efectivo,
   pago: false,
   requiereDocumentacion: true,
@@ -81,6 +82,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   updatedAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',
   updatedBy: 'Juan Pérez',
+  requiereSena: false,
 };
 
 const mockColaboracion: ReservaDetalleRespuestaDto = {

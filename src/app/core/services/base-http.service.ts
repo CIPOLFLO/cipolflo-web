@@ -8,16 +8,7 @@ export abstract class BaseHttpService {
   protected readonly apiUrl = environment.apiUrl;
 
   protected get<T>(path: string, params?: Record<string, unknown>): Observable<T> {
-    const httpParams = params
-      ? new HttpParams({
-          fromObject: Object.fromEntries(
-            Object.entries(params)
-              .filter(([, v]) => v != null)
-              .map(([k, v]) => [k, String(v)]),
-          ),
-        })
-      : undefined;
-    return this.http.get<T>(`${this.apiUrl}/${path}`, { params: httpParams });
+    return this.http.get<T>(`${this.apiUrl}/${path}`, { params: this.buildParams(params) });
   }
 
   protected post<T>(path: string, body: unknown): Observable<T> {
@@ -41,5 +32,28 @@ export abstract class BaseHttpService {
       responseType: 'blob',
       observe: 'response',
     });
+  }
+
+  protected getBlob(
+    path: string,
+    params?: Record<string, unknown>,
+  ): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.apiUrl}/${path}`, {
+      params: this.buildParams(params),
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
+
+  private buildParams(params?: Record<string, unknown>): HttpParams | undefined {
+    return params
+      ? new HttpParams({
+          fromObject: Object.fromEntries(
+            Object.entries(params)
+              .filter(([, v]) => v != null)
+              .map(([k, v]) => [k, String(v)]),
+          ),
+        })
+      : undefined;
   }
 }

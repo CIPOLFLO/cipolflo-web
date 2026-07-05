@@ -49,10 +49,11 @@ import {
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
+
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly verificandoCancelacionVisible = signal(false);
@@ -102,6 +103,15 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+    ...(row.requiereDocumentacion && !row.tieneDocumentacion
+      ? [
+          {
+            label: 'Confirmar documentación',
+            icon: 'pi pi-file-check',
+            command: () => this.onConfirmarDocumentacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
     // { label: 'Eliminar', ... },
   ];
 
@@ -137,6 +147,21 @@ export class ListadoReservas {
   protected onPagoReservaRegistrado(): void {
     this.reservaPagoSeleccionada.set(null);
     this.recargarTabla();
+  }
+
+  private onConfirmarDocumentacion(row: ReservaRow): void {
+    this.confirmDialogService
+      .open({
+        title: 'Confirmar documentación',
+        message: `¿Confirma que la reserva N° ${row.id} cuenta con la documentación requerida?`,
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+
+        this.reservasService.confirmarDocumentacion(row.id).subscribe(() => {
+          this.recargarTabla();
+        });
+      });
   }
 
   private recargarTabla(): void {

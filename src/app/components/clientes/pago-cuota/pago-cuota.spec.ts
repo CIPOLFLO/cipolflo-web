@@ -160,6 +160,63 @@ describe('PagoCuota', () => {
     expect(confirmarSpy).toHaveBeenCalled();
   });
 
+  describe('periodosCubiertos', () => {
+    async function setCantidad(cantidad: number): Promise<void> {
+      component['form'].controls.cantidadCuotas.setValue(cantidad);
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+
+    it('arranca en el mes siguiente a la última cuota (junio → julio)', async () => {
+      await setCantidad(1);
+
+      expect(component['periodosCubiertos']()).toEqual(['Julio 2026']);
+    });
+
+    it('cubre tantos meses consecutivos como cuotas indicadas', async () => {
+      await setCantidad(3);
+
+      expect(component['periodosCubiertos']()).toEqual([
+        'Julio 2026',
+        'Agosto 2026',
+        'Setiembre 2026',
+      ]);
+    });
+
+    it('cruza de año cuando la última cuota es diciembre (mes 12 → enero del año siguiente)', async () => {
+      fixture.componentRef.setInput('cliente', {
+        ...mockCliente,
+        ultimaCuotaDto: {
+          anio: 2026,
+          mes: 12,
+          nombreMes: 'diciembre',
+          descripcion: 'Diciembre 2026',
+        },
+      });
+      await setCantidad(2);
+
+      expect(component['periodosCubiertos']()).toEqual(['Enero 2027', 'Febrero 2027']);
+    });
+
+    it('sin cuota previa arranca en el mes actual', async () => {
+      fixture.componentRef.setInput('cliente', { ...mockCliente, ultimaCuotaDto: null });
+      await setCantidad(1);
+
+      const hoy = new Date();
+      const nombreMes = hoy.toLocaleDateString('es-UY', { month: 'long' });
+      const esperado = `${nombreMes.charAt(0).toUpperCase()}${nombreMes.slice(1)} ${hoy.getFullYear()}`;
+
+      expect(component['periodosCubiertos']()).toEqual([esperado]);
+    });
+
+    it('devuelve lista vacía si no hay cliente', async () => {
+      fixture.componentRef.setInput('cliente', null);
+      await setCantidad(1);
+
+      expect(component['periodosCubiertos']()).toEqual([]);
+    });
+  });
+
   it('renderiza el bloque de confirmación cuando pagoConfirmado no es null (líneas 99-108)', async () => {
     const pago: PagoCuotaResponseDto[] = [
       {

@@ -51,6 +51,10 @@ export class ReservasService extends BaseHttpService {
     return this.post<CostoReservaRespuestaDto>('reservas/calcular-costo', dto);
   }
 
+  confirmarDocumentacion(id: number): Observable<void> {
+    return this.patch<void>(`reservas/${id}/documentacion`, null);
+  }
+
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('reservas/exportar', filters, 'reservas.xlsx');
   }
@@ -61,5 +65,9 @@ export class ReservasService extends BaseHttpService {
 
   cancelar(id: number, dto: ReservaCancelacionRequestDto): Observable<void> {
     return this.patch<void>(`reservas/${id}/cancelacion`, dto);
+  }
+
+  descargarComprobante(id: number): Observable<void> {
+    return this.blobExport.download(`reservas/${id}/comprobante`, `comprobante-reserva-${id}.pdf`);
   }
 }

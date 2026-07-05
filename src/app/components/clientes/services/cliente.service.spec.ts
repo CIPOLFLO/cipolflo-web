@@ -406,7 +406,7 @@ describe('ClientesService', () => {
       },
     ];
 
-    it('realiza POST a /clientes/:id/cuotas y retorna la lista de cuotas registradas', () => {
+    it('realiza POST a /clientes/socios/:id/pago-cuota y retorna la lista de cuotas registradas', () => {
       service.registrarPagoCuota(1, dto).subscribe((result) => {
         expect(result).toEqual(mockResponse);
       });
