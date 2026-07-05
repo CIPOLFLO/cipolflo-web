@@ -129,6 +129,11 @@ export class DetalleReserva {
         valueClass: e.pago ? 'success' : 'danger',
       },
       {
+        key: 'requiereSena',
+        label: 'Requiere Seña',
+        value: e.requiereSena ? 'Sí' : 'No',
+      },
+      {
         key: 'requiereDocumentacion',
         label: 'Requiere Documentación',
         value: e.requiereDocumentacion ? 'Sí' : 'No',

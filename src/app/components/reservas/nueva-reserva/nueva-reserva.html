@@ -112,6 +112,25 @@
           (blurred)="onFieldBlur('horaFin')"
         />
       }
+
+      <div class="nueva-reserva__checkbox-grupo">
+        <label class="nueva-reserva__checkbox">
+          <input
+            type="checkbox"
+            [checked]="controlChecked('requiereDocumentacion')"
+            (change)="onCheckboxChange('requiereDocumentacion', checkboxChecked($event))"
+          />
+          Requiere documentación
+        </label>
+        <label class="nueva-reserva__checkbox">
+          <input
+            type="checkbox"
+            [checked]="controlChecked('requiereSena')"
+            (change)="onCheckboxChange('requiereSena', checkboxChecked($event))"
+          />
+          Requiere seña
+        </label>
+      </div>
     </app-form-section>
 
     <!-- Información del Cliente -->

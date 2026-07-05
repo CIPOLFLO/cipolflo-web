@@ -29,6 +29,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  requiereSena: false,
   nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
@@ -330,5 +331,17 @@ describe('DetalleReserva', () => {
 
     expect(handleSpy).toHaveBeenCalledWith(error);
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('muestra "Requiere Seña: Sí" cuando requiereSena es true', async () => {
+    const { component } = await setup({ ...mockReserva, requiereSena: true });
+    const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
+    expect(field?.value).toBe('Sí');
+  });
+
+  it('muestra "Requiere Seña: No" cuando requiereSena es false', async () => {
+    const { component } = await setup({ ...mockReserva, requiereSena: false });
+    const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
+    expect(field?.value).toBe('No');
   });
 });
