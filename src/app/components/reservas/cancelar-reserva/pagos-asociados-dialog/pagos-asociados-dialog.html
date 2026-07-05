@@ -51,7 +51,9 @@
 
   @if (generarDevolucion()) {
     <label class="forma-pago" for="formaPago">
-      Forma de pago de la devolución <span class="required">*</span>
+      <span class="forma-pago__caption"
+        >Forma de pago de la devolución <span class="required">*</span></span
+      >
       <p-select
         inputId="formaPago"
         [ngModel]="formaPago()"
@@ -65,7 +67,7 @@
     </label>
 
     <label class="forma-pago" for="importeDevolucion">
-      Monto a devolver <span class="required">*</span>
+      <span class="forma-pago__caption">Monto a devolver <span class="required">*</span></span>
       <p-inputnumber
         inputId="importeDevolucion"
         [ngModel]="importeDevolucion()"
@@ -88,7 +90,7 @@
         intent="danger"
         label="Confirmar cancelación"
         [disabled]="confirmarDisabled()"
-        [tooltip]="confirmarDisabled() ? 'Seleccione la forma de pago de la devolución' : ''"
+        [tooltip]="confirmarDisabled() ? 'Complete correctamente todos los campos' : ''"
         (clicked)="onConfirmar()"
       />
     </div>

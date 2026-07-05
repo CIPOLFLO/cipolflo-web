@@ -70,6 +70,10 @@
   gap: 8px;
 }
 
+.forma-pago + .forma-pago {
+  margin-top: 16px;
+}
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
