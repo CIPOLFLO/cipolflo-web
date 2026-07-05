@@ -15,6 +15,7 @@ const clienteMock = {
   tipoCliente: TipoCliente.Socio,
   numeroSocio: 42,
   cedula: '5.191.926-8',
+  rut: null,
   nombre: 'Lucía Rodríguez',
   telefono: '099985648',
   email: 'lucia@example.com',

@@ -41,6 +41,7 @@ export const FORMA_PAGO_RESERVA_LABEL: Partial<Record<FormaPago, string>> = {
 export const TIPO_CLIENTE_LABEL: Record<TipoCliente, string> = {
   [TipoCliente.Socio]: 'Socio',
   [TipoCliente.Particular]: 'Particular',
+  [TipoCliente.Empresa]: 'Empresa',
 };
 
 export const TIPO_RESERVA_OPTIONS: FormFieldOption[] = [

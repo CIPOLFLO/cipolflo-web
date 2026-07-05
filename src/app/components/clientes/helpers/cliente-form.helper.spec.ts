@@ -14,6 +14,7 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   numeroSocio: 42,
   nombre: 'Lucía',
   cedula: '5.191.926-8',
+  rut: null,
   telefono: '099000000',
   email: 'lucia@example.com',
   pais: 'Uruguay',

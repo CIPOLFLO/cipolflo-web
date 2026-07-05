@@ -20,9 +20,9 @@ export class ClientesFilterService extends FilterConfigProvider {
     },
     {
       key: 'identificador',
-      label: 'Cédula / Número de socio',
+      label: 'Documento / Número de socio',
       type: 'text',
-      placeholder: 'Buscar por cédula o número de socio...',
+      placeholder: 'Buscar por documento o número de socio...',
     },
     {
       key: 'estado',

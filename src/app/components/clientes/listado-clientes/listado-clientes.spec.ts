@@ -29,6 +29,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       tipoCliente: TipoCliente.Socio,
       numeroSocio: 5,
       cedula: '1.234.567-8',
+      rut: null,
       email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
       ultimaCuotaDto: {
@@ -44,6 +45,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       tipoCliente: TipoCliente.Particular,
       numeroSocio: null,
       cedula: '6.789.012-3',
+      rut: null,
       email: null,
       estado: null,
       ultimaCuotaDto: null,
@@ -225,7 +227,7 @@ describe('ListadoClientes', () => {
     const labels = Array.from(headers).map((h) => h.textContent?.trim());
     expect(labels).toContain('Nombre');
     expect(labels).toContain('Nro de socio');
-    expect(labels).toContain('Cédula');
+    expect(labels).toContain('Documento');
     expect(labels).toContain('Email');
     expect(labels).toContain('Estado');
   });

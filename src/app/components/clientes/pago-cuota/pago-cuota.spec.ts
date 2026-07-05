@@ -13,6 +13,7 @@ const mockCliente: ClienteRespuestaDto = {
   tipoCliente: TipoCliente.Socio,
   numeroSocio: 123,
   cedula: '5.191.926-8',
+  rut: null,
   email: 'lucia@example.com',
   estado: EstadoSocio.Activo,
   ultimaCuotaDto: {

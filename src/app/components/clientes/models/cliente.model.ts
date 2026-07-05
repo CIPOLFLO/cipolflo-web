@@ -9,6 +9,7 @@ export enum EstadoSocio {
 export enum TipoCliente {
   Socio = 'SOCIO',
   Particular = 'PARTICULAR',
+  Empresa = 'EMPRESA',
 }
 export enum MetodoCobro {
   Cobradora = 'COBRADORA',
@@ -44,6 +45,7 @@ export const ESTADO_SOCIO_OPTIONS = [
 export const TIPO_CLIENTE_FORM_OPTIONS: FormFieldOption[] = [
   { label: 'Socio', value: TipoCliente.Socio },
   { label: 'Particular', value: TipoCliente.Particular },
+  { label: 'Empresa', value: TipoCliente.Empresa },
 ];
 
 /** Opciones de tipo de cliente para filtros (incluye "Todos"). */
@@ -62,7 +64,8 @@ export interface ListadoClientesRequestDto {
 export interface ClienteRespuestaDto extends Record<string, unknown> {
   id: number;
   nombreCompleto: string;
-  cedula: string;
+  cedula: string | null;
+  rut: string | null;
   email: string | null;
   tipoCliente: TipoCliente;
   numeroSocio: number | null;
@@ -75,7 +78,8 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   nombre: string;
   tipoCliente: TipoCliente;
   numeroSocio: number | null;
-  cedula: string;
+  cedula: string | null;
+  rut: string | null;
   email: string | null;
   estado: EstadoSocio | null;
   fechaNacimiento: string | null;

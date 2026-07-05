@@ -29,9 +29,9 @@ describe('ClientesColumnsService', () => {
     expect(col).toMatchObject({ key: 'numeroSocio', label: 'Nro de socio' });
   });
 
-  it('debe definir columna cedula', () => {
-    const col = service.columns.find((c) => c.key === 'cedula');
-    expect(col).toMatchObject({ key: 'cedula', label: 'Cédula' });
+  it('debe definir columna documento', () => {
+    const col = service.columns.find((c) => c.key === 'documento');
+    expect(col).toMatchObject({ key: 'documento', label: 'Documento' });
   });
 
   it('debe definir columna email', () => {

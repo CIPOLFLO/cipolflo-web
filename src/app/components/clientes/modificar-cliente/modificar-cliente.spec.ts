@@ -22,6 +22,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   tipoCliente: TipoCliente.Socio,
   nombre: 'Juan Pérez',
   cedula: '5.191.926-8',
+  rut: null,
   email: 'juan@example.com',
   telefono: '099958654',
   metodoCobro: MetodoCobro.Cobradora,
