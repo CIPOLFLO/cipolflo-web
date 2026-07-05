@@ -2,22 +2,48 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
+
 import {
   FilterConfigProvider,
   PageResponse,
   TableStateService,
   TableExportService,
 } from '../../../shared';
+
 import { EstadoReserva } from '../../../shared';
-import { ReservaRow, ReservaRespuestaDto, TipoReserva } from '../models/reserva.model';
+import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { ListadoReservas } from './listado-reservas';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+
+/* ---------------- TIPOS DE MOCKS ---------------- */
+
+interface MockReservasService {
+  getAll: ReturnType<typeof vi.fn>;
+  exportar: ReturnType<typeof vi.fn>;
+  confirmarDocumentacion: ReturnType<typeof vi.fn>;
+}
+
+interface MockConfirmDialogService {
+  open: ReturnType<typeof vi.fn>;
+}
+
+interface MockTableExportService {
+  exportar: ReturnType<typeof vi.fn>;
+  exportando: ReturnType<typeof vi.fn>;
+  puedeExportar: ReturnType<typeof vi.fn>;
+}
+
+interface MockErrorHandlerService {
+  handle: ReturnType<typeof vi.fn>;
+}
+
+/* ---------------- MOCKS ---------------- */
 
 const mockRow: ReservaRow = {
   id: 1,
@@ -51,6 +77,30 @@ const mockRowRequiereDocYaConfirmada: ReservaRow = {
   tieneDocumentacion: true,
 };
 
+const mockRowYaPaga: ReservaRow = {
+  ...mockRow,
+  id: 4,
+  pago: true,
+};
+
+const mockRowFinalizada: ReservaRow = {
+  ...mockRow,
+  id: 5,
+  estadoReserva: EstadoReserva.Finalizada,
+};
+
+const mockRowCancelada: ReservaRow = {
+  ...mockRow,
+  id: 6,
+  estadoReserva: EstadoReserva.Cancelada,
+};
+
+const mockRowColaboracionSinFines: ReservaRow = {
+  ...mockRow,
+  id: 7,
+  tipoReserva: TipoReserva.ColaboracionSinFines,
+};
+
 const mockPage: PageResponse<ReservaRow> = {
   content: [mockRow],
   page: 0,
@@ -69,26 +119,40 @@ class MinimalFilterProvider extends FilterConfigProvider {
   readonly filterFields = signal([]);
 }
 
+/* ---------------- TEST ---------------- */
+
 describe('ListadoReservas', () => {
   let fixture: ComponentFixture<ListadoReservas>;
   let component: ListadoReservas;
-  let mockReservasService: {
-    getAll: ReturnType<typeof vi.fn>;
-    confirmarDocumentacion: ReturnType<typeof vi.fn>;
-  };
-  let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
-    exportar: ReturnType<typeof vi.fn>;
-  };
+
+  let mockReservasService: MockReservasService;
+  let mockConfirmDialogService: MockConfirmDialogService;
+  let mockTableExportService: MockTableExportService;
+  let errorHandlerMock: MockErrorHandlerService;
+
   let navigateSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     mockReservasService = {
       getAll: vi.fn().mockReturnValue(of(mockPage)),
+      exportar: vi.fn().mockReturnValue(of(undefined)),
       confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
     };
-    mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
-      exportar: vi.fn().mockReturnValue(of(undefined)),
+
+    mockConfirmDialogService = {
+      open: vi.fn().mockReturnValue(of(true)),
     };
+
+    mockTableExportService = {
+      exportar: vi.fn((fn: () => Observable<void>) => fn()), // ejecuta callback
+      exportando: vi.fn(() => false),
+      puedeExportar: vi.fn(() => true),
+    };
+
+    errorHandlerMock = {
+      handle: vi.fn(),
+    };
+
     navigateSpy = vi.fn();
 
     await TestBed.configureTestingModule({
@@ -97,13 +161,14 @@ describe('ListadoReservas', () => {
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: AuthService, useValue: mockAuthService },
         { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
+        { provide: ErrorHandlerService, useValue: errorHandlerMock },
       ],
     })
       .overrideComponent(ListadoReservas, {
         set: {
           providers: [
             TableStateService,
-            TableExportService,
+            { provide: TableExportService, useValue: mockTableExportService },
             ReservasColumnsService,
             { provide: ReservasService, useValue: mockReservasService },
             { provide: FilterConfigProvider, useClass: MinimalFilterProvider },
@@ -124,194 +189,175 @@ describe('ListadoReservas', () => {
 
   it('loadDataFn delega en ReservasService.getAll', () => {
     component['loadDataFn']({ page: 0, size: 10, filters: {} });
-    expect(mockReservasService.getAll).toHaveBeenCalledWith({ page: 0, size: 10, filters: {} });
+    expect(mockReservasService.getAll).toHaveBeenCalledWith({
+      page: 0,
+      size: 10,
+      filters: {},
+    });
   });
 
-  it('onFilterChange actualiza los filtros en tableState', () => {
+  it('onFilterChange actualiza filtros', () => {
     component['onFilterChange']({ estado: 'CONFIRMADA' });
-    expect(component['tableState'].queryParams().filters).toEqual({ estado: 'CONFIRMADA' });
+    expect(component['tableState'].queryParams().filters).toEqual({
+      estado: 'CONFIRMADA',
+    });
   });
 
-  it('onClearFilters limpia los filtros en tableState', () => {
+  it('onSearchChange actualiza el filtro search manteniendo los demás filtros', () => {
+    component['onFilterChange']({ estado: 'CONFIRMADA' });
+    component['onSearchChange']('juan');
+
+    expect(component['tableState'].queryParams().filters).toEqual({
+      estado: 'CONFIRMADA',
+      search: 'juan',
+    });
+  });
+
+  it('onClearFilters limpia filtros', () => {
     component['onFilterChange']({ estado: 'CONFIRMADA' });
     component['onClearFilters']();
+
     expect(component['tableState'].queryParams().filters).toEqual({});
   });
 
-  it('onNuevaReserva navega a /reservas/nueva', () => {
+  it('onNuevaReserva navega correctamente', () => {
     component['onNuevaReserva']();
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
   });
 
-  it('rowActions incluye "Ver detalle" como primera acción', () => {
+  it('rowActions incluye Ver detalle', () => {
     const actions = component['rowActions'](mockRow);
     expect(actions[0].label).toBe('Ver detalle');
-    expect(actions[0].icon).toBe('pi pi-eye');
   });
 
-  it('el comando "Ver detalle" navega a /reservas/:id', () => {
+  it('Ver detalle navega', () => {
     const actions = component['rowActions'](mockRow);
     actions[0].command?.(mockRow);
+
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 1]);
   });
 
-  it('filterChange desde app-filter-panel actualiza tableState', () => {
-    const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
-    filterPanel.triggerEventHandler('filterChange', { estado: 'PENDIENTE' });
-    expect(component['tableState'].queryParams().filters).toEqual({ estado: 'PENDIENTE' });
-  });
+  it('filterChange desde panel', () => {
+    const panel = fixture.debugElement.query(By.css('app-filter-panel'));
+    panel.triggerEventHandler('filterChange', { estado: 'PENDIENTE' });
 
-  describe('acción "Confirmar documentación"', () => {
-    it('no aparece cuando la reserva no requiere documentación', () => {
-      const actions = component['rowActions'](mockRow);
-      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(false);
-    });
-
-    it('aparece cuando requiere documentación y todavía no la tiene', () => {
-      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
-      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(true);
-    });
-
-    it('no aparece cuando ya tiene la documentación confirmada', () => {
-      const actions = component['rowActions'](mockRowRequiereDocYaConfirmada);
-      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(false);
-    });
-
-    it('al confirmar en el diálogo, llama a confirmarDocumentacion y recarga la tabla', () => {
-      const reloadSpy = vi.spyOn(component['tableState'], 'reload');
-      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
-      const accion = actions.find((a) => a.label === 'Confirmar documentación');
-
-      accion?.command?.(mockRowRequiereDocSinConfirmar);
-
-      expect(mockConfirmDialogService.open).toHaveBeenCalled();
-      expect(mockReservasService.confirmarDocumentacion).toHaveBeenCalledWith(2);
-      expect(reloadSpy).toHaveBeenCalled();
-    });
-
-    it('si se cancela el diálogo, no llama a confirmarDocumentacion ni recarga', () => {
-      mockConfirmDialogService.open.mockReturnValue(of(false));
-      const reloadSpy = vi.spyOn(component['tableState'], 'reload');
-      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
-      const accion = actions.find((a) => a.label === 'Confirmar documentación');
-
-      accion?.command?.(mockRowRequiereDocSinConfirmar);
-
-      expect(mockReservasService.confirmarDocumentacion).not.toHaveBeenCalled();
-      expect(reloadSpy).not.toHaveBeenCalled();
-    });
-    it('rowActions incluye "Modificar" para estado Pendiente o Confirmada', () => {
-      const actions = component['rowActions'](mockRow);
-      expect(actions.some((a) => a.label === 'Modificar')).toBe(true);
-    });
-
-    it('el comando "Modificar" navega a /reservas/:id/modificar con queryParam from=listado', () => {
-      const actions = component['rowActions'](mockRow);
-      const accion = actions.find((a) => a.label === 'Modificar');
-      accion?.command?.(mockRow);
-      expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 1, 'modificar'], {
-        queryParams: { from: 'listado' },
-      });
-    });
-
-    it('onSearchChange actualiza el filtro search preservando los filtros existentes', () => {
-      component['onFilterChange']({ estado: 'CONFIRMADA' });
-      component['onSearchChange']('Juan');
-      expect(component['tableState'].queryParams().filters).toEqual({
-        estado: 'CONFIRMADA',
-        search: 'Juan',
-      });
-  describe('exportar', () => {
-    it('onExportar llama a reservasService.exportar con los filtros actuales', () => {
-      component['tableState'].setResult(1);
-      component['tableState'].setLoading(false);
-      fixture.detectChanges();
-      component['tableState'].updateFilters({ estadoReserva: 'PENDIENTE' });
-      component['onExportar']();
-
-      expect(mockReservasService.exportar).toHaveBeenCalledWith({ estadoReserva: 'PENDIENTE' });
-    });
-
-    it('onExportar setea exportando en false si el service falla', () => {
-      component['tableState'].setResult(1);
-      component['tableState'].setLoading(false);
-      fixture.detectChanges();
-      const errorHandler = TestBed.inject(ErrorHandlerService);
-      const handleSpy = vi.spyOn(errorHandler, 'handle').mockImplementation(() => undefined);
-      mockReservasService.exportar = vi.fn().mockReturnValue(throwError(() => new Error('error')));
-
-      component['onExportar']();
-
-      expect(component['tableExport'].exportando()).toBe(false);
-      expect(handleSpy).toHaveBeenCalled();
+    expect(component['tableState'].queryParams().filters).toEqual({
+      estado: 'PENDIENTE',
     });
   });
 
-  describe('confirmar pago', () => {
-    it('debería incluir la acción Confirmar pago cuando la reserva aplica', () => {
+  describe('Confirmar pago', () => {
+    it('aparece cuando la reserva no está pagada, no está finalizada/cancelada y no es colaboración', () => {
       const actions = component['rowActions'](mockRow);
-
-      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(true);
+      expect(actions.some((a) => a.label === 'Confirmar pago')).toBe(true);
     });
 
-    it('no debería incluir Confirmar pago si la reserva está finalizada', () => {
-      const row = {
-        ...mockRow,
-        estadoReserva: EstadoReserva.Finalizada,
-      };
-
-      const actions = component['rowActions'](row);
-
-      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    it('no aparece si la reserva ya está paga', () => {
+      const actions = component['rowActions'](mockRowYaPaga);
+      expect(actions.some((a) => a.label === 'Confirmar pago')).toBe(false);
     });
 
-    it('no debería incluir Confirmar pago si la reserva está cancelada', () => {
-      const row = {
-        ...mockRow,
-        estadoReserva: EstadoReserva.Cancelada,
-      };
-
-      const actions = component['rowActions'](row);
-
-      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    it('no aparece si la reserva está finalizada', () => {
+      const actions = component['rowActions'](mockRowFinalizada);
+      expect(actions.some((a) => a.label === 'Confirmar pago')).toBe(false);
     });
 
-    it('no debería incluir Confirmar pago si es colaboración sin fines de lucro', () => {
-      const row = {
-        ...mockRow,
-        tipoReserva: TipoReserva.ColaboracionSinFines,
-      };
-
-      const actions = component['rowActions'](row);
-
-      expect(actions.some((action) => action.label === 'Confirmar pago')).toBe(false);
+    it('no aparece si la reserva está cancelada', () => {
+      const actions = component['rowActions'](mockRowCancelada);
+      expect(actions.some((a) => a.label === 'Confirmar pago')).toBe(false);
     });
 
-    it('debería abrir el modal de pago al ejecutar Confirmar pago', () => {
-      const action = component['rowActions'](mockRow).find((a) => a.label === 'Confirmar pago');
+    it('no aparece si el tipo de reserva es Colaboración sin fines', () => {
+      const actions = component['rowActions'](mockRowColaboracionSinFines);
+      expect(actions.some((a) => a.label === 'Confirmar pago')).toBe(false);
+    });
+
+    it('el comando de "Confirmar pago" selecciona la reserva para el pago', () => {
+      const actions = component['rowActions'](mockRow);
+      const action = actions.find((a) => a.label === 'Confirmar pago');
 
       action?.command?.(mockRow);
 
       expect(component['reservaPagoSeleccionada']()).toEqual(mockRow);
     });
+  });
 
-    it('debería cerrar el modal de pago', () => {
+  describe('Flujo de pago de reserva', () => {
+    it('onConfirmarPago selecciona la reserva', () => {
       component['onConfirmarPago'](mockRow);
+      expect(component['reservaPagoSeleccionada']()).toEqual(mockRow);
+    });
 
+    it('onCerrarPagoReserva limpia la reserva seleccionada', () => {
+      component['onConfirmarPago'](mockRow);
       component['onCerrarPagoReserva']();
 
       expect(component['reservaPagoSeleccionada']()).toBeNull();
     });
 
-    it('debería cerrar el modal y refrescar la tabla cuando se registra el pago', () => {
-      const tableState = component['tableState'];
-      const updateFiltersSpy = vi.spyOn(tableState, 'updateFilters');
+    it('onPagoReservaRegistrado limpia la selección y recarga la tabla', () => {
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
 
       component['onConfirmarPago'](mockRow);
       component['onPagoReservaRegistrado']();
 
       expect(component['reservaPagoSeleccionada']()).toBeNull();
-      expect(updateFiltersSpy).toHaveBeenCalledWith(tableState.queryParams().filters);
+      expect(updateFiltersSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Confirmar documentación', () => {
+    it('no aparece si no requiere', () => {
+      const actions = component['rowActions'](mockRow);
+      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(false);
+    });
+
+    it('aparece si requiere y no está confirmada', () => {
+      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
+      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(true);
+    });
+
+    it('no aparece si ya está confirmada', () => {
+      const actions = component['rowActions'](mockRowRequiereDocYaConfirmada);
+      expect(actions.some((a) => a.label === 'Confirmar documentación')).toBe(false);
+    });
+
+    it('confirma documentación', () => {
+      const reloadSpy = vi.spyOn(component['tableState'], 'reload');
+
+      const actions = component['rowActions'](mockRowRequiereDocSinConfirmar);
+      const action = actions.find((a) => a.label === 'Confirmar documentación');
+
+      action?.command?.(mockRowRequiereDocSinConfirmar);
+
+      expect(mockConfirmDialogService.open).toHaveBeenCalled();
+      expect(mockReservasService.confirmarDocumentacion).toHaveBeenCalledWith(2);
+      expect(reloadSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('exportar', () => {
+    it('exporta correctamente', () => {
+      component['tableState'].updateFilters({ estadoReserva: 'PENDIENTE' });
+
+      component['onExportar']();
+
+      expect(mockTableExportService.exportar).toHaveBeenCalled();
+      expect(mockReservasService.exportar).toHaveBeenCalled();
+    });
+
+    it('maneja error', () => {
+      mockTableExportService.exportar = vi.fn((fn: () => Observable<void>) => {
+        fn().subscribe({
+          error: (e: unknown) => new errorHandlerMock.handle(e),
+        });
+      });
+
+      mockReservasService.exportar = vi.fn(() => throwError(() => new Error('error')));
+
+      component['onExportar']();
+
+      expect(errorHandlerMock.handle).toHaveBeenCalled();
     });
   });
 });

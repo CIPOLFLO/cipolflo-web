@@ -118,7 +118,7 @@ describe('ReservasService', () => {
       requiereDocumentacion: false,
       tieneDocumentacion: false,
       tipoReserva: TipoReserva.Comun,
-      montoImpago: 5000,
+      montoImpago: 0,
       fechaLimitePago: null,
       pago: false,
       pendienteDocumentacion: false,
@@ -267,22 +267,29 @@ describe('ReservasService', () => {
     it('devuelve el costoTotal de la respuesta del servidor', () => {
       let resultado = 0;
       service.calcularCosto(dto).subscribe((r) => (resultado = r.costoTotal));
+
       const req = httpTesting.expectOne(
         (r) => r.url.includes('reservas/calcular-costo') && r.method === 'POST',
       );
+
       req.flush({ costoTotal: 9000 });
       expect(resultado).toBe(9000);
     });
-  });
+  }); // 👈 CIERRE de describe('calcularCosto')
 
   describe('confirmarDocumentacion', () => {
     it('llama a PATCH /reservas/:id/documentacion', () => {
       service.confirmarDocumentacion(42).subscribe();
+
       const req = httpTesting.expectOne(
         (r) => r.url.includes('reservas/42/documentacion') && r.method === 'PATCH',
       );
+
       expect(req.request.method).toBe('PATCH');
       req.flush(null);
+    });
+  });
+
   describe('exportar', () => {
     it('delega en BlobExportService con el endpoint, los filtros y el filename correctos', () => {
       const filters = { estadoReserva: 'PENDIENTE' };

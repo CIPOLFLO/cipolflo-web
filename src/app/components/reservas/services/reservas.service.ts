@@ -51,6 +51,7 @@ export class ReservasService extends BaseHttpService {
 
   confirmarDocumentacion(id: number): Observable<void> {
     return this.patch<void>(`reservas/${id}/documentacion`, null);
+  }
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('reservas/exportar', filters, 'reservas.xlsx');
   }

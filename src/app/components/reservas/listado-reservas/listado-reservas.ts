@@ -34,6 +34,7 @@ export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
   private readonly confirmDialogService = inject(ConfirmDialogService);
+
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
@@ -63,31 +64,6 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
-    ...(row.requiereDocumentacion && !row.tieneDocumentacion
-      ? [
-          {
-            label: 'Confirmar documentación',
-            icon: 'pi pi-file-check',
-            command: () => {
-              this.confirmDialogService
-                .open({
-                  title: 'Confirmar documentación',
-                  message:
-                    '¿Confirmás que la documentación de esta reserva fue entregada y está correcta?',
-                  variant: 'primary',
-                })
-                .subscribe((confirmed) => {
-                  if (!confirmed) {
-                    return;
-                  }
-                  this.reservasService.confirmarDocumentacion(row.id).subscribe({
-                    next: () => this.recargarTabla(),
-                  });
-                });
-            },
-          } satisfies RowAction<ReservaRow>,
-        ]
-      : []),
     ...(this.puedeConfirmarPago(row)
       ? [
           {
@@ -97,7 +73,15 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
-    // { label: 'Eliminar', ... },
+    ...(row.requiereDocumentacion && !row.tieneDocumentacion
+      ? [
+          {
+            label: 'Confirmar documentación',
+            icon: 'pi pi-file-check',
+            command: () => this.onConfirmarDocumentacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -105,7 +89,10 @@ export class ListadoReservas {
   }
 
   protected onSearchChange(search: string): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
+    this.tableState.updateFilters({
+      ...this.tableState.queryParams().filters,
+      search,
+    });
   }
 
   protected onClearFilters(): void {
@@ -116,8 +103,6 @@ export class ListadoReservas {
     this.router.navigate(['/reservas/nueva']);
   }
 
-  private recargarTabla(): void {
-    this.tableState.reload();
   protected onExportar(): void {
     const filters = this.tableState.queryParams().filters;
     this.tableExport.exportar(() => this.reservasService.exportar(filters));
@@ -136,8 +121,25 @@ export class ListadoReservas {
     this.recargarTabla();
   }
 
+  private onConfirmarDocumentacion(row: ReservaRow): void {
+    this.confirmDialogService
+      .open({
+        title: 'Confirmar documentación',
+        message: `¿Confirma que la reserva N° ${row.id} cuenta con la documentación requerida?`,
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+
+        this.reservasService.confirmarDocumentacion(row.id).subscribe(() => {
+          this.tableState.reload();
+        });
+      });
+  }
+
   private recargarTabla(): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+    this.tableState.updateFilters({
+      ...this.tableState.queryParams().filters,
+    });
   }
 
   private puedeConfirmarPago(row: ReservaRow): boolean {
@@ -149,4 +151,3 @@ export class ListadoReservas {
     );
   }
 }
-//A
