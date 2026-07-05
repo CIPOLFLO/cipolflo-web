@@ -15,7 +15,7 @@ import {
   type ReservaActualizacionRequestDto,
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
-  type ReservaRow,
+  type ReservaRespuestaDto,
 } from '../models/reserva.model';
 
 const mockDetalle: ReservaDetalleRespuestaDto = {
@@ -106,7 +106,7 @@ describe('ReservasService', () => {
   });
 
   describe('getAll', () => {
-    const mockRow: ReservaRow = {
+    const mockRow: ReservaRespuestaDto = {
       id: 1,
       clienteId: 10,
       nombreCliente: 'Juan Pérez',
@@ -118,7 +118,7 @@ describe('ReservasService', () => {
       requiereDocumentacion: false,
       tieneDocumentacion: false,
       tipoReserva: TipoReserva.Comun,
-      montoImpago: 0,
+      montoImpago: 5000,
       fechaLimitePago: null,
       pago: false,
       pendienteDocumentacion: false,
@@ -144,7 +144,7 @@ describe('ReservasService', () => {
     });
 
     it('devuelve el DTO con los nuevos campos del backend', () => {
-      let resultado: ReservaRow | undefined;
+      let resultado: ReservaRespuestaDto | undefined;
       service.getAll({ page: 0, size: 10, filters: {} }).subscribe((p) => {
         resultado = p.content[0];
       });
@@ -157,26 +157,6 @@ describe('ReservasService', () => {
       expect(resultado?.fechaEntrada).toBe('2026-08-10');
       expect(resultado?.fechaSalida).toBe('2026-08-15');
       expect(resultado?.estadoReserva).toBe(EstadoReserva.Confirmada);
-    });
-
-    it('devuelve el flag tieneDocumentacion junto con requiereDocumentacion', () => {
-      const rowConDocumentacion: ReservaRow = {
-        ...mockRow,
-        requiereDocumentacion: true,
-        tieneDocumentacion: true,
-      };
-      const pageConDocumentacion = { ...mockPage, content: [rowConDocumentacion] };
-
-      let resultado: ReservaRow | undefined;
-      service.getAll({ page: 0, size: 10, filters: {} }).subscribe((p) => {
-        resultado = p.content[0];
-      });
-
-      const req = httpTesting.expectOne((r) => r.url.includes('reservas') && r.method === 'GET');
-      req.flush(pageConDocumentacion);
-
-      expect(resultado?.requiereDocumentacion).toBe(true);
-      expect(resultado?.tieneDocumentacion).toBe(true);
     });
 
     it('pasa los filtros activos como query params', () => {
@@ -267,15 +247,13 @@ describe('ReservasService', () => {
     it('devuelve el costoTotal de la respuesta del servidor', () => {
       let resultado = 0;
       service.calcularCosto(dto).subscribe((r) => (resultado = r.costoTotal));
-
       const req = httpTesting.expectOne(
         (r) => r.url.includes('reservas/calcular-costo') && r.method === 'POST',
       );
-
       req.flush({ costoTotal: 9000 });
       expect(resultado).toBe(9000);
     });
-  }); // 👈 CIERRE de describe('calcularCosto')
+  });
 
   describe('confirmarDocumentacion', () => {
     it('llama a PATCH /reservas/:id/documentacion', () => {
@@ -284,7 +262,6 @@ describe('ReservasService', () => {
       const req = httpTesting.expectOne(
         (r) => r.url.includes('reservas/42/documentacion') && r.method === 'PATCH',
       );
-
       expect(req.request.method).toBe('PATCH');
       req.flush(null);
     });

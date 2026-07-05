@@ -43,7 +43,6 @@ export interface ServicioCrearDto {
   cantidad?: number | null;
   capacidad?: number | null;
   costoPersonaExtra?: number | null;
-  requiereDocumentacion?: boolean;
 }
 
 export interface ServicioActualizarDto {

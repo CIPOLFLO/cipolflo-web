@@ -10,7 +10,7 @@ import {
   ReservaCreacionRequestDto,
   ReservaCreacionRespuestaDto,
   ReservaDetalleRespuestaDto,
-  ReservaRow,
+  ReservaRespuestaDto,
 } from '../models/reserva.model';
 
 @Injectable()
@@ -23,8 +23,8 @@ export class ReservasService extends BaseHttpService {
     filters,
     sortField,
     sortOrder,
-  }: TableQueryParams): Observable<PageResponse<ReservaRow>> {
-    return this.get<PageResponse<ReservaRow>>('reservas', {
+  }: TableQueryParams): Observable<PageResponse<ReservaRespuestaDto>> {
+    return this.get<PageResponse<ReservaRespuestaDto>>('reservas', {
       page,
       size,
       ...filters,
@@ -52,6 +52,7 @@ export class ReservasService extends BaseHttpService {
   confirmarDocumentacion(id: number): Observable<void> {
     return this.patch<void>(`reservas/${id}/documentacion`, null);
   }
+
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('reservas/exportar', filters, 'reservas.xlsx');
   }

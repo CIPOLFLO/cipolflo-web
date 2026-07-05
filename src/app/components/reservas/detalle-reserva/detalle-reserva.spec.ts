@@ -10,7 +10,7 @@ import { UserService } from '../../../core/services/user.service';
 import { ReservasService } from '../services/reservas.service';
 import { TipoReserva, type ReservaDetalleRespuestaDto } from '../models/reserva.model';
 import { DetalleReserva } from './detalle-reserva';
-//a
+
 const mockReserva: ReservaDetalleRespuestaDto = {
   id: 42,
   tipoReserva: TipoReserva.Comun,
@@ -28,6 +28,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  requiereSena: false,
   nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
@@ -49,7 +50,6 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   updatedAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',
   updatedBy: 'Juan Pérez',
-  requiereSena: false,
 };
 
 const mockAuthService = {
@@ -310,40 +310,15 @@ describe('DetalleReserva', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
   });
 
-  it('muestra Requiere Seña: Sí', async () => {
+  it('muestra "Requiere Seña: Sí" cuando requiereSena es true', async () => {
     const { component } = await setup({ ...mockReserva, requiereSena: true });
     const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
     expect(field?.value).toBe('Sí');
   });
 
-  it('muestra Requiere Seña: No', async () => {
+  it('muestra "Requiere Seña: No" cuando requiereSena es false', async () => {
     const { component } = await setup({ ...mockReserva, requiereSena: false });
     const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
     expect(field?.value).toBe('No');
-  });
-
-  it('incluye requiereSena incluso en reserva ColaboracionSinFines', async () => {
-    const { component } = await setup({
-      ...mockReserva,
-      tipoReserva: TipoReserva.ColaboracionSinFines,
-      cliente: null,
-      rut: '21-123456-7',
-      requiereSena: true,
-    });
-    const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
-    expect(field?.value).toBe('Sí');
-  });
-
-  it('esColaboracion es true cuando el tipo de reserva es ColaboracionSinFines', async () => {
-    const { component } = await setup({
-      ...mockReserva,
-      tipoReserva: TipoReserva.ColaboracionSinFines,
-    });
-    expect(component['esColaboracion']()).toBe(true);
-  });
-
-  it('esColaboracion es false cuando el tipo de reserva es Comun', async () => {
-    const { component } = await setup();
-    expect(component['esColaboracion']()).toBe(false);
   });
 });

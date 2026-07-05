@@ -82,6 +82,7 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+    // { label: 'Eliminar', ... },
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -89,10 +90,7 @@ export class ListadoReservas {
   }
 
   protected onSearchChange(search: string): void {
-    this.tableState.updateFilters({
-      ...this.tableState.queryParams().filters,
-      search,
-    });
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
   }
 
   protected onClearFilters(): void {
@@ -131,15 +129,13 @@ export class ListadoReservas {
         if (!confirmado) return;
 
         this.reservasService.confirmarDocumentacion(row.id).subscribe(() => {
-          this.tableState.reload();
+          this.recargarTabla();
         });
       });
   }
 
   private recargarTabla(): void {
-    this.tableState.updateFilters({
-      ...this.tableState.queryParams().filters,
-    });
+    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
 
   private puedeConfirmarPago(row: ReservaRow): boolean {

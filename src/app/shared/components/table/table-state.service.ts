@@ -16,20 +16,14 @@ export class TableStateService {
   private readonly sortOrder = signal<'asc' | 'desc'>('asc');
   private readonly _totalElements = signal(0);
   private readonly _loading = signal(false);
-  private readonly reloadTrigger = signal(0);
 
-  readonly queryParams: Signal<TableQueryParams> = computed(() => {
-    // Se lee para que el computed dependa de reloadTrigger sin alterar el resultado:
-    // al incrementarlo, se fuerza una nueva emisión con los mismos filtros/página/orden.
-    this.reloadTrigger();
-    return {
-      filters: this.filters(),
-      page: this.page(),
-      size: this.size(),
-      sortField: this.sortField(),
-      sortOrder: this.sortOrder(),
-    };
-  });
+  readonly queryParams: Signal<TableQueryParams> = computed(() => ({
+    filters: this.filters(),
+    page: this.page(),
+    size: this.size(),
+    sortField: this.sortField(),
+    sortOrder: this.sortOrder(),
+  }));
   readonly totalElements = this._totalElements.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly hasResults = computed(() => this._totalElements() > 0);
@@ -59,11 +53,6 @@ export class TableStateService {
     this.sortOrder.set('asc');
     this.page.set(0);
   }
-
-  reload(): void {
-    this.reloadTrigger.update((v) => v + 1);
-  }
-
   setResult(totalElements: number): void {
     this._totalElements.set(totalElements);
   }
