@@ -57,6 +57,7 @@ export class PagosAsociadosDialog {
   protected readonly generarDevolucion = signal(false);
   protected readonly formaPago = signal<FormaPago | null>(null);
   protected readonly importeDevolucion = signal(0);
+  protected readonly formaPagoReservaLabel = FORMA_PAGO_RESERVA_LABEL;
 
   protected readonly formaPagoOptions = Object.entries(FORMA_PAGO_RESERVA_LABEL).map(
     ([value, label]) => ({ value: value as FormaPago, label }),

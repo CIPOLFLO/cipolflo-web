@@ -45,8 +45,8 @@ describe('PagosAsociadosDialog', () => {
     const text = fixture.nativeElement.textContent;
 
     expect(text).toContain('Se encontraron pagos asociados');
-    expect(text).toContain('EFECTIVO');
-    expect(text).toContain('TRANSFERENCIA');
+    expect(text).toContain('Efectivo');
+    expect(text).toContain('Transferencia');
     expect(text).toContain('8.000');
   });
 
