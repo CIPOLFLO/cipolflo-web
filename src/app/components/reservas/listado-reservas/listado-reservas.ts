@@ -10,7 +10,6 @@ import { FilterConfigProvider } from '../../../shared/services/filter-config.pro
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
-import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
@@ -21,10 +20,13 @@ import { PagosAsociadosDialog } from '../cancelar-reserva/pagos-asociados-dialog
 import {
   ReservaCancelacionCheckResponseDto,
   ReservaCancelacionRequestDto,
+  ReservaRow,
+  TipoReserva,
 } from '../models/reserva.model';
 
 @Component({
   selector: 'app-listado-reservas',
+  standalone: true,
   imports: [
     PageLayout,
     AppButton,

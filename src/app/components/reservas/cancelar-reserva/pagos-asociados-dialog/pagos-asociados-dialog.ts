@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+  effect,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
@@ -38,6 +46,14 @@ export class PagosAsociadosDialog {
   cancelar = output<void>();
   confirmar = output<ReservaCancelacionRequestDto>();
 
+  constructor() {
+    effect(() => {
+      if (this.visible()) {
+        this.resetFormulario();
+      }
+    });
+  }
+
   protected readonly generarDevolucion = signal(false);
   protected readonly formaPago = signal<FormaPago | null>(null);
   protected readonly importeDevolucion = signal(0);
@@ -68,11 +84,39 @@ export class PagosAsociadosDialog {
     }
   }
 
+  protected onCancelar(): void {
+    this.resetFormulario();
+    this.cancelar.emit();
+  }
+
   protected onConfirmar(): void {
     this.confirmar.emit({
       generarDevolucion: this.generarDevolucion(),
       formaPago: this.formaPago() ?? undefined,
       importeDevolucion: this.generarDevolucion() ? this.importeDevolucion() : undefined,
     });
+  }
+  protected readonly importeDevolucionInvalido = computed(
+    () =>
+      this.generarDevolucion() &&
+      (this.importeDevolucion() <= 0 || this.importeDevolucion() > this.importeTotalPagos()),
+  );
+
+  protected readonly mensajeErrorImporteDevolucion = computed(() => {
+    if (this.importeDevolucion() <= 0) {
+      return 'El monto a devolver debe ser mayor a 0.';
+    }
+
+    if (this.importeDevolucion() > this.importeTotalPagos()) {
+      return 'El monto a devolver no puede superar el total pagado.';
+    }
+
+    return '';
+  });
+
+  private resetFormulario(): void {
+    this.generarDevolucion.set(false);
+    this.formaPago.set(null);
+    this.importeDevolucion.set(0);
   }
 }

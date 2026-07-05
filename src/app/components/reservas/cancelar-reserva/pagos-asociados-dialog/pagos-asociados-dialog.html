@@ -19,7 +19,9 @@
     @for (pago of pagos(); track pago.id) {
       <div class="pago-row">
         <span class="pago-row__fecha">{{ pago.fecha | dateShortFormat }}</span>
-        <span class="pago-row__forma">{{ pago.formaPago }}</span>
+        <span class="pago-row__forma">{{
+          formaPagoReservaLabel[pago.formaPago] ?? pago.formaPago
+        }}</span>
         <strong class="pago-row__importe">{{ pago.importe | currencyFormat }}</strong>
       </div>
     }
@@ -49,7 +51,7 @@
 
   @if (generarDevolucion()) {
     <label class="forma-pago" for="formaPago">
-      Forma de pago de la devolución *
+      Forma de pago de la devolución <span class="required">*</span>
       <p-select
         inputId="formaPago"
         [ngModel]="formaPago()"
@@ -63,7 +65,7 @@
     </label>
 
     <label class="forma-pago" for="importeDevolucion">
-      Monto a devolver *
+      Monto a devolver <span class="required">*</span>
       <p-inputnumber
         inputId="importeDevolucion"
         [ngModel]="importeDevolucion()"
@@ -71,12 +73,17 @@
         [min]="1"
         [max]="importeTotalPagos()"
       />
+      @if (importeDevolucionInvalido()) {
+        <small class="field-error">
+          {{ mensajeErrorImporteDevolucion() }}
+        </small>
+      }
     </label>
   }
 
   <ng-template #footer>
     <div class="dialog-footer">
-      <app-button intent="secondary" label="Cancelar" (clicked)="cancelar.emit()" />
+      <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
       <app-button
         intent="danger"
         label="Confirmar cancelación"
