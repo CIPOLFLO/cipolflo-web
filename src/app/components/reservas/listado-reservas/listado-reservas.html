@@ -23,6 +23,19 @@
     (closed)="onCerrarPagoReserva()"
     (pagoRegistrado)="onPagoReservaRegistrado()"
   />
+  <app-verificando-cancelacion-dialog
+    [visible]="verificandoCancelacionVisible()"
+    [numeroReserva]="reservaCancelacionSeleccionada()?.id ?? null"
+  />
+
+  <app-pagos-asociados-dialog
+    [visible]="cancelacionCheck() !== null"
+    [numeroReserva]="reservaCancelacionSeleccionada()?.id ?? null"
+    [pagos]="cancelacionCheck()?.pagosAsociados ?? []"
+    [importeTotalPagos]="cancelacionCheck()?.importeTotalPagos ?? 0"
+    (cancelar)="onCerrarCancelacionConPagos()"
+    (confirmar)="onConfirmarCancelacionConPagos($event)"
+  />
 
   <app-filter-panel (filterChange)="onFilterChange($event)" />
 

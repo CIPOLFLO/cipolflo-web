@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from '@auth0/auth0-angular';
 import {
@@ -18,6 +18,7 @@ import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ListadoReservas } from './listado-reservas';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { FormaPago } from '../../../shared/models/forma-pago.model';
 
 const mockRow: ReservaRespuestaDto = {
   id: 1,
@@ -61,6 +62,8 @@ describe('ListadoReservas', () => {
   let mockReservasService: {
     getAll: ReturnType<typeof vi.fn>;
     exportar: ReturnType<typeof vi.fn>;
+    verificarCancelacion: ReturnType<typeof vi.fn>;
+    cancelar: ReturnType<typeof vi.fn>;
     confirmarDocumentacion: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
@@ -70,6 +73,14 @@ describe('ListadoReservas', () => {
     mockReservasService = {
       getAll: vi.fn().mockReturnValue(of(mockPage)),
       exportar: vi.fn().mockReturnValue(of(undefined)),
+      verificarCancelacion: vi.fn().mockReturnValue(
+        of({
+          puedeCancelarseDirectamente: true,
+          pagosAsociados: [],
+          importeTotalPagos: 0,
+        }),
+      ),
+      cancelar: vi.fn().mockReturnValue(of(undefined)),
       confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
     };
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
@@ -236,6 +247,134 @@ describe('ListadoReservas', () => {
 
       expect(component['reservaPagoSeleccionada']()).toBeNull();
       expect(updateFiltersSpy).toHaveBeenCalledWith(tableState.queryParams().filters);
+    });
+  });
+
+  describe('cancelar reserva', () => {
+    it('debería incluir la acción Cancelar cuando la reserva está pendiente o confirmada', () => {
+      const actions = component['rowActions'](mockRow);
+
+      expect(actions.some((action) => action.label === 'Cancelar')).toBe(true);
+    });
+
+    it('no debería incluir Cancelar si la reserva está finalizada', () => {
+      const actions = component['rowActions']({
+        ...mockRow,
+        estadoReserva: EstadoReserva.Finalizada,
+      });
+
+      expect(actions.some((action) => action.label === 'Cancelar')).toBe(false);
+    });
+
+    it('no debería incluir Cancelar si la reserva está cancelada', () => {
+      const actions = component['rowActions']({
+        ...mockRow,
+        estadoReserva: EstadoReserva.Cancelada,
+      });
+
+      expect(actions.some((action) => action.label === 'Cancelar')).toBe(false);
+    });
+
+    it('debería verificar cancelación al ejecutar la acción Cancelar', () => {
+      // La verificación es asíncrona en producción; con NEVER mantenemos el estado
+      // intermedio (reserva seleccionada, diálogo "verificando") sin completar el flujo.
+      mockReservasService.verificarCancelacion.mockReturnValue(NEVER);
+
+      const action = component['rowActions'](mockRow).find((a) => a.label === 'Cancelar');
+
+      action?.command?.(mockRow);
+
+      expect(component['reservaCancelacionSeleccionada']()).toEqual(mockRow);
+      expect(mockReservasService.verificarCancelacion).toHaveBeenCalledWith(mockRow.id);
+    });
+
+    it('si no tiene pagos asociados debería abrir confirmación simple', () => {
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      const openSpy = vi.spyOn(confirmDialogService, 'open').mockReturnValue(of(false));
+
+      component['iniciarCancelacion'](mockRow);
+
+      expect(openSpy).toHaveBeenCalledWith({
+        title: 'Cancelar reserva',
+        message: `La reserva #${mockRow.id} no tiene pagos asociados. ¿Confirmás la cancelación?`,
+        confirmButtonLabel: 'Cancelar reserva',
+        cancelButtonLabel: 'Volver',
+        variant: 'danger',
+      });
+    });
+
+    it('si confirma cancelación simple debería llamar a cancelar sin devolución', () => {
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      vi.spyOn(confirmDialogService, 'open').mockReturnValue(of(true));
+
+      component['iniciarCancelacion'](mockRow);
+
+      expect(mockReservasService.cancelar).toHaveBeenCalledWith(mockRow.id, {
+        generarDevolucion: false,
+      });
+    });
+
+    it('si tiene pagos asociados debería guardar el check para abrir el modal dedicado', () => {
+      const check = {
+        puedeCancelarseDirectamente: false,
+        pagosAsociados: [
+          {
+            id: 1,
+            fecha: '2026-07-01',
+            importe: 5000,
+            formaPago: FormaPago.Efectivo,
+          },
+        ],
+        importeTotalPagos: 5000,
+      };
+
+      mockReservasService.verificarCancelacion.mockReturnValue(of(check));
+
+      component['iniciarCancelacion'](mockRow);
+
+      expect(component['cancelacionCheck']()).toEqual(check);
+    });
+
+    it('onConfirmarCancelacionConPagos debería llamar a cancelar con el dto recibido', () => {
+      component['reservaCancelacionSeleccionada'].set(mockRow);
+
+      component['onConfirmarCancelacionConPagos']({
+        generarDevolucion: true,
+        formaPago: FormaPago.Efectivo,
+      });
+
+      expect(mockReservasService.cancelar).toHaveBeenCalledWith(mockRow.id, {
+        generarDevolucion: true,
+        formaPago: FormaPago.Efectivo,
+      });
+    });
+
+    it('onCerrarCancelacionConPagos debería limpiar la cancelación', () => {
+      component['reservaCancelacionSeleccionada'].set(mockRow);
+      component['cancelacionCheck'].set({
+        puedeCancelarseDirectamente: false,
+        pagosAsociados: [],
+        importeTotalPagos: 0,
+      });
+
+      component['onCerrarCancelacionConPagos']();
+
+      expect(component['reservaCancelacionSeleccionada']()).toBeNull();
+      expect(component['cancelacionCheck']()).toBeNull();
+    });
+
+    it('si verificarCancelacion falla debería manejar el error y limpiar estado', () => {
+      const errorHandler = TestBed.inject(ErrorHandlerService);
+      const handleSpy = vi.spyOn(errorHandler, 'handle').mockImplementation(() => undefined);
+      const error = new Error('error');
+
+      mockReservasService.verificarCancelacion.mockReturnValue(throwError(() => error));
+
+      component['iniciarCancelacion'](mockRow);
+
+      expect(handleSpy).toHaveBeenCalledWith(error);
+      expect(component['verificandoCancelacionVisible']()).toBe(false);
+      expect(component['reservaCancelacionSeleccionada']()).toBeNull();
     });
   });
 
