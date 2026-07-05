@@ -35,6 +35,7 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  requiereSena: false,
   nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
@@ -78,6 +79,8 @@ const dto: ReservaCreacionRequestDto = {
   email: null,
   rut: null,
   notas: null,
+  requiereDocumentacion: false,
+  requiereSena: false,
 };
 
 describe('ReservasService', () => {
@@ -112,6 +115,8 @@ describe('ReservasService', () => {
       fechaEntrada: '2026-08-10',
       fechaSalida: '2026-08-15',
       estadoReserva: EstadoReserva.Confirmada,
+      requiereDocumentacion: false,
+      tieneDocumentacion: false,
       tipoReserva: TipoReserva.Comun,
       montoImpago: 5000,
       fechaLimitePago: null,
@@ -247,6 +252,18 @@ describe('ReservasService', () => {
       );
       req.flush({ costoTotal: 9000 });
       expect(resultado).toBe(9000);
+    });
+  });
+
+  describe('confirmarDocumentacion', () => {
+    it('llama a PATCH /reservas/:id/documentacion', () => {
+      service.confirmarDocumentacion(42).subscribe();
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/documentacion') && r.method === 'PATCH',
+      );
+      expect(req.request.method).toBe('PATCH');
+      req.flush(null);
     });
   });
 

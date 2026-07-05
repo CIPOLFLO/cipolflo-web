@@ -13,6 +13,7 @@ import { LoadDataFn, RowAction } from '../../../shared/components/table/table.mo
 import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva } from '../../../shared';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
 
 @Component({
@@ -32,6 +33,8 @@ import { PagoReserva } from '../pago-reserva/pago-reserva';
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
+
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
@@ -70,6 +73,15 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+    ...(row.requiereDocumentacion && !row.tieneDocumentacion
+      ? [
+          {
+            label: 'Confirmar documentación',
+            icon: 'pi pi-file-check',
+            command: () => this.onConfirmarDocumentacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
     // { label: 'Eliminar', ... },
   ];
 
@@ -105,6 +117,21 @@ export class ListadoReservas {
   protected onPagoReservaRegistrado(): void {
     this.reservaPagoSeleccionada.set(null);
     this.recargarTabla();
+  }
+
+  private onConfirmarDocumentacion(row: ReservaRow): void {
+    this.confirmDialogService
+      .open({
+        title: 'Confirmar documentación',
+        message: `¿Confirma que la reserva N° ${row.id} cuenta con la documentación requerida?`,
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+
+        this.reservasService.confirmarDocumentacion(row.id).subscribe(() => {
+          this.recargarTabla();
+        });
+      });
   }
 
   private recargarTabla(): void {

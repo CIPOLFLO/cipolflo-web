@@ -16,6 +16,8 @@ export interface ReservaRow extends Record<string, unknown> {
   fechaEntrada: string;
   fechaSalida: string;
   estadoReserva: EstadoReserva;
+  requiereDocumentacion: boolean;
+  tieneDocumentacion: boolean;
   tipoReserva: TipoReserva;
   montoImpago: number;
   fechaLimitePago: string | null;
@@ -48,9 +50,21 @@ export const TIPO_RESERVA_OPTIONS: FormFieldOption[] = [
   { label: 'Colaboración sin fines de lucro', value: TipoReserva.ColaboracionSinFines },
 ];
 
-/** Estado inicial según el tipo de reserva: Común → PENDIENTE; cualquier otro → CONFIRMADA. */
-export function estadoInicialPorTipo(tipo: TipoReserva): EstadoReserva {
-  return tipo === TipoReserva.Comun ? EstadoReserva.Pendiente : EstadoReserva.Confirmada;
+/**
+ * Estado inicial de la reserva según su tipo y sus requisitos previos:
+ * - `COLABORACION_SIN_FINES_DE_LUCRO`: siempre `CONFIRMADA` (ignora documentación y seña).
+ * - `COMUN`: `CONFIRMADA` solo si no requiere documentación ni seña; en caso contrario `PENDIENTE`.
+ *
+ * El estado autoritativo lo asigna el backend al crear la reserva; este helper solo refleja
+ * esa misma regla para usos en el front.
+ */
+export function estadoInicialPorTipo(
+  tipo: TipoReserva,
+  requiereDocumentacion = false,
+  requiereSena = false,
+): EstadoReserva {
+  if (tipo !== TipoReserva.Comun) return EstadoReserva.Confirmada;
+  return requiereDocumentacion || requiereSena ? EstadoReserva.Pendiente : EstadoReserva.Confirmada;
 }
 
 /**
@@ -89,6 +103,8 @@ export interface ReservaCreacionRequestDto {
   email: string | null;
   rut: string | null;
   notas: string | null;
+  requiereDocumentacion: boolean;
+  requiereSena: boolean;
 }
 
 export interface ReservaCreacionRespuestaDto {
@@ -156,6 +172,7 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   pago: boolean;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
+  requiereSena: boolean;
   nombre: string | null;
   rut: string | null;
   notas: string | null;

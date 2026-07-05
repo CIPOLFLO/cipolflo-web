@@ -349,6 +349,8 @@ export class NuevaReserva extends ReservaFormBase {
       email: colaboracion ? null : this.controlValue('email'),
       rut: colaboracion ? this.controlValue('rut') : null,
       notas: this.controlValue('notas'),
+      requiereDocumentacion: this.controlChecked('requiereDocumentacion'),
+      requiereSena: this.controlChecked('requiereSena'),
     };
   }
 }

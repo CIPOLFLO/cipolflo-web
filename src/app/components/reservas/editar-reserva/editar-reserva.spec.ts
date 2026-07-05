@@ -81,6 +81,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   updatedAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',
   updatedBy: 'Juan Pérez',
+  requiereSena: false,
 };
 
 const mockColaboracion: ReservaDetalleRespuestaDto = {
