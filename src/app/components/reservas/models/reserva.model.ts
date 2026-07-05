@@ -168,6 +168,7 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   cantidadMenores: number | null;
   cantidad: number | null;
   importe: number | null;
+  montoImpago: number | null;
   formaPago: FormaPago | null;
   pago: boolean;
   requiereDocumentacion: boolean;

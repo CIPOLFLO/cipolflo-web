@@ -15,4 +15,12 @@ export class BlobExportService extends BaseHttpService {
       map(() => undefined),
     );
   }
+
+  download(path: string, fallbackFileName: string): Observable<void> {
+    return this.getBlob(path).pipe(
+      catchError((err) => this.fileDownload.parseBlobError(err)),
+      tap((response) => this.fileDownload.download(response, fallbackFileName)),
+      map(() => undefined),
+    );
+  }
 }

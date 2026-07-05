@@ -31,6 +31,7 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   cantidadMenores: 1,
   cantidad: null,
   importe: 4500,
+  montoImpago: 0,
   formaPago: FormaPago.Efectivo,
   pago: false,
   requiereDocumentacion: true,
@@ -86,11 +87,15 @@ const dto: ReservaCreacionRequestDto = {
 describe('ReservasService', () => {
   let service: ReservasService;
   let httpTesting: HttpTestingController;
-  let blobExportService: { export: ReturnType<typeof vi.fn> };
+  let blobExportService: {
+    export: ReturnType<typeof vi.fn>;
+    download: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     blobExportService = {
       export: vi.fn().mockReturnValue(of(undefined)),
+      download: vi.fn().mockReturnValue(of(undefined)),
     };
 
     TestBed.configureTestingModule({
@@ -277,6 +282,17 @@ describe('ReservasService', () => {
         'reservas/exportar',
         filters,
         'reservas.xlsx',
+      );
+    });
+  });
+
+  describe('descargarComprobante', () => {
+    it('delega en BlobExportService con la ruta del comprobante y el filename de fallback', () => {
+      service.descargarComprobante(42).subscribe();
+
+      expect(blobExportService.download).toHaveBeenCalledWith(
+        'reservas/42/comprobante',
+        'comprobante-reserva-42.pdf',
       );
     });
   });
