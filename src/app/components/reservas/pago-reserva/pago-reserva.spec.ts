@@ -21,6 +21,8 @@ const reservaMock: ReservaRow = {
   fechaLimitePago: null,
   pago: false,
   pendienteDocumentacion: false,
+  requiereDocumentacion: false,
+  tieneDocumentacion: false,
 };
 
 describe('PagoReserva', () => {

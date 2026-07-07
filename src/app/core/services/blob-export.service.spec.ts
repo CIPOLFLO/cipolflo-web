@@ -84,4 +84,43 @@ describe('BlobExportService', () => {
     expect(fileDownloadService.parseBlobError).toHaveBeenCalled();
     expect(fileDownloadService.download).not.toHaveBeenCalled();
   });
+
+  it('hace GET con responseType blob y llama download en éxito', () => {
+    service.download('reservas/42/comprobante', 'comprobante-reserva-42.pdf').subscribe();
+
+    const req = httpMock.expectOne(
+      (request) =>
+        request.method === 'GET' &&
+        request.url.includes('reservas/42/comprobante') &&
+        request.responseType === 'blob',
+    );
+
+    req.flush(new Blob(['pdf']), {
+      headers: { 'Content-Disposition': 'attachment; filename="comprobante-reserva-42.pdf"' },
+    });
+
+    expect(fileDownloadService.download).toHaveBeenCalled();
+    expect(fileDownloadService.parseBlobError).not.toHaveBeenCalled();
+  });
+
+  it('en GET llama parseBlobError y re-lanza el error cuando el backend falla', async () => {
+    const parsedError = new HttpErrorResponse({ error: { codigo: 'RESERVA_NO_ENCONTRADA' } });
+    fileDownloadService.parseBlobError.mockReturnValue(throwError(() => parsedError));
+
+    const promise = firstValueFrom(
+      service.download('reservas/99/comprobante', 'comprobante-reserva-99.pdf'),
+    );
+
+    const req = httpMock.expectOne(
+      (request) => request.method === 'GET' && request.url.includes('reservas/99/comprobante'),
+    );
+    req.flush(new Blob([JSON.stringify({ codigo: 'RESERVA_NO_ENCONTRADA' })]), {
+      status: 404,
+      statusText: 'Not Found',
+    });
+
+    await expect(promise).rejects.toBe(parsedError);
+    expect(fileDownloadService.parseBlobError).toHaveBeenCalled();
+    expect(fileDownloadService.download).not.toHaveBeenCalled();
+  });
 });

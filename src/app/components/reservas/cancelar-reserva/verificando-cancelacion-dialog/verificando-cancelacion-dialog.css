@@ -1,0 +1,13 @@
+.verificando__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  text-align: center;
+}
+
+.verificando__text {
+  margin: 0;
+  color: var(--color-text-secondary);
+}

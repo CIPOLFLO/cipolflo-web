@@ -24,10 +24,12 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   cantidadMenores: 1,
   cantidad: null,
   importe: 4500,
+  montoImpago: 0,
   formaPago: FormaPago.Efectivo,
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
+  requiereSena: false,
   nombre: null,
   rut: null,
   notas: 'Llegan a las 14hs',
@@ -63,6 +65,7 @@ const mockUserService = {
 
 async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42') {
   const getByIdSpy = vi.fn().mockReturnValue(of(reserva));
+  const descargarComprobanteSpy = vi.fn().mockReturnValue(of(undefined));
   const navigateSpy = vi.fn();
   const handleSpy = vi.fn();
 
@@ -77,7 +80,14 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
     ],
   })
     .overrideComponent(DetalleReserva, {
-      set: { providers: [{ provide: ReservasService, useValue: { getById: getByIdSpy } }] },
+      set: {
+        providers: [
+          {
+            provide: ReservasService,
+            useValue: { getById: getByIdSpy, descargarComprobante: descargarComprobanteSpy },
+          },
+        ],
+      },
     })
     .compileComponents();
 
@@ -86,7 +96,7 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component, getByIdSpy, navigateSpy, handleSpy };
+  return { fixture, component, getByIdSpy, descargarComprobanteSpy, navigateSpy, handleSpy };
 }
 
 describe('DetalleReserva', () => {
@@ -279,6 +289,20 @@ describe('DetalleReserva', () => {
     });
   });
 
+  it('onDescargarComprobante dispara la descarga con el id de la reserva en pantalla', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    component['onDescargarComprobante']();
+    expect(descargarComprobanteSpy).toHaveBeenCalledWith(42);
+  });
+
+  it('un error en la descarga se maneja vía errorHandler sin romper la vista', async () => {
+    const { component, descargarComprobanteSpy, handleSpy } = await setup();
+    const error = new Error('download error');
+    descargarComprobanteSpy.mockReturnValue(throwError(() => error));
+    component['onDescargarComprobante']();
+    expect(handleSpy).toHaveBeenCalledWith(error);
+  });
+
   it('debería manejar error en getById: llama a errorHandler y navega a /reservas', async () => {
     const error = new Error('Not found');
     const getByIdSpy = vi.fn().mockReturnValue(throwError(() => error));
@@ -307,5 +331,17 @@ describe('DetalleReserva', () => {
 
     expect(handleSpy).toHaveBeenCalledWith(error);
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('muestra "Requiere Seña: Sí" cuando requiereSena es true', async () => {
+    const { component } = await setup({ ...mockReserva, requiereSena: true });
+    const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
+    expect(field?.value).toBe('Sí');
+  });
+
+  it('muestra "Requiere Seña: No" cuando requiereSena es false', async () => {
+    const { component } = await setup({ ...mockReserva, requiereSena: false });
+    const field = component['reservaFields']().find((f) => f.key === 'requiereSena');
+    expect(field?.value).toBe('No');
   });
 });

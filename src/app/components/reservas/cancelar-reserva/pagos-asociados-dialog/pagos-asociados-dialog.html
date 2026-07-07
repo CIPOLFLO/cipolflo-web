@@ -1,0 +1,98 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="'Cancelación de reserva #' + numeroReserva()"
+  [style]="{ width: '560px' }"
+>
+  <div class="alert-warning">
+    <div class="alert-warning__header">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>Se encontraron pagos asociados</span>
+    </div>
+  </div>
+
+  <section class="pagos-list">
+    @for (pago of pagos(); track pago.id) {
+      <div class="pago-row">
+        <span class="pago-row__fecha">{{ pago.fecha | dateShortFormat }}</span>
+        <span class="pago-row__forma">{{
+          formaPagoReservaLabel[pago.formaPago] ?? pago.formaPago
+        }}</span>
+        <strong class="pago-row__importe">{{ pago.importe | currencyFormat }}</strong>
+      </div>
+    }
+  </section>
+
+  <div class="total-pagos">
+    <span>Total pagado:</span>
+    <strong>{{ importeTotalPagos() | currencyFormat }}</strong>
+  </div>
+
+  <div class="devolucion">
+    <p-checkbox
+      [binary]="true"
+      [ngModel]="generarDevolucion()"
+      (ngModelChange)="onGenerarDevolucionChange($event)"
+      inputId="generarDevolucion"
+    />
+    <label for="generarDevolucion">Generar devolución</label>
+  </div>
+
+  @if (!generarDevolucion()) {
+    <div class="aviso-sin-devolucion">
+      <strong>No se generará ninguna devolución.</strong>
+      <p>La reserva se cancelará y los pagos registrados permanecerán en el sistema.</p>
+    </div>
+  }
+
+  @if (generarDevolucion()) {
+    <label class="forma-pago" for="formaPago">
+      <span class="forma-pago__caption"
+        >Forma de pago de la devolución <span class="required">*</span></span
+      >
+      <p-select
+        inputId="formaPago"
+        [ngModel]="formaPago()"
+        (ngModelChange)="formaPago.set($event)"
+        [options]="formaPagoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccionar"
+        appendTo="body"
+      />
+    </label>
+
+    <label class="forma-pago" for="importeDevolucion">
+      <span class="forma-pago__caption">Monto a devolver <span class="required">*</span></span>
+      <p-inputnumber
+        inputId="importeDevolucion"
+        [ngModel]="importeDevolucion()"
+        (ngModelChange)="importeDevolucion.set($event)"
+        [min]="1"
+        [max]="importeTotalPagos()"
+      />
+      @if (importeDevolucionInvalido()) {
+        <small class="field-error">
+          {{ mensajeErrorImporteDevolucion() }}
+        </small>
+      }
+    </label>
+  }
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
+      <app-button
+        intent="danger"
+        label="Confirmar cancelación"
+        [disabled]="confirmarDisabled()"
+        [tooltip]="confirmarDisabled() ? 'Complete correctamente todos los campos' : ''"
+        (clicked)="onConfirmar()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

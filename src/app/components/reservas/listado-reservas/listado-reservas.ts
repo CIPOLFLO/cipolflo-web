@@ -10,14 +10,31 @@ import { FilterConfigProvider } from '../../../shared/services/filter-config.pro
 import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
-import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
-import { EstadoReserva } from '../../../shared';
+import { EstadoReserva, ConfirmDialogService } from '../../../shared';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { VerificandoCancelacionDialog } from '../cancelar-reserva/verificando-cancelacion-dialog/verificando-cancelacion-dialog';
+import { PagosAsociadosDialog } from '../cancelar-reserva/pagos-asociados-dialog/pagos-asociados-dialog';
+import {
+  ReservaCancelacionCheckResponseDto,
+  ReservaCancelacionRequestDto,
+  ReservaRow,
+  TipoReserva,
+} from '../models/reserva.model';
 
 @Component({
   selector: 'app-listado-reservas',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoReserva],
+  standalone: true,
+  imports: [
+    PageLayout,
+    AppButton,
+    FilterPanel,
+    AppTable,
+    PagoReserva,
+    VerificandoCancelacionDialog,
+    PagosAsociadosDialog,
+  ],
   providers: [
     TableStateService,
     TableExportService,
@@ -32,9 +49,16 @@ import { PagoReserva } from '../pago-reserva/pago-reserva';
 export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
+
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
   private readonly columnsService = inject(ReservasColumnsService);
+  private readonly errorHandler = inject(ErrorHandlerService);
+
+  protected readonly verificandoCancelacionVisible = signal(false);
+  protected readonly reservaCancelacionSeleccionada = signal<ReservaRow | null>(null);
+  protected readonly cancelacionCheck = signal<ReservaCancelacionCheckResponseDto | null>(null);
 
   protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
@@ -67,6 +91,24 @@ export class ListadoReservas {
             label: 'Confirmar pago',
             icon: 'pi pi-dollar',
             command: () => this.onConfirmarPago(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    ...(this.puedeCancelar(row)
+      ? [
+          {
+            label: 'Cancelar',
+            icon: 'pi pi-ban',
+            command: () => this.iniciarCancelacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    ...(row.requiereDocumentacion && !row.tieneDocumentacion
+      ? [
+          {
+            label: 'Confirmar documentación',
+            icon: 'pi pi-file-check',
+            command: () => this.onConfirmarDocumentacion(row),
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
@@ -107,6 +149,21 @@ export class ListadoReservas {
     this.recargarTabla();
   }
 
+  private onConfirmarDocumentacion(row: ReservaRow): void {
+    this.confirmDialogService
+      .open({
+        title: 'Confirmar documentación',
+        message: `¿Confirma que la reserva N° ${row.id} cuenta con la documentación requerida?`,
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) return;
+
+        this.reservasService.confirmarDocumentacion(row.id).subscribe(() => {
+          this.recargarTabla();
+        });
+      });
+  }
+
   private recargarTabla(): void {
     this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
@@ -117,6 +174,79 @@ export class ListadoReservas {
       row.estadoReserva !== EstadoReserva.Finalizada &&
       row.estadoReserva !== EstadoReserva.Cancelada &&
       row.tipoReserva !== TipoReserva.ColaboracionSinFines
+    );
+  }
+
+  protected onCerrarCancelacionConPagos(): void {
+    this.limpiarCancelacion();
+  }
+
+  protected onConfirmarCancelacionConPagos(dto: ReservaCancelacionRequestDto): void {
+    this.ejecutarCancelacion(dto);
+  }
+
+  private iniciarCancelacion(row: ReservaRow): void {
+    this.reservaCancelacionSeleccionada.set(row);
+    this.verificandoCancelacionVisible.set(true);
+
+    this.reservasService.verificarCancelacion(row.id).subscribe({
+      next: (response) => {
+        this.verificandoCancelacionVisible.set(false);
+
+        if (response.puedeCancelarseDirectamente) {
+          this.confirmDialogService
+            .open({
+              title: 'Cancelar reserva',
+              message: `La reserva #${row.id} no tiene pagos asociados. ¿Confirmás la cancelación?`,
+              confirmButtonLabel: 'Cancelar reserva',
+              cancelButtonLabel: 'Volver',
+              variant: 'danger',
+            })
+            .subscribe((confirmed) => {
+              if (confirmed) {
+                this.ejecutarCancelacion({ generarDevolucion: false });
+              } else {
+                this.limpiarCancelacion();
+              }
+            });
+        } else {
+          this.cancelacionCheck.set(response);
+        }
+      },
+      error: (err) => {
+        this.verificandoCancelacionVisible.set(false);
+        this.limpiarCancelacion();
+        this.errorHandler.handle(err);
+      },
+    });
+  }
+
+  private ejecutarCancelacion(dto: ReservaCancelacionRequestDto): void {
+    const reserva = this.reservaCancelacionSeleccionada();
+
+    if (!reserva) return;
+
+    this.reservasService.cancelar(reserva.id, dto).subscribe({
+      next: () => {
+        this.limpiarCancelacion();
+        this.recargarTabla();
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+      },
+    });
+  }
+
+  private limpiarCancelacion(): void {
+    this.verificandoCancelacionVisible.set(false);
+    this.reservaCancelacionSeleccionada.set(null);
+    this.cancelacionCheck.set(null);
+  }
+
+  private puedeCancelar(row: ReservaRow): boolean {
+    return (
+      row.estadoReserva === EstadoReserva.Pendiente ||
+      row.estadoReserva === EstadoReserva.Confirmada
     );
   }
 }
