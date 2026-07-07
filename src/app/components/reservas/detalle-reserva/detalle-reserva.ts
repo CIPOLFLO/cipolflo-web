@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -46,6 +46,7 @@ export class DetalleReserva {
   private readonly route = inject(ActivatedRoute);
   private readonly reservasService = inject(ReservasService);
   private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
@@ -128,6 +129,11 @@ export class DetalleReserva {
         valueClass: e.pago ? 'success' : 'danger',
       },
       {
+        key: 'requiereSena',
+        label: 'Requiere Seña',
+        value: e.requiereSena ? 'Sí' : 'No',
+      },
+      {
         key: 'requiereDocumentacion',
         label: 'Requiere Documentación',
         value: e.requiereDocumentacion ? 'Sí' : 'No',
@@ -199,5 +205,20 @@ export class DetalleReserva {
     this.router.navigate(['/reservas', this.reservaId(), 'modificar'], {
       queryParams: { from: 'detalle' },
     });
+  }
+
+  protected onDescargarComprobante(): void {
+    const id = this.reserva()?.id;
+    if (id == null) return;
+    this.reservasService
+      .descargarComprobante(id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((err: unknown) => {
+          this.errorHandler.handle(err);
+          return EMPTY;
+        }),
+      )
+      .subscribe();
   }
 }

@@ -98,3 +98,26 @@
   gap: 0.25rem;
   line-height: 1.4;
 }
+.nueva-reserva__checkbox-grupo {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.nueva-reserva__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.nueva-reserva__checkbox input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--color-primary, currentColor);
+}
