@@ -141,7 +141,17 @@ export interface RegistroSocioRequestDto {
   direccion: string | null;
   observaciones: string | null;
 }
-
+export interface RegistroEmpresaRequestDto {
+  razonSocial: string;
+  rut: string;
+  pais: string;
+  departamento: string;
+  ciudad: string;
+  direccion: string;
+  telefono: string;
+  mail: string | null;
+  observaciones: string | null;
+}
 export interface UltimaCuotaDto {
   anio: number;
   mes: number;

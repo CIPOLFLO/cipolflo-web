@@ -50,6 +50,28 @@ describe('ClienteValidacionesService', () => {
     });
   });
 
+  describe('rutValida', () => {
+    it('retorna null si no hay valor', () => {
+      expect(service.rutValida(new FormControl(null))).toBeNull();
+    });
+
+    it('retorna { rutInvalido: true } si tiene longitud inválida', () => {
+      expect(service.rutValida(new FormControl('123'))).toEqual({
+        rutInvalido: true,
+      });
+    });
+
+    it('retorna null si el RUT es válido', () => {
+      expect(service.rutValida(new FormControl('21.100342.001-7'))).toBeNull();
+    });
+
+    it('retorna { rutInvalido: true } si el dígito verificador no coincide', () => {
+      expect(service.rutValida(new FormControl('21.100342.001-1'))).toEqual({
+        rutInvalido: true,
+      });
+    });
+  });
+
   describe('getUbicacionErrors', () => {
     const buildForm = (direccion: string | null, required = true) =>
       new FormGroup({
@@ -79,6 +101,51 @@ describe('ClienteValidacionesService', () => {
     it('no retorna error de dirección si el control no tiene validador required', () => {
       const errors = service.getUbicacionErrors(buildForm(null, false), true);
       expect(errors['direccion']).toBeUndefined();
+    });
+  });
+  describe('getEmpresaErrors', () => {
+    const buildForm = (rut: string | null, mail: string | null = null) =>
+      new FormGroup({
+        razonSocial: new FormControl('Antel S.A.', Validators.required),
+        rut: new FormControl(rut, [Validators.required, service.rutValida.bind(service)]),
+        telefono: new FormControl('099123456', Validators.required),
+        mail: new FormControl(mail),
+      });
+
+    it('retorna error de razón social faltante cuando submitted es true', () => {
+      const form = new FormGroup({
+        razonSocial: new FormControl('', Validators.required),
+        rut: new FormControl('21.100342.001-7', [
+          Validators.required,
+          service.rutValida.bind(service),
+        ]),
+        telefono: new FormControl('099123456', Validators.required),
+        mail: new FormControl(null),
+      });
+      const errors = service.getEmpresaErrors(form, true);
+      expect(errors['razonSocial']).toBeTruthy();
+    });
+
+    it('no retorna error de RUT cuando es válido', () => {
+      const errors = service.getEmpresaErrors(buildForm('21.100342.001-7'), true);
+      expect(errors['rut']).toBeUndefined();
+    });
+
+    it('retorna error de RUT obligatorio cuando está vacío y submitted es true', () => {
+      const errors = service.getEmpresaErrors(buildForm(''), true);
+      expect(errors['rut']).toBeTruthy();
+    });
+
+    it('retorna error de RUT inválido cuando el dígito verificador no coincide', () => {
+      const form = buildForm('21.100342.001-1');
+      form.get('rut')?.markAsTouched();
+      const errors = service.getEmpresaErrors(form, false);
+      expect(errors['rut']).toBeTruthy();
+    });
+
+    it('no retorna error de mail cuando no se informa', () => {
+      const errors = service.getEmpresaErrors(buildForm('21.100342.001-7', null), true);
+      expect(errors['mail']).toBeUndefined();
     });
   });
 });

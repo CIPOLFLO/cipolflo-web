@@ -67,11 +67,16 @@ export class ListadoClientes {
       .pipe(map((page) => ({ ...page, content: page.content.map(mapClienteListadoRow) })));
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
-    {
-      label: 'Ver detalle',
-      icon: 'pi pi-eye',
-      command: () => this.router.navigate(['/clientes', row.id]),
-    },
+    // TODO: temporal — habilitar cuando existan GET detalle / PUT modificación de Empresa
+    ...(row.tipoCliente !== TipoCliente.Empresa
+      ? [
+          {
+            label: 'Ver detalle',
+            icon: 'pi pi-eye',
+            command: () => this.router.navigate(['/clientes', row.id]),
+          },
+        ]
+      : []),
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&
     row.estado !== EstadoSocio.Baja
@@ -83,14 +88,19 @@ export class ListadoClientes {
           },
         ]
       : []),
-    {
-      label: 'Modificar',
-      icon: 'pi pi-pencil',
-      command: () =>
-        this.router.navigate(['/clientes', row.id, 'modificar'], {
-          queryParams: { from: 'listado' },
-        }),
-    },
+    // TODO: temporal — habilitar cuando existan GET detalle / PUT modificación de Empresa
+    ...(row.tipoCliente !== TipoCliente.Empresa
+      ? [
+          {
+            label: 'Modificar',
+            icon: 'pi pi-pencil',
+            command: () =>
+              this.router.navigate(['/clientes', row.id, 'modificar'], {
+                queryParams: { from: 'listado' },
+              }),
+          },
+        ]
+      : []),
     ...(row.estado !== EstadoSocio.Baja
       ? [
           {
@@ -124,6 +134,10 @@ export class ListadoClientes {
 
   protected onNuevoCliente(): void {
     this.router.navigate(['/clientes/nuevo']);
+  }
+
+  protected onNuevaEmpresa(): void {
+    this.router.navigate(['/clientes/nueva-empresa']);
   }
 
   protected onPagoCuota(cliente: ClienteRespuestaDto): void {

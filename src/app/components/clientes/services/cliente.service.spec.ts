@@ -11,6 +11,7 @@ import {
   ModificacionParticularRequestDto,
   ModificacionSocioRequestDto,
   RegistroSocioRequestDto,
+  RegistroEmpresaRequestDto,
   TipoCliente,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
@@ -471,6 +472,77 @@ describe('ClientesService', () => {
     });
     it('getCostoCuota retorna 5000', () => {
       expect(service.getCostoCuota()).toBe(5000);
+    });
+  });
+  describe('registrarEmpresa', () => {
+    const dto: RegistroEmpresaRequestDto = {
+      razonSocial: 'Antel S.A.',
+      rut: '21.100342.001-7',
+      pais: 'Uruguay',
+      departamento: 'Montevideo',
+      ciudad: 'Montevideo',
+      direccion: 'Guatemala 1075',
+      telefono: '099123456',
+      mail: 'empresa@mail.com',
+      observaciones: null,
+    };
+
+    it('realiza POST a /clientes/empresas y retorna el detalle de la empresa creada', () => {
+      service.registrarEmpresa(dto).subscribe((result) => {
+        expect(result).toEqual(mockDetalle);
+      });
+      const req = httpMock.expectOne(`${BASE}/empresas`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush(mockDetalle, { status: 201, statusText: 'Created' });
+    });
+
+    it('propaga error 400 cuando el RUT es inválido', () => {
+      let errorStatus = 0;
+      service.registrarEmpresa(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/empresas`)
+        .flush(
+          { codigo: 'RUT_INVALIDO', descripcion: 'El RUT ingresado no es válido' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+
+    it('propaga error 400 cuando el RUT ya está registrado', () => {
+      let errorStatus = 0;
+      service.registrarEmpresa(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/empresas`)
+        .flush(
+          { codigo: 'RUT_DUPLICADO', descripcion: 'Ya existe un cliente con ese RUT' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+
+    it('propaga error 400 cuando el email ya está registrado', () => {
+      let errorStatus = 0;
+      service.registrarEmpresa(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/empresas`)
+        .flush(
+          { codigo: 'EMAIL_DUPLICADO', descripcion: 'Ya existe un cliente con ese email' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+
+    it('propaga error 400 cuando faltan campos obligatorios', () => {
+      let errorStatus = 0;
+      service.registrarEmpresa(dto).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/empresas`)
+        .flush(
+          { codigo: 'SOLICITUD_INVALIDA', descripcion: 'Campo obligatorio faltante' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
     });
   });
 });

@@ -42,6 +42,28 @@ export class ClienteValidacionesService {
     return verifier === expectedVerifier ? null : { cedulaInvalida: true };
   }
 
+  rutValida(control: AbstractControl): ValidationErrors | null {
+    const value = control.value as string | null;
+
+    if (!value) return null;
+
+    const rut = value.replace(/\D/g, '');
+
+    if (rut.length !== 12) {
+      return { rutInvalido: true };
+    }
+
+    const digits = rut.split('').map(Number);
+    const factors = [4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+    const sum = factors.reduce((acc, factor, index) => acc + factor * digits[index], 0);
+    const resto = sum % 11;
+    const expectedVerifier = (11 - resto) % 11;
+    const verifier = digits[11];
+
+    return verifier === expectedVerifier ? null : { rutInvalido: true };
+  }
+
   getClienteErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errors: Record<string, string> = {};
 
@@ -82,6 +104,36 @@ export class ClienteValidacionesService {
       (email?.hasError('emailInvalido') || email?.hasError('email'))
     ) {
       errors['email'] = 'El email no es válido.';
+    }
+
+    return errors;
+  }
+
+  getEmpresaErrors(form: FormGroup, submitted: boolean): Record<string, string> {
+    const errors: Record<string, string> = {};
+
+    this.addRequiredError(
+      errors,
+      form,
+      submitted,
+      'razonSocial',
+      'La razón social es obligatoria.',
+    );
+    this.addRequiredError(errors, form, submitted, 'rut', 'El RUT es obligatorio.');
+    this.addRequiredError(errors, form, submitted, 'telefono', 'El teléfono es obligatorio.');
+
+    const rut = form.get('rut');
+    const mail = form.get('mail');
+
+    if (this.shouldShowError(rut, submitted) && rut?.hasError('rutInvalido')) {
+      errors['rut'] = 'El RUT no es válido.';
+    }
+
+    if (
+      this.shouldShowError(mail, submitted) &&
+      (mail?.hasError('emailInvalido') || mail?.hasError('email'))
+    ) {
+      errors['mail'] = 'El email no es válido.';
     }
 
     return errors;

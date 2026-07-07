@@ -59,6 +59,18 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   last: true,
 };
 
+const empresaMock: ClienteRespuestaDto = {
+  id: 3,
+  nombreCompleto: 'Cipolatti S.A.',
+  tipoCliente: TipoCliente.Empresa,
+  numeroSocio: null,
+  cedula: null,
+  rut: '210001230018',
+  email: 'empresa@mail.com',
+  estado: null,
+  ultimaCuotaDto: null,
+};
+
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
 };
@@ -163,6 +175,16 @@ describe('ListadoClientes', () => {
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
+  it('rowActions no incluye "Ver detalle" para un cliente de tipo Empresa', () => {
+    const actions = component['rowActions'](empresaMock);
+    expect(actions.some((a) => a.label === 'Ver detalle')).toBe(false);
+  });
+
+  it('rowActions no incluye "Modificar" para un cliente de tipo Empresa', () => {
+    const actions = component['rowActions'](empresaMock);
+    expect(actions.some((a) => a.label === 'Modificar')).toBe(false);
+  });
+
   it('rowActions incluye "Pago de cuota" cuando el cliente es socio activo', () => {
     const socio = mockPageResponse.content.find(
       (cliente) => cliente.tipoCliente === TipoCliente.Socio,
@@ -220,6 +242,12 @@ describe('ListadoClientes', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     component['onNuevoCliente']();
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
+  });
+
+  it('onNuevaEmpresa navega a /clientes/nueva-empresa', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    component['onNuevaEmpresa']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nueva-empresa']);
   });
 
   it('debe renderizar los encabezados de columna en la tabla', async () => {
