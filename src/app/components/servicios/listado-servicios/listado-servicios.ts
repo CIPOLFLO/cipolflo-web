@@ -24,9 +24,9 @@ import {
   ReservaProximaDto,
   ServicioRow,
 } from '../models/servicio.model';
-import { VerificandoReservasDialog } from '../habilitar-deshabilitar/verificando-reservas-dialog/verificando-reservas-dialog';
 import { ReservasActivasDialog } from '../habilitar-deshabilitar/reservas-activas-dialog/reservas-activas-dialog';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { VerificationDialog } from '../../../shared/components/verification-dialog/verification-dialog';
 
 @Component({
   standalone: true,
@@ -37,7 +37,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
     AppButton,
     FilterPanel,
     AppTable,
-    VerificandoReservasDialog,
+    VerificationDialog,
     ReservasActivasDialog,
   ],
   providers: [

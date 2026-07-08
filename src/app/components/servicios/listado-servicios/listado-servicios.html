@@ -12,9 +12,14 @@
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
 </app-page-layout>
 
-<app-verificando-reservas-dialog
+<app-verification-dialog
   [visible]="verificandoVisible()"
-  [nombreServicio]="servicioSeleccionado()?.nombre ?? ''"
+  title="Verificando Reservas"
+  [message]="
+    'Revisando si el servicio ' +
+    (servicioSeleccionado()?.nombre ?? '') +
+    ' tiene reservas activas en los próximos 2 meses...'
+  "
 />
 
 <app-reservas-activas-dialog

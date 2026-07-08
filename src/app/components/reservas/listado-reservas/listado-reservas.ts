@@ -14,7 +14,7 @@ import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { EstadoReserva, ConfirmDialogService } from '../../../shared';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { VerificandoCancelacionDialog } from '../cancelar-reserva/verificando-cancelacion-dialog/verificando-cancelacion-dialog';
+import { VerificationDialog } from '../../../shared/components/verification-dialog/verification-dialog';
 import { PagosAsociadosDialog } from '../cancelar-reserva/pagos-asociados-dialog/pagos-asociados-dialog';
 import {
   ReservaCancelacionCheckResponseDto,
@@ -24,7 +24,6 @@ import {
   ReservaFinalizacionCheckResponseDto,
   ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
-import { VerificandoFinalizacionDialog } from '../finalizar-reserva/verificando-finalizacion-dialog/verificando-finalizacion-dialog';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
 
 @Component({
@@ -36,9 +35,8 @@ import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/
     FilterPanel,
     AppTable,
     PagoReserva,
-    VerificandoCancelacionDialog,
+    VerificationDialog,
     PagosAsociadosDialog,
-    VerificandoFinalizacionDialog,
     CompletarPagoDialog,
   ],
   providers: [

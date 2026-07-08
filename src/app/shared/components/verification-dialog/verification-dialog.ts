@@ -3,14 +3,15 @@ import { Dialog } from 'primeng/dialog';
 import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
-  selector: 'app-verificando-reservas-dialog',
+  selector: 'app-verification-dialog',
   standalone: true,
   imports: [Dialog, ProgressSpinner],
-  templateUrl: './verificando-reservas-dialog.html',
-  styleUrl: './verificando-reservas-dialog.css',
+  templateUrl: './verification-dialog.html',
+  styleUrl: './verification-dialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VerificandoReservasDialog {
+export class VerificationDialog {
   visible = input<boolean>(false);
-  nombreServicio = input<string>('');
+  title = input<string>('Verificando');
+  message = input<string>('Estamos verificando la información.');
 }

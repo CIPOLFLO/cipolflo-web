@@ -23,9 +23,14 @@
     (closed)="onCerrarPagoReserva()"
     (pagoRegistrado)="onPagoReservaRegistrado()"
   />
-  <app-verificando-cancelacion-dialog
+  <app-verification-dialog
     [visible]="verificandoCancelacionVisible()"
-    [numeroReserva]="reservaCancelacionSeleccionada()?.id ?? null"
+    title="Verificando cancelación"
+    [message]="
+      'Revisando si la reserva #' +
+      (reservaCancelacionSeleccionada()?.id ?? '') +
+      ' tiene pagos asociados...'
+    "
   />
 
   <app-pagos-asociados-dialog
@@ -37,9 +42,14 @@
     (confirmar)="onConfirmarCancelacionConPagos($event)"
   />
 
-  <app-verificando-finalizacion-dialog
+  <app-verification-dialog
     [visible]="verificandoFinalizacionVisible()"
-    [numeroReserva]="reservaFinalizacionSeleccionada()?.id ?? null"
+    title="Verificando finalización"
+    [message]="
+      'Revisando si la reserva #' +
+      (reservaFinalizacionSeleccionada()?.id ?? '') +
+      ' tiene saldo pendiente...'
+    "
   />
 
   <app-completar-pago-dialog
