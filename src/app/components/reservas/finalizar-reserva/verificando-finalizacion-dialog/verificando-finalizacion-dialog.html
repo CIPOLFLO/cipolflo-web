@@ -1,0 +1,18 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="verificando-finalizacion-dialog"
+>
+  <section class="verificando">
+    <i class="pi pi-spin pi-spinner verificando__icon"></i>
+
+    <h2 class="verificando__title">Verificando finalización</h2>
+
+    <p class="verificando__text">
+      Estamos revisando si la reserva tiene saldo pendiente.
+    </p>
+  </section>
+</p-dialog>

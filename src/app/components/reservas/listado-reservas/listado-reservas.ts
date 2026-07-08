@@ -21,7 +21,12 @@ import {
   ReservaCancelacionRequestDto,
   ReservaRow,
   TipoReserva,
+  ReservaFinalizacionCheckResponseDto,
+  ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
+import { VerificandoFinalizacionDialog } from '../finalizar-reserva/verificando-finalizacion-dialog/verificando-finalizacion-dialog';
+import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
+
 
 @Component({
   selector: 'app-listado-reservas',
@@ -34,6 +39,8 @@ import {
     PagoReserva,
     VerificandoCancelacionDialog,
     PagosAsociadosDialog,
+    VerificandoFinalizacionDialog,
+    CompletarPagoDialog,
   ],
   providers: [
     TableStateService,
@@ -63,6 +70,10 @@ export class ListadoReservas {
   protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
 
+  protected readonly verificandoFinalizacionVisible = signal(false);
+  protected readonly reservaFinalizacionSeleccionada = signal<ReservaRow | null>(null);
+  protected readonly finalizacionCheck = signal<ReservaFinalizacionCheckResponseDto | null>(null);
+
   protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
     this.reservasService.getAll(params);
 
@@ -73,46 +84,55 @@ export class ListadoReservas {
       command: () => this.router.navigate(['/reservas', row.id]),
     },
     ...(row.estadoReserva === EstadoReserva.Pendiente ||
-    row.estadoReserva === EstadoReserva.Confirmada
+      row.estadoReserva === EstadoReserva.Confirmada
       ? [
-          {
-            label: 'Modificar',
-            icon: 'pi pi-pencil',
-            command: () =>
-              this.router.navigate(['/reservas', row.id, 'modificar'], {
-                queryParams: { from: 'listado' },
-              }),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Modificar',
+          icon: 'pi pi-pencil',
+          command: () =>
+            this.router.navigate(['/reservas', row.id, 'modificar'], {
+              queryParams: { from: 'listado' },
+            }),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(this.puedeConfirmarPago(row)
       ? [
-          {
-            label: 'Confirmar pago',
-            icon: 'pi pi-dollar',
-            command: () => this.onConfirmarPago(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Confirmar pago',
+          icon: 'pi pi-dollar',
+          command: () => this.onConfirmarPago(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(this.puedeCancelar(row)
       ? [
-          {
-            label: 'Cancelar',
-            icon: 'pi pi-ban',
-            command: () => this.iniciarCancelacion(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Cancelar',
+          icon: 'pi pi-ban',
+          command: () => this.iniciarCancelacion(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
+      : []),
+    ...(this.puedeFinalizar(row)
+      ? [
+        {
+          label: 'Finalizar',
+          icon: 'pi pi-check-circle',
+          command: () => this.iniciarFinalizacion(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(row.requiereDocumentacion && !row.tieneDocumentacion
       ? [
-          {
-            label: 'Confirmar documentación',
-            icon: 'pi pi-file-check',
-            command: () => this.onConfirmarDocumentacion(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Confirmar documentación',
+          icon: 'pi pi-file-check',
+          command: () => this.onConfirmarDocumentacion(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
-    // { label: 'Eliminar', ... },
+
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -248,5 +268,76 @@ export class ListadoReservas {
       row.estadoReserva === EstadoReserva.Pendiente ||
       row.estadoReserva === EstadoReserva.Confirmada
     );
+  }
+
+  protected onCerrarFinalizacionConSaldo(): void {
+    this.limpiarFinalizacion();
+  }
+
+  protected onConfirmarFinalizacionConSaldo(dto: ReservaFinalizacionRequestDto): void {
+    this.ejecutarFinalizacion(dto);
+  }
+
+  private iniciarFinalizacion(row: ReservaRow): void {
+    this.reservaFinalizacionSeleccionada.set(row);
+    this.verificandoFinalizacionVisible.set(true);
+
+    this.reservasService.verificarFinalizacion(row.id).subscribe({
+      next: (response) => {
+        this.verificandoFinalizacionVisible.set(false);
+
+        if (response.puedeFinalizarseDirectamente) {
+          this.confirmDialogService
+            .open({
+              title: 'Finalizar reserva',
+              message: `La reserva #${row.id} no tiene saldo pendiente. ¿Confirmás la finalización?`,
+              confirmButtonLabel: 'Finalizar reserva',
+              cancelButtonLabel: 'Volver',
+              variant: 'primary',
+            })
+            .subscribe((confirmed) => {
+              if (confirmed) {
+                this.ejecutarFinalizacion({});
+              } else {
+                this.limpiarFinalizacion();
+              }
+            });
+        } else {
+          this.finalizacionCheck.set(response);
+        }
+      },
+      error: (err) => {
+        this.verificandoFinalizacionVisible.set(false);
+        this.limpiarFinalizacion();
+        this.errorHandler.handle(err);
+      },
+    });
+  }
+
+  private ejecutarFinalizacion(dto: ReservaFinalizacionRequestDto): void {
+    const reserva = this.reservaFinalizacionSeleccionada();
+
+    if (!reserva) return;
+
+    this.reservasService.finalizar(reserva.id, dto).subscribe({
+      next: () => {
+        this.limpiarFinalizacion();
+        this.recargarTabla();
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+      },
+    });
+  }
+
+  private limpiarFinalizacion(): void {
+    this.verificandoFinalizacionVisible.set(false);
+    this.reservaFinalizacionSeleccionada.set(null);
+    this.finalizacionCheck.set(null);
+  }
+
+  private puedeFinalizar(row: ReservaRow): boolean {
+    // puse estado en confirmada tambien hay que ver eso(aun no hicimos nada para cuando este enCurso) 
+    return row.estadoReserva === EstadoReserva.EnCurso;
   }
 }

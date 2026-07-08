@@ -208,3 +208,15 @@ export interface ReservaCancelacionRequestDto {
   formaPago?: FormaPago;
   importeDevolucion?: number;
 }
+
+export interface ReservaFinalizacionCheckResponseDto {
+  puedeFinalizarseDirectamente: boolean;
+  montoImpago: number;
+}
+
+export interface ReservaFinalizacionRequestDto {
+  completarPago?: boolean;
+  formaPago?: FormaPago;
+  notas?: string;
+}
+

@@ -15,6 +15,8 @@ import {
   type ReservaCreacionRequestDto,
   type ReservaDetalleRespuestaDto,
   type ReservaRespuestaDto,
+  ReservaFinalizacionCheckResponseDto,
+  ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
 
 const mockDetalle: ReservaDetalleRespuestaDto = {
@@ -364,4 +366,43 @@ describe('ReservasService', () => {
       );
     });
   });
+  describe('finalizacion', () => {
+    it('verificarFinalizacion llama a GET /reservas/:id/finalizacion', () => {
+      let resultado: ReservaFinalizacionCheckResponseDto | undefined;
+
+      service.verificarFinalizacion(42).subscribe((r) => (resultado = r));
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/finalizacion') && r.method === 'GET',
+      );
+
+      req.flush({
+        puedeFinalizarseDirectamente: false,
+        montoImpago: 1200,
+      });
+
+      expect(resultado).toEqual({
+        puedeFinalizarseDirectamente: false,
+        montoImpago: 1200,
+      });
+    });
+
+    it('finalizar llama a PATCH /reservas/:id/finalizacion con el DTO', () => {
+      const dto: ReservaFinalizacionRequestDto = {
+        completarPago: true,
+        formaPago: FormaPago.Efectivo,
+        notas: 'Pago al finalizar',
+      };
+
+      service.finalizar(42, dto).subscribe();
+
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/finalizacion') && r.method === 'PATCH',
+      );
+
+      expect(req.request.body).toEqual(dto);
+      req.flush(null);
+    });
+  });
+
 });
