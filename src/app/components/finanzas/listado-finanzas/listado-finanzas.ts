@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, map, of, filter, switchMap, Subscription } from 'rxjs';
 import {
   AppButton,
@@ -22,10 +23,20 @@ import { Router } from '@angular/router';
 import { mapFacturaToFinanza } from '../mappers/factura-finanza.mapper';
 import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
 import { LoadingDialog } from '../../../shared';
+import { EliminarReservaCerradaDialog } from '../eliminar-reserva-cerrada-dialog/eliminar-reserva-cerrada-dialog';
+import { ErrorResponse } from '../../../core/models/error-response.model';
+import { resolveErrorMessage } from '../../../core/config/error-codes';
 
 @Component({
   selector: 'app-listado-finanzas',
-  imports: [PageLayout, FilterPanel, AppTable, AppButton, LoadingDialog],
+  imports: [
+    PageLayout,
+    FilterPanel,
+    AppTable,
+    AppButton,
+    LoadingDialog,
+    EliminarReservaCerradaDialog,
+  ],
   providers: [
     TableStateService,
     TableExportService,
@@ -62,6 +73,12 @@ export class ListadoFinanzas {
   }
   protected readonly analizandoFactura = signal(false);
   protected readonly columns = this.columnsService.columns;
+
+  protected readonly reservaCerradaAdvertencia = signal<{
+    finanza: FinanzaRow;
+    message: string;
+  } | null>(null);
+  protected readonly advertenciaProcesando = signal(false);
 
   protected readonly loadDataFn: LoadDataFn<FinanzaRow> = (params) =>
     this.finanzaService.getAll(params).pipe(
@@ -132,9 +149,60 @@ export class ListadoFinanzas {
       .subscribe({
         next: () => this.recargarTabla(),
         error: (err) => {
+          if (this.esConfirmacionRequerida(err)) {
+            this.mostrarAdvertenciaReservaCerrada(finanza, err);
+          } else {
+            this.errorHandler.handle(err);
+          }
+        },
+      });
+  }
+
+  private esConfirmacionRequerida(err: unknown): err is HttpErrorResponse {
+    return (
+      err instanceof HttpErrorResponse &&
+      (err.error as Partial<ErrorResponse>)?.codigo === 'CONFIRMACION_ELIMINACION_REQUERIDA'
+    );
+  }
+
+  private mostrarAdvertenciaReservaCerrada(finanza: FinanzaRow, err: HttpErrorResponse): void {
+    this.reservaCerradaAdvertencia.set({ finanza, message: resolveErrorMessage(err) });
+  }
+
+  protected onEliminarDeTodasFormas(): void {
+    const advertencia = this.reservaCerradaAdvertencia();
+    if (!advertencia || this.advertenciaProcesando()) return;
+
+    this.advertenciaProcesando.set(true);
+    this.finanzaService
+      .eliminar(advertencia.finanza.id, true)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.cerrarAdvertencia();
+          this.recargarTabla();
+        },
+        error: (err) => {
+          this.cerrarAdvertencia();
           this.errorHandler.handle(err);
         },
       });
+  }
+
+  protected onRegistrarEgresoAsociado(): void {
+    if (this.advertenciaProcesando()) return;
+    this.cerrarAdvertencia();
+    this.router.navigate(['/finanzas', 'nuevo']);
+  }
+
+  protected onCancelarAdvertencia(): void {
+    if (this.advertenciaProcesando()) return;
+    this.cerrarAdvertencia();
+  }
+
+  private cerrarAdvertencia(): void {
+    this.reservaCerradaAdvertencia.set(null);
+    this.advertenciaProcesando.set(false);
   }
 
   private recargarTabla(): void {

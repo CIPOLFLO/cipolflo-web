@@ -170,13 +170,31 @@ describe('FinanzaService', () => {
       });
     });
 
-    it('eliminar llama a DELETE /finanzas/{id}', () => {
+    it('eliminar llama a DELETE /finanzas/{id} con confirmar=false por defecto', () => {
       service.eliminar(1).subscribe((result) => {
         expect(result).toBeNull();
       });
 
       const req = httpMock.expectOne(
-        (request) => request.method === 'DELETE' && request.url.includes('finanzas/1'),
+        (request) =>
+          request.method === 'DELETE' &&
+          request.url.includes('finanzas/1') &&
+          request.params.get('confirmar') === 'false',
+      );
+
+      req.flush(null);
+    });
+
+    it('eliminar con confirmar=true llama a DELETE /finanzas/{id}?confirmar=true', () => {
+      service.eliminar(1, true).subscribe((result) => {
+        expect(result).toBeNull();
+      });
+
+      const req = httpMock.expectOne(
+        (request) =>
+          request.method === 'DELETE' &&
+          request.url.includes('finanzas/1') &&
+          request.params.get('confirmar') === 'true',
       );
 
       req.flush(null);
