@@ -122,6 +122,11 @@ describe('buildUbicacionFields', () => {
     const direccion = fields.find((f) => f.key === 'direccion');
     expect(direccion?.required).toBeUndefined();
   });
+
+  it('marca dirección como requerida cuando direccionRequerida es true', () => {
+    const direccion = buildUbicacionFields(true).find((f) => f.key === 'direccion');
+    expect(direccion?.required).toBe(true);
+  });
 });
 
 function fakeDestroyRef(): DestroyRef {

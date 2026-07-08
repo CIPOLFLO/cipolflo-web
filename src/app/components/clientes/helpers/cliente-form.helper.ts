@@ -29,12 +29,17 @@ export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespues
 }
 
 /** Campos de ubicación (país/departamento/ciudad/dirección), compartidos entre altas de cliente. */
-export function buildUbicacionFields(): FormFieldConfig[] {
+export function buildUbicacionFields(direccionRequerida = false): FormFieldConfig[] {
   return [
     { key: 'pais', label: 'País', type: 'text', required: true, defaultValue: 'Uruguay' },
     { key: 'departamento', label: 'Departamento', type: 'text', required: true },
     { key: 'ciudad', label: 'Ciudad', type: 'text', required: true },
-    { key: 'direccion', label: 'Dirección', type: 'text' },
+    {
+      key: 'direccion',
+      label: 'Dirección',
+      type: 'text',
+      ...(direccionRequerida && { required: true }),
+    },
   ];
 }
 

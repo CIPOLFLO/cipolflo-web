@@ -39,7 +39,7 @@ export class NuevaEmpresa {
   private readonly errorHandler = inject(ErrorHandlerService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly backLink = computed<string>(() => '/clientes');
+  protected readonly backLink = '/clientes';
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
@@ -76,7 +76,9 @@ export class NuevaEmpresa {
     { key: 'mail', label: 'Email', type: 'text' },
   ]);
 
-  protected readonly ubicacionFields = computed<FormFieldConfig[]>(() => buildUbicacionFields());
+  protected readonly ubicacionFields = computed<FormFieldConfig[]>(() =>
+    buildUbicacionFields(true),
+  );
 
   protected readonly adicionalFields = computed<FormFieldConfig[]>(() => [
     { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea' },
@@ -112,7 +114,7 @@ export class NuevaEmpresa {
   }
 
   protected onCancelar(): void {
-    this.router.navigateByUrl(this.backLink());
+    this.router.navigateByUrl(this.backLink);
   }
 
   protected onConfirmar(): void {
