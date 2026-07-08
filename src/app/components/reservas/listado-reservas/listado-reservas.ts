@@ -27,7 +27,6 @@ import {
 import { VerificandoFinalizacionDialog } from '../finalizar-reserva/verificando-finalizacion-dialog/verificando-finalizacion-dialog';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
 
-
 @Component({
   selector: 'app-listado-reservas',
   standalone: true,
@@ -84,55 +83,54 @@ export class ListadoReservas {
       command: () => this.router.navigate(['/reservas', row.id]),
     },
     ...(row.estadoReserva === EstadoReserva.Pendiente ||
-      row.estadoReserva === EstadoReserva.Confirmada
+    row.estadoReserva === EstadoReserva.Confirmada
       ? [
-        {
-          label: 'Modificar',
-          icon: 'pi pi-pencil',
-          command: () =>
-            this.router.navigate(['/reservas', row.id, 'modificar'], {
-              queryParams: { from: 'listado' },
-            }),
-        } satisfies RowAction<ReservaRow>,
-      ]
+          {
+            label: 'Modificar',
+            icon: 'pi pi-pencil',
+            command: () =>
+              this.router.navigate(['/reservas', row.id, 'modificar'], {
+                queryParams: { from: 'listado' },
+              }),
+          } satisfies RowAction<ReservaRow>,
+        ]
       : []),
     ...(this.puedeConfirmarPago(row)
       ? [
-        {
-          label: 'Confirmar pago',
-          icon: 'pi pi-dollar',
-          command: () => this.onConfirmarPago(row),
-        } satisfies RowAction<ReservaRow>,
-      ]
+          {
+            label: 'Confirmar pago',
+            icon: 'pi pi-dollar',
+            command: () => this.onConfirmarPago(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
       : []),
     ...(this.puedeCancelar(row)
       ? [
-        {
-          label: 'Cancelar',
-          icon: 'pi pi-ban',
-          command: () => this.iniciarCancelacion(row),
-        } satisfies RowAction<ReservaRow>,
-      ]
+          {
+            label: 'Cancelar',
+            icon: 'pi pi-ban',
+            command: () => this.iniciarCancelacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
       : []),
     ...(this.puedeFinalizar(row)
       ? [
-        {
-          label: 'Finalizar',
-          icon: 'pi pi-check-circle',
-          command: () => this.iniciarFinalizacion(row),
-        } satisfies RowAction<ReservaRow>,
-      ]
+          {
+            label: 'Finalizar',
+            icon: 'pi pi-check-circle',
+            command: () => this.iniciarFinalizacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
       : []),
     ...(row.requiereDocumentacion && !row.tieneDocumentacion
       ? [
-        {
-          label: 'Confirmar documentación',
-          icon: 'pi pi-file-check',
-          command: () => this.onConfirmarDocumentacion(row),
-        } satisfies RowAction<ReservaRow>,
-      ]
+          {
+            label: 'Confirmar documentación',
+            icon: 'pi pi-file-check',
+            command: () => this.onConfirmarDocumentacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
       : []),
-
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
@@ -337,7 +335,7 @@ export class ListadoReservas {
   }
 
   private puedeFinalizar(row: ReservaRow): boolean {
-    // puse estado en confirmada tambien hay que ver eso(aun no hicimos nada para cuando este enCurso) 
+    // puse estado en confirmada tambien hay que ver eso(aun no hicimos nada para cuando este enCurso)
     return row.estadoReserva === EstadoReserva.EnCurso;
   }
 }

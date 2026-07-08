@@ -219,4 +219,3 @@ export interface ReservaFinalizacionRequestDto {
   formaPago?: FormaPago;
   notas?: string;
 }
-

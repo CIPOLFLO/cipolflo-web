@@ -71,7 +71,6 @@ describe('ListadoReservas', () => {
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
 
-
   beforeEach(async () => {
     mockReservasService = {
       getAll: vi.fn().mockReturnValue(of(mockPage)),

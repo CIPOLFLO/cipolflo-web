@@ -1,11 +1,22 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 import { Select } from 'primeng/select';
 import { AppButton, CurrencyFormatPipe } from '../../../../shared';
 import { FormaPago } from '../../../../shared/models/forma-pago.model';
-import { FORMA_PAGO_RESERVA_LABEL, ReservaFinalizacionRequestDto } from '../../models/reserva.model';
+import {
+  FORMA_PAGO_RESERVA_LABEL,
+  ReservaFinalizacionRequestDto,
+} from '../../models/reserva.model';
 
 @Component({
   selector: 'app-completar-pago-dialog',
