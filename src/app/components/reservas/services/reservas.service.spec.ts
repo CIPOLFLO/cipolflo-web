@@ -377,12 +377,12 @@ describe('ReservasService', () => {
       );
 
       req.flush({
-        puedeFinalizarseDirectamente: false,
+        puedeFinalizarSinPago: false,
         montoImpago: 1200,
       });
 
       expect(resultado).toEqual({
-        puedeFinalizarseDirectamente: false,
+        puedeFinalizarSinPago: false,
         montoImpago: 1200,
       });
     });

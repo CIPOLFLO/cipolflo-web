@@ -38,6 +38,7 @@
     [numeroReserva]="reservaCancelacionSeleccionada()?.id ?? null"
     [pagos]="cancelacionCheck()?.pagosAsociados ?? []"
     [importeTotalPagos]="cancelacionCheck()?.importeTotalPagos ?? 0"
+    [procesando]="procesando()"
     (cancelar)="onCerrarCancelacionConPagos()"
     (confirmar)="onConfirmarCancelacionConPagos($event)"
   />
@@ -56,6 +57,7 @@
     [visible]="finalizacionCheck() !== null"
     [numeroReserva]="reservaFinalizacionSeleccionada()?.id ?? null"
     [montoImpago]="finalizacionCheck()?.montoImpago ?? 0"
+    [procesando]="procesando()"
     (cancelar)="onCerrarFinalizacionConSaldo()"
     (confirmar)="onConfirmarFinalizacionConSaldo($event)"
   />

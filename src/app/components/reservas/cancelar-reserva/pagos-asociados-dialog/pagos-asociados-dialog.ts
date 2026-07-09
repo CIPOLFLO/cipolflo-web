@@ -42,6 +42,7 @@ export class PagosAsociadosDialog {
   numeroReserva = input<number | null>(null);
   pagos = input<PagoAsociadoReservaDto[]>([]);
   importeTotalPagos = input<number>(0);
+  procesando = input<boolean>(false);
 
   cancelar = output<void>();
   confirmar = output<ReservaCancelacionRequestDto>();
@@ -91,6 +92,8 @@ export class PagosAsociadosDialog {
   }
 
   protected onConfirmar(): void {
+    if (this.procesando()) return;
+
     this.confirmar.emit({
       generarDevolucion: this.generarDevolucion(),
       formaPago: this.formaPago() ?? undefined,

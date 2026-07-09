@@ -30,6 +30,7 @@ export class CompletarPagoDialog {
   visible = input<boolean>(false);
   numeroReserva = input<number | null>(null);
   montoImpago = input<number>(0);
+  procesando = input<boolean>(false);
 
   cancelar = output<void>();
   confirmar = output<ReservaFinalizacionRequestDto>();
@@ -69,6 +70,8 @@ export class CompletarPagoDialog {
   }
 
   protected onConfirmar(): void {
+    if (this.procesando()) return;
+
     this.confirmar.emit({
       completarPago: this.completarPago(),
       formaPago: this.completarPago() ? (this.formaPago() ?? undefined) : undefined,

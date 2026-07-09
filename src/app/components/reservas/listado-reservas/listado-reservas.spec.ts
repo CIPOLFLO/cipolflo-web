@@ -86,7 +86,7 @@ describe('ListadoReservas', () => {
       confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
       verificarFinalizacion: vi.fn().mockReturnValue(
         of({
-          puedeFinalizarseDirectamente: true,
+          puedeFinalizarSinPago: true,
           montoImpago: 0,
         }),
       ),
@@ -442,7 +442,7 @@ describe('ListadoReservas', () => {
 
     it('si tiene saldo pendiente debería guardar el check para abrir el modal dedicado', () => {
       const check = {
-        puedeFinalizarseDirectamente: false,
+        puedeFinalizarSinPago: false,
         montoImpago: 2500,
       };
 
@@ -472,7 +472,7 @@ describe('ListadoReservas', () => {
     it('onCerrarFinalizacionConSaldo debería limpiar la finalización', () => {
       component['reservaFinalizacionSeleccionada'].set(mockRowEnCurso);
       component['finalizacionCheck'].set({
-        puedeFinalizarseDirectamente: false,
+        puedeFinalizarSinPago: false,
         montoImpago: 2500,
       });
 

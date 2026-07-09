@@ -126,7 +126,3 @@
   padding: 10px 12px;
   font-family: inherit;
 }
-
-.required {
-  color: var(--color-danger);
-}

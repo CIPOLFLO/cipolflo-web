@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
@@ -11,10 +12,9 @@ import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
-import { EstadoReserva, ConfirmDialogService } from '../../../shared';
+import { EstadoReserva, ConfirmDialogService, VerificationDialog } from '../../../shared';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { VerificationDialog } from '../../../shared/components/verification-dialog/verification-dialog';
 import { PagosAsociadosDialog } from '../cancelar-reserva/pagos-asociados-dialog/pagos-asociados-dialog';
 import {
   ReservaCancelacionCheckResponseDto,
@@ -66,6 +66,8 @@ export class ListadoReservas {
 
   protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
   protected readonly columns = this.columnsService.columns;
+
+  protected readonly procesando = signal(false);
 
   protected readonly verificandoFinalizacionVisible = signal(false);
   protected readonly reservaFinalizacionSeleccionada = signal<ReservaRow | null>(null);
@@ -242,15 +244,20 @@ export class ListadoReservas {
 
     if (!reserva) return;
 
-    this.reservasService.cancelar(reserva.id, dto).subscribe({
-      next: () => {
-        this.limpiarCancelacion();
-        this.recargarTabla();
-      },
-      error: (err) => {
-        this.errorHandler.handle(err);
-      },
-    });
+    this.procesando.set(true);
+
+    this.reservasService
+      .cancelar(reserva.id, dto)
+      .pipe(finalize(() => this.procesando.set(false)))
+      .subscribe({
+        next: () => {
+          this.limpiarCancelacion();
+          this.recargarTabla();
+        },
+        error: (err) => {
+          this.errorHandler.handle(err);
+        },
+      });
   }
 
   private limpiarCancelacion(): void {
@@ -282,7 +289,7 @@ export class ListadoReservas {
       next: (response) => {
         this.verificandoFinalizacionVisible.set(false);
 
-        if (response.puedeFinalizarseDirectamente) {
+        if (response.puedeFinalizarSinPago) {
           this.confirmDialogService
             .open({
               title: 'Finalizar reserva',
@@ -315,15 +322,20 @@ export class ListadoReservas {
 
     if (!reserva) return;
 
-    this.reservasService.finalizar(reserva.id, dto).subscribe({
-      next: () => {
-        this.limpiarFinalizacion();
-        this.recargarTabla();
-      },
-      error: (err) => {
-        this.errorHandler.handle(err);
-      },
-    });
+    this.procesando.set(true);
+
+    this.reservasService
+      .finalizar(reserva.id, dto)
+      .pipe(finalize(() => this.procesando.set(false)))
+      .subscribe({
+        next: () => {
+          this.limpiarFinalizacion();
+          this.recargarTabla();
+        },
+        error: (err) => {
+          this.errorHandler.handle(err);
+        },
+      });
   }
 
   private limpiarFinalizacion(): void {
@@ -333,7 +345,6 @@ export class ListadoReservas {
   }
 
   private puedeFinalizar(row: ReservaRow): boolean {
-    // puse estado en confirmada tambien hay que ver eso(aun no hicimos nada para cuando este enCurso)
     return row.estadoReserva === EstadoReserva.EnCurso;
   }
 }

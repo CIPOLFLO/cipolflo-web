@@ -210,7 +210,7 @@ export interface ReservaCancelacionRequestDto {
 }
 
 export interface ReservaFinalizacionCheckResponseDto {
-  puedeFinalizarseDirectamente: boolean;
+  puedeFinalizarSinPago: boolean;
   montoImpago: number;
 }
 
