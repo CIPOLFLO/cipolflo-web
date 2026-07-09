@@ -65,6 +65,8 @@ describe('ListadoReservas', () => {
     verificarCancelacion: ReturnType<typeof vi.fn>;
     cancelar: ReturnType<typeof vi.fn>;
     confirmarDocumentacion: ReturnType<typeof vi.fn>;
+    verificarFinalizacion: ReturnType<typeof vi.fn>;
+    finalizar: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
@@ -82,6 +84,13 @@ describe('ListadoReservas', () => {
       ),
       cancelar: vi.fn().mockReturnValue(of(undefined)),
       confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
+      verificarFinalizacion: vi.fn().mockReturnValue(
+        of({
+          puedeFinalizarSinPago: true,
+          montoImpago: 0,
+        }),
+      ),
+      finalizar: vi.fn().mockReturnValue(of(undefined)),
     };
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
@@ -375,6 +384,116 @@ describe('ListadoReservas', () => {
       expect(handleSpy).toHaveBeenCalledWith(error);
       expect(component['verificandoCancelacionVisible']()).toBe(false);
       expect(component['reservaCancelacionSeleccionada']()).toBeNull();
+    });
+  });
+
+  describe('finalizar reserva', () => {
+    const mockRowEnCurso = {
+      ...mockRow,
+      estadoReserva: EstadoReserva.EnCurso,
+    };
+
+    it('debería incluir la acción Finalizar cuando la reserva está en curso', () => {
+      const actions = component['rowActions'](mockRowEnCurso);
+
+      expect(actions.some((action) => action.label === 'Finalizar')).toBe(true);
+    });
+
+    it('no debería incluir Finalizar si la reserva no está en curso', () => {
+      const actions = component['rowActions'](mockRow);
+
+      expect(actions.some((action) => action.label === 'Finalizar')).toBe(false);
+    });
+
+    it('debería verificar finalización al ejecutar la acción Finalizar', () => {
+      mockReservasService.verificarFinalizacion.mockReturnValue(NEVER);
+
+      const action = component['rowActions'](mockRowEnCurso).find((a) => a.label === 'Finalizar');
+
+      action?.command?.(mockRowEnCurso);
+
+      expect(component['reservaFinalizacionSeleccionada']()).toEqual(mockRowEnCurso);
+      expect(mockReservasService.verificarFinalizacion).toHaveBeenCalledWith(mockRowEnCurso.id);
+    });
+
+    it('si no tiene saldo pendiente debería abrir confirmación simple', () => {
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      const openSpy = vi.spyOn(confirmDialogService, 'open').mockReturnValue(of(false));
+
+      component['iniciarFinalizacion'](mockRowEnCurso);
+
+      expect(openSpy).toHaveBeenCalledWith({
+        title: 'Finalizar reserva',
+        message: `La reserva #${mockRowEnCurso.id} no tiene saldo pendiente. ¿Confirmás la finalización?`,
+        confirmButtonLabel: 'Finalizar reserva',
+        cancelButtonLabel: 'Volver',
+        variant: 'primary',
+      });
+    });
+
+    it('si confirma finalización simple debería llamar a finalizar con dto vacío', () => {
+      const confirmDialogService = TestBed.inject(ConfirmDialogService);
+      vi.spyOn(confirmDialogService, 'open').mockReturnValue(of(true));
+
+      component['iniciarFinalizacion'](mockRowEnCurso);
+
+      expect(mockReservasService.finalizar).toHaveBeenCalledWith(mockRowEnCurso.id, {});
+    });
+
+    it('si tiene saldo pendiente debería guardar el check para abrir el modal dedicado', () => {
+      const check = {
+        puedeFinalizarSinPago: false,
+        montoImpago: 2500,
+      };
+
+      mockReservasService.verificarFinalizacion.mockReturnValue(of(check));
+
+      component['iniciarFinalizacion'](mockRowEnCurso);
+
+      expect(component['finalizacionCheck']()).toEqual(check);
+    });
+
+    it('onConfirmarFinalizacionConSaldo debería llamar a finalizar con el dto recibido', () => {
+      component['reservaFinalizacionSeleccionada'].set(mockRowEnCurso);
+
+      component['onConfirmarFinalizacionConSaldo']({
+        completarPago: true,
+        formaPago: FormaPago.Efectivo,
+        notas: 'Pago al finalizar',
+      });
+
+      expect(mockReservasService.finalizar).toHaveBeenCalledWith(mockRowEnCurso.id, {
+        completarPago: true,
+        formaPago: FormaPago.Efectivo,
+        notas: 'Pago al finalizar',
+      });
+    });
+
+    it('onCerrarFinalizacionConSaldo debería limpiar la finalización', () => {
+      component['reservaFinalizacionSeleccionada'].set(mockRowEnCurso);
+      component['finalizacionCheck'].set({
+        puedeFinalizarSinPago: false,
+        montoImpago: 2500,
+      });
+
+      component['onCerrarFinalizacionConSaldo']();
+
+      expect(component['reservaFinalizacionSeleccionada']()).toBeNull();
+      expect(component['finalizacionCheck']()).toBeNull();
+    });
+
+    it('si verificarFinalizacion falla debería manejar el error y limpiar estado', () => {
+      const errorHandler = TestBed.inject(ErrorHandlerService);
+      const handleSpy = vi.spyOn(errorHandler, 'handle').mockImplementation(() => undefined);
+      const error = new Error('error');
+
+      mockReservasService.verificarFinalizacion.mockReturnValue(throwError(() => error));
+
+      component['iniciarFinalizacion'](mockRowEnCurso);
+
+      expect(handleSpy).toHaveBeenCalledWith(error);
+      expect(component['verificandoFinalizacionVisible']()).toBe(false);
+      expect(component['reservaFinalizacionSeleccionada']()).toBeNull();
     });
   });
 

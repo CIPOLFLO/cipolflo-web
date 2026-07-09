@@ -1,0 +1,89 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="'Finalización de reserva #' + numeroReserva()"
+  [style]="{ width: '560px' }"
+>
+  <div class="alert-warning">
+    <div class="alert-warning__header">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>La reserva tiene saldo pendiente</span>
+    </div>
+  </div>
+
+  <div class="total-pagos">
+    <span>Saldo pendiente:</span>
+    <strong>{{ montoImpago() | currencyFormat }}</strong>
+  </div>
+
+  <div class="devolucion">
+    <p-checkbox
+      [binary]="true"
+      [ngModel]="completarPago()"
+      (ngModelChange)="onCompletarPagoChange($event)"
+      inputId="completarPago"
+    />
+    <label for="completarPago">Completar pago antes de finalizar</label>
+  </div>
+
+  @if (!completarPago()) {
+    <div class="aviso-sin-devolucion">
+      <strong>No se completará el pago pendiente.</strong>
+      <p>La reserva se finalizará y conservará el saldo impago.</p>
+    </div>
+  }
+
+  @if (completarPago()) {
+    <label class="forma-pago" for="formaPago">
+      <span class="forma-pago__caption"> Forma de pago <span class="required">*</span> </span>
+
+      <p-select
+        inputId="formaPago"
+        [ngModel]="formaPago()"
+        (ngModelChange)="formaPago.set($event)"
+        [options]="formaPagoOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccionar"
+        appendTo="body"
+      />
+    </label>
+
+    <label class="forma-pago" for="notas">
+      <span class="forma-pago__caption">Notas</span>
+
+      <textarea
+        id="notas"
+        class="notas"
+        rows="3"
+        [ngModel]="notas()"
+        (ngModelChange)="notas.set($event)"
+        placeholder="Notas opcionales"
+      ></textarea>
+    </label>
+  }
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <app-button
+        label="Cancelar"
+        intent="secondary"
+        [disabled]="procesando()"
+        (clicked)="onCancelar()"
+      />
+
+      <app-button
+        intent="primary"
+        label="Confirmar finalización"
+        [disabled]="confirmarDisabled()"
+        [loading]="procesando()"
+        [tooltip]="confirmarDisabled() ? 'Seleccione la forma de pago' : ''"
+        (clicked)="onConfirmar()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

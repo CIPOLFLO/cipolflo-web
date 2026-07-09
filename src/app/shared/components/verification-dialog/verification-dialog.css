@@ -1,4 +1,4 @@
-.verificando__content {
+.verification-dialog__content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7,7 +7,9 @@
   text-align: center;
 }
 
-.verificando__text {
+.verification-dialog__text {
   margin: 0;
   color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
 }

@@ -16,6 +16,7 @@ export type {
   DateRangeSelection,
 } from './components/occupancy-calendar/occupancy-calendar.models';
 export * from './components/loading-dialog/loading-dialog';
+export { VerificationDialog } from './components/verification-dialog/verification-dialog';
 // Form Components
 export { FormLayout } from './components/form-layout/form-layout';
 export { FormSection } from './components/form-section/form-section';
