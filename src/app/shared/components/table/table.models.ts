@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-export type CellType = 'text' | 'tag' | 'amount' | 'price' | 'date';
+export type CellType = 'text' | 'tag' | 'amount' | 'price' | 'date' | 'warning';
 
 export interface TagStyle {
   styleClass: string;
@@ -19,7 +19,8 @@ interface BaseColumnConfig {
 export type ColumnConfig =
   | (BaseColumnConfig & { cellType?: 'text' | 'amount' | 'date' })
   | (BaseColumnConfig & { cellType: 'tag'; tagMap: Record<string, TagStyle> })
-  | (BaseColumnConfig & { cellType: 'price'; colorVariant?: 'green' });
+  | (BaseColumnConfig & { cellType: 'price'; colorVariant?: 'green' })
+  | (BaseColumnConfig & { cellType: 'warning'; tooltip: string });
 
 export interface PageResponse<T> {
   content: T[];

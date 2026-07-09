@@ -8,13 +8,14 @@ describe('ReservasColumnsService', () => {
     service = new ReservasColumnsService();
   });
 
-  it('expone 5 columnas', () => {
-    expect(service.columns).toHaveLength(5);
+  it('expone 6 columnas', () => {
+    expect(service.columns).toHaveLength(6);
   });
 
   it('las claves coinciden con los campos del DTO', () => {
     const keys = service.columns.map((c) => c.key);
     expect(keys).toEqual([
+      'requiereAtencion',
       'nombreCliente',
       'servicioNombre',
       'fechaEntrada',

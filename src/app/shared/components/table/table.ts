@@ -21,6 +21,7 @@ import { PriceCellComponent } from './cells/price-cell/price-cell';
 import { RowActionsComponent } from './cells/row-actions/row-actions';
 import { PaginationComponent } from './pagination/pagination';
 import { DateFormatPipe } from './pipes/date-format.pipe';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-table',
@@ -33,6 +34,7 @@ import { DateFormatPipe } from './pipes/date-format.pipe';
     RowActionsComponent,
     PaginationComponent,
     DateFormatPipe,
+    Tooltip,
   ],
   templateUrl: './table.html',
   styleUrl: './table.css',

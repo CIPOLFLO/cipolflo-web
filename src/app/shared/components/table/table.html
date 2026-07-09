@@ -61,6 +61,16 @@
               @case ('date') {
                 {{ getString(row[col.key]) | dateFormat }}
               }
+              @case ('warning') {
+                @if (row[col.key]) {
+                  <i
+                    class="pi pi-exclamation-triangle table-warning-icon"
+                    [pTooltip]="col.tooltip"
+                    tooltipPosition="top"
+                  >
+                  </i>
+                }
+              }
               @default {
                 {{ getTextValue(col, row[col.key]) }}
               }

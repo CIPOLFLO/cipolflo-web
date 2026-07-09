@@ -4,6 +4,12 @@ import { ColumnConfig } from '../../../shared';
 @Injectable()
 export class ReservasColumnsService {
   readonly columns: ColumnConfig[] = [
+    {
+      key: 'requiereAtencion',
+      label: '',
+      cellType: 'warning',
+      tooltip: 'Debe entregar la documentación o confirmar el pago antes de las 24 hs',
+    },
     { key: 'nombreCliente', label: 'Cliente', sortable: true },
     { key: 'servicioNombre', label: 'Servicio' },
     { key: 'fechaEntrada', label: 'Fecha Entrada', sortable: true, cellType: 'date' },
