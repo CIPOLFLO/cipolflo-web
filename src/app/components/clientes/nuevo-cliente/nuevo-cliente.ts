@@ -10,8 +10,7 @@ import {
 } from '../../../shared';
 import { MetodoCobro, EstadoSocio, METODO_COBRO_OPTIONS } from '../models/cliente.model';
 import { ClienteFormBase } from '../cliente-form-base';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { buildUbicacionFields, submitRegistroCliente } from '../helpers/cliente-form.helper';
 
 @Component({
   standalone: true,
@@ -67,12 +66,9 @@ export class NuevoCliente extends ClienteFormBase {
     },
   ]);
 
-  protected readonly ubicacionFields: Signal<FormFieldConfig[]> = computed(() => [
-    { key: 'pais', label: 'País', type: 'text', required: true, defaultValue: 'Uruguay' },
-    { key: 'departamento', label: 'Departamento', type: 'text', required: true },
-    { key: 'ciudad', label: 'Ciudad', type: 'text', required: true },
-    { key: 'direccion', label: 'Dirección', type: 'text' },
-  ]);
+  protected readonly ubicacionFields: Signal<FormFieldConfig[]> = computed(() =>
+    buildUbicacionFields(),
+  );
 
   protected override readonly adicionalFields = computed<FormFieldConfig[]>(() => [
     { key: 'observaciones', label: 'Notas / Observaciones', type: 'textarea' },
@@ -84,10 +80,8 @@ export class NuevoCliente extends ClienteFormBase {
 
     const v = this.form.getRawValue();
 
-    this.loading.set(true);
-
-    this.clientesService
-      .registrarSocio({
+    submitRegistroCliente(
+      this.clientesService.registrarSocio({
         cedula: v['cedula']!.trim(),
         nombreCompleto: v['nombre']!.trim(),
         fechaNacimiento: v['fechaNacimiento']!,
@@ -99,18 +93,15 @@ export class NuevoCliente extends ClienteFormBase {
         ciudad: v['ciudad']!.trim(),
         direccion: v['direccion']?.trim() || null,
         observaciones: v['observaciones']?.trim() || null,
-      })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.loading.set(false)),
-      )
-      .subscribe({
-        next: (cliente) => {
+      }),
+      {
+        loading: this.loading,
+        destroyRef: this.destroyRef,
+        errorHandler: this.errorHandler,
+        onSuccess: (cliente) => {
           this.router.navigate(['/clientes', cliente.id]);
         },
-        error: (err: unknown) => {
-          this.errorHandler.handle(err);
-        },
-      });
+      },
+    );
   }
 }

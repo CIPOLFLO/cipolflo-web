@@ -9,6 +9,7 @@ import {
   EstadoSocioDto,
   ModificacionParticularRequestDto,
   ModificacionSocioRequestDto,
+  RegistroEmpresaRequestDto,
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
@@ -73,6 +74,9 @@ export class ClientesService extends BaseHttpService {
 
   registrarSocio(dto: RegistroSocioRequestDto): Observable<ClienteDetalleRespuestaDto> {
     return this.post<ClienteDetalleRespuestaDto>('clientes/socios', dto);
+  }
+  registrarEmpresa(dto: RegistroEmpresaRequestDto): Observable<ClienteDetalleRespuestaDto> {
+    return this.post<ClienteDetalleRespuestaDto>('clientes/empresas', dto);
   }
   registrarPagoCuota(
     id: number,

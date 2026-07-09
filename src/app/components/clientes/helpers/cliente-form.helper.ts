@@ -1,4 +1,9 @@
+import { DestroyRef, WritableSignal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
+import { finalize, Observable } from 'rxjs';
+import { FormFieldConfig } from '../../../shared';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClienteDetalleRespuestaDto } from '../models/cliente.model';
 
 export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespuestaDto): void {
@@ -21,4 +26,41 @@ export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespues
     estado: cliente.estado ?? null,
     metodoCobro: cliente.metodoCobro ?? null,
   });
+}
+
+/** Campos de ubicación (país/departamento/ciudad/dirección), compartidos entre altas de cliente. */
+export function buildUbicacionFields(direccionRequerida = false): FormFieldConfig[] {
+  return [
+    { key: 'pais', label: 'País', type: 'text', required: true, defaultValue: 'Uruguay' },
+    { key: 'departamento', label: 'Departamento', type: 'text', required: true },
+    { key: 'ciudad', label: 'Ciudad', type: 'text', required: true },
+    {
+      key: 'direccion',
+      label: 'Dirección',
+      type: 'text',
+      ...(direccionRequerida && { required: true }),
+    },
+  ];
+}
+
+/** Boilerplate de submit (loading + subscribe + error handling), compartido entre altas de cliente. */
+export function submitRegistroCliente<T>(
+  source$: Observable<T>,
+  opts: {
+    loading: WritableSignal<boolean>;
+    destroyRef: DestroyRef;
+    errorHandler: ErrorHandlerService;
+    onSuccess: (result: T) => void;
+  },
+): void {
+  opts.loading.set(true);
+  source$
+    .pipe(
+      takeUntilDestroyed(opts.destroyRef),
+      finalize(() => opts.loading.set(false)),
+    )
+    .subscribe({
+      next: opts.onSuccess,
+      error: (err: unknown) => opts.errorHandler.handle(err),
+    });
 }

@@ -1,12 +1,19 @@
 import { FormControl, FormGroup } from '@angular/forms';
-import { describe, it, expect } from 'vitest';
-import { patchClienteForm } from './cliente-form.helper';
+import { DestroyRef, signal } from '@angular/core';
+import { describe, it, expect, vi } from 'vitest';
+import { of, throwError } from 'rxjs';
+import {
+  patchClienteForm,
+  buildUbicacionFields,
+  submitRegistroCliente,
+} from './cliente-form.helper';
 import {
   ClienteDetalleRespuestaDto,
   EstadoSocio,
   MetodoCobro,
   TipoCliente,
 } from '../models/cliente.model';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 const baseCliente: ClienteDetalleRespuestaDto = {
   id: 1,
@@ -14,6 +21,7 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   numeroSocio: 42,
   nombre: 'Lucía',
   cedula: '5.191.926-8',
+  rut: null,
   telefono: '099000000',
   email: 'lucia@example.com',
   pais: 'Uruguay',
@@ -97,5 +105,74 @@ describe('patchClienteForm', () => {
     expect(form.get('fechaNacimiento')?.value).toBeNull();
     expect(form.get('estado')?.value).toBeNull();
     expect(form.get('metodoCobro')?.value).toBeNull();
+  });
+});
+
+describe('buildUbicacionFields', () => {
+  it('retorna los 4 campos de ubicación con pais por defecto Uruguay', () => {
+    const fields = buildUbicacionFields();
+
+    expect(fields).toHaveLength(4);
+    expect(fields.map((f) => f.key)).toEqual(['pais', 'departamento', 'ciudad', 'direccion']);
+
+    const pais = fields.find((f) => f.key === 'pais');
+    expect(pais?.required).toBe(true);
+    expect(pais?.defaultValue).toBe('Uruguay');
+
+    const direccion = fields.find((f) => f.key === 'direccion');
+    expect(direccion?.required).toBeUndefined();
+  });
+
+  it('marca dirección como requerida cuando direccionRequerida es true', () => {
+    const direccion = buildUbicacionFields(true).find((f) => f.key === 'direccion');
+    expect(direccion?.required).toBe(true);
+  });
+});
+
+function fakeDestroyRef(): DestroyRef {
+  return { onDestroy: () => () => undefined } as unknown as DestroyRef;
+}
+
+function fakeErrorHandler(): ErrorHandlerService {
+  return { handle: vi.fn() } as unknown as ErrorHandlerService;
+}
+
+describe('submitRegistroCliente', () => {
+  it('setea loading en true al iniciar y en false al finalizar (éxito)', () => {
+    const loading = signal(false);
+    const onSuccess = vi.fn();
+    const errorHandler = fakeErrorHandler();
+
+    submitRegistroCliente(of({ id: 1 }), {
+      loading,
+      destroyRef: fakeDestroyRef(),
+      errorHandler,
+      onSuccess,
+    });
+
+    expect(loading()).toBe(false);
+    expect(onSuccess).toHaveBeenCalledWith({ id: 1 });
+    expect(errorHandler.handle).not.toHaveBeenCalled();
+  });
+
+  it('llama a errorHandler.handle y apaga loading cuando el observable falla', () => {
+    const loading = signal(false);
+    const onSuccess = vi.fn();
+    const errorHandler = fakeErrorHandler();
+    const error = new Error('falló');
+
+    submitRegistroCliente(
+      throwError(() => error),
+      {
+        loading,
+        destroyRef: fakeDestroyRef(),
+        errorHandler,
+        onSuccess,
+      },
+    );
+
+    expect(loading()).toBe(false);
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(errorHandler.handle).toHaveBeenCalledWith(error);
   });
 });

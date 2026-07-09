@@ -1,0 +1,43 @@
+<app-page-layout
+  pageTitle="Nueva Empresa"
+  pageDescription="Complete los datos para registrar una nueva empresa"
+  [showBackButton]="true"
+  [backButtonLink]="backLink"
+>
+  <app-form-layout>
+    <app-form-section
+      title="Información de la empresa"
+      [fields]="infoFields()"
+      [errors]="infoErrors()"
+      (valuesChange)="onInfoChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-section
+      title="Información de Ubicación"
+      [fields]="ubicacionFields()"
+      [errors]="ubicacionErrors()"
+      (valuesChange)="onUbicacionChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-section
+      title="Información Adicional"
+      [fields]="adicionalFields()"
+      (valuesChange)="onAdicionalChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
+    <app-form-actions actions>
+      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+      <app-button
+        label="Confirmar"
+        intent="primary"
+        icon="pi-save"
+        [disabled]="confirmDisabled()"
+        tooltip="Complete con valores válidos el formulario para continuar"
+        (clicked)="onConfirmar()"
+      />
+    </app-form-actions>
+  </app-form-layout>
+</app-page-layout>

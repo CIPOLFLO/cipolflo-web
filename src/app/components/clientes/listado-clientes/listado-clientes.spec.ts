@@ -29,6 +29,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       tipoCliente: TipoCliente.Socio,
       numeroSocio: 5,
       cedula: '1.234.567-8',
+      rut: null,
       email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
       ultimaCuotaDto: {
@@ -44,6 +45,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       tipoCliente: TipoCliente.Particular,
       numeroSocio: null,
       cedula: '6.789.012-3',
+      rut: null,
       email: null,
       estado: null,
       ultimaCuotaDto: null,
@@ -55,6 +57,18 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   totalPages: 1,
   first: true,
   last: true,
+};
+
+const empresaMock: ClienteRespuestaDto = {
+  id: 3,
+  nombreCompleto: 'Cipolatti S.A.',
+  tipoCliente: TipoCliente.Empresa,
+  numeroSocio: null,
+  cedula: null,
+  rut: '210001230018',
+  email: 'empresa@mail.com',
+  estado: null,
+  ultimaCuotaDto: null,
 };
 
 const mockAuthService = {
@@ -161,6 +175,16 @@ describe('ListadoClientes', () => {
     expect(actions[0].icon).toBe('pi pi-eye');
   });
 
+  it('rowActions no incluye "Ver detalle" para un cliente de tipo Empresa', () => {
+    const actions = component['rowActions'](empresaMock);
+    expect(actions.some((a) => a.label === 'Ver detalle')).toBe(false);
+  });
+
+  it('rowActions no incluye "Modificar" para un cliente de tipo Empresa', () => {
+    const actions = component['rowActions'](empresaMock);
+    expect(actions.some((a) => a.label === 'Modificar')).toBe(false);
+  });
+
   it('rowActions incluye "Pago de cuota" cuando el cliente es socio activo', () => {
     const socio = mockPageResponse.content.find(
       (cliente) => cliente.tipoCliente === TipoCliente.Socio,
@@ -220,12 +244,18 @@ describe('ListadoClientes', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
   });
 
+  it('onNuevaEmpresa navega a /clientes/nueva-empresa', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    component['onNuevaEmpresa']();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nueva-empresa']);
+  });
+
   it('debe renderizar los encabezados de columna en la tabla', async () => {
     const headers: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('th');
     const labels = Array.from(headers).map((h) => h.textContent?.trim());
     expect(labels).toContain('Nombre');
     expect(labels).toContain('Nro de socio');
-    expect(labels).toContain('Cédula');
+    expect(labels).toContain('Documento');
     expect(labels).toContain('Email');
     expect(labels).toContain('Estado');
   });

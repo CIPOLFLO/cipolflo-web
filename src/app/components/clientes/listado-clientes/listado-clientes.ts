@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { filter, switchMap } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -16,6 +16,7 @@ import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
+import { ClienteListadoRow, mapClienteListadoRow } from '../mappers/cliente-listado.mapper';
 import { Router } from '@angular/router';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -60,15 +61,22 @@ export class ListadoClientes {
 
   protected readonly columns = this.columnsService.columns;
 
-  protected readonly loadDataFn: LoadDataFn<ClienteRespuestaDto> = (params) =>
-    this.clientesService.getAll(params);
+  protected readonly loadDataFn: LoadDataFn<ClienteListadoRow> = (params) =>
+    this.clientesService
+      .getAll(params)
+      .pipe(map((page) => ({ ...page, content: page.content.map(mapClienteListadoRow) })));
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
-    {
-      label: 'Ver detalle',
-      icon: 'pi pi-eye',
-      command: () => this.router.navigate(['/clientes', row.id]),
-    },
+    // TODO: temporal — habilitar cuando existan GET detalle / PUT modificación de Empresa
+    ...(row.tipoCliente !== TipoCliente.Empresa
+      ? [
+          {
+            label: 'Ver detalle',
+            icon: 'pi pi-eye',
+            command: () => this.router.navigate(['/clientes', row.id]),
+          },
+        ]
+      : []),
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&
     row.estado !== EstadoSocio.Baja
@@ -80,14 +88,19 @@ export class ListadoClientes {
           },
         ]
       : []),
-    {
-      label: 'Modificar',
-      icon: 'pi pi-pencil',
-      command: () =>
-        this.router.navigate(['/clientes', row.id, 'modificar'], {
-          queryParams: { from: 'listado' },
-        }),
-    },
+    // TODO: temporal — habilitar cuando existan GET detalle / PUT modificación de Empresa
+    ...(row.tipoCliente !== TipoCliente.Empresa
+      ? [
+          {
+            label: 'Modificar',
+            icon: 'pi pi-pencil',
+            command: () =>
+              this.router.navigate(['/clientes', row.id, 'modificar'], {
+                queryParams: { from: 'listado' },
+              }),
+          },
+        ]
+      : []),
     ...(row.estado !== EstadoSocio.Baja
       ? [
           {
@@ -121,6 +134,10 @@ export class ListadoClientes {
 
   protected onNuevoCliente(): void {
     this.router.navigate(['/clientes/nuevo']);
+  }
+
+  protected onNuevaEmpresa(): void {
+    this.router.navigate(['/clientes/nueva-empresa']);
   }
 
   protected onPagoCuota(cliente: ClienteRespuestaDto): void {

@@ -21,7 +21,7 @@ export class ReservaClienteBusquedaService {
       map((c) => ({
         id: c.id,
         nombre: c.nombre,
-        cedula: c.cedula,
+        cedula: c.cedula ?? '',
         tipoCliente: c.tipoCliente,
         numeroSocio: c.numeroSocio,
         estado: c.estado,

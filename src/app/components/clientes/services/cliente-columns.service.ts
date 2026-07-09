@@ -19,7 +19,12 @@ export class ClientesColumnsService {
         return ultimaCuota?.descripcion ?? '—';
       },
     },
-    { key: 'cedula', label: 'Cédula', transform: (v) => this.cedulaFormat.transform(v as string) },
+    {
+      key: 'documento',
+      label: 'Documento',
+      nullFallback: '—',
+      transform: (v) => this.cedulaFormat.transform(v as string),
+    },
     { key: 'email', label: 'Email', nullFallback: '—' },
     {
       key: 'estado',
