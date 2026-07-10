@@ -1,30 +1,49 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs';
-import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
+import { catchError, combineLatest, finalize, of, switchMap } from 'rxjs';
+
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
 import { AppTable } from '../../../shared/components/table/table';
-import { TableStateService } from '../../../shared/components/table/table-state.service';
 import { TableExportService } from '../../../shared/components/table/table-export.service';
-import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
-import { ReservasFilterService } from '../services/reservas-filter.service';
-import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
-import { ReservasColumnsService } from '../services/reserva-columns.service';
-import { EstadoReserva, ConfirmDialogService, VerificationDialog } from '../../../shared';
-import { PagoReserva } from '../pago-reserva/pago-reserva';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { TableStateService } from '../../../shared/components/table/table-state.service';
+
+import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
+
+import { MobFab } from '../../../shared/mobile/components/fab/mob-fab';
+import { MobFilterPanel } from '../../../shared/mobile/components/filter-panel/mob-filter-panel';
+import { MobListCard } from '../../../shared/mobile/components/list-card/mob-list-card';
+
+import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
+
+import {
+  ConfirmDialogService,
+  EstadoReserva,
+  VerificationDialog,
+  ESTADO_RESERVA_LABEL,
+} from '../../../shared';
+
 import { PagosAsociadosDialog } from '../cancelar-reserva/pagos-asociados-dialog/pagos-asociados-dialog';
+import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
+
 import {
   ReservaCancelacionCheckResponseDto,
   ReservaCancelacionRequestDto,
-  ReservaRow,
-  TipoReserva,
   ReservaFinalizacionCheckResponseDto,
   ReservaFinalizacionRequestDto,
+  ReservaRow,
+  TipoReserva,
 } from '../models/reserva.model';
-import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
+
+import { PagoReserva } from '../pago-reserva/pago-reserva';
+import { ReservasColumnsService } from '../services/reserva-columns.service';
+import { ReservasFilterService } from '../services/reservas-filter.service';
+import { ReservasService } from '../services/reservas.service';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -38,13 +57,19 @@ import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/
     VerificationDialog,
     PagosAsociadosDialog,
     CompletarPagoDialog,
+    MobFilterPanel,
+    MobListCard,
+    MobFab,
   ],
   providers: [
     TableStateService,
     TableExportService,
     ReservasService,
     ReservasColumnsService,
-    { provide: FilterConfigProvider, useClass: ReservasFilterService },
+    {
+      provide: FilterConfigProvider,
+      useClass: ReservasFilterService,
+    },
   ],
   templateUrl: './listado-reservas.html',
   styleUrl: './listado-reservas.css',
@@ -54,18 +79,21 @@ export class ListadoReservas {
   private readonly reservasService = inject(ReservasService);
   private readonly router = inject(Router);
   private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly columnsService = inject(ReservasColumnsService);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
-  private readonly columnsService = inject(ReservasColumnsService);
-  private readonly errorHandler = inject(ErrorHandlerService);
+  protected readonly breakpoint = inject(BreakpointService);
+
+  protected readonly estadoReserva = EstadoReserva;
+  protected readonly estadoReservaLabel = ESTADO_RESERVA_LABEL;
 
   protected readonly verificandoCancelacionVisible = signal(false);
   protected readonly reservaCancelacionSeleccionada = signal<ReservaRow | null>(null);
   protected readonly cancelacionCheck = signal<ReservaCancelacionCheckResponseDto | null>(null);
 
   protected readonly reservaPagoSeleccionada = signal<ReservaRow | null>(null);
-  protected readonly columns = this.columnsService.columns;
 
   protected readonly procesando = signal(false);
 
@@ -73,8 +101,41 @@ export class ListadoReservas {
   protected readonly reservaFinalizacionSeleccionada = signal<ReservaRow | null>(null);
   protected readonly finalizacionCheck = signal<ReservaFinalizacionCheckResponseDto | null>(null);
 
+  protected readonly columns = this.columnsService.columns;
+
   protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
     this.reservasService.getAll(params);
+
+  /**
+   * Carga exclusiva de la vista móvil.
+   * Se actualiza cuando cambia el breakpoint o los filtros.
+   */
+  protected readonly mobilePage = toSignal(
+    combineLatest([
+      toObservable(this.breakpoint.isMobile),
+      toObservable(this.tableState.queryParams),
+    ]).pipe(
+      switchMap(([isMobile, params]) => {
+        if (!isMobile) {
+          return of(null);
+        }
+
+        return this.reservasService.getAll(params).pipe(
+          catchError((error) => {
+            this.errorHandler.handle(error);
+            return of(null);
+          }),
+        );
+      }),
+    ),
+    {
+      initialValue: null,
+    },
+  );
+
+  protected readonly mobileReservas = computed<ReservaRow[]>(
+    () => this.mobilePage()?.content ?? [],
+  );
 
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
@@ -82,6 +143,7 @@ export class ListadoReservas {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/reservas', row.id]),
     },
+
     ...(row.estadoReserva === EstadoReserva.Pendiente ||
     row.estadoReserva === EstadoReserva.Confirmada
       ? [
@@ -90,11 +152,14 @@ export class ListadoReservas {
             icon: 'pi pi-pencil',
             command: () =>
               this.router.navigate(['/reservas', row.id, 'modificar'], {
-                queryParams: { from: 'listado' },
+                queryParams: {
+                  from: 'listado',
+                },
               }),
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+
     ...(this.puedeConfirmarPago(row)
       ? [
           {
@@ -104,6 +169,7 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+
     ...(this.puedeCancelar(row)
       ? [
           {
@@ -113,6 +179,7 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+
     ...(this.puedeFinalizar(row)
       ? [
           {
@@ -122,6 +189,7 @@ export class ListadoReservas {
           } satisfies RowAction<ReservaRow>,
         ]
       : []),
+
     ...(row.requiereDocumentacion && !row.tieneDocumentacion
       ? [
           {
@@ -137,8 +205,15 @@ export class ListadoReservas {
     this.tableState.updateFilters(filters);
   }
 
+  protected onApplyFilters(filters: Record<string, string>): void {
+    this.tableState.updateFilters(filters);
+  }
+
   protected onSearchChange(search: string): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
+    this.tableState.updateFilters({
+      ...this.tableState.queryParams().filters,
+      search,
+    });
   }
 
   protected onClearFilters(): void {
@@ -151,6 +226,7 @@ export class ListadoReservas {
 
   protected onExportar(): void {
     const filters = this.tableState.queryParams().filters;
+
     this.tableExport.exportar(() => this.reservasService.exportar(filters));
   }
 
@@ -167,6 +243,27 @@ export class ListadoReservas {
     this.recargarTabla();
   }
 
+  protected reservaReferencia(row: ReservaRow): string {
+    const year = row.fechaEntrada?.slice(0, 4) ?? '----';
+    const numero = String(row.id).padStart(3, '0');
+
+    return `RSV-${year}-${numero}`;
+  }
+
+  protected formatearFecha(fecha: string): string {
+    if (!fecha) {
+      return 'Sin fecha';
+    }
+
+    const [year, month, day] = fecha.split('-');
+
+    if (!year || !month || !day) {
+      return fecha;
+    }
+
+    return `${day}/${month}/${year}`;
+  }
+
   private onConfirmarDocumentacion(row: ReservaRow): void {
     this.confirmDialogService
       .open({
@@ -174,7 +271,9 @@ export class ListadoReservas {
         message: `¿Confirma que la reserva N° ${row.id} cuenta con la documentación requerida?`,
       })
       .subscribe((confirmado) => {
-        if (!confirmado) return;
+        if (!confirmado) {
+          return;
+        }
 
         this.reservasService.confirmarDocumentacion(row.id).subscribe(() => {
           this.recargarTabla();
@@ -183,7 +282,9 @@ export class ListadoReservas {
   }
 
   private recargarTabla(): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+    this.tableState.updateFilters({
+      ...this.tableState.queryParams().filters,
+    });
   }
 
   private puedeConfirmarPago(row: ReservaRow): boolean {
@@ -222,7 +323,9 @@ export class ListadoReservas {
             })
             .subscribe((confirmed) => {
               if (confirmed) {
-                this.ejecutarCancelacion({ generarDevolucion: false });
+                this.ejecutarCancelacion({
+                  generarDevolucion: false,
+                });
               } else {
                 this.limpiarCancelacion();
               }
@@ -231,10 +334,10 @@ export class ListadoReservas {
           this.cancelacionCheck.set(response);
         }
       },
-      error: (err) => {
+      error: (error) => {
         this.verificandoCancelacionVisible.set(false);
         this.limpiarCancelacion();
-        this.errorHandler.handle(err);
+        this.errorHandler.handle(error);
       },
     });
   }
@@ -242,7 +345,9 @@ export class ListadoReservas {
   private ejecutarCancelacion(dto: ReservaCancelacionRequestDto): void {
     const reserva = this.reservaCancelacionSeleccionada();
 
-    if (!reserva) return;
+    if (!reserva) {
+      return;
+    }
 
     this.procesando.set(true);
 
@@ -254,8 +359,8 @@ export class ListadoReservas {
           this.limpiarCancelacion();
           this.recargarTabla();
         },
-        error: (err) => {
-          this.errorHandler.handle(err);
+        error: (error) => {
+          this.errorHandler.handle(error);
         },
       });
   }
@@ -309,10 +414,10 @@ export class ListadoReservas {
           this.finalizacionCheck.set(response);
         }
       },
-      error: (err) => {
+      error: (error) => {
         this.verificandoFinalizacionVisible.set(false);
         this.limpiarFinalizacion();
-        this.errorHandler.handle(err);
+        this.errorHandler.handle(error);
       },
     });
   }
@@ -320,7 +425,9 @@ export class ListadoReservas {
   private ejecutarFinalizacion(dto: ReservaFinalizacionRequestDto): void {
     const reserva = this.reservaFinalizacionSeleccionada();
 
-    if (!reserva) return;
+    if (!reserva) {
+      return;
+    }
 
     this.procesando.set(true);
 
@@ -332,8 +439,8 @@ export class ListadoReservas {
           this.limpiarFinalizacion();
           this.recargarTabla();
         },
-        error: (err) => {
-          this.errorHandler.handle(err);
+        error: (error) => {
+          this.errorHandler.handle(error);
         },
       });
   }
