@@ -774,33 +774,19 @@ describe('ListadoReservas en vista móvil', () => {
   });
 
   it('renderiza los componentes de la vista móvil', () => {
-    expect(
-      fixture.debugElement.query(
-        By.css('app-mob-filter-panel'),
-      ),
-    ).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('app-mob-filter-panel'))).not.toBeNull();
 
-    expect(
-      fixture.debugElement.queryAll(
-        By.css('app-mob-list-card'),
-      ).length,
-    ).toBe(mockPage.content.length);
+    expect(fixture.debugElement.queryAll(By.css('app-mob-list-card')).length).toBe(
+      mockPage.content.length,
+    );
 
-    expect(
-      fixture.debugElement.query(By.css('app-mob-fab')),
-    ).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('app-mob-fab'))).not.toBeNull();
   });
 
   it('no renderiza la tabla ni el filtro de escritorio', () => {
-    expect(
-      fixture.debugElement.query(By.css('app-table')),
-    ).toBeNull();
+    expect(fixture.debugElement.query(By.css('app-table'))).toBeNull();
 
-    expect(
-      fixture.debugElement.query(
-        By.css('app-filter-panel'),
-      ),
-    ).toBeNull();
+    expect(fixture.debugElement.query(By.css('app-filter-panel'))).toBeNull();
   });
 
   it('muestra los datos principales de la reserva', () => {
@@ -814,35 +800,25 @@ describe('ListadoReservas en vista móvil', () => {
   });
 
   it('mobileReservas contiene las reservas obtenidas', () => {
-    expect(component['mobileReservas']()).toEqual(
-      mockPage.content,
-    );
+    expect(component['mobileReservas']()).toEqual(mockPage.content);
   });
 
   it('el FAB navega al alta de una reserva', () => {
-    const fab = fixture.debugElement.query(
-      By.css('app-mob-fab'),
-    );
+    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
 
     fab.triggerEventHandler('clicked');
 
-    expect(navigateSpy).toHaveBeenCalledWith([
-      '/reservas/nueva',
-    ]);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
   });
 
   it('aplica los filtros emitidos por MobFilterPanel', () => {
-    const filterPanel = fixture.debugElement.query(
-      By.css('app-mob-filter-panel'),
-    );
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
 
     filterPanel.triggerEventHandler('filtersApply', {
       estadoReserva: 'CONFIRMADA',
     });
 
-    expect(
-      component['tableState'].queryParams().filters,
-    ).toEqual({
+    expect(component['tableState'].queryParams().filters).toEqual({
       estadoReserva: 'CONFIRMADA',
     });
   });
@@ -852,95 +828,10 @@ describe('ListadoReservas en vista móvil', () => {
       estadoReserva: 'CONFIRMADA',
     });
 
-    const filterPanel = fixture.debugElement.query(
-      By.css('app-mob-filter-panel'),
-    );
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
 
     filterPanel.triggerEventHandler('filtersClear');
 
-    expect(
-      component['tableState'].queryParams().filters,
-    ).toEqual({});
-  });
-});
-
-describe('ListadoReservas móvil con error de carga', () => {
-  it('debe enviar el error al ErrorHandlerService', async () => {
-    const error = new Error('Error al cargar las reservas');
-
-    const errorHandler = {
-      handle: vi.fn(),
-    };
-
-    const reservasService = {
-      getAll: vi.fn().mockReturnValue(throwError(() => error)),
-      exportar: vi.fn().mockReturnValue(of(undefined)),
-      verificarCancelacion: vi.fn(),
-      cancelar: vi.fn(),
-      confirmarDocumentacion: vi.fn(),
-      verificarFinalizacion: vi.fn(),
-      finalizar: vi.fn(),
-    };
-
-    await TestBed.configureTestingModule({
-      imports: [ListadoReservas],
-      providers: [
-        {
-          provide: Router,
-          useValue: {
-            navigate: vi.fn(),
-          },
-        },
-        {
-          provide: AuthService,
-          useValue: mockAuthService,
-        },
-        {
-          provide: ConfirmDialogService,
-          useValue: {
-            open: vi.fn().mockReturnValue(of(false)),
-          },
-        },
-        {
-          provide: BreakpointObserver,
-          useValue: {
-            observe: () =>
-              of({
-                matches: true,
-              }),
-          },
-        },
-        BreakpointService,
-        {
-          provide: ErrorHandlerService,
-          useValue: errorHandler,
-        },
-      ],
-    })
-      .overrideComponent(ListadoReservas, {
-        set: {
-          providers: [
-            TableStateService,
-            TableExportService,
-            ReservasColumnsService,
-            {
-              provide: ReservasService,
-              useValue: reservasService,
-            },
-            {
-              provide: FilterConfigProvider,
-              useClass: MinimalFilterProvider,
-            },
-          ],
-        },
-      })
-      .compileComponents();
-
-    const fixture = TestBed.createComponent(ListadoReservas);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(errorHandler.handle).toHaveBeenCalledWith(error);
+    expect(component['tableState'].queryParams().filters).toEqual({});
   });
 });

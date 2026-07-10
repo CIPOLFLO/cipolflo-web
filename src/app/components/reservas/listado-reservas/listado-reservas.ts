@@ -60,7 +60,7 @@ import { ReservasService } from '../services/reservas.service';
     MobFilterPanel,
     MobListCard,
     MobFab,
-    DateFormatPipe
+    DateFormatPipe,
   ],
   providers: [
     TableStateService,

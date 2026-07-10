@@ -1,88 +1,129 @@
-<app-page-layout [pageTitle]="breakpoint.isMobile() ? 'Reservas' : 'Listado de Reservas'"
-  [pageDescription]="breakpoint.isMobile() ? '' : 'Listado y gestión del módulo de reservas'">
+<app-page-layout
+  [pageTitle]="breakpoint.isMobile() ? 'Reservas' : 'Listado de Reservas'"
+  [pageDescription]="breakpoint.isMobile() ? '' : 'Listado y gestión del módulo de reservas'"
+>
   @if (!breakpoint.isMobile()) {
-  <ng-container actions>
-    <app-button label="Nueva Reserva" intent="primary" icon="pi-plus" (clicked)="onNuevaReserva()" />
+    <ng-container actions>
+      <app-button
+        label="Nueva Reserva"
+        intent="primary"
+        icon="pi-plus"
+        (clicked)="onNuevaReserva()"
+      />
 
-    <app-button label="Descargar listado" intent="secondary" icon="pi-download"
-      [disabled]="!tableExport.puedeExportar()" [loading]="tableExport.exportando()" (clicked)="onExportar()" />
-  </ng-container>
+      <app-button
+        label="Descargar listado"
+        intent="secondary"
+        icon="pi-download"
+        [disabled]="!tableExport.puedeExportar()"
+        [loading]="tableExport.exportando()"
+        (clicked)="onExportar()"
+      />
+    </ng-container>
   }
 
-  <app-pago-reserva [reserva]="reservaPagoSeleccionada()" (closed)="onCerrarPagoReserva()"
-    (pagoRegistrado)="onPagoReservaRegistrado()" />
+  <app-pago-reserva
+    [reserva]="reservaPagoSeleccionada()"
+    (closed)="onCerrarPagoReserva()"
+    (pagoRegistrado)="onPagoReservaRegistrado()"
+  />
 
-  <app-verification-dialog [visible]="verificandoCancelacionVisible()" title="Verificando cancelación" [message]="
+  <app-verification-dialog
+    [visible]="verificandoCancelacionVisible()"
+    title="Verificando cancelación"
+    [message]="
       'Revisando si la reserva #' +
       (reservaCancelacionSeleccionada()?.id ?? '') +
       ' tiene pagos asociados...'
-    " />
+    "
+  />
 
-  <app-pagos-asociados-dialog [visible]="cancelacionCheck() !== null"
-    [numeroReserva]="reservaCancelacionSeleccionada()?.id ?? null" [pagos]="cancelacionCheck()?.pagosAsociados ?? []"
-    [importeTotalPagos]="cancelacionCheck()?.importeTotalPagos ?? 0" [procesando]="procesando()"
-    (cancelar)="onCerrarCancelacionConPagos()" (confirmar)="onConfirmarCancelacionConPagos($event)" />
+  <app-pagos-asociados-dialog
+    [visible]="cancelacionCheck() !== null"
+    [numeroReserva]="reservaCancelacionSeleccionada()?.id ?? null"
+    [pagos]="cancelacionCheck()?.pagosAsociados ?? []"
+    [importeTotalPagos]="cancelacionCheck()?.importeTotalPagos ?? 0"
+    [procesando]="procesando()"
+    (cancelar)="onCerrarCancelacionConPagos()"
+    (confirmar)="onConfirmarCancelacionConPagos($event)"
+  />
 
-  <app-verification-dialog [visible]="verificandoFinalizacionVisible()" title="Verificando finalización" [message]="
+  <app-verification-dialog
+    [visible]="verificandoFinalizacionVisible()"
+    title="Verificando finalización"
+    [message]="
       'Revisando si la reserva #' +
       (reservaFinalizacionSeleccionada()?.id ?? '') +
       ' tiene saldo pendiente...'
-    " />
+    "
+  />
 
-  <app-completar-pago-dialog [visible]="finalizacionCheck() !== null"
+  <app-completar-pago-dialog
+    [visible]="finalizacionCheck() !== null"
     [numeroReserva]="reservaFinalizacionSeleccionada()?.id ?? null"
-    [montoImpago]="finalizacionCheck()?.montoImpago ?? 0" [procesando]="procesando()"
-    (cancelar)="onCerrarFinalizacionConSaldo()" (confirmar)="onConfirmarFinalizacionConSaldo($event)" />
+    [montoImpago]="finalizacionCheck()?.montoImpago ?? 0"
+    [procesando]="procesando()"
+    (cancelar)="onCerrarFinalizacionConSaldo()"
+    (confirmar)="onConfirmarFinalizacionConSaldo($event)"
+  />
 
   @if (breakpoint.isMobile()) {
-  <section class="reservas-mobile">
-    <app-mob-filter-panel (filtersApply)="onApplyFilters($event)" (filtersClear)="onClearFilters()" />
+    <section class="reservas-mobile">
+      <app-mob-filter-panel
+        (filtersApply)="onApplyFilters($event)"
+        (filtersClear)="onClearFilters()"
+      />
 
-    <div class="reservas-mobile__list">
-      @for (reserva of mobileReservas(); track reserva.id) {
-      <app-mob-list-card [row]="reserva" [actions]="rowActions(reserva)">
-        <span class="reserva-card__reference">
-          Reserva N.º {{ reserva.id }}
-        </span>
+      <div class="reservas-mobile__list">
+        @for (reserva of mobileReservas(); track reserva.id) {
+          <app-mob-list-card [row]="reserva" [actions]="rowActions(reserva)">
+            <span class="reserva-card__reference"> Reserva N.º {{ reserva.id }} </span>
 
-        <span class="reserva-card__status" [class.reserva-card__status--pending]="
+            <span
+              class="reserva-card__status"
+              [class.reserva-card__status--pending]="
                 reserva.estadoReserva === estadoReserva.Pendiente
-              " [class.reserva-card__status--confirmed]="
+              "
+              [class.reserva-card__status--confirmed]="
                 reserva.estadoReserva === estadoReserva.Confirmada
-              " [class.reserva-card__status--in-progress]="
+              "
+              [class.reserva-card__status--in-progress]="
                 reserva.estadoReserva === estadoReserva.EnCurso
-              " [class.reserva-card__status--completed]="
+              "
+              [class.reserva-card__status--completed]="
                 reserva.estadoReserva === estadoReserva.Finalizada
-              " [class.reserva-card__status--cancelled]="
+              "
+              [class.reserva-card__status--cancelled]="
                 reserva.estadoReserva === estadoReserva.Cancelada
-              ">
-          {{ estadoReservaLabel[reserva.estadoReserva] }}
-        </span>
+              "
+            >
+              {{ estadoReservaLabel[reserva.estadoReserva] }}
+            </span>
 
-        <span class="reserva-card__client">
-          {{ reserva.nombreCliente }}
-        </span>
+            <span class="reserva-card__client">
+              {{ reserva.nombreCliente }}
+            </span>
 
-        <span class="reserva-card__detail">
-          <i class="pi pi-calendar" aria-hidden="true"></i>
+            <span class="reserva-card__detail">
+              <i class="pi pi-calendar" aria-hidden="true"></i>
 
-          {{ reserva.fechaEntrada | dateFormat }}
+              {{ reserva.fechaEntrada | dateFormat }}
 
-          <span aria-hidden="true">•</span>
+              <span aria-hidden="true">•</span>
 
-          {{ reserva.servicioNombre }}
-        </span>
-      </app-mob-list-card>
-      } @empty {
-      <div class="reservas-mobile__empty">No se encontraron reservas.</div>
-      }
-    </div>
+              {{ reserva.servicioNombre }}
+            </span>
+          </app-mob-list-card>
+        } @empty {
+          <div class="reservas-mobile__empty">No se encontraron reservas.</div>
+        }
+      </div>
 
-    <app-mob-fab (clicked)="onNuevaReserva()" />
-  </section>
+      <app-mob-fab (clicked)="onNuevaReserva()" />
+    </section>
   } @else {
-  <app-filter-panel (filterChange)="onFilterChange($event)" />
+    <app-filter-panel (filterChange)="onFilterChange($event)" />
 
-  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
   }
 </app-page-layout>
