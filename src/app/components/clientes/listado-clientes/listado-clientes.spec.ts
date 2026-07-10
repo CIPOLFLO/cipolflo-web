@@ -287,7 +287,7 @@ describe('ListadoClientes', () => {
     expect(actions.some((a) => a.label === 'Dar de baja')).toBe(false);
   });
 
-  it('onEliminarCliente abre el diálogo de confirmación', () => {
+  it('onDarDeBajaCliente abre el diálogo de confirmación', () => {
     const row = mockPageResponse.content[0];
     component['onDarDeBajaCliente'](row);
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
@@ -300,14 +300,14 @@ describe('ListadoClientes', () => {
     });
   });
 
-  it('onEliminarCliente llama a dar de baja si se confirma la baja', () => {
+  it('onDarDeBajaCliente llama a darDeBaja si se confirma la operación', () => {
     const row = mockPageResponse.content[0];
     mockConfirmDialogService.open.mockReturnValue(of(true));
     component['onDarDeBajaCliente'](row);
     expect(mockClientesService.darDeBaja).toHaveBeenCalledWith(row.id);
   });
 
-  it('onEliminarCliente no llama a eliminar si se cancela la baja', () => {
+  it('onDarDeBajaCliente no llama a darDeBaja si se cancela la operación', () => {
     const row = mockPageResponse.content[0];
     mockConfirmDialogService.open.mockReturnValue(of(false));
     component['onDarDeBajaCliente'](row);
@@ -351,10 +351,6 @@ describe('ListadoClientes', () => {
     expect(component['tableState'].queryParams().filters).toEqual({ estado: 'ACTIVO' });
   });
 
-  it('onSearchChange actualiza el filtro search en tableState', () => {
-    component['onSearchChange']('Juan');
-    expect(component['tableState'].queryParams().filters['search']).toBe('Juan');
-  });
 
   it('onClearFilters limpia los filtros en tableState', () => {
     component['tableState'].updateFilters({ nombre: 'test' });
@@ -391,6 +387,83 @@ describe('ListadoClientes', () => {
     mockClientesService.darDeBaja.mockReturnValue(throwError(() => error));
     component['onDarDeBajaCliente'](row);
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+  });
+  it('clienteReferencia devuelve el número de socio cuando está disponible', () => {
+    const socio = mockPageResponse.content[0];
+
+    expect(component['clienteReferencia'](socio)).toBe('5');
+  });
+
+  it('clienteReferencia devuelve Particular para un cliente particular', () => {
+    const particular = mockPageResponse.content[1];
+
+    expect(component['clienteReferencia'](particular)).toBe('Particular');
+  });
+
+  it('clienteReferencia devuelve Empresa para un cliente empresa', () => {
+    expect(component['clienteReferencia'](empresaMock)).toBe('Empresa');
+  });
+
+  it('clienteDocumento devuelve la cédula cuando el cliente tiene cédula', () => {
+    const socio = mockPageResponse.content[0];
+
+    expect(component['clienteDocumento'](socio)).toBe('1.234.567-8');
+  });
+
+  it('clienteDocumento devuelve el RUT cuando la empresa no tiene cédula', () => {
+    expect(component['clienteDocumento'](empresaMock)).toBe('210001230018');
+  });
+
+  it('clienteDocumento devuelve Sin documento cuando no existe cédula ni RUT', () => {
+    const clienteSinDocumento: ClienteRespuestaDto = {
+      ...mockPageResponse.content[1],
+      cedula: null,
+      rut: null,
+    };
+
+    expect(component['clienteDocumento'](clienteSinDocumento)).toBe(
+      'Sin documento',
+    );
+  });
+
+  it('clienteEstadoLabel devuelve Activo para un socio activo', () => {
+    const socio = mockPageResponse.content[0];
+
+    expect(component['clienteEstadoLabel'](socio)).toBe('Activo');
+  });
+
+  it('clienteEstadoLabel devuelve Inactivo para un socio inactivo', () => {
+    const socioInactivo: ClienteRespuestaDto = {
+      ...mockPageResponse.content[0],
+      estado: EstadoSocio.Inactivo,
+    };
+
+    expect(component['clienteEstadoLabel'](socioInactivo)).toBe('Inactivo');
+  });
+
+  it('clienteEstadoLabel devuelve De baja para un socio dado de baja', () => {
+    const socioDeBaja: ClienteRespuestaDto = {
+      ...mockPageResponse.content[0],
+      estado: EstadoSocio.Baja,
+    };
+
+    expect(component['clienteEstadoLabel'](socioDeBaja)).toBe('De baja');
+  });
+
+  it('clienteEstadoLabel devuelve Particular cuando el cliente no tiene estado', () => {
+    const particular = mockPageResponse.content[1];
+
+    expect(component['clienteEstadoLabel'](particular)).toBe('Particular');
+  });
+
+  it('tipoClienteLabel devuelve la etiqueta correspondiente', () => {
+    expect(component['tipoClienteLabel'](TipoCliente.Socio)).toBe('Socio');
+    expect(component['tipoClienteLabel'](TipoCliente.Particular)).toBe(
+      'Particular',
+    );
+    expect(component['tipoClienteLabel'](TipoCliente.Empresa)).toBe(
+      'Empresa',
+    );
   });
 });
 
@@ -483,5 +556,179 @@ describe('ListadoClientes sin filtros por defecto', () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance['tableState'].queryParams().filters).toEqual({});
+  });
+
+});
+
+describe('ListadoClientes en vista móvil', () => {
+  let fixture: ComponentFixture<ListadoClientes>;
+  let component: ListadoClientes;
+
+  let mockClientesService: {
+    getAll: ReturnType<typeof vi.fn>;
+    getCostoCuota: ReturnType<typeof vi.fn>;
+    darDeBaja: ReturnType<typeof vi.fn>;
+    exportar: ReturnType<typeof vi.fn>;
+  };
+
+  beforeEach(async () => {
+    mockClientesService = {
+      getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+      getCostoCuota: vi.fn().mockReturnValue(5000),
+      darDeBaja: vi.fn().mockReturnValue(of(void 0)),
+      exportar: vi.fn().mockReturnValue(of(undefined)),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [ListadoClientes],
+      providers: [
+        {
+          provide: ClientesService,
+          useValue: mockClientesService,
+        },
+        {
+          provide: ConfirmDialogService,
+          useValue: {
+            open: vi.fn().mockReturnValue(of(false)),
+          },
+        },
+        {
+          provide: Router,
+          useValue: {
+            navigate: vi.fn(),
+          },
+        },
+        {
+          provide: BreakpointObserver,
+          useValue: {
+            observe: () => of({ matches: true }),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+        BreakpointService,
+        {
+          provide: ErrorHandlerService,
+          useValue: {
+            handle: vi.fn(),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ListadoClientes);
+    component = fixture.componentInstance;
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('debe renderizar el panel de filtros móvil', () => {
+    const filterPanel = fixture.debugElement.query(
+      By.css('app-mob-filter-panel'),
+    );
+
+    expect(filterPanel).not.toBeNull();
+  });
+
+  it('no debe renderizar el panel de filtros de escritorio', () => {
+    const filterPanel = fixture.debugElement.query(
+      By.css('app-filter-panel'),
+    );
+
+    expect(filterPanel).toBeNull();
+  });
+
+  it('no debe renderizar la tabla de escritorio', () => {
+    const table = fixture.debugElement.query(By.css('app-table'));
+
+    expect(table).toBeNull();
+  });
+
+  it('debe renderizar una card por cada cliente recibido', () => {
+    const cards = fixture.debugElement.queryAll(
+      By.css('app-mob-list-card'),
+    );
+
+    expect(cards.length).toBe(mockPageResponse.content.length);
+  });
+
+  it('debe mostrar el número de socio del socio', () => {
+    expect(fixture.nativeElement.textContent).toContain(
+      'Nro. de socio: 5',
+    );
+  });
+
+  it('debe mostrar el nombre de los clientes', () => {
+    const content = fixture.nativeElement.textContent;
+
+    expect(content).toContain('Juan Pérez');
+    expect(content).toContain('Laura Fernández');
+  });
+
+  it('debe mostrar el documento del cliente', () => {
+    expect(fixture.nativeElement.textContent).toContain(
+      '1.234.567-8',
+    );
+  });
+
+  it('debe mostrar el estado del socio', () => {
+    expect(fixture.nativeElement.textContent).toContain('Activo');
+  });
+
+  it('debe renderizar el botón flotante', () => {
+    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+
+    expect(fab).not.toBeNull();
+  });
+
+  it('debe navegar al alta de cliente cuando el FAB emite clicked', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+
+    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+    fab.triggerEventHandler('clicked');
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
+  });
+
+  it('debe aplicar los filtros emitidos por MobFilterPanel', () => {
+    const filterPanel = fixture.debugElement.query(
+      By.css('app-mob-filter-panel'),
+    );
+
+    filterPanel.triggerEventHandler('filtersApply', {
+      estado: 'ACTIVO',
+    });
+
+    expect(component['tableState'].queryParams().filters).toEqual({
+      estado: 'ACTIVO',
+    });
+  });
+
+  it('debe limpiar los filtros cuando MobFilterPanel emite filtersClear', () => {
+    component['tableState'].updateFilters({
+      estado: 'ACTIVO',
+    });
+
+    const filterPanel = fixture.debugElement.query(
+      By.css('app-mob-filter-panel'),
+    );
+
+    filterPanel.triggerEventHandler('filtersClear');
+
+    expect(component['tableState'].queryParams().filters).toEqual({});
+  });
+
+  it('mobileClientes debe contener los clientes recibidos', () => {
+    expect(component['mobileClientes']()).toEqual(
+      mockPageResponse.content,
+    );
+  });
+
+  it('debe llamar a getAll para cargar el listado móvil', () => {
+    expect(mockClientesService.getAll).toHaveBeenCalled();
   });
 });

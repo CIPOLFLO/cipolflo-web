@@ -1,36 +1,110 @@
 <app-page-layout
-  pageTitle="Listado de Clientes"
-  pageDescription="Gestiona y consulta información de todos los clientes del sistema"
+  [pageTitle]="breakpoint.isMobile() ? 'Clientes' : 'Listado de Clientes'"
+  [pageDescription]="
+    breakpoint.isMobile()
+      ? ''
+      : 'Gestiona y consulta información de todos los clientes del sistema'
+  "
 >
-  <app-button
-    actions
-    label="Nuevo Socio"
-    intent="primary"
-    icon="pi-plus"
-    (clicked)="onNuevoCliente()"
-  />
-  <app-button
-    actions
-    label="Nueva Empresa"
-    intent="primary"
-    icon="pi-plus"
-    (clicked)="onNuevaEmpresa()"
-  />
   @if (!breakpoint.isMobile()) {
-    <app-button
-      actions
-      label="Descargar listado"
-      intent="secondary"
-      icon="pi-download"
-      [disabled]="!tableExport.puedeExportar()"
-      [loading]="tableExport.exportando()"
-      (clicked)="onExportar()"
+    <ng-container actions>
+      <app-button
+        label="Nuevo Socio"
+        intent="primary"
+        icon="pi-plus"
+        (clicked)="onNuevoCliente()"
+      />
+
+      <app-button
+        label="Nueva Empresa"
+        intent="primary"
+        icon="pi-plus"
+        (clicked)="onNuevaEmpresa()"
+      />
+
+      <app-button
+        label="Descargar listado"
+        intent="secondary"
+        icon="pi-download"
+        [disabled]="!tableExport.puedeExportar()"
+        [loading]="tableExport.exportando()"
+        (clicked)="onExportar()"
+      />
+    </ng-container>
+  }
+
+  @if (breakpoint.isMobile()) {
+    <section class="clientes-mobile">
+      <app-mob-filter-panel
+        (filtersApply)="onApplyFilters($event)"
+        (filtersClear)="onClearFilters()"
+      />
+
+      <div class="clientes-mobile__list">
+        @for (cliente of mobileClientes(); track cliente.id) {
+          <app-mob-list-card
+            [row]="cliente"
+            [actions]="rowActions(cliente)"
+          >
+            <span class="cliente-card__reference">
+              @if (cliente.numeroSocio !== null) {
+                Nro. de socio: {{ cliente.numeroSocio }}
+              } @else {
+                {{ clienteReferencia(cliente) }}
+              }
+            </span>
+
+            <span
+              class="cliente-card__status"
+              [class.cliente-card__status--active]="
+                cliente.estado === 'ACTIVO'
+              "
+              [class.cliente-card__status--inactive]="
+                cliente.estado === 'INACTIVO'
+              "
+              [class.cliente-card__status--disabled]="
+                cliente.estado === 'DE_BAJA'
+              "
+              [class.cliente-card__status--neutral]="
+                cliente.estado === null
+              "
+            >
+              {{ clienteEstadoLabel(cliente) }}
+            </span>
+
+            <span class="cliente-card__name">
+              {{ cliente.nombreCompleto }}
+            </span>
+
+            <span class="cliente-card__document">
+              {{ clienteDocumento(cliente) }}
+            </span>
+          </app-mob-list-card>
+        } @empty {
+          <div class="clientes-mobile__empty">
+            No se encontraron clientes.
+          </div>
+        }
+      </div>
+
+      <app-mob-fab (clicked)="onNuevoCliente()" />
+    </section>
+  } @else {
+    <app-filter-panel
+      (filterChange)="onFilterChange($event)"
+    />
+
+    <app-table
+      [columns]="columns"
+      [loadDataFn]="loadDataFn"
+      [getRowActions]="rowActions"
     />
   }
-  <app-filter-panel (filterChange)="onFilterChange($event)" />
 
-  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
   @if (clientePagoSeleccionado(); as clientePago) {
-    <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
+    <app-pago-cuota
+      [cliente]="clientePago"
+      (cerrado)="onCerrarPagoCuota()"
+    />
   }
 </app-page-layout>
