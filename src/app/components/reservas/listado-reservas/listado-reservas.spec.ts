@@ -694,46 +694,23 @@ describe('ListadoReservas', () => {
     });
   });
 });
-
 describe('ListadoReservas en vista móvil', () => {
   let fixture: ComponentFixture<ListadoReservas>;
   let component: ListadoReservas;
-
-  let mockReservasService: {
-    getAll: ReturnType<typeof vi.fn>;
-    exportar: ReturnType<typeof vi.fn>;
-    verificarCancelacion: ReturnType<typeof vi.fn>;
-    cancelar: ReturnType<typeof vi.fn>;
-    confirmarDocumentacion: ReturnType<typeof vi.fn>;
-    verificarFinalizacion: ReturnType<typeof vi.fn>;
-    finalizar: ReturnType<typeof vi.fn>;
-  };
-
   let navigateSpy: ReturnType<typeof vi.fn>;
+
+  const reservasServiceMock = {
+    getAll: vi.fn().mockReturnValue(of(mockPage)),
+    exportar: vi.fn().mockReturnValue(of(undefined)),
+    verificarCancelacion: vi.fn(),
+    cancelar: vi.fn(),
+    confirmarDocumentacion: vi.fn(),
+    verificarFinalizacion: vi.fn(),
+    finalizar: vi.fn(),
+  };
 
   beforeEach(async () => {
     navigateSpy = vi.fn();
-
-    mockReservasService = {
-      getAll: vi.fn().mockReturnValue(of(mockPage)),
-      exportar: vi.fn().mockReturnValue(of(undefined)),
-      verificarCancelacion: vi.fn().mockReturnValue(
-        of({
-          puedeCancelarseDirectamente: true,
-          pagosAsociados: [],
-          importeTotalPagos: 0,
-        }),
-      ),
-      cancelar: vi.fn().mockReturnValue(of(undefined)),
-      confirmarDocumentacion: vi.fn().mockReturnValue(of(undefined)),
-      verificarFinalizacion: vi.fn().mockReturnValue(
-        of({
-          puedeFinalizarSinPago: true,
-          montoImpago: 0,
-        }),
-      ),
-      finalizar: vi.fn().mockReturnValue(of(undefined)),
-    };
 
     await TestBed.configureTestingModule({
       imports: [ListadoReservas],
@@ -757,10 +734,7 @@ describe('ListadoReservas en vista móvil', () => {
         {
           provide: BreakpointObserver,
           useValue: {
-            observe: () =>
-              of({
-                matches: true,
-              }),
+            observe: () => of({ matches: true }),
           },
         },
         BreakpointService,
@@ -780,7 +754,7 @@ describe('ListadoReservas en vista móvil', () => {
             ReservasColumnsService,
             {
               provide: ReservasService,
-              useValue: mockReservasService,
+              useValue: reservasServiceMock,
             },
             {
               provide: FilterConfigProvider,
@@ -799,98 +773,94 @@ describe('ListadoReservas en vista móvil', () => {
     fixture.detectChanges();
   });
 
-  it('debe mostrar el título Reservas', () => {
-    expect(fixture.nativeElement.textContent).toContain('Reservas');
+  it('renderiza los componentes de la vista móvil', () => {
+    expect(
+      fixture.debugElement.query(
+        By.css('app-mob-filter-panel'),
+      ),
+    ).not.toBeNull();
+
+    expect(
+      fixture.debugElement.queryAll(
+        By.css('app-mob-list-card'),
+      ).length,
+    ).toBe(mockPage.content.length);
+
+    expect(
+      fixture.debugElement.query(By.css('app-mob-fab')),
+    ).not.toBeNull();
   });
 
-  it('debe renderizar MobFilterPanel', () => {
-    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+  it('no renderiza la tabla ni el filtro de escritorio', () => {
+    expect(
+      fixture.debugElement.query(By.css('app-table')),
+    ).toBeNull();
 
-    expect(filterPanel).not.toBeNull();
+    expect(
+      fixture.debugElement.query(
+        By.css('app-filter-panel'),
+      ),
+    ).toBeNull();
   });
 
-  it('no debe renderizar FilterPanel de escritorio', () => {
-    const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
+  it('muestra los datos principales de la reserva', () => {
+    const text = fixture.nativeElement.textContent;
 
-    expect(filterPanel).toBeNull();
+    expect(text).toContain('Reserva N.º 1');
+    expect(text).toContain('Confirmada');
+    expect(text).toContain('Juan Pérez');
+    expect(text).toContain('Hospedaje en camping');
+    expect(text).toContain('10/08/2026');
   });
 
-  it('no debe renderizar AppTable', () => {
-    const table = fixture.debugElement.query(By.css('app-table'));
-
-    expect(table).toBeNull();
+  it('mobileReservas contiene las reservas obtenidas', () => {
+    expect(component['mobileReservas']()).toEqual(
+      mockPage.content,
+    );
   });
 
-  it('debe renderizar una card por cada reserva', () => {
-    const cards = fixture.debugElement.queryAll(By.css('app-mob-list-card'));
-
-    expect(cards.length).toBe(mockPage.content.length);
-  });
-
-  it('debe mostrar el código visual de la reserva', () => {
-    expect(fixture.nativeElement.textContent).toContain('RSV-2026-001');
-  });
-
-  it('debe mostrar el estado de la reserva', () => {
-    expect(fixture.nativeElement.textContent).toContain('Confirmada');
-  });
-
-  it('debe mostrar el nombre del cliente', () => {
-    expect(fixture.nativeElement.textContent).toContain('Juan Pérez');
-  });
-
-  it('debe mostrar el nombre del servicio', () => {
-    expect(fixture.nativeElement.textContent).toContain('Hospedaje en camping');
-  });
-
-  it('debe mostrar la fecha de entrada formateada', () => {
-    expect(fixture.nativeElement.textContent).toContain('10/08/2026');
-  });
-
-  it('mobileReservas contiene las reservas cargadas', () => {
-    expect(component['mobileReservas']()).toEqual(mockPage.content);
-  });
-
-  it('debe renderizar el FAB', () => {
-    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
-
-    expect(fab).not.toBeNull();
-  });
-
-  it('el FAB debe navegar a nueva reserva', () => {
-    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+  it('el FAB navega al alta de una reserva', () => {
+    const fab = fixture.debugElement.query(
+      By.css('app-mob-fab'),
+    );
 
     fab.triggerEventHandler('clicked');
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
+    expect(navigateSpy).toHaveBeenCalledWith([
+      '/reservas/nueva',
+    ]);
   });
 
-  it('filtersApply actualiza los filtros móviles', () => {
-    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+  it('aplica los filtros emitidos por MobFilterPanel', () => {
+    const filterPanel = fixture.debugElement.query(
+      By.css('app-mob-filter-panel'),
+    );
 
     filterPanel.triggerEventHandler('filtersApply', {
       estadoReserva: 'CONFIRMADA',
     });
 
-    expect(component['tableState'].queryParams().filters).toEqual({
+    expect(
+      component['tableState'].queryParams().filters,
+    ).toEqual({
       estadoReserva: 'CONFIRMADA',
     });
   });
 
-  it('filtersClear limpia los filtros móviles', () => {
+  it('limpia los filtros emitidos por MobFilterPanel', () => {
     component['tableState'].updateFilters({
       estadoReserva: 'CONFIRMADA',
     });
 
-    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+    const filterPanel = fixture.debugElement.query(
+      By.css('app-mob-filter-panel'),
+    );
 
     filterPanel.triggerEventHandler('filtersClear');
 
-    expect(component['tableState'].queryParams().filters).toEqual({});
-  });
-
-  it('debe cargar las reservas en modo móvil', () => {
-    expect(mockReservasService.getAll).toHaveBeenCalled();
+    expect(
+      component['tableState'].queryParams().filters,
+    ).toEqual({});
   });
 });
 

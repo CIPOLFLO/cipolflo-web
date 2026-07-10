@@ -20,7 +20,7 @@ import { MobFilterPanel } from '../../../shared/mobile/components/filter-panel/m
 import { MobListCard } from '../../../shared/mobile/components/list-card/mob-list-card';
 
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
-
+import { DateFormatPipe } from '../../../shared/components/table/pipes/date-format.pipe';
 import {
   ConfirmDialogService,
   EstadoReserva,
@@ -60,6 +60,7 @@ import { ReservasService } from '../services/reservas.service';
     MobFilterPanel,
     MobListCard,
     MobFab,
+    DateFormatPipe
   ],
   providers: [
     TableStateService,
@@ -209,13 +210,6 @@ export class ListadoReservas {
     this.tableState.updateFilters(filters);
   }
 
-  protected onSearchChange(search: string): void {
-    this.tableState.updateFilters({
-      ...this.tableState.queryParams().filters,
-      search,
-    });
-  }
-
   protected onClearFilters(): void {
     this.tableState.updateFilters({});
   }
@@ -241,27 +235,6 @@ export class ListadoReservas {
   protected onPagoReservaRegistrado(): void {
     this.reservaPagoSeleccionada.set(null);
     this.recargarTabla();
-  }
-
-  protected reservaReferencia(row: ReservaRow): string {
-    const year = row.fechaEntrada?.slice(0, 4) ?? '----';
-    const numero = String(row.id).padStart(3, '0');
-
-    return `RSV-${year}-${numero}`;
-  }
-
-  protected formatearFecha(fecha: string): string {
-    if (!fecha) {
-      return 'Sin fecha';
-    }
-
-    const [year, month, day] = fecha.split('-');
-
-    if (!year || !month || !day) {
-      return fecha;
-    }
-
-    return `${day}/${month}/${year}`;
   }
 
   private onConfirmarDocumentacion(row: ReservaRow): void {
