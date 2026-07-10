@@ -351,7 +351,6 @@ describe('ListadoClientes', () => {
     expect(component['tableState'].queryParams().filters).toEqual({ estado: 'ACTIVO' });
   });
 
-
   it('onClearFilters limpia los filtros en tableState', () => {
     component['tableState'].updateFilters({ nombre: 'test' });
     component['onClearFilters']();
@@ -421,9 +420,7 @@ describe('ListadoClientes', () => {
       rut: null,
     };
 
-    expect(component['clienteDocumento'](clienteSinDocumento)).toBe(
-      'Sin documento',
-    );
+    expect(component['clienteDocumento'](clienteSinDocumento)).toBe('Sin documento');
   });
 
   it('clienteEstadoLabel devuelve Activo para un socio activo', () => {
@@ -458,12 +455,8 @@ describe('ListadoClientes', () => {
 
   it('tipoClienteLabel devuelve la etiqueta correspondiente', () => {
     expect(component['tipoClienteLabel'](TipoCliente.Socio)).toBe('Socio');
-    expect(component['tipoClienteLabel'](TipoCliente.Particular)).toBe(
-      'Particular',
-    );
-    expect(component['tipoClienteLabel'](TipoCliente.Empresa)).toBe(
-      'Empresa',
-    );
+    expect(component['tipoClienteLabel'](TipoCliente.Particular)).toBe('Particular');
+    expect(component['tipoClienteLabel'](TipoCliente.Empresa)).toBe('Empresa');
   });
 });
 
@@ -557,7 +550,6 @@ describe('ListadoClientes sin filtros por defecto', () => {
 
     expect(fixture.componentInstance['tableState'].queryParams().filters).toEqual({});
   });
-
 });
 
 describe('ListadoClientes en vista móvil', () => {
@@ -627,17 +619,13 @@ describe('ListadoClientes en vista móvil', () => {
   });
 
   it('debe renderizar el panel de filtros móvil', () => {
-    const filterPanel = fixture.debugElement.query(
-      By.css('app-mob-filter-panel'),
-    );
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
 
     expect(filterPanel).not.toBeNull();
   });
 
   it('no debe renderizar el panel de filtros de escritorio', () => {
-    const filterPanel = fixture.debugElement.query(
-      By.css('app-filter-panel'),
-    );
+    const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
 
     expect(filterPanel).toBeNull();
   });
@@ -649,17 +637,13 @@ describe('ListadoClientes en vista móvil', () => {
   });
 
   it('debe renderizar una card por cada cliente recibido', () => {
-    const cards = fixture.debugElement.queryAll(
-      By.css('app-mob-list-card'),
-    );
+    const cards = fixture.debugElement.queryAll(By.css('app-mob-list-card'));
 
     expect(cards.length).toBe(mockPageResponse.content.length);
   });
 
   it('debe mostrar el número de socio del socio', () => {
-    expect(fixture.nativeElement.textContent).toContain(
-      'Nro. de socio: 5',
-    );
+    expect(fixture.nativeElement.textContent).toContain('Nro. de socio: 5');
   });
 
   it('debe mostrar el nombre de los clientes', () => {
@@ -670,9 +654,7 @@ describe('ListadoClientes en vista móvil', () => {
   });
 
   it('debe mostrar el documento del cliente', () => {
-    expect(fixture.nativeElement.textContent).toContain(
-      '1.234.567-8',
-    );
+    expect(fixture.nativeElement.textContent).toContain('1.234.567-8');
   });
 
   it('debe mostrar el estado del socio', () => {
@@ -695,9 +677,7 @@ describe('ListadoClientes en vista móvil', () => {
   });
 
   it('debe aplicar los filtros emitidos por MobFilterPanel', () => {
-    const filterPanel = fixture.debugElement.query(
-      By.css('app-mob-filter-panel'),
-    );
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
 
     filterPanel.triggerEventHandler('filtersApply', {
       estado: 'ACTIVO',
@@ -713,9 +693,7 @@ describe('ListadoClientes en vista móvil', () => {
       estado: 'ACTIVO',
     });
 
-    const filterPanel = fixture.debugElement.query(
-      By.css('app-mob-filter-panel'),
-    );
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
 
     filterPanel.triggerEventHandler('filtersClear');
 
@@ -723,9 +701,7 @@ describe('ListadoClientes en vista móvil', () => {
   });
 
   it('mobileClientes debe contener los clientes recibidos', () => {
-    expect(component['mobileClientes']()).toEqual(
-      mockPageResponse.content,
-    );
+    expect(component['mobileClientes']()).toEqual(mockPageResponse.content);
   });
 
   it('debe llamar a getAll para cargar el listado móvil', () => {

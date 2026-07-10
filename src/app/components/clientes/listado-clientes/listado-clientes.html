@@ -1,9 +1,7 @@
 <app-page-layout
   [pageTitle]="breakpoint.isMobile() ? 'Clientes' : 'Listado de Clientes'"
   [pageDescription]="
-    breakpoint.isMobile()
-      ? ''
-      : 'Gestiona y consulta información de todos los clientes del sistema'
+    breakpoint.isMobile() ? '' : 'Gestiona y consulta información de todos los clientes del sistema'
   "
 >
   @if (!breakpoint.isMobile()) {
@@ -42,10 +40,7 @@
 
       <div class="clientes-mobile__list">
         @for (cliente of mobileClientes(); track cliente.id) {
-          <app-mob-list-card
-            [row]="cliente"
-            [actions]="rowActions(cliente)"
-          >
+          <app-mob-list-card [row]="cliente" [actions]="rowActions(cliente)">
             <span class="cliente-card__reference">
               @if (cliente.numeroSocio !== null) {
                 Nro. de socio: {{ cliente.numeroSocio }}
@@ -56,18 +51,10 @@
 
             <span
               class="cliente-card__status"
-              [class.cliente-card__status--active]="
-                cliente.estado === 'ACTIVO'
-              "
-              [class.cliente-card__status--inactive]="
-                cliente.estado === 'INACTIVO'
-              "
-              [class.cliente-card__status--disabled]="
-                cliente.estado === 'DE_BAJA'
-              "
-              [class.cliente-card__status--neutral]="
-                cliente.estado === null
-              "
+              [class.cliente-card__status--active]="cliente.estado === 'ACTIVO'"
+              [class.cliente-card__status--inactive]="cliente.estado === 'INACTIVO'"
+              [class.cliente-card__status--disabled]="cliente.estado === 'DE_BAJA'"
+              [class.cliente-card__status--neutral]="cliente.estado === null"
             >
               {{ clienteEstadoLabel(cliente) }}
             </span>
@@ -81,30 +68,19 @@
             </span>
           </app-mob-list-card>
         } @empty {
-          <div class="clientes-mobile__empty">
-            No se encontraron clientes.
-          </div>
+          <div class="clientes-mobile__empty">No se encontraron clientes.</div>
         }
       </div>
 
       <app-mob-fab (clicked)="onNuevoCliente()" />
     </section>
   } @else {
-    <app-filter-panel
-      (filterChange)="onFilterChange($event)"
-    />
+    <app-filter-panel (filterChange)="onFilterChange($event)" />
 
-    <app-table
-      [columns]="columns"
-      [loadDataFn]="loadDataFn"
-      [getRowActions]="rowActions"
-    />
+    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
   }
 
   @if (clientePagoSeleccionado(); as clientePago) {
-    <app-pago-cuota
-      [cliente]="clientePago"
-      (cerrado)="onCerrarPagoCuota()"
-    />
+    <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
   }
 </app-page-layout>

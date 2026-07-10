@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy,Component,inject,signal,computed} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import {catchError, combineLatest, filter, map, of, switchMap,} from 'rxjs';
+import { catchError, combineLatest, filter, map, of, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -23,7 +23,7 @@ import { MobFilterPanel } from '../../../shared/mobile/components/filter-panel/m
 import { MobListCard } from '../../../shared/mobile/components/list-card/mob-list-card';
 
 import { ClienteListadoRow, mapClienteListadoRow } from '../mappers/cliente-listado.mapper';
-import { ClienteRespuestaDto, EstadoSocio,TipoCliente, } from '../models/cliente.model';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
@@ -66,8 +66,7 @@ export class ListadoClientes {
   protected readonly tableExport = inject(TableExportService);
   protected readonly breakpoint = inject(BreakpointService);
 
-  protected readonly clientePagoSeleccionado =
-    signal<ClienteRespuestaDto | null>(null);
+  protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -128,9 +127,7 @@ export class ListadoClientes {
     () => this.mobilePage()?.content ?? [],
   );
 
-  protected readonly rowActions = (
-    row: ClienteRespuestaDto,
-  ): RowAction<ClienteRespuestaDto>[] => [
+  protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     // TODO: temporal — habilitar cuando existan
     // GET detalle / PUT modificación de Empresa
     ...(row.tipoCliente !== TipoCliente.Empresa
@@ -187,8 +184,7 @@ export class ListadoClientes {
         ]
       : []),
 
-    ...(row.tipoCliente === TipoCliente.Socio &&
-    row.estado !== EstadoSocio.Baja
+    ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
       ? [
           {
             label: 'Dar de baja',
@@ -240,9 +236,7 @@ export class ListadoClientes {
   protected onExportar(): void {
     const filters = this.tableState.queryParams().filters;
 
-    this.tableExport.exportar(() =>
-      this.clientesService.exportar(filters),
-    );
+    this.tableExport.exportar(() => this.clientesService.exportar(filters));
   }
 
   protected onDarDeBajaCliente(cliente: ClienteRespuestaDto): void {
@@ -257,9 +251,7 @@ export class ListadoClientes {
       })
       .pipe(
         filter(Boolean),
-        switchMap(() =>
-          this.clientesService.darDeBaja(cliente.id),
-        ),
+        switchMap(() => this.clientesService.darDeBaja(cliente.id)),
       )
       .subscribe({
         next: () => this.recargarTabla(),
