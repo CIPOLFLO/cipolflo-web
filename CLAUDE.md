@@ -270,3 +270,4 @@ El **componente padre wizard** es responsable de la lógica de navegación, calc
 - **No real HTTP requests in tests** — always `provideHttpClientTesting`.
 - **No hardcoded backend URLs** — base URL always from `environment`.
 - **No PrimeNG theme overrides** in component styles.
+- **Line length (`printWidth: 100`) does not apply to string literals** — Prettier no parte cadenas y el proyecto no usa la regla `max-len` de ESLint. Un mensaje de usuario que supera los 100 caracteres en una sola línea es correcto y **no debe partirse con `+`**: partirlo pelea con el formateo y ensucia los diffs. El límite aplica al código, no al contenido de las cadenas.

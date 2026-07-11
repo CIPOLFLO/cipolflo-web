@@ -23,8 +23,8 @@ export abstract class BaseHttpService {
     return this.http.patch<T>(`${this.apiUrl}/${path}`, body);
   }
 
-  protected delete<T>(path: string): Observable<T> {
-    return this.http.delete<T>(`${this.apiUrl}/${path}`);
+  protected delete<T>(path: string, params?: Record<string, unknown>): Observable<T> {
+    return this.http.delete<T>(`${this.apiUrl}/${path}`, { params: this.buildParams(params) });
   }
 
   protected postBlob(path: string, body: unknown): Observable<HttpResponse<Blob>> {

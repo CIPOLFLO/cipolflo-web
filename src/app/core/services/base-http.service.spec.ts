@@ -15,8 +15,8 @@ class ConcreteHttpService extends BaseHttpService {
   override put<T>(path: string, body: unknown) {
     return super.put<T>(path, body);
   }
-  override delete<T>(path: string) {
-    return super.delete<T>(path);
+  override delete<T>(path: string, params?: Record<string, unknown>) {
+    return super.delete<T>(path, params);
   }
 }
 
@@ -79,10 +79,20 @@ describe('BaseHttpService', () => {
   });
 
   describe('delete', () => {
-    it('hace DELETE a la URL correcta', () => {
+    it('sin params hace DELETE a la URL correcta sin query string', () => {
       service.delete('recursos/1').subscribe();
       const req = httpMock.expectOne(`${environment.apiUrl}/recursos/1`);
       expect(req.request.method).toBe('DELETE');
+      expect(req.request.params.keys()).toHaveLength(0);
+      req.flush({});
+    });
+
+    it('con params serializa el query string y filtra nulos/undefined', () => {
+      service.delete('recursos/1', { confirmar: true, motivo: null }).subscribe();
+      const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/recursos/1`);
+      expect(req.request.method).toBe('DELETE');
+      expect(req.request.params.get('confirmar')).toBe('true');
+      expect(req.request.params.has('motivo')).toBe(false);
       req.flush({});
     });
   });

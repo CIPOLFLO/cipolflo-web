@@ -38,8 +38,8 @@ export class FinanzaService extends BaseHttpService {
     return this.get<FinanzaDetalleRespuestaDto>(`finanzas/${id}`);
   }
 
-  eliminar(id: number): Observable<void> {
-    return this.delete<void>(`finanzas/${id}`);
+  eliminar(id: number, confirmar = false): Observable<void> {
+    return this.delete<void>(`finanzas/${id}`, { confirmar });
   }
 
   update(id: number, dto: FinanzaModificarDto): Observable<void> {
