@@ -200,7 +200,7 @@ describe('ListadoFinanzas', () => {
       expect(mockFinanzaService.eliminar).not.toHaveBeenCalled();
     });
 
-    it('debería recargar la tabla ante 204', () => {
+    it('debería recargar la tabla ante éxito', () => {
       mockConfirmDialogService.open.mockReturnValue(of(true));
       mockFinanzaService.eliminar.mockReturnValue(of(void 0));
       const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');

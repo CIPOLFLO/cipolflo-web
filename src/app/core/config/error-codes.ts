@@ -19,13 +19,15 @@ export const ERROR_CODES: Record<string, string> = {
  * y cae en la `descripcion` del backend o en un texto genérico.
  */
 export function resolveErrorMessage(error: unknown): string {
+  const generico = 'Ocurrió un error inesperado. Por favor, intentá de nuevo.';
+
   if (error instanceof HttpErrorResponse) {
     const body = error.error as Partial<ErrorResponse> | null;
 
-    if (body?.codigo && body.descripcion) {
-      return ERROR_CODES[body.codigo] ?? body.descripcion;
+    if (body?.codigo) {
+      return ERROR_CODES[body.codigo] ?? body.descripcion ?? generico;
     }
   }
 
-  return 'Ocurrió un error inesperado. Por favor, intentá de nuevo.';
+  return generico;
 }
