@@ -68,20 +68,52 @@ export function estadoInicialPorTipo(
   return requiereDocumentacion || requiereSena ? EstadoReserva.Pendiente : EstadoReserva.Confirmada;
 }
 
+/** Tipo de documento utilizado para identificar al cliente de una reserva. */
+export enum TipoDocumento {
+  Cedula = 'CEDULA',
+  Rut = 'RUT',
+}
+
+/**
+ * Regla única de dominio: una Empresa se identifica por RUT; el resto (Socio/Particular)
+ * por cédula. Devuelve el tipo de documento y su valor para un cliente dado.
+ */
+export function documentoDeCliente(cliente: {
+  tipoCliente: TipoCliente;
+  cedula: string | null;
+  rut: string | null;
+}): { tipoDocumento: TipoDocumento; documento: string | null } {
+  return cliente.tipoCliente === TipoCliente.Empresa
+    ? { tipoDocumento: TipoDocumento.Rut, documento: cliente.rut }
+    : { tipoDocumento: TipoDocumento.Cedula, documento: cliente.cedula };
+}
+
 /**
  * Datos del cliente para precargar la sección de cliente de la reserva. Representa el
- * resultado combinado de la búsqueda por cédula + el detalle (observaciones, teléfono).
+ * resultado combinado de la búsqueda por cédula o RUT + el detalle (observaciones, teléfono).
  */
 export interface ClienteBusquedaReservaDto {
   id: number;
   nombre: string;
-  cedula: string;
+  documento: string;
+  tipoDocumento: TipoDocumento;
   tipoCliente: TipoCliente;
   numeroSocio: number | null;
   estado: EstadoSocio | null;
   telefono: string | null;
   email: string | null;
   observaciones: string | null;
+}
+
+/** Respuesta de GET /clientes/rut/{rut} — búsqueda de cliente Empresa por RUT. */
+export interface BusquedaRutResponseDto {
+  id: number;
+  nombre: string;
+  rut: string;
+  telefono: string | null;
+  mail: string | null;
+  observaciones: string | null;
+  tipoCliente: TipoCliente;
 }
 
 export interface ReservaCreacionRequestDto {
@@ -102,7 +134,6 @@ export interface ReservaCreacionRequestDto {
   nombre: string | null;
   celular: string | null;
   email: string | null;
-  rut: string | null;
   notas: string | null;
   requiereDocumentacion: boolean;
   requiereSena: boolean;
@@ -143,7 +174,8 @@ export interface CostoReservaRespuestaDto {
 export interface ClienteDetalleReservaDto {
   id: number;
   nombre: string;
-  cedula: string;
+  cedula: string | null;
+  rut: string | null;
   telefono: string | null;
   email: string | null;
   tipoCliente: TipoCliente;
@@ -175,8 +207,6 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
   requiereSena: boolean;
-  nombre: string | null;
-  rut: string | null;
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;
   servicio: ServicioDetalleReservaDto;

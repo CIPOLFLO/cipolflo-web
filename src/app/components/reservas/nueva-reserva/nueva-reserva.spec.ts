@@ -1,9 +1,9 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@auth0/auth0-angular';
 import { NuevaReserva } from './nueva-reserva';
@@ -14,7 +14,7 @@ import { ServicioService } from '../../servicios/services/servicio.service';
 import { ClientesService } from '../../clientes/services/cliente.service';
 import { Procedencia } from '../../../shared';
 import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
-import { TipoReserva } from '../models/reserva.model';
+import { TipoDocumento, TipoReserva } from '../models/reserva.model';
 import { UserService } from '../../../core/services/user.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
@@ -68,6 +68,28 @@ const detalleParticular = {
   email: null,
   observaciones: null,
 };
+const detalleEmpresaPrecarga = {
+  id: 3,
+  nombre: 'Org Solidaria S.A.',
+  cedula: null,
+  rut: '211003420017',
+  tipoCliente: TipoCliente.Empresa,
+  numeroSocio: null,
+  estado: null,
+  telefono: '099333333',
+  email: 'org@mail.com',
+  observaciones: null,
+};
+
+const busquedaEmpresa = {
+  id: 3,
+  nombre: 'Org Solidaria S.A.',
+  rut: '211003420017',
+  telefono: '099333333',
+  mail: 'org@mail.com',
+  observaciones: null,
+  tipoCliente: TipoCliente.Empresa,
+};
 
 const page = <T>(content: T[]) => ({
   content,
@@ -91,6 +113,7 @@ describe('NuevaReserva', () => {
   let mockClientesService: {
     getAll: ReturnType<typeof vi.fn>;
     getByCedula: ReturnType<typeof vi.fn>;
+    getByRut: ReturnType<typeof vi.fn>;
     getById: ReturnType<typeof vi.fn>;
     getEstadoSocio: ReturnType<typeof vi.fn>;
   };
@@ -112,7 +135,14 @@ describe('NuevaReserva', () => {
         of(page(params.filters?.['identificador'] === '12345678' ? [{ id: 1 }] : [])),
       ),
       getByCedula: vi.fn((cedula: string) => of(page(cedula === '12345672' ? [{ id: 1 }] : []))),
-      getById: vi.fn((id: number) => of(id === 2 ? detalleParticular : detalleSocio)),
+      getByRut: vi.fn((rut: string) =>
+        rut === '211003420017'
+          ? of(busquedaEmpresa)
+          : throwError(() => new HttpErrorResponse({ status: 404 })),
+      ),
+      getById: vi.fn((id: number) =>
+        of(id === 2 ? detalleParticular : id === 3 ? detalleEmpresaPrecarga : detalleSocio),
+      ),
       getEstadoSocio: vi.fn(() => of({ id: 1, estado: EstadoSocio.Activo, numeroSocio: 5 })),
     };
     mockReservasService = {
@@ -169,6 +199,10 @@ describe('NuevaReserva', () => {
 
   it('el tipo de reserva por defecto es Común', () => {
     expect(component['form'].get('tipoReserva')?.value).toBe(TipoReserva.Comun);
+  });
+
+  it('el tipo de documento por defecto es Cédula', () => {
+    expect(component['form'].get('tipoDocumento')?.value).toBe(TipoDocumento.Cedula);
   });
 
   it('al entrar desde Nueva Reserva se ofrece Colaboración sin fines de lucro', () => {
@@ -250,7 +284,7 @@ describe('NuevaReserva', () => {
   });
 
   it('buscarCliente con cédula existente completa los datos y los deja readonly', () => {
-    component['form'].get('cedula')?.setValue('12345672');
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     expect(mockClientesService.getById).toHaveBeenCalledWith(1);
     expect(component['clienteBusqueda']()?.nombre).toBe('Juan Pérez');
@@ -259,15 +293,15 @@ describe('NuevaReserva', () => {
   });
 
   it('al encontrar cliente por cédula muestra el tipo en sólo lectura (no se puede elegir)', () => {
-    component['form'].get('cedula')?.setValue('12345672');
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     const tipo = tipoClienteField();
     expect(tipo?.displayOnly()).toBe(true);
     expect(component['tipoClienteLabel']()).toBe('Socio');
   });
 
-  it('buscarCliente sin coincidencia habilita la carga manual', () => {
-    component['form'].get('cedula')?.setValue('00000000');
+  it('buscarCliente sin coincidencia (cédula) habilita la carga manual', () => {
+    component['form'].get('documento')?.setValue('00000000');
     component['buscarCliente']();
     expect(component['busquedaRealizada']()).toBe(true);
     expect(component['clienteBusqueda']()).toBeNull();
@@ -275,7 +309,7 @@ describe('NuevaReserva', () => {
   });
 
   it('sin coincidencia no se muestra el campo tipo de cliente y se registra como Particular', () => {
-    component['form'].get('cedula')?.setValue('00000000');
+    component['form'].get('documento')?.setValue('00000000');
     component['buscarCliente']();
     expect(component['mostrarFormularioManual']()).toBe(true);
     expect(tipoClienteField()).toBeUndefined();
@@ -283,7 +317,7 @@ describe('NuevaReserva', () => {
   });
 
   it('sin coincidencia el DTO marca crearCliente y no envía clienteId', () => {
-    component['form'].get('cedula')?.setValue('00000000');
+    component['form'].get('documento')?.setValue('00000000');
     component['buscarCliente']();
     const dto = component['construirDto']();
     expect(dto.crearCliente).toBe(true);
@@ -291,32 +325,97 @@ describe('NuevaReserva', () => {
   });
 
   it('con cliente encontrado el DTO no marca crearCliente y envía el clienteId', () => {
-    component['form'].get('cedula')?.setValue('12345672');
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     const dto = component['construirDto']();
     expect(dto.crearCliente).toBe(false);
     expect(dto.clienteId).toBe(1);
   });
 
-  it('editar la cédula después de verificar invalida la búsqueda y limpia los datos', () => {
-    component['form'].get('cedula')?.setValue('12345672');
+  it('editar el documento después de verificar invalida la búsqueda y limpia los datos', () => {
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     expect(component['busquedaRealizada']()).toBe(true);
     expect(component['clienteBusqueda']()).not.toBeNull();
 
-    component['form'].get('cedula')?.setValue('1234567');
+    component['form'].get('documento')?.setValue('1234567');
 
     expect(component['busquedaRealizada']()).toBe(false);
     expect(component['clienteBusqueda']()).toBeNull();
     expect(component['form'].get('nombre')?.value).toBeNull();
   });
 
-  it('en Colaboración se exigen el RUT y el nombre del cliente', () => {
-    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
-    component['submitted'].set(true);
+  // --- RUT / Empresa ---
+
+  it('RUT inválido no dispara la búsqueda al backend', () => {
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('123'); // formato inválido
+    component['buscarCliente']();
+    expect(mockClientesService.getByRut).not.toHaveBeenCalled();
+    expect(component['form'].get('documento')?.hasError('rutInvalido')).toBe(true);
+  });
+
+  it('Común con RUT de Empresa encontrada confirma con el clienteId de la Empresa', () => {
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('211003420017');
+    component['buscarCliente']();
+    expect(mockClientesService.getByRut).toHaveBeenCalledWith('211003420017');
+    expect(component['busquedaRealizada']()).toBe(true);
+    expect(component['clienteBusqueda']()?.tipoCliente).toBe(TipoCliente.Empresa);
+    const dto = component['construirDto']();
+    expect(dto.clienteId).toBe(3);
+    expect(dto.crearCliente).toBe(false);
+  });
+
+  it('RUT válido no encontrado bloquea: muestra diálogo, no habilita campos manuales', () => {
+    const errorSpy = vi.spyOn(component['errorDialog'], 'open');
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('999999999997'); // formato válido, no existe
+    component['buscarCliente']();
+    expect(mockClientesService.getByRut).toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalled();
+    expect(component['busquedaRealizada']()).toBe(false);
+    expect(component['mostrarFormularioManual']()).toBe(false);
+  });
+
+  it('RUT válido no encontrado marca el campo en rojo con el error visible tras el diálogo', () => {
+    vi.spyOn(component['errorDialog'], 'open');
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('999999999997');
+    component['buscarCliente']();
     fixture.detectChanges();
-    expect(component['colaboracionErrors']()['rut']).toBeTruthy();
-    expect(component['colaboracionErrors']()['nombreColaboracion']).toBeTruthy();
+    expect(component['form'].get('documento')?.hasError('rutNoEncontrado')).toBe(true);
+    expect(component['clienteErrors']()['documento']).toBe(
+      'No se encontró ninguna Empresa registrada con ese RUT.',
+    );
+  });
+
+  it('al editar el documento tras un RUT no encontrado se limpia el error', () => {
+    vi.spyOn(component['errorDialog'], 'open');
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('999999999997');
+    component['buscarCliente']();
+    expect(component['form'].get('documento')?.hasError('rutNoEncontrado')).toBe(true);
+
+    component['form'].get('documento')?.setValue('211003420018');
+    expect(component['form'].get('documento')?.hasError('rutNoEncontrado')).toBe(false);
+  });
+
+  it('en Colaboración el tipoDocumento queda fijo en RUT y deshabilitado', () => {
+    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+    expect(component['form'].get('tipoDocumento')?.value).toBe(TipoDocumento.Rut);
+    expect(component['form'].get('tipoDocumento')?.disabled).toBe(true);
+    expect(component['documentoRadioDisabled']()).toBe(true);
+  });
+
+  it('Colaboración con RUT de Empresa encontrada confirma con clienteId real', () => {
+    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+    component['form'].get('documento')?.setValue('211003420017');
+    component['buscarCliente']();
+    expect(mockClientesService.getByRut).toHaveBeenCalledWith('211003420017');
+    const dto = component['construirDto']();
+    expect(dto.clienteId).toBe(3);
+    expect(dto.crearCliente).toBe(false);
   });
 
   it('confirmar con socio DE_BAJA muestra error bloqueante y no crea la reserva', () => {
@@ -344,7 +443,7 @@ describe('NuevaReserva', () => {
     expect(mockReservasService.crear).toHaveBeenCalled();
   });
 
-  it('precarga el cliente cuando se entra con clienteId en la query', async () => {
+  it('precarga el cliente cuando se entra con clienteId en la query (Particular)', async () => {
     queryParamGet.mockReturnValue('2');
     const f = TestBed.createComponent(NuevaReserva);
     f.detectChanges();
@@ -353,7 +452,7 @@ describe('NuevaReserva', () => {
     expect(f.componentInstance['clienteBusqueda']()?.tipoCliente).toBe(TipoCliente.Particular);
   });
 
-  it('al precargar un cliente no se ofrece Colaboración sin fines de lucro', async () => {
+  it('al precargar un cliente Particular no se ofrece Colaboración sin fines de lucro', async () => {
     queryParamGet.mockReturnValue('2');
     const f = TestBed.createComponent(NuevaReserva);
     f.detectChanges();
@@ -362,21 +461,31 @@ describe('NuevaReserva', () => {
     expect(opciones.some((o) => o.value === TipoReserva.ColaboracionSinFines)).toBe(false);
   });
 
+  it('al precargar un cliente Empresa sí se ofrece Colaboración sin fines de lucro', async () => {
+    queryParamGet.mockReturnValue('3');
+    const f = TestBed.createComponent(NuevaReserva);
+    f.detectChanges();
+    await f.whenStable();
+    expect(f.componentInstance['clienteBusqueda']()?.tipoCliente).toBe(TipoCliente.Empresa);
+    const opciones = f.componentInstance['tipoReservaField']().options ?? [];
+    expect(opciones.some((o) => o.value === TipoReserva.ColaboracionSinFines)).toBe(true);
+  });
+
   it('onCancelar navega a /reservas', () => {
     component['onCancelar']();
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
   });
 
   it('mostrarObservaciones es true cuando el cliente encontrado tiene observaciones', () => {
-    component['form'].get('cedula')?.setValue('12345672');
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     expect(component['observacionesCliente']()).toBe('Cliente frecuente.');
     expect(component['mostrarObservaciones']()).toBe(true);
   });
 
-  it('lupitaVisible es false para reservas de Colaboración', () => {
+  it('lupitaVisible es true para reservas de Colaboración (también se busca por RUT)', () => {
     component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
-    expect(component['lupitaVisible']()).toBe(false);
+    expect(component['lupitaVisible']()).toBe(true);
   });
 
   it('lupitaVisible es false cuando el cliente está prellenado', async () => {
@@ -385,18 +494,6 @@ describe('NuevaReserva', () => {
     f.detectChanges();
     await f.whenStable();
     expect(f.componentInstance['lupitaVisible']()).toBe(false);
-  });
-
-  it('en Colaboración el DTO usa nombreColaboracion como nombre y el rut', () => {
-    component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
-    component['form'].get('nombreColaboracion')?.setValue('Fondo Social');
-    component['form'].get('rut')?.setValue('21-123456-7');
-    const dto = component['construirDto']();
-    expect(dto.nombre).toBe('Fondo Social');
-    expect(dto.rut).toBe('21-123456-7');
-    expect(dto.cedula).toBeNull();
-    expect(dto.crearCliente).toBe(false);
-    expect(dto.clienteId).toBeNull();
   });
 
   it('cambiar cantidadMenores vuelve a pedir el costo al backend', () => {
@@ -446,6 +543,16 @@ describe('NuevaReserva', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
   });
 
+  it('navega al listado de inmediato sin esperar a que termine la descarga', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(true));
+    const descargaEnCurso = new Subject<void>(); // nunca completa dentro del test
+    mockReservasService.descargarComprobante.mockReturnValue(descargaEnCurso.asObservable());
+    component['guardar']();
+    // La descarga sigue pendiente y, aun así, ya se navegó al listado.
+    expect(mockReservasService.descargarComprobante).toHaveBeenCalledWith(99);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
   it('tras crear, si se rechaza la descarga navega al listado sin descargar', () => {
     vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
     component['guardar']();
@@ -471,10 +578,10 @@ describe('NuevaReserva', () => {
     expect(handleSpy).toHaveBeenCalledWith(error);
   });
 
-  it('buscarCliente con cédula vacía no dispara la búsqueda y marca el campo como touched', () => {
-    component['form'].get('cedula')?.setValue('');
+  it('buscarCliente con documento vacío no dispara la búsqueda y marca el campo como touched', () => {
+    component['form'].get('documento')?.setValue('');
     component['buscarCliente']();
-    expect(component['clienteErrors']()['cedula']).toBe('La cédula es obligatoria.');
+    expect(component['clienteErrors']()['documento']).toBe('El documento es obligatorio.');
     expect(mockClientesService.getByCedula).not.toHaveBeenCalled();
   });
 
@@ -482,7 +589,7 @@ describe('NuevaReserva', () => {
     const error = new Error('Network error');
     mockClientesService.getByCedula.mockReturnValue(throwError(() => error));
     const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
-    component['form'].get('cedula')?.setValue('12345672');
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     expect(handleSpy).toHaveBeenCalledWith(error);
   });
@@ -492,7 +599,7 @@ describe('NuevaReserva', () => {
     expect(mockReservasService.crear).not.toHaveBeenCalled();
   });
 
-  it('onConfirmar en Colaboración con form válido llama a guardar directamente', () => {
+  it('onConfirmar en Colaboración con RUT encontrado llama a guardar directamente', () => {
     vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
     component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
@@ -500,8 +607,8 @@ describe('NuevaReserva', () => {
     component['form'].get('fechaInicio')?.setValue('2026-08-01');
     component['form'].get('fechaFin')?.setValue('2026-08-05');
     component['form'].get('cantidadTotal')?.setValue('4');
-    component['form'].get('rut')?.setValue('211111110018');
-    component['form'].get('nombreColaboracion')?.setValue('Fondo Social');
+    component['form'].get('documento')?.setValue('211003420017');
+    component['buscarCliente']();
     component['onConfirmar']();
     expect(mockReservasService.crear).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
@@ -509,7 +616,7 @@ describe('NuevaReserva', () => {
 
   it('onConfirmar COMUN con socio encontrado delega a verificarSocioYGuardar', () => {
     vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
-    component['form'].get('cedula')?.setValue('12345672');
+    component['form'].get('documento')?.setValue('12345672');
     component['buscarCliente']();
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     component['form'].get('servicioId')?.setValue('2');
@@ -523,10 +630,10 @@ describe('NuevaReserva', () => {
   });
 
   it('buscarCliente con cédula de formato inválido no dispara la búsqueda y muestra el error', () => {
-    component['form'].get('cedula')?.setValue('12345678'); // verificador incorrecto: esperado 2, tiene 8
+    component['form'].get('documento')?.setValue('12345678'); // verificador incorrecto: esperado 2, tiene 8
     component['buscarCliente']();
     expect(mockClientesService.getByCedula).not.toHaveBeenCalled();
-    expect(component['form'].get('cedula')?.hasError('cedulaInvalida')).toBe(true);
+    expect(component['form'].get('documento')?.hasError('cedulaInvalida')).toBe(true);
   });
 
   it('servicio con modalidadPrecio POR_HORA activa el modo hora', () => {

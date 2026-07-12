@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { catchError, EMPTY, filter, finalize, switchMap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { catchError, EMPTY, filter, finalize, map, Subject, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AppButton,
@@ -23,16 +25,16 @@ import {
   TIPO_CLIENTE_FORM_OPTIONS,
 } from '../../clientes/models/cliente.model';
 import { ClientesService } from '../../clientes/services/cliente.service';
-import { ClienteValidacionesService } from '../../clientes/services/cliente-validaciones.service';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
   TIPO_RESERVA_OPTIONS,
+  TipoDocumento,
   TipoReserva,
+  type ClienteBusquedaReservaDto,
   type ReservaCreacionRequestDto,
 } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
-import { Subject } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -46,6 +48,8 @@ import { Subject } from 'rxjs';
     AppButton,
     OccupancyCalendar,
     CurrencyFormatPipe,
+    FormsModule,
+    RadioButtonModule,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
   templateUrl: './nueva-reserva.html',
@@ -57,20 +61,20 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly errorDialog = inject(ErrorDialogService);
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
-  private readonly clienteValidaciones = inject(ClienteValidacionesService);
 
-  private readonly buscarClienteTrigger = new Subject<string>();
+  /** Expuesto para el template (radio Cédula/RUT). */
+  protected readonly TipoDocumento = TipoDocumento;
+
+  private readonly buscarClienteTrigger = new Subject<{
+    documento: string;
+    tipoDocumento: TipoDocumento;
+  }>();
 
   constructor() {
     super(ReservaFormBase.buildReservaForm());
 
     this.form.get('email')?.addValidators(emailValido);
     this.form.get('email')?.updateValueAndValidity({ emitEvent: false });
-
-    this.form
-      .get('cedula')
-      ?.addValidators(this.clienteValidaciones.cedulaValida.bind(this.clienteValidaciones));
-    this.form.get('cedula')?.updateValueAndValidity({ emitEvent: false });
 
     // Punto de entrada desde el listado de clientes: precarga del cliente (readonly).
     const clienteId = this.route.snapshot.queryParamMap.get('clienteId');
@@ -82,10 +86,17 @@ export class NuevaReserva extends ReservaFormBase {
         .subscribe((cliente) => this.aplicarCliente(cliente));
     }
 
-    // Si el usuario edita la cédula después de verificar, se invalida la búsqueda para
-    // evitar que queden datos de un cliente asociados a una cédula que ya no corresponde.
+    // Si el usuario edita el documento (o cambia Cédula/RUT) después de verificar, se
+    // invalida la búsqueda para evitar que queden datos de un cliente que ya no corresponde.
     this.form
-      .get('cedula')
+      .get('documento')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.busquedaRealizada()) this.resetearBusquedaCliente();
+      });
+
+    this.form
+      .get('tipoDocumento')
       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (this.busquedaRealizada()) this.resetearBusquedaCliente();
@@ -97,8 +108,12 @@ export class NuevaReserva extends ReservaFormBase {
   private inicializarBusquedaCliente(): void {
     this.buscarClienteTrigger
       .pipe(
-        switchMap((cedula) =>
-          this.clienteBusquedaService.buscarPorCedula(cedula).pipe(
+        switchMap(({ documento, tipoDocumento }) =>
+          (tipoDocumento === TipoDocumento.Rut
+            ? this.clienteBusquedaService.buscarPorRut(documento)
+            : this.clienteBusquedaService.buscarPorCedula(documento)
+          ).pipe(
+            map((cliente) => ({ cliente, tipoDocumento })),
             finalize(() => this.loading.set(false)),
             catchError((err: unknown) => {
               this.errorHandler.handle(err);
@@ -108,25 +123,46 @@ export class NuevaReserva extends ReservaFormBase {
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((cliente) => {
-        this.busquedaRealizada.set(true);
+      .subscribe(({ cliente, tipoDocumento }) => {
         if (cliente) {
+          this.busquedaRealizada.set(true);
           this.aplicarCliente(cliente);
-        } else {
-          this.clienteBusqueda.set(null);
-          this.habilitarCamposManuales();
+          this.recalcularCosto.next();
+          return;
         }
+
+        if (tipoDocumento === TipoDocumento.Rut) {
+          // RUT no encontrado: bloquea la creación, no habilita campos manuales. Se marca
+          // el campo en rojo para que el error siga visible tras cerrar el diálogo.
+          this.clienteBusqueda.set(null);
+          const documento = this.form.get('documento');
+          documento?.setErrors({ rutNoEncontrado: true });
+          documento?.markAsTouched();
+          this.errorDialog.open({
+            title: 'RUT no encontrado',
+            message: 'No se encontró ninguna Empresa registrada con ese RUT.',
+          });
+          return;
+        }
+
+        // Cédula no encontrada: comportamiento sin cambios (alta de Particular en el momento).
+        this.busquedaRealizada.set(true);
+        this.clienteBusqueda.set(null);
+        this.habilitarCamposManuales();
         this.recalcularCosto.next();
       });
   }
 
   protected buscarCliente(): void {
-    const cedulaControl = this.form.get('cedula');
-    const cedula = (cedulaControl?.value as string | null)?.trim();
-    cedulaControl?.markAsTouched();
-    if (!cedula || cedulaControl?.invalid) return;
+    const documentoControl = this.form.get('documento');
+    const documento = (documentoControl?.value as string | null)?.trim();
+    documentoControl?.markAsTouched();
+    if (!documento || documentoControl?.invalid) return;
+
+    const tipoDocumento =
+      (this.form.get('tipoDocumento')?.value as TipoDocumento) ?? TipoDocumento.Cedula;
     this.loading.set(true);
-    this.buscarClienteTrigger.next(cedula);
+    this.buscarClienteTrigger.next({ documento, tipoDocumento });
   }
 
   private resetearBusquedaCliente(): void {
@@ -153,17 +189,21 @@ export class NuevaReserva extends ReservaFormBase {
 
   // --- Campos específicos de la sección "Información de la Reserva" ---
 
-  protected readonly tipoReservaField = computed<FormFieldConfig>(() => ({
-    key: 'tipoReserva',
-    label: 'Tipo de reserva',
-    type: 'select',
-    required: true,
-    // Colaboración no aplica cuando se entra desde un cliente concreto (precarga).
-    options: this.clientePrellenado()
-      ? TIPO_RESERVA_OPTIONS.filter((o) => o.value !== TipoReserva.ColaboracionSinFines)
-      : TIPO_RESERVA_OPTIONS,
-    defaultValue: TipoReserva.Comun,
-  }));
+  protected readonly tipoReservaField = computed<FormFieldConfig>(() => {
+    // Colaboración se oculta solo si el cliente precargado no es Empresa.
+    const ocultarColaboracion =
+      this.clientePrellenado() && this.tipoClienteValue() !== TipoCliente.Empresa;
+    return {
+      key: 'tipoReserva',
+      label: 'Tipo de reserva',
+      type: 'select',
+      required: true,
+      options: ocultarColaboracion
+        ? TIPO_RESERVA_OPTIONS.filter((o) => o.value !== TipoReserva.ColaboracionSinFines)
+        : TIPO_RESERVA_OPTIONS,
+      defaultValue: TipoReserva.Comun,
+    };
+  });
 
   protected readonly horaInicioField: FormFieldConfig = {
     key: 'horaInicio',
@@ -179,7 +219,7 @@ export class NuevaReserva extends ReservaFormBase {
     required: true,
   };
 
-  // --- Sección de cliente (tipo Común) ---
+  // --- Sección de cliente ---
 
   /** Campo de sólo lectura que muestra el tipo del cliente encontrado (no se elige). */
   protected readonly tipoClienteDisplayField: FormFieldConfig = {
@@ -194,13 +234,19 @@ export class NuevaReserva extends ReservaFormBase {
     return TIPO_CLIENTE_FORM_OPTIONS.find((o) => o.value === tipo)?.label ?? null;
   });
 
-  protected readonly cedulaField = computed<FormFieldConfig>(() => ({
-    key: 'cedula',
-    label: 'Cédula',
+  /** Documento (cédula o RUT según tipoDocumento), con label dinámico. */
+  protected readonly documentoField = computed<FormFieldConfig>(() => ({
+    key: 'documento',
+    label: this.tipoDocumentoValue() === TipoDocumento.Rut ? 'RUT' : 'Cédula',
     type: 'text',
     required: true,
     disabled: this.clientePrellenado(),
   }));
+
+  /** Radio Cédula/RUT deshabilitado en Colaboración (fijo en RUT) o en precarga. */
+  protected readonly documentoRadioDisabled = computed(
+    () => this.clientePrellenado() || this.esColaboracion(),
+  );
 
   protected readonly nombreField: FormFieldConfig = {
     key: 'nombre',
@@ -235,25 +281,7 @@ export class NuevaReserva extends ReservaFormBase {
     fullWidth: true,
   };
 
-  // --- Sección de cliente (tipo Colaboración sin fines de lucro) ---
-
-  protected readonly rutField: FormFieldConfig = {
-    key: 'rut',
-    label: 'RUT del cliente',
-    type: 'text',
-    required: true,
-  };
-
-  protected readonly nombreColaboracionField: FormFieldConfig = {
-    key: 'nombreColaboracion',
-    label: 'Nombre del cliente',
-    type: 'text',
-    required: true,
-  };
-
-  protected readonly lupitaVisible = computed(
-    () => !this.clientePrellenado() && !this.esColaboracion(),
-  );
+  protected readonly lupitaVisible = computed(() => !this.clientePrellenado());
 
   protected onRangoSeleccionado(rango: DateRangeSelection): void {
     this.onControlChange('fechaInicio', rango.inicio);
@@ -265,7 +293,7 @@ export class NuevaReserva extends ReservaFormBase {
     if (this.form.invalid) return;
 
     const cliente = this.clienteBusqueda();
-    if (!this.esColaboracion() && this.esSocio() && cliente) {
+    if (this.esSocio() && cliente) {
       this.verificarSocioYGuardar(cliente.id);
       return;
     }
@@ -326,8 +354,8 @@ export class NuevaReserva extends ReservaFormBase {
   }
 
   /**
-   * Tras crear la reserva ofrece descargar el comprobante. Se navega al listado en
-   * cualquier caso: si se descarga (al terminar o fallar la descarga) o si se rechaza.
+   * Tras crear la reserva ofrece descargar el comprobante. En ambos casos se navega al
+   * listado de inmediato; si se pidió el comprobante, la descarga sigue en segundo plano.
    */
   private ofrecerComprobante(id: number): void {
     this.confirmDialog
@@ -340,31 +368,30 @@ export class NuevaReserva extends ReservaFormBase {
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((descargar) => {
-        if (descargar) {
-          this.descargarComprobante(id);
-        } else {
-          this.router.navigate(['/reservas']);
-        }
+        if (descargar) this.descargarComprobante(id);
+        this.router.navigate(['/reservas']);
       });
   }
 
   private descargarComprobante(id: number): void {
+    // Fire-and-forget: la descarga NO se ata al destroyRef porque debe sobrevivir a la
+    // navegación al listado. La request corre en servicios root; se auto-completa al
+    // terminar el HTTP y los errores se muestran vía el diálogo global.
     this.reservasService
       .descargarComprobante(id)
       .pipe(
-        takeUntilDestroyed(this.destroyRef),
         catchError((err: unknown) => {
           this.errorHandler.handle(err);
           return EMPTY;
         }),
       )
-      .subscribe({ complete: () => this.router.navigate(['/reservas']) });
+      .subscribe();
   }
 
   private construirDto(): ReservaCreacionRequestDto {
-    const colaboracion = this.esColaboracion();
     const tipoReserva = (this.controlValue('tipoReserva') as TipoReserva) ?? TipoReserva.Comun;
-    const cliente = this.clienteBusqueda();
+    const cliente: ClienteBusquedaReservaDto | null = this.clienteBusqueda();
+    const crearCliente = !this.esColaboracion() && cliente === null;
 
     return {
       tipoReserva,
@@ -376,14 +403,12 @@ export class NuevaReserva extends ReservaFormBase {
       horaInicio: this.modoHora() ? this.controlValue('horaInicio') : null,
       horaFin: this.modoHora() ? this.controlValue('horaFin') : null,
       clienteId: cliente?.id ?? null,
-      // Reserva común sin cliente encontrado: se enviaron datos básicos para que el backend lo cree.
-      crearCliente: !colaboracion && cliente === null,
-      tipoCliente: colaboracion ? null : (this.controlValue('tipoCliente') as TipoCliente | null),
-      cedula: colaboracion ? null : this.controlValue('cedula'),
-      nombre: colaboracion ? this.controlValue('nombreColaboracion') : this.controlValue('nombre'),
-      celular: colaboracion ? null : this.controlValue('celular'),
-      email: colaboracion ? null : this.controlValue('email'),
-      rut: colaboracion ? this.controlValue('rut') : null,
+      crearCliente,
+      tipoCliente: this.controlValue('tipoCliente') as TipoCliente | null,
+      cedula: crearCliente ? this.controlValue('documento') : null,
+      nombre: this.controlValue('nombre'),
+      celular: this.controlValue('celular'),
+      email: this.controlValue('email'),
       notas: this.controlValue('notas'),
       requiereDocumentacion: this.controlChecked('requiereDocumentacion'),
       requiereSena: this.controlChecked('requiereSena'),

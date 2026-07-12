@@ -21,6 +21,8 @@
         label="Descargar comprobante"
         icon="pi-download"
         intent="secondary"
+        [loading]="descargando()"
+        [disabled]="descargando()"
         (clicked)="onDescargarComprobante()"
       />
     </app-form-actions>

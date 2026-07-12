@@ -15,6 +15,7 @@ import {
   TipoCliente,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
+import { BusquedaRutResponseDto } from '../../reservas/models/reserva.model';
 import { FileDownloadService } from 'src/app/core/services/file-download.service';
 
 const BASE = `${environment.apiUrl}/clientes`;
@@ -78,6 +79,34 @@ describe('ClientesService', () => {
     expect(req.request.method).toBe('GET');
     req.flush({ id: 1, estado: EstadoSocio.Baja, numeroSocio: 5 });
     expect(estado).toBe(EstadoSocio.Baja);
+  });
+
+  it('getByRut hace GET /clientes/rut/{rut} y devuelve el DTO de la Empresa', () => {
+    const empresa: BusquedaRutResponseDto = {
+      id: 3,
+      nombre: 'Org Solidaria S.A.',
+      rut: '211003420017',
+      telefono: '099333333',
+      mail: 'org@mail.com',
+      observaciones: null,
+      tipoCliente: TipoCliente.Empresa,
+    };
+    let resultado: BusquedaRutResponseDto | undefined;
+    service.getByRut('211003420017').subscribe((dto) => (resultado = dto));
+    const req = httpMock.expectOne(`${BASE}/rut/211003420017`);
+    expect(req.request.method).toBe('GET');
+    req.flush(empresa);
+    expect(resultado).toEqual(empresa);
+  });
+
+  it('getByRut propaga el 404 (el manejo de "no encontrado" vive en el consumidor)', () => {
+    let errorStatus: number | undefined;
+    service.getByRut('999999999997').subscribe({
+      error: (err) => (errorStatus = err.status),
+    });
+    const req = httpMock.expectOne(`${BASE}/rut/999999999997`);
+    req.flush('Not found', { status: 404, statusText: 'Not Found' });
+    expect(errorStatus).toBe(404);
   });
 
   it('getAll realiza GET a /clientes con page y size', () => {

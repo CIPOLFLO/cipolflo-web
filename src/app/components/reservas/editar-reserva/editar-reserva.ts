@@ -21,12 +21,12 @@ import {
 } from '../../../shared';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
-  TIPO_CLIENTE_LABEL,
   TIPO_RESERVA_LABEL,
-  TipoReserva,
+  documentoDeCliente,
   type ReservaActualizacionRequestDto,
   type ReservaDetalleRespuestaDto,
 } from '../models/reserva.model';
+import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
 import { ReservasService } from '../services/reservas.service';
 
 @Component({
@@ -67,7 +67,7 @@ export class EditarReserva extends ReservaFormBase {
 
   // La información del cliente no se modifica, así que no aplican validadores de cliente.
   protected override aplicarValidadoresCliente(): void {
-    for (const key of ['cedula', 'nombre', 'celular', 'nombreColaboracion']) {
+    for (const key of ['documento', 'nombre', 'celular']) {
       const ctrl = this.form.get(key);
       ctrl?.clearValidators();
       ctrl?.updateValueAndValidity({ emitEvent: false });
@@ -122,12 +122,15 @@ export class EditarReserva extends ReservaFormBase {
         }
       });
 
-    // Precarga los campos del cliente en el form para que los validadores queden satisfechos.
-    if (reserva.tipoReserva !== TipoReserva.ColaboracionSinFines && reserva.cliente) {
+    // Precarga el cliente (readonly) para dejar la búsqueda como realizada. Toda reserva
+    // (incluida Colaboración) tiene un clienteId real asociado.
+    if (reserva.cliente) {
+      const { tipoDocumento, documento } = documentoDeCliente(reserva.cliente);
       this.aplicarCliente({
         id: reserva.cliente.id,
         nombre: reserva.cliente.nombre,
-        cedula: reserva.cliente.cedula,
+        documento: documento ?? '',
+        tipoDocumento,
         tipoCliente: reserva.cliente.tipoCliente,
         numeroSocio: null,
         estado: null,
@@ -197,20 +200,8 @@ export class EditarReserva extends ReservaFormBase {
   }));
 
   protected readonly clienteFields = computed<DetailFieldConfig[]>(() => {
-    const r = this.reserva();
-    if (!r) return [];
-    if (r.tipoReserva === TipoReserva.ColaboracionSinFines) {
-      return [{ key: 'rut', label: 'RUT', value: r.rut }];
-    }
-    const c = r.cliente;
-    if (!c) return [];
-    return [
-      { key: 'tipoCliente', label: 'Tipo de cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
-      { key: 'cedula', label: 'Cédula', value: c.cedula },
-      { key: 'nombre', label: 'Nombre', value: c.nombre },
-      { key: 'telefono', label: 'Teléfono', value: c.telefono },
-      { key: 'email', label: 'Email', value: c.email },
-    ];
+    const c = this.reserva()?.cliente;
+    return c ? buildClienteReservaFields(c) : [];
   });
 
   protected readonly registroData = computed<DetailRegistroData | null>(() => {

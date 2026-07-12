@@ -135,23 +135,49 @@
 
     <!-- Información del Cliente -->
     <app-form-section title="Información del Cliente">
-      @if (!esColaboracion()) {
-        <div class="nueva-reserva__cedula">
+      <div class="nueva-reserva__documento">
+        <div class="nueva-reserva__documento-radio">
+          <span class="nueva-reserva__radio-option">
+            <p-radioButton
+              inputId="tipoDocumentoCedula"
+              name="tipoDocumento"
+              value="CEDULA"
+              [ngModel]="controlValue('tipoDocumento')"
+              [disabled]="documentoRadioDisabled()"
+              (ngModelChange)="onControlChange('tipoDocumento', $event)"
+            />
+            <label for="tipoDocumentoCedula">Cédula</label>
+          </span>
+          <span class="nueva-reserva__radio-option">
+            <p-radioButton
+              inputId="tipoDocumentoRut"
+              name="tipoDocumento"
+              value="RUT"
+              [ngModel]="controlValue('tipoDocumento')"
+              [disabled]="documentoRadioDisabled()"
+              (ngModelChange)="onControlChange('tipoDocumento', $event)"
+            />
+            <label for="tipoDocumentoRut">RUT</label>
+          </span>
+        </div>
+
+        <div class="nueva-reserva__documento-input">
           <app-form-field
-            class="nueva-reserva__cedula-field"
-            [config]="cedulaField()"
-            [value]="controlValue('cedula')"
-            [error]="clienteErrors()['cedula']"
-            (valueChange)="onControlChange('cedula', $event)"
-            (blurred)="onFieldBlur('cedula')"
+            class="nueva-reserva__documento-field"
+            [config]="documentoField()"
+            [value]="controlValue('documento')"
+            [error]="clienteErrors()['documento']"
+            (valueChange)="onControlChange('documento', $event)"
+            (blurred)="onFieldBlur('documento')"
           />
+
           @if (lupitaVisible()) {
             <div class="nueva-reserva__cedula-actions">
               <app-button
                 class="nueva-reserva__lupa"
                 intent="secondary"
                 icon="pi-search"
-                tooltip="Buscar cliente por cédula"
+                tooltip="Buscar cliente"
                 [disabled]="loading()"
                 (clicked)="buscarCliente()"
               />
@@ -168,76 +194,61 @@
             </div>
           }
         </div>
+      </div>
 
-        @if (clienteCamposReadonly()) {
+      @if (clienteCamposReadonly()) {
+        <app-form-field
+          [config]="tipoClienteDisplayField"
+          [displayOnly]="true"
+          [value]="tipoClienteLabel()"
+        />
+      } @else if (mostrarFormularioManual()) {
+        <p class="nueva-reserva__sin-cliente">
+          No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente.
+        </p>
+      }
+
+      @if (clienteCamposReadonly() || mostrarFormularioManual()) {
+        <app-form-field
+          [config]="nombreField"
+          [displayOnly]="clienteCamposReadonly()"
+          [value]="controlValue('nombre')"
+          [error]="clienteErrors()['nombre']"
+          (valueChange)="onControlChange('nombre', $event)"
+          (blurred)="onFieldBlur('nombre')"
+        />
+        <app-form-field
+          [config]="celularField"
+          [displayOnly]="clienteCamposReadonly()"
+          [value]="controlValue('celular')"
+          [error]="clienteErrors()['celular']"
+          (valueChange)="onControlChange('celular', $event)"
+          (blurred)="onFieldBlur('celular')"
+        />
+        <app-form-field
+          [config]="emailField"
+          [displayOnly]="clienteCamposReadonly()"
+          [value]="controlValue('email')"
+          [error]="clienteErrors()['email']"
+          (valueChange)="onControlChange('email', $event)"
+          (blurred)="onFieldBlur('email')"
+        />
+
+        @if (esSocio()) {
           <app-form-field
-            [config]="tipoClienteDisplayField"
+            [config]="numeroSocioField"
             [displayOnly]="true"
-            [value]="tipoClienteLabel()"
+            [value]="controlValue('numeroSocio')"
           />
-        } @else if (mostrarFormularioManual()) {
-          <p class="nueva-reserva__sin-cliente">
-            No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente.
-          </p>
         }
 
-        @if (clienteCamposReadonly() || mostrarFormularioManual()) {
+        @if (mostrarObservaciones()) {
           <app-form-field
-            [config]="nombreField"
-            [displayOnly]="clienteCamposReadonly()"
-            [value]="controlValue('nombre')"
-            [error]="clienteErrors()['nombre']"
-            (valueChange)="onControlChange('nombre', $event)"
-            (blurred)="onFieldBlur('nombre')"
+            [config]="observacionesField"
+            [displayOnly]="true"
+            [value]="observacionesCliente()"
           />
-          <app-form-field
-            [config]="celularField"
-            [displayOnly]="clienteCamposReadonly()"
-            [value]="controlValue('celular')"
-            [error]="clienteErrors()['celular']"
-            (valueChange)="onControlChange('celular', $event)"
-            (blurred)="onFieldBlur('celular')"
-          />
-          <app-form-field
-            [config]="emailField"
-            [displayOnly]="clienteCamposReadonly()"
-            [value]="controlValue('email')"
-            [error]="clienteErrors()['email']"
-            (valueChange)="onControlChange('email', $event)"
-            (blurred)="onFieldBlur('email')"
-          />
-
-          @if (esSocio()) {
-            <app-form-field
-              [config]="numeroSocioField"
-              [displayOnly]="true"
-              [value]="controlValue('numeroSocio')"
-            />
-          }
-
-          @if (mostrarObservaciones()) {
-            <app-form-field
-              [config]="observacionesField"
-              [displayOnly]="true"
-              [value]="observacionesCliente()"
-            />
-          }
         }
-      } @else {
-        <app-form-field
-          [config]="rutField"
-          [value]="controlValue('rut')"
-          [error]="colaboracionErrors()['rut']"
-          (valueChange)="onControlChange('rut', $event)"
-          (blurred)="onFieldBlur('rut')"
-        />
-        <app-form-field
-          [config]="nombreColaboracionField"
-          [value]="controlValue('nombreColaboracion')"
-          [error]="colaboracionErrors()['nombreColaboracion']"
-          (valueChange)="onControlChange('nombreColaboracion', $event)"
-          (blurred)="onFieldBlur('nombreColaboracion')"
-        />
       }
     </app-form-section>
 

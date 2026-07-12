@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { EMPTY, catchError, filter, finalize, map, switchMap } from 'rxjs';
 import {
   AppButton,
   DetailRegistroSection,
@@ -18,12 +18,8 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ReservasService } from '../services/reservas.service';
-import {
-  FORMA_PAGO_RESERVA_LABEL,
-  TIPO_CLIENTE_LABEL,
-  TIPO_RESERVA_LABEL,
-  TipoReserva,
-} from '../models/reserva.model';
+import { FORMA_PAGO_RESERVA_LABEL, TIPO_RESERVA_LABEL, TipoReserva } from '../models/reserva.model';
+import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
 
 @Component({
   selector: 'app-detalle-reserva',
@@ -46,7 +42,6 @@ export class DetalleReserva {
   private readonly route = inject(ActivatedRoute);
   private readonly reservasService = inject(ReservasService);
   private readonly errorHandler = inject(ErrorHandlerService);
-  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
@@ -157,23 +152,8 @@ export class DetalleReserva {
   });
 
   protected readonly clienteFields = computed<DetailFieldConfig[]>(() => {
-    const e = this.reserva();
-    if (!e) return [];
-    if (e.tipoReserva === TipoReserva.ColaboracionSinFines) {
-      return [
-        { key: 'rut', label: 'RUT', value: e.rut },
-        { key: 'nombre', label: 'Nombre', value: e.nombre },
-      ];
-    }
-    const c = e.cliente;
-    if (!c) return [];
-    return [
-      { key: 'tipoCliente', label: 'Tipo de Cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
-      { key: 'cedula', label: 'Cédula', value: c.cedula },
-      { key: 'nombre', label: 'Nombre', value: c.nombre },
-      { key: 'telefono', label: 'Teléfono', value: c.telefono },
-      { key: 'email', label: 'Email', value: c.email },
-    ];
+    const c = this.reserva()?.cliente;
+    return c ? buildClienteReservaFields(c) : [];
   });
 
   protected readonly adicionalFields = computed<DetailFieldConfig[]>(() => {
@@ -207,13 +187,20 @@ export class DetalleReserva {
     });
   }
 
+  protected readonly descargando = signal(false);
+
   protected onDescargarComprobante(): void {
     const id = this.reserva()?.id;
-    if (id == null) return;
+    if (id == null || this.descargando()) return;
+    this.descargando.set(true);
+    // Fire-and-forget: la descarga NO se ata al destroyRef para que sobreviva si el usuario
+    // navega (Modificar, header) mientras corre. La request vive en servicios root, se
+    // auto-completa al terminar el HTTP y los errores van al diálogo global. Mientras el
+    // usuario siga en pantalla, `descargando` mantiene el botón bloqueado.
     this.reservasService
       .descargarComprobante(id)
       .pipe(
-        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.descargando.set(false)),
         catchError((err: unknown) => {
           this.errorHandler.handle(err);
           return EMPTY;

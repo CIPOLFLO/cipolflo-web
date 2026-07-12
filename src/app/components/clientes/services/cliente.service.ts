@@ -13,6 +13,8 @@ import {
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
+import { BusquedaRutResponseDto } from '../../reservas/models/reserva.model';
+
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
   private readonly blobExport = inject(BlobExportService);
@@ -42,6 +44,11 @@ export class ClientesService extends BaseHttpService {
       size: 1,
       identificador: cedula,
     });
+  }
+
+  /** Busca un cliente Empresa por RUT. El backend responde 404 si no existe. */
+  getByRut(rut: string): Observable<BusquedaRutResponseDto> {
+    return this.get<BusquedaRutResponseDto>(`clientes/rut/${rut}`);
   }
 
   /** Estado puntual de un socio (ACTIVO / INACTIVO / DE_BAJA), de sólo lectura. */

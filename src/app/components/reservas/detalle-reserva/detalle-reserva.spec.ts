@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { EstadoReserva, Procedencia } from '../../../shared';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
@@ -30,13 +30,12 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   requiereDocumentacion: true,
   tieneDocumentacion: false,
   requiereSena: false,
-  nombre: null,
-  rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {
     id: 10,
     nombre: 'Carlos Martínez Gómez',
     cedula: '12345678',
+    rut: null,
     telefono: '+598 99 123 456',
     email: 'carlos.martinez@email.com',
     tipoCliente: TipoCliente.Socio,
@@ -218,8 +217,15 @@ describe('DetalleReserva', () => {
       const { component } = await setup({
         ...mockReserva,
         tipoReserva: TipoReserva.ColaboracionSinFines,
-        cliente: null,
-        rut: '21-123456-7',
+        cliente: {
+          id: 20,
+          nombre: 'Org Solidaria S.A.',
+          cedula: null,
+          rut: '211003420017',
+          telefono: '099222222',
+          email: 'org@mail.com',
+          tipoCliente: TipoCliente.Empresa,
+        },
       });
       const fields = component['reservaFields']();
       expect(fields.find((f) => f.key === 'pago')).toBeUndefined();
@@ -240,32 +246,45 @@ describe('DetalleReserva', () => {
     });
   });
 
-  describe('clienteFields — reserva COLABORACION', () => {
+  describe('clienteFields — reserva COLABORACION (cliente Empresa)', () => {
     const mockColaboracion: ReservaDetalleRespuestaDto = {
       ...mockReserva,
       tipoReserva: TipoReserva.ColaboracionSinFines,
-      cliente: null,
-      nombre: 'Organización Ejemplo',
-      rut: '21-123456-7',
+      cliente: {
+        id: 20,
+        nombre: 'Org Solidaria S.A.',
+        cedula: null,
+        rut: '211003420017',
+        telefono: '099222222',
+        email: 'org@mail.com',
+        tipoCliente: TipoCliente.Empresa,
+      },
     };
 
-    it('muestra el RUT', async () => {
+    it('muestra el tipo de cliente Empresa', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
-      expect(fields.find((f) => f.key === 'rut')?.value).toBe('21-123456-7');
+      expect(fields.find((f) => f.key === 'tipoCliente')?.value).toBe('Empresa');
     });
 
-    it('muestra el nombre del cliente', async () => {
+    it('muestra el RUT de la Empresa (no el campo cédula)', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
-      expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Organización Ejemplo');
-    });
-
-    it('no incluye campos de cliente COMUN', async () => {
-      const { component } = await setup(mockColaboracion);
-      const fields = component['clienteFields']();
+      expect(fields.find((f) => f.key === 'rut')?.value).toBe('211003420017');
       expect(fields.find((f) => f.key === 'cedula')).toBeUndefined();
-      expect(fields.find((f) => f.key === 'tipoCliente')).toBeUndefined();
+    });
+
+    it('muestra el nombre de la organización', async () => {
+      const { component } = await setup(mockColaboracion);
+      const fields = component['clienteFields']();
+      expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Org Solidaria S.A.');
+    });
+
+    it('muestra teléfono y email de la Empresa', async () => {
+      const { component } = await setup(mockColaboracion);
+      const fields = component['clienteFields']();
+      expect(fields.find((f) => f.key === 'telefono')?.value).toBe('099222222');
+      expect(fields.find((f) => f.key === 'email')?.value).toBe('org@mail.com');
     });
   });
 
@@ -301,6 +320,31 @@ describe('DetalleReserva', () => {
     descargarComprobanteSpy.mockReturnValue(throwError(() => error));
     component['onDescargarComprobante']();
     expect(handleSpy).toHaveBeenCalledWith(error);
+  });
+
+  it('marca descargando mientras la descarga está en curso y lo libera al terminar', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    const descarga = new Subject<void>();
+    descargarComprobanteSpy.mockReturnValue(descarga.asObservable());
+    component['onDescargarComprobante']();
+    expect(component['descargando']()).toBe(true);
+    descarga.complete();
+    expect(component['descargando']()).toBe(false);
+  });
+
+  it('un error en la descarga también libera el estado descargando', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    descargarComprobanteSpy.mockReturnValue(throwError(() => new Error('download error')));
+    component['onDescargarComprobante']();
+    expect(component['descargando']()).toBe(false);
+  });
+
+  it('no dispara una segunda descarga si ya hay una en curso', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    descargarComprobanteSpy.mockReturnValue(new Subject<void>().asObservable());
+    component['onDescargarComprobante']();
+    component['onDescargarComprobante']();
+    expect(descargarComprobanteSpy).toHaveBeenCalledTimes(1);
   });
 
   it('debería manejar error en getById: llama a errorHandler y navega a /reservas', async () => {
