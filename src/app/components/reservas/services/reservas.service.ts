@@ -13,6 +13,8 @@ import {
   ReservaRespuestaDto,
   ReservaCancelacionCheckResponseDto,
   ReservaCancelacionRequestDto,
+  ReservaFinalizacionCheckResponseDto,
+  ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
 
 @Injectable()
@@ -69,5 +71,13 @@ export class ReservasService extends BaseHttpService {
 
   descargarComprobante(id: number): Observable<void> {
     return this.blobExport.download(`reservas/${id}/comprobante`, `comprobante-reserva-${id}.pdf`);
+  }
+
+  verificarFinalizacion(id: number): Observable<ReservaFinalizacionCheckResponseDto> {
+    return this.get<ReservaFinalizacionCheckResponseDto>(`reservas/${id}/finalizacion`);
+  }
+
+  finalizar(id: number, dto: ReservaFinalizacionRequestDto): Observable<void> {
+    return this.patch<void>(`reservas/${id}/finalizacion`, dto);
   }
 }

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router, provideRouter } from '@angular/router';
-import { of, throwError, firstValueFrom, Subscription } from 'rxjs';
+import { of, throwError, firstValueFrom, Subscription, Subject } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
 import { ConfirmDialogService } from '../../../shared';
@@ -199,6 +200,16 @@ describe('ListadoFinanzas', () => {
       expect(mockFinanzaService.eliminar).not.toHaveBeenCalled();
     });
 
+    it('debería recargar la tabla ante éxito', () => {
+      mockConfirmDialogService.open.mockReturnValue(of(true));
+      mockFinanzaService.eliminar.mockReturnValue(of(void 0));
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onEliminarFinanza'](mockRow);
+
+      expect(updateFiltersSpy).toHaveBeenCalled();
+    });
+
     it('debería manejar el error si falla eliminar', () => {
       const error = new Error('Error al eliminar');
 
@@ -208,6 +219,118 @@ describe('ListadoFinanzas', () => {
       component['onEliminarFinanza'](mockRow);
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    });
+
+    it('un bloqueo (pago de cuota) debe delegar en ErrorHandler sin abrir la advertencia ni recargar', () => {
+      const error = new HttpErrorResponse({
+        status: 400,
+        error: {
+          codigo: 'ELIMINACION_PAGO_CUOTA_NO_PERMITIDA',
+          descripcion: 'Los pagos de cuota no pueden eliminarse.',
+        },
+      });
+
+      mockConfirmDialogService.open.mockReturnValue(of(true));
+      mockFinanzaService.eliminar.mockReturnValue(throwError(() => error));
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onEliminarFinanza'](mockRow);
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+      expect(component['reservaCerradaAdvertencia']()).toBeNull();
+      expect(updateFiltersSpy).not.toHaveBeenCalled();
+    });
+
+    it('CONFIRMACION_ELIMINACION_REQUERIDA abre la advertencia sin delegar en ErrorHandler', () => {
+      const error = new HttpErrorResponse({
+        status: 400,
+        error: {
+          codigo: 'CONFIRMACION_ELIMINACION_REQUERIDA',
+          descripcion: 'La reserva ya está finalizada.',
+        },
+      });
+
+      mockConfirmDialogService.open.mockReturnValue(of(true));
+      mockFinanzaService.eliminar.mockReturnValue(throwError(() => error));
+
+      component['onEliminarFinanza'](mockRow);
+
+      expect(mockErrorHandler.handle).not.toHaveBeenCalled();
+      expect(component['reservaCerradaAdvertencia']()).toEqual({
+        finanza: mockRow,
+        message: 'El movimiento corresponde a una reserva ya finalizada o cancelada.',
+      });
+    });
+  });
+
+  describe('advertencia de reserva cerrada', () => {
+    beforeEach(() => {
+      component['reservaCerradaAdvertencia'].set({
+        finanza: mockRow,
+        message: 'La reserva ya está finalizada.',
+      });
+    });
+
+    it('onEliminarDeTodasFormas reintenta con confirmar=true y recarga', () => {
+      mockFinanzaService.eliminar.mockReturnValue(of(void 0));
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onEliminarDeTodasFormas']();
+
+      expect(mockFinanzaService.eliminar).toHaveBeenCalledWith(mockRow.id, true);
+      expect(component['reservaCerradaAdvertencia']()).toBeNull();
+      expect(updateFiltersSpy).toHaveBeenCalled();
+    });
+
+    it('onEliminarDeTodasFormas maneja el error y cierra la advertencia', () => {
+      const error = new Error('Error al eliminar');
+      mockFinanzaService.eliminar.mockReturnValue(throwError(() => error));
+
+      component['onEliminarDeTodasFormas']();
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+      expect(component['reservaCerradaAdvertencia']()).toBeNull();
+    });
+
+    it('onRegistrarEgresoAsociado navega a /finanzas/nuevo sin eliminar', () => {
+      const navigateSpy = vi.spyOn(router, 'navigate');
+
+      component['onRegistrarEgresoAsociado']();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', 'nuevo']);
+      expect(mockFinanzaService.eliminar).not.toHaveBeenCalled();
+      expect(component['reservaCerradaAdvertencia']()).toBeNull();
+    });
+
+    it('onCancelarAdvertencia cierra la advertencia sin efectos', () => {
+      component['onCancelarAdvertencia']();
+
+      expect(component['reservaCerradaAdvertencia']()).toBeNull();
+      expect(mockFinanzaService.eliminar).not.toHaveBeenCalled();
+    });
+
+    it('no dispara un segundo DELETE mientras el primero está en vuelo', () => {
+      const pendiente = new Subject<void>();
+      mockFinanzaService.eliminar.mockReturnValue(pendiente.asObservable());
+
+      component['onEliminarDeTodasFormas']();
+      component['onEliminarDeTodasFormas']();
+
+      expect(mockFinanzaService.eliminar).toHaveBeenCalledTimes(1);
+      expect(component['advertenciaProcesando']()).toBe(true);
+    });
+
+    it('mientras procesa, cancelar y registrar egreso no tienen efecto', () => {
+      const pendiente = new Subject<void>();
+      mockFinanzaService.eliminar.mockReturnValue(pendiente.asObservable());
+      const navigateSpy = vi.spyOn(router, 'navigate');
+
+      component['onEliminarDeTodasFormas']();
+      component['onCancelarAdvertencia']();
+      component['onRegistrarEgresoAsociado']();
+
+      expect(component['reservaCerradaAdvertencia']()).not.toBeNull();
+      expect(navigateSpy).not.toHaveBeenCalled();
     });
   });
 

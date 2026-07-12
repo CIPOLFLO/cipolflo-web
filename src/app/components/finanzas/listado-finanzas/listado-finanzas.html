@@ -47,4 +47,15 @@
 
   <app-filter-panel (filterChange)="onFilterChange($event)" />
   <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+
+  @if (reservaCerradaAdvertencia(); as advertencia) {
+    <app-eliminar-reserva-cerrada-dialog
+      [visible]="true"
+      [message]="advertencia.message"
+      [procesando]="advertenciaProcesando()"
+      (registrarEgreso)="onRegistrarEgresoAsociado()"
+      (eliminar)="onEliminarDeTodasFormas()"
+      (cancelar)="onCancelarAdvertencia()"
+    />
+  }
 </app-page-layout>

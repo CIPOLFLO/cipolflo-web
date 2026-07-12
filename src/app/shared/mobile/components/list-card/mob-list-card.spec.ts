@@ -55,10 +55,10 @@ describe('MobListCard', () => {
     expect(rowActions).toBeTruthy();
   });
 
-  it('debe incluir app-row-actions aunque actions esté vacío', () => {
+  it('no renderiza app-row-actions cuando actions está vacío', () => {
     const emptyFixture = TestBed.createComponent(TestHostEmptyActionsComponent);
     emptyFixture.detectChanges();
     const rowActions = emptyFixture.debugElement.query(By.css('app-row-actions'));
-    expect(rowActions).toBeTruthy();
+    expect(rowActions).toBeNull();
   });
 });
