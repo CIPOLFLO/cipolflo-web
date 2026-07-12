@@ -18,6 +18,7 @@ export interface ReservaRow extends Record<string, unknown> {
   estadoReserva: EstadoReserva;
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
+  requiereSena: boolean;
   tipoReserva: TipoReserva;
   montoImpago: number;
   fechaLimitePago: string | null;

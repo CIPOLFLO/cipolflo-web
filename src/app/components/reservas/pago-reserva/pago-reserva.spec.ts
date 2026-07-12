@@ -16,6 +16,7 @@ const reservaMock: ReservaRow = {
   fechaEntrada: '2026-06-26',
   fechaSalida: '2026-06-27',
   estadoReserva: EstadoReserva.Pendiente,
+  requiereSena: true,
   tipoReserva: TipoReserva.Comun,
   montoImpago: 5000,
   fechaLimitePago: null,

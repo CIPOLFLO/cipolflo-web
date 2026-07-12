@@ -31,6 +31,7 @@ const mockRow: ReservaRespuestaDto = {
   estadoReserva: EstadoReserva.Confirmada,
   requiereDocumentacion: false,
   tieneDocumentacion: false,
+  requiereSena: true,
   tipoReserva: TipoReserva.Comun,
   montoImpago: 5000,
   fechaLimitePago: null,

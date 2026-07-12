@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, map } from 'rxjs';
 import { PageLayout } from '../../../shared/layout/page-layout/page-layout';
 import { AppButton } from '../../../shared/components/button/button';
 import { FilterPanel } from '../../../shared/components/filter-panel/filter-panel';
@@ -25,6 +25,7 @@ import {
   ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
+import { mapReservaListadoRow, ReservaListadoRow } from '../mappers/reserva-listado.mapper';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -73,8 +74,13 @@ export class ListadoReservas {
   protected readonly reservaFinalizacionSeleccionada = signal<ReservaRow | null>(null);
   protected readonly finalizacionCheck = signal<ReservaFinalizacionCheckResponseDto | null>(null);
 
-  protected readonly loadDataFn: LoadDataFn<ReservaRow> = (params) =>
-    this.reservasService.getAll(params);
+  protected readonly loadDataFn: LoadDataFn<ReservaListadoRow> = (params) =>
+    this.reservasService.getAll(params).pipe(
+      map((page) => ({
+        ...page,
+        content: page.content.map(mapReservaListadoRow),
+      })),
+    );
 
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
