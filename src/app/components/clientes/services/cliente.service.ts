@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { catchError, Observable, of } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { BlobExportService } from '../../../core/services/blob-export.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
@@ -13,6 +14,8 @@ import {
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
+import { BusquedaRutResponseDto } from '../../reservas/models/reserva.model';
+
 @Injectable({ providedIn: 'root' })
 export class ClientesService extends BaseHttpService {
   private readonly blobExport = inject(BlobExportService);
@@ -42,6 +45,18 @@ export class ClientesService extends BaseHttpService {
       size: 1,
       identificador: cedula,
     });
+  }
+
+  /** Busca un cliente Empresa por RUT. Devuelve null si no existe (404). */
+  getByRut(rut: string): Observable<BusquedaRutResponseDto | null> {
+    return this.get<BusquedaRutResponseDto>(`clientes/rut/${rut}`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404) {
+          return of(null);
+        }
+        throw error;
+      }),
+    );
   }
 
   /** Estado puntual de un socio (ACTIVO / INACTIVO / DE_BAJA), de sólo lectura. */

@@ -48,32 +48,23 @@ export class ReservaValidacionesService {
 
   getClienteErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errors: Record<string, string> = {};
-    this.addRequiredError(errors, form, submitted, 'cedula', 'La cédula es obligatoria.');
+    this.addRequiredError(errors, form, submitted, 'documento', 'El documento es obligatorio.');
     this.addRequiredError(errors, form, submitted, 'nombre', 'El nombre es obligatorio.');
     this.addRequiredError(errors, form, submitted, 'celular', 'El celular es obligatorio.');
 
-    const cedula = form.get('cedula');
-    if (this.shouldShowError(cedula, submitted) && cedula?.hasError('cedulaInvalida')) {
-      errors['cedula'] = 'La cédula ingresada no es válida.';
+    const documento = form.get('documento');
+    if (this.shouldShowError(documento, submitted)) {
+      if (documento?.hasError('cedulaInvalida')) {
+        errors['documento'] = 'La cédula ingresada no es válida.';
+      } else if (documento?.hasError('rutInvalido')) {
+        errors['documento'] = 'El RUT ingresado no es válido.';
+      }
     }
 
     const email = form.get('email');
     if (this.shouldShowError(email, submitted) && email?.hasError('emailInvalido')) {
       errors['email'] = 'El email no es válido.';
     }
-    return errors;
-  }
-
-  getColaboracionErrors(form: FormGroup, submitted: boolean): Record<string, string> {
-    const errors: Record<string, string> = {};
-    this.addRequiredError(errors, form, submitted, 'rut', 'El RUT es obligatorio.');
-    this.addRequiredError(
-      errors,
-      form,
-      submitted,
-      'nombreColaboracion',
-      'El nombre del cliente es obligatorio.',
-    );
     return errors;
   }
 

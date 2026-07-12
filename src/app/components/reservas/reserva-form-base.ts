@@ -1,5 +1,5 @@
 import { computed, DestroyRef, Directive, inject, input, signal, Signal } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -26,6 +26,7 @@ import {
   type FormFieldOption,
 } from '../../shared';
 import { TipoCliente } from '../clientes/models/cliente.model';
+import { ClienteValidacionesService } from '../clientes/services/cliente-validaciones.service';
 import {
   EstadoServicio,
   ServicioFechaOcupadaDto,
@@ -38,6 +39,7 @@ import { ReservaValidacionesService } from './services/reserva-validaciones.serv
 import {
   ClienteBusquedaReservaDto,
   CostoReservaRequestDto,
+  TipoDocumento,
   TipoReserva,
 } from './models/reserva.model';
 import { ReservasService } from './services/reservas.service';
@@ -55,12 +57,14 @@ export abstract class ReservaFormBase {
   protected readonly servicioService = inject(ServicioService);
   protected readonly reservasService = inject(ReservasService);
   protected readonly validaciones = inject(ReservaValidacionesService);
+  protected readonly clienteValidaciones = inject(ClienteValidacionesService);
   protected readonly errorHandler = inject(ErrorHandlerService);
   protected readonly destroyRef = inject(DestroyRef);
 
   protected readonly form: FormGroup;
   private readonly formEvents: Signal<unknown>;
   private readonly blurCount = signal(0);
+  protected readonly tipoDocumentoValue = signal<TipoDocumento>(TipoDocumento.Cedula);
 
   protected readonly submitted = signal(false);
   protected readonly loading = signal(false);
@@ -139,12 +143,6 @@ export abstract class ReservaFormBase {
     return this.validaciones.getClienteErrors(this.form, this.submitted());
   });
 
-  protected readonly colaboracionErrors = computed<Record<string, string>>(() => {
-    this.formEvents();
-    this.blurCount();
-    return this.validaciones.getColaboracionErrors(this.form, this.submitted());
-  });
-
   protected readonly confirmDisabled: Signal<boolean>;
 
   protected static buildReservaForm(): FormGroup {
@@ -160,13 +158,12 @@ export abstract class ReservaFormBase {
       cantidadMenores: new FormControl<string | null>(null, Validators.min(0)),
       cantidad: new FormControl<string | null>(null),
       tipoCliente: new FormControl<string | null>(null),
-      cedula: new FormControl<string | null>(null),
+      tipoDocumento: new FormControl<string | null>(TipoDocumento.Cedula),
+      documento: new FormControl<string | null>(null),
       nombre: new FormControl<string | null>(null),
       celular: new FormControl<string | null>(null),
       email: new FormControl<string | null>(null),
       numeroSocio: new FormControl<string | null>(null),
-      rut: new FormControl<string | null>(null),
-      nombreColaboracion: new FormControl<string | null>(null),
       notas: new FormControl<string | null>(null),
       requiereDocumentacion: new FormControl<boolean>(false),
       requiereSena: new FormControl<boolean>(false),
@@ -183,7 +180,7 @@ export abstract class ReservaFormBase {
     this.confirmDisabled = computed(() => {
       this.formEvents();
       const invalido = formInvalid() === 'INVALID' || this.form.invalid;
-      const faltaBusqueda = !this.esColaboracion() && !this.busquedaRealizada();
+      const faltaBusqueda = !this.busquedaRealizada();
       return invalido || faltaBusqueda || this.loading();
     });
 
@@ -200,6 +197,14 @@ export abstract class ReservaFormBase {
       .subscribe((value: TipoReserva) => {
         this.tipoReservaValue.set(value);
         this.aplicarValidadoresCliente();
+      });
+
+    this.form
+      .get('tipoDocumento')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value: TipoDocumento) => {
+        this.tipoDocumentoValue.set(value);
+        this.aplicarValidadorDocumento();
       });
 
     this.form
@@ -367,9 +372,18 @@ export abstract class ReservaFormBase {
   /** Activa los validadores de la sección de cliente según el tipo de reserva. */
   protected aplicarValidadoresCliente(): void {
     // El tipo de cliente se deriva de la búsqueda (Particular si no existe).
-    const requeridosComun = ['cedula', 'nombre', 'celular'];
-    const requeridosColab = ['rut', 'nombreColaboracion'];
+    const requeridosComun = ['nombre', 'celular'];
     const colaboracion = this.esColaboracion();
+    const tipoDocumentoControl = this.form.get('tipoDocumento');
+
+    // En Colaboración el documento queda fijo en RUT y no editable.
+    if (colaboracion) {
+      tipoDocumentoControl?.setValue(TipoDocumento.Rut, { emitEvent: false });
+      tipoDocumentoControl?.disable({ emitEvent: false });
+      this.tipoDocumentoValue.set(TipoDocumento.Rut);
+    } else {
+      tipoDocumentoControl?.enable({ emitEvent: false });
+    }
 
     for (const key of requeridosComun) {
       const control = this.form.get(key);
@@ -377,12 +391,22 @@ export abstract class ReservaFormBase {
       else control?.setValidators(Validators.required);
       control?.updateValueAndValidity({ emitEvent: false });
     }
-    for (const key of requeridosColab) {
-      const control = this.form.get(key);
-      if (colaboracion) control?.setValidators(Validators.required);
-      else control?.clearValidators();
-      control?.updateValueAndValidity({ emitEvent: false });
-    }
+
+    this.aplicarValidadorDocumento();
+  }
+
+  /** Aplica cedulaValida o rutValida sobre `documento` según el tipoDocumento seleccionado. */
+  private aplicarValidadorDocumento(): void {
+    const documento = this.form.get('documento');
+    const tipoDocumento = this.form.get('tipoDocumento')?.value as TipoDocumento | null;
+
+    const validadorFormato: ValidatorFn =
+      tipoDocumento === TipoDocumento.Rut
+        ? this.clienteValidaciones.rutValida.bind(this.clienteValidaciones)
+        : this.clienteValidaciones.cedulaValida.bind(this.clienteValidaciones);
+
+    documento?.setValidators([Validators.required, validadorFormato]);
+    documento?.updateValueAndValidity({ emitEvent: false });
   }
 
   /** Carga los datos de un cliente (búsqueda o precarga) y deja los campos en sólo lectura. */
@@ -390,9 +414,11 @@ export abstract class ReservaFormBase {
     this.clienteBusqueda.set(cliente);
     this.busquedaRealizada.set(true);
     this.tipoClienteValue.set(cliente.tipoCliente);
-    // La cédula se escribe sin emitir: es resultado de la búsqueda, no una edición del
+    // El documento se escribe sin emitir: es resultado de la búsqueda, no una edición del
     // usuario, así que no debe invalidar la verificación recién hecha.
-    this.form.get('cedula')?.setValue(cliente.cedula, { emitEvent: false });
+    this.form.get('documento')?.setValue(cliente.documento, { emitEvent: false });
+    this.form.get('tipoDocumento')?.setValue(cliente.tipoDocumento, { emitEvent: false });
+    this.tipoDocumentoValue.set(cliente.tipoDocumento);
     this.form.patchValue({
       tipoCliente: cliente.tipoCliente,
       nombre: cliente.nombre,

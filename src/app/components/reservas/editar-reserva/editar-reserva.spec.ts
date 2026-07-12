@@ -61,8 +61,6 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   pago: false,
   requiereDocumentacion: true,
   tieneDocumentacion: false,
-  nombre: null,
-  rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {
     id: 10,
@@ -88,8 +86,14 @@ const mockReserva: ReservaDetalleRespuestaDto = {
 const mockColaboracion: ReservaDetalleRespuestaDto = {
   ...mockReserva,
   tipoReserva: TipoReserva.ColaboracionSinFines,
-  cliente: null,
-  rut: '21-123456-7',
+  cliente: {
+    id: 20,
+    nombre: 'Org Solidaria S.A.',
+    cedula: null as unknown as string,
+    telefono: '099222222',
+    email: 'org@mail.com',
+    tipoCliente: TipoCliente.Empresa,
+  },
   cantidadTotal: null,
   cantidadMenores: null,
 };
@@ -183,21 +187,22 @@ describe('EditarReserva', () => {
     const { component } = await setup();
     expect(component['busquedaRealizada']()).toBe(true);
     expect(component['clienteBusqueda']()?.nombre).toBe('Carlos Martínez Gómez');
-    expect(component['clienteBusqueda']()?.cedula).toBe('12345678');
+    expect(component['clienteBusqueda']()?.documento).toBe('12345678');
   });
 
-  it('para reserva COLABORACION deja busquedaRealizada en true y clienteBusqueda en null', async () => {
+  it('para reserva COLABORACION deja busquedaRealizada en true y clienteBusqueda con los datos de la Empresa', async () => {
     const { component } = await setup(mockColaboracion);
     expect(component['busquedaRealizada']()).toBe(true);
-    expect(component['clienteBusqueda']()).toBeNull();
+    expect(component['clienteBusqueda']()?.nombre).toBe('Org Solidaria S.A.');
+    expect(component['clienteBusqueda']()?.tipoCliente).toBe(TipoCliente.Empresa);
   });
 
   it('los validadores de cliente quedan limpios (cliente es de sólo lectura)', async () => {
     const { component } = await setup();
-    component['form'].get('cedula')?.setValue(null);
+    component['form'].get('documento')?.setValue(null);
     component['form'].get('nombre')?.setValue(null);
     component['form'].get('celular')?.setValue(null);
-    expect(component['form'].get('cedula')?.valid).toBe(true);
+    expect(component['form'].get('documento')?.valid).toBe(true);
     expect(component['form'].get('nombre')?.valid).toBe(true);
     expect(component['form'].get('celular')?.valid).toBe(true);
   });
@@ -213,12 +218,13 @@ describe('EditarReserva', () => {
       expect(fields.find((f) => f.key === 'email')?.value).toBe('carlos.martinez@email.com');
     });
 
-    it('COLABORACION: incluye sólo el RUT', async () => {
+    it('COLABORACION: incluye los datos de la Empresa asociada', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
-      expect(fields.find((f) => f.key === 'rut')?.value).toBe('21-123456-7');
-      expect(fields.find((f) => f.key === 'cedula')).toBeUndefined();
-      expect(fields.find((f) => f.key === 'nombre')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'tipoCliente')?.value).toBe('Empresa');
+      expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Org Solidaria S.A.');
+      expect(fields.find((f) => f.key === 'telefono')?.value).toBe('099222222');
+      expect(fields.find((f) => f.key === 'email')?.value).toBe('org@mail.com');
     });
   });
 

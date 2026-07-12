@@ -30,8 +30,6 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   requiereDocumentacion: true,
   tieneDocumentacion: false,
   requiereSena: false,
-  nombre: null,
-  rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {
     id: 10,
@@ -218,8 +216,14 @@ describe('DetalleReserva', () => {
       const { component } = await setup({
         ...mockReserva,
         tipoReserva: TipoReserva.ColaboracionSinFines,
-        cliente: null,
-        rut: '21-123456-7',
+        cliente: {
+          id: 20,
+          nombre: 'Org Solidaria S.A.',
+          cedula: null as unknown as string,
+          telefono: '099222222',
+          email: 'org@mail.com',
+          tipoCliente: TipoCliente.Empresa,
+        },
       });
       const fields = component['reservaFields']();
       expect(fields.find((f) => f.key === 'pago')).toBeUndefined();
@@ -240,32 +244,37 @@ describe('DetalleReserva', () => {
     });
   });
 
-  describe('clienteFields — reserva COLABORACION', () => {
+  describe('clienteFields — reserva COLABORACION (cliente Empresa)', () => {
     const mockColaboracion: ReservaDetalleRespuestaDto = {
       ...mockReserva,
       tipoReserva: TipoReserva.ColaboracionSinFines,
-      cliente: null,
-      nombre: 'Organización Ejemplo',
-      rut: '21-123456-7',
+      cliente: {
+        id: 20,
+        nombre: 'Org Solidaria S.A.',
+        cedula: null as unknown as string,
+        telefono: '099222222',
+        email: 'org@mail.com',
+        tipoCliente: TipoCliente.Empresa,
+      },
     };
 
-    it('muestra el RUT', async () => {
+    it('muestra el tipo de cliente Empresa', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
-      expect(fields.find((f) => f.key === 'rut')?.value).toBe('21-123456-7');
+      expect(fields.find((f) => f.key === 'tipoCliente')?.value).toBe('Empresa');
     });
 
-    it('muestra el nombre del cliente', async () => {
+    it('muestra el nombre de la organización', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
-      expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Organización Ejemplo');
+      expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Org Solidaria S.A.');
     });
 
-    it('no incluye campos de cliente COMUN', async () => {
+    it('muestra teléfono y email de la Empresa', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
-      expect(fields.find((f) => f.key === 'cedula')).toBeUndefined();
-      expect(fields.find((f) => f.key === 'tipoCliente')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'telefono')?.value).toBe('099222222');
+      expect(fields.find((f) => f.key === 'email')?.value).toBe('org@mail.com');
     });
   });
 

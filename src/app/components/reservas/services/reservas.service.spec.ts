@@ -36,8 +36,6 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   requiereDocumentacion: true,
   tieneDocumentacion: false,
   requiereSena: false,
-  nombre: null,
-  rut: null,
   notas: 'Llegan a las 14hs',
   cliente: {
     id: 10,
@@ -77,7 +75,6 @@ const dto: ReservaCreacionRequestDto = {
   nombre: 'Juan',
   celular: '099111111',
   email: null,
-  rut: null,
   notas: null,
   requiereDocumentacion: false,
   requiereSena: false,
