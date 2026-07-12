@@ -157,17 +157,17 @@ export class DetalleReserva {
   });
 
   protected readonly clienteFields = computed<DetailFieldConfig[]>(() => {
-  const e = this.reserva();
-  if (!e || !e.cliente) return [];
-  const c = e.cliente;
-  return [
-    { key: 'tipoCliente', label: 'Tipo de Cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
-    { key: 'cedula', label: 'Cédula', value: c.cedula },
-    { key: 'nombre', label: 'Nombre', value: c.nombre },
-    { key: 'telefono', label: 'Teléfono', value: c.telefono },
-    { key: 'email', label: 'Email', value: c.email },
-  ];
-});
+    const e = this.reserva();
+    if (!e || !e.cliente) return [];
+    const c = e.cliente;
+    return [
+      { key: 'tipoCliente', label: 'Tipo de Cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
+      { key: 'cedula', label: 'Cédula', value: c.cedula },
+      { key: 'nombre', label: 'Nombre', value: c.nombre },
+      { key: 'telefono', label: 'Teléfono', value: c.telefono },
+      { key: 'email', label: 'Email', value: c.email },
+    ];
+  });
   protected readonly adicionalFields = computed<DetailFieldConfig[]>(() => {
     const e = this.reserva();
     if (!e) return [];

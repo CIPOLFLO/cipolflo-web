@@ -39,22 +39,22 @@ export class ReservaClienteBusquedaService {
   }
 
   buscarPorId(id: number): Observable<ClienteBusquedaReservaDto> {
-  return this.clientesService.getById(id).pipe(
-    map((c) => {
-      const esEmpresa = c.tipoCliente === TipoCliente.Empresa;
-      return {
-        id: c.id,
-        nombre: c.nombre,
-        documento: (esEmpresa ? c.rut : c.cedula) ?? '',
-        tipoDocumento: esEmpresa ? TipoDocumento.Rut : TipoDocumento.Cedula,
-        tipoCliente: c.tipoCliente,
-        numeroSocio: c.numeroSocio,
-        estado: c.estado,
-        telefono: c.telefono,
-        email: c.email,
-        observaciones: c.observaciones,
-      };
-    }),
-  );
-}
+    return this.clientesService.getById(id).pipe(
+      map((c) => {
+        const esEmpresa = c.tipoCliente === TipoCliente.Empresa;
+        return {
+          id: c.id,
+          nombre: c.nombre,
+          documento: (esEmpresa ? c.rut : c.cedula) ?? '',
+          tipoDocumento: esEmpresa ? TipoDocumento.Rut : TipoDocumento.Cedula,
+          tipoCliente: c.tipoCliente,
+          numeroSocio: c.numeroSocio,
+          estado: c.estado,
+          telefono: c.telefono,
+          email: c.email,
+          observaciones: c.observaciones,
+        };
+      }),
+    );
+  }
 }

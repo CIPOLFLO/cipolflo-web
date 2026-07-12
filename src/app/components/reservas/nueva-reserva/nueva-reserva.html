@@ -137,26 +137,28 @@
     <app-form-section title="Información del Cliente">
       <div class="nueva-reserva__documento">
         <div class="nueva-reserva__documento-radio">
-          <label class="nueva-reserva__radio-option">
+          <span class="nueva-reserva__radio-option">
             <p-radioButton
+              inputId="tipoDocumentoCedula"
               name="tipoDocumento"
               value="CEDULA"
               [ngModel]="controlValue('tipoDocumento')"
               [disabled]="documentoRadioDisabled()"
               (ngModelChange)="onControlChange('tipoDocumento', $event)"
             />
-            Cédula
-          </label>
-          <label class="nueva-reserva__radio-option">
+            <label for="tipoDocumentoCedula">Cédula</label>
+          </span>
+          <span class="nueva-reserva__radio-option">
             <p-radioButton
+              inputId="tipoDocumentoRut"
               name="tipoDocumento"
               value="RUT"
               [ngModel]="controlValue('tipoDocumento')"
               [disabled]="documentoRadioDisabled()"
               (ngModelChange)="onControlChange('tipoDocumento', $event)"
             />
-            RUT
-          </label>
+            <label for="tipoDocumentoRut">RUT</label>
+          </span>
         </div>
 
         <app-form-field

@@ -569,7 +569,7 @@ describe('NuevaReserva', () => {
     component['form'].get('servicioId')?.setValue('2');
     component['form'].get('fechaInicio')?.setValue('2026-08-01');
     component['form'].get('fechaFin')?.setValue('2026-08-05');
-      component['form'].get('cantidadTotal')?.setValue('4');
+    component['form'].get('cantidadTotal')?.setValue('4');
     component['form'].get('documento')?.setValue('211003420017');
     component['buscarCliente']();
     component['onConfirmar']();
