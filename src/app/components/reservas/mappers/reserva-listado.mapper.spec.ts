@@ -36,10 +36,9 @@ describe('mapReservaListadoRow', () => {
     };
   }
 
-  it('debería requerir atención cuando falta el pago de confirmación y quedan menos de 24 horas', () => {
+  it('debería requerir atención cuando la reserva está pendiente y quedan menos de 24 horas', () => {
     const reserva = crearReserva({
-      requiereSena: true,
-      pago: false,
+      estadoReserva: EstadoReserva.Pendiente,
       fechaEntrada: '2026-07-11T00:00:00',
     });
 
@@ -48,24 +47,9 @@ describe('mapReservaListadoRow', () => {
     expect(resultado.requiereAtencion).toBe(true);
   });
 
-  it('debería requerir atención cuando falta documentación y quedan menos de 24 horas', () => {
+  it('no debería requerir atención cuando la reserva está pendiente pero faltan más de 24 horas', () => {
     const reserva = crearReserva({
-      requiereDocumentacion: true,
-      tieneDocumentacion: false,
-      fechaEntrada: '2026-07-11T00:00:00',
-    });
-
-    const resultado = mapReservaListadoRow(reserva);
-
-    expect(resultado.requiereAtencion).toBe(true);
-  });
-
-  it('no debería requerir atención cuando faltan más de 24 horas', () => {
-    const reserva = crearReserva({
-      requiereSena: true,
-      pago: false,
-      requiereDocumentacion: true,
-      tieneDocumentacion: false,
+      estadoReserva: EstadoReserva.Pendiente,
       fechaEntrada: '2026-07-12T13:00:00',
     });
 
@@ -74,12 +58,20 @@ describe('mapReservaListadoRow', () => {
     expect(resultado.requiereAtencion).toBe(false);
   });
 
-  it('no debería requerir atención cuando el pago y la documentación están confirmados', () => {
+  it('no debería requerir atención cuando la reserva está confirmada aunque queden menos de 24 horas', () => {
     const reserva = crearReserva({
-      requiereSena: true,
-      pago: true,
-      requiereDocumentacion: true,
-      tieneDocumentacion: true,
+      estadoReserva: EstadoReserva.Confirmada,
+      fechaEntrada: '2026-07-11T00:00:00',
+    });
+
+    const resultado = mapReservaListadoRow(reserva);
+
+    expect(resultado.requiereAtencion).toBe(false);
+  });
+
+  it('no debería requerir atención cuando la reserva está finalizada', () => {
+    const reserva = crearReserva({
+      estadoReserva: EstadoReserva.Finalizada,
       fechaEntrada: '2026-07-11T00:00:00',
     });
 
@@ -91,8 +83,8 @@ describe('mapReservaListadoRow', () => {
   it('debería conservar todos los datos originales de la reserva', () => {
     const reserva = crearReserva({
       nombreCliente: 'Ana Gómez',
-      requiereSena: true,
-      pago: false,
+      estadoReserva: EstadoReserva.Pendiente,
+      fechaEntrada: '2026-07-11T00:00:00',
     });
 
     const resultado = mapReservaListadoRow(reserva);
