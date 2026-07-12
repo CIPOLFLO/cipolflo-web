@@ -1,36 +1,66 @@
-<app-page-layout
-  pageTitle="Listado de Clientes"
-  pageDescription="Gestiona y consulta información de todos los clientes del sistema"
->
-  <app-button
-    actions
-    label="Nuevo Socio"
-    intent="primary"
-    icon="pi-plus"
-    (clicked)="onNuevoCliente()"
-  />
-  <app-button
-    actions
-    label="Nueva Empresa"
-    intent="primary"
-    icon="pi-plus"
-    (clicked)="onNuevaEmpresa()"
-  />
-  @if (!breakpoint.isMobile()) {
-    <app-button
-      actions
-      label="Descargar listado"
-      intent="secondary"
-      icon="pi-download"
-      [disabled]="!tableExport.puedeExportar()"
-      [loading]="tableExport.exportando()"
-      (clicked)="onExportar()"
-    />
-  }
-  <app-filter-panel (filterChange)="onFilterChange($event)" />
+@if (breakpoint.isMobile()) {
+  <app-mob-list-layout>
+    <app-mob-page-header header title="Clientes" (menuToggled)="sidebar.open()" />
 
-  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
-  @if (clientePagoSeleccionado(); as clientePago) {
-    <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
-  }
-</app-page-layout>
+    <app-mob-filter-panel
+      filters
+      (filtersApply)="onApplyFilters($event)"
+      (filtersClear)="onClearFilters()"
+    />
+
+    @for (cliente of mobileList.rows(); track cliente.id) {
+      <!--
+        Sin acciones en mobile por ahora: todavía no hay flujos de cliente accionables
+        desde mobile, así que no se muestra el menú (⋮). Cuando existan, pasar
+        [actions]="rowActions(cliente)".
+      -->
+      <app-mob-cliente-card [cliente]="cliente" />
+    } @empty {
+      <div class="clientes-mobile__empty">No se encontraron clientes.</div>
+    }
+
+    @if (mobileList.hasMore()) {
+      <div appMobInfiniteScroll (scrolled)="mobileList.loadMore()" aria-hidden="true"></div>
+    }
+  </app-mob-list-layout>
+  <!-- Sin creacion mobile por ahora -->
+  <!-- <app-mob-fab (clicked)="onNuevoCliente()" /> -->
+} @else {
+  <app-page-layout
+    pageTitle="Listado de Clientes"
+    pageDescription="Gestiona y consulta información de todos los clientes del sistema"
+  >
+    <ng-container actions>
+      <app-button
+        label="Nuevo Socio"
+        intent="primary"
+        icon="pi-plus"
+        (clicked)="onNuevoCliente()"
+      />
+
+      <app-button
+        label="Nueva Empresa"
+        intent="primary"
+        icon="pi-plus"
+        (clicked)="onNuevaEmpresa()"
+      />
+
+      <app-button
+        label="Descargar listado"
+        intent="secondary"
+        icon="pi-download"
+        [disabled]="!tableExport.puedeExportar()"
+        [loading]="tableExport.exportando()"
+        (clicked)="onExportar()"
+      />
+    </ng-container>
+
+    <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+  </app-page-layout>
+}
+
+@if (clientePagoSeleccionado(); as clientePago) {
+  <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
+}

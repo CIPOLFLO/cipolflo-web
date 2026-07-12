@@ -62,4 +62,8 @@
   /* Tags — yellow */
   --tag-yellow-bg: #fef9c3;
   --tag-yellow-color: #a16207;
+
+  /* Elevación / sombras */
+  --shadow-card: 0 3px 8px rgb(0 0 0 / 12%), 0 1px 3px rgb(0 0 0 / 8%);
+  --shadow-fab: 0 4px 12px rgb(0 0 0 / 20%);
 }

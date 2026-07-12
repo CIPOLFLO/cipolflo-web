@@ -1,6 +1,12 @@
 :host {
   display: flex;
-  flex-direction: column;
   flex: 1;
-  gap: 1rem;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.clientes-mobile__empty {
+  padding: 2.5rem 1rem;
+  color: var(--color-text-secondary);
+  text-align: center;
 }

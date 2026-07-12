@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ClienteRespuestaDto, TipoCliente } from '../models/cliente.model';
-import { mapClienteListadoRow } from './cliente-listado.mapper';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { mapClienteCardMobileRow, mapClienteListadoRow } from './cliente-listado.mapper';
 
 const baseCliente: ClienteRespuestaDto = {
   id: 1,
@@ -34,5 +34,49 @@ describe('mapClienteListadoRow', () => {
   it('conserva el resto de los campos del cliente', () => {
     const row = mapClienteListadoRow(baseCliente);
     expect(row).toMatchObject(baseCliente);
+  });
+});
+
+describe('mapClienteCardMobileRow', () => {
+  it('resuelve el documento igual que el listado de escritorio (RUT antes que cédula)', () => {
+    const conAmbos: ClienteRespuestaDto = {
+      ...baseCliente,
+      cedula: '12345678',
+      rut: '210001230018',
+    };
+    const row = mapClienteCardMobileRow(conAmbos);
+    expect(row.documento).toBe('210001230018');
+  });
+
+  it.each([
+    [TipoCliente.Socio, { label: 'Socio', colorClass: 'tag--blue', icon: 'pi pi-verified' }],
+    [TipoCliente.Particular, { label: 'Particular', colorClass: 'tag--gray', icon: 'pi pi-user' }],
+    [TipoCliente.Empresa, { label: 'Empresa', colorClass: 'tag--purple', icon: 'pi pi-building' }],
+  ])('la primera tag es la del tipo %s', (tipoCliente, expected) => {
+    expect(mapClienteCardMobileRow({ ...baseCliente, tipoCliente }).tags[0]).toEqual(expected);
+  });
+
+  it.each([
+    [EstadoSocio.Activo, { label: 'Activo', colorClass: 'tag--green' }],
+    [EstadoSocio.Inactivo, { label: 'Inactivo', colorClass: 'tag--yellow' }],
+    [EstadoSocio.Baja, { label: 'De baja', colorClass: 'tag--gray' }],
+  ])('agrega la tag de estado (color reutilizado del desktop) para %s', (estado, expected) => {
+    const { tags } = mapClienteCardMobileRow({ ...baseCliente, estado });
+    expect(tags).toHaveLength(2);
+    expect(tags[1]).toEqual(expected);
+  });
+
+  it('solo incluye la tag de tipo cuando el cliente no tiene estado', () => {
+    const { tags } = mapClienteCardMobileRow({
+      ...baseCliente,
+      estado: null,
+      tipoCliente: TipoCliente.Particular,
+    });
+    expect(tags).toHaveLength(1);
+    expect(tags[0].label).toBe('Particular');
+  });
+
+  it('conserva los campos del cliente', () => {
+    expect(mapClienteCardMobileRow(baseCliente)).toMatchObject(baseCliente);
   });
 });

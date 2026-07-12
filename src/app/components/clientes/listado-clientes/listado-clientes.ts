@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { filter, map, switchMap } from 'rxjs';
 import {
   AppButton,
@@ -7,29 +8,57 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  MobFilterPanel,
+  MobInfiniteScroll,
+  MobileListLoader,
+  MobListLayout,
+  MobPageHeader,
   PageLayout,
   RowAction,
-  TableStateService,
   TableExportService,
+  TableStateService,
 } from '../../../shared';
+
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+
+import { MobClienteCard } from '../mob-cliente-card/mob-cliente-card';
+import {
+  ClienteCardMobileRow,
+  ClienteListadoRow,
+  mapClienteCardMobileRow,
+  mapClienteListadoRow,
+} from '../mappers/cliente-listado.mapper';
+import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
 import { ClientesService } from '../services/cliente.service';
-import { ClienteRespuestaDto, TipoCliente, EstadoSocio } from '../models/cliente.model';
-import { ClienteListadoRow, mapClienteListadoRow } from '../mappers/cliente-listado.mapper';
-import { Router } from '@angular/router';
-import { PagoCuota } from '../pago-cuota/pago-cuota';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { BreakpointService } from '../../../core/services/breakpoint.service';
 
 @Component({
   selector: 'app-listado-clientes',
-  imports: [PageLayout, AppButton, FilterPanel, AppTable, PagoCuota],
+  imports: [
+    PageLayout,
+    AppButton,
+    FilterPanel,
+    AppTable,
+    PagoCuota,
+    MobPageHeader,
+    MobListLayout,
+    MobFilterPanel,
+    MobClienteCard,
+    MobInfiniteScroll,
+  ],
   providers: [
     TableStateService,
     TableExportService,
     ClientesColumnsService,
-    { provide: FilterConfigProvider, useClass: ClientesFilterService },
+    MobileListLoader,
+    {
+      provide: FilterConfigProvider,
+      useClass: ClientesFilterService,
+    },
   ],
   templateUrl: './listado-clientes.html',
   styleUrls: ['./listado-clientes.css'],
@@ -40,34 +69,56 @@ export class ListadoClientes {
   private readonly columnsService = inject(ClientesColumnsService);
   private readonly filterConfigProvider = inject(FilterConfigProvider);
   private readonly confirmDialogService = inject(ConfirmDialogService);
-  protected readonly tableState = inject(TableStateService);
-  protected readonly tableExport = inject(TableExportService);
   private readonly router = inject(Router);
   private readonly errorHandler = inject(ErrorHandlerService);
+
+  protected readonly tableState = inject(TableStateService);
+  protected readonly tableExport = inject(TableExportService);
   protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
+
+  /**
+   * Listado móvil con scroll infinito; reutiliza el mismo estado que la tabla de escritorio.
+   * El servicio es genérico pero se provee por token, que no conserva el parámetro de tipo:
+   * el cast fija `T` a la fila de la card (no es `any`).
+   */
+  protected readonly mobileList = inject(
+    MobileListLoader,
+  ) as MobileListLoader<ClienteCardMobileRow>;
+
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
   constructor() {
     const defaults = Object.fromEntries(
       this.filterConfigProvider
         .filterFields()
-        .filter((f) => f.defaultValue != null)
-        .map((f) => [f.key, f.defaultValue!]),
+        .filter((field) => field.defaultValue != null)
+        .map((field) => [field.key, field.defaultValue!]),
     );
+
     if (Object.keys(defaults).length) {
       this.tableState.updateFilters(defaults);
     }
+
+    this.mobileList.connect(
+      (params) => this.clientesService.getAll(params),
+      mapClienteCardMobileRow,
+    );
   }
 
   protected readonly columns = this.columnsService.columns;
 
   protected readonly loadDataFn: LoadDataFn<ClienteListadoRow> = (params) =>
-    this.clientesService
-      .getAll(params)
-      .pipe(map((page) => ({ ...page, content: page.content.map(mapClienteListadoRow) })));
+    this.clientesService.getAll(params).pipe(
+      map((page) => ({
+        ...page,
+        content: page.content.map(mapClienteListadoRow),
+      })),
+    );
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
-    // TODO: temporal — habilitar cuando existan GET detalle / PUT modificación de Empresa
+    // TODO: temporal — habilitar cuando existan
+    // GET detalle / PUT modificación de Empresa
     ...(row.tipoCliente !== TipoCliente.Empresa
       ? [
           {
@@ -77,6 +128,7 @@ export class ListadoClientes {
           },
         ]
       : []),
+
     ...(row.tipoCliente === TipoCliente.Socio &&
     row.estado !== null &&
     row.estado !== EstadoSocio.Baja
@@ -88,7 +140,9 @@ export class ListadoClientes {
           },
         ]
       : []),
-    // TODO: temporal — habilitar cuando existan GET detalle / PUT modificación de Empresa
+
+    // TODO: temporal — habilitar cuando existan
+    // GET detalle / PUT modificación de Empresa
     ...(row.tipoCliente !== TipoCliente.Empresa
       ? [
           {
@@ -96,38 +150,57 @@ export class ListadoClientes {
             icon: 'pi pi-pencil',
             command: () =>
               this.router.navigate(['/clientes', row.id, 'modificar'], {
-                queryParams: { from: 'listado' },
+                queryParams: {
+                  from: 'listado',
+                },
               }),
           },
         ]
       : []),
+
     ...(row.estado !== EstadoSocio.Baja
       ? [
           {
             label: 'Nueva Reserva',
             icon: 'pi pi-calendar',
             command: () =>
-              this.router.navigate(['/reservas/nueva'], { queryParams: { clienteId: row.id } }),
+              this.router.navigate(['/reservas/nueva'], {
+                queryParams: {
+                  clienteId: row.id,
+                },
+              }),
           },
         ]
       : []),
+
     ...(row.tipoCliente === TipoCliente.Socio && row.estado !== EstadoSocio.Baja
-      ? [{ label: 'Dar de baja', icon: 'pi pi-trash', command: () => this.onDarDeBajaCliente(row) }]
+      ? [
+          {
+            label: 'Dar de baja',
+            icon: 'pi pi-trash',
+            command: () => this.onDarDeBajaCliente(row),
+          },
+        ]
       : []),
   ];
 
+  /**
+   * Filtros del listado de escritorio.
+   */
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }
 
+  /**
+   * Filtros aplicados desde MobFilterPanel.
+   */
   protected onApplyFilters(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }
 
-  protected onSearchChange(search: string): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters, search });
-  }
-
+  /**
+   * Limpia los filtros móviles.
+   */
   protected onClearFilters(): void {
     this.tableState.updateFilters({});
   }
@@ -151,6 +224,7 @@ export class ListadoClientes {
 
   protected onExportar(): void {
     const filters = this.tableState.queryParams().filters;
+
     this.tableExport.exportar(() => this.clientesService.exportar(filters));
   }
 
@@ -170,13 +244,15 @@ export class ListadoClientes {
       )
       .subscribe({
         next: () => this.recargarTabla(),
-        error: (err) => {
-          this.errorHandler.handle(err);
+        error: (error) => {
+          this.errorHandler.handle(error);
         },
       });
   }
 
   private recargarTabla(): void {
-    this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
+    this.tableState.updateFilters({
+      ...this.tableState.queryParams().filters,
+    });
   }
 }
