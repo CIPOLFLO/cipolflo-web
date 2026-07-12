@@ -354,8 +354,8 @@ export class NuevaReserva extends ReservaFormBase {
   }
 
   /**
-   * Tras crear la reserva ofrece descargar el comprobante. Se navega al listado en
-   * cualquier caso: si se descarga (al terminar o fallar la descarga) o si se rechaza.
+   * Tras crear la reserva ofrece descargar el comprobante. En ambos casos se navega al
+   * listado de inmediato; si se pidió el comprobante, la descarga sigue en segundo plano.
    */
   private ofrecerComprobante(id: number): void {
     this.confirmDialog
@@ -368,25 +368,24 @@ export class NuevaReserva extends ReservaFormBase {
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((descargar) => {
-        if (descargar) {
-          this.descargarComprobante(id);
-        } else {
-          this.router.navigate(['/reservas']);
-        }
+        if (descargar) this.descargarComprobante(id);
+        this.router.navigate(['/reservas']);
       });
   }
 
   private descargarComprobante(id: number): void {
+    // Fire-and-forget: la descarga NO se ata al destroyRef porque debe sobrevivir a la
+    // navegación al listado. La request corre en servicios root; se auto-completa al
+    // terminar el HTTP y los errores se muestran vía el diálogo global.
     this.reservasService
       .descargarComprobante(id)
       .pipe(
-        takeUntilDestroyed(this.destroyRef),
         catchError((err: unknown) => {
           this.errorHandler.handle(err);
           return EMPTY;
         }),
       )
-      .subscribe({ complete: () => this.router.navigate(['/reservas']) });
+      .subscribe();
   }
 
   private construirDto(): ReservaCreacionRequestDto {

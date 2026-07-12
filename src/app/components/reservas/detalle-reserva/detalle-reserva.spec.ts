@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { EstadoReserva, Procedencia } from '../../../shared';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
@@ -320,6 +320,31 @@ describe('DetalleReserva', () => {
     descargarComprobanteSpy.mockReturnValue(throwError(() => error));
     component['onDescargarComprobante']();
     expect(handleSpy).toHaveBeenCalledWith(error);
+  });
+
+  it('marca descargando mientras la descarga está en curso y lo libera al terminar', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    const descarga = new Subject<void>();
+    descargarComprobanteSpy.mockReturnValue(descarga.asObservable());
+    component['onDescargarComprobante']();
+    expect(component['descargando']()).toBe(true);
+    descarga.complete();
+    expect(component['descargando']()).toBe(false);
+  });
+
+  it('un error en la descarga también libera el estado descargando', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    descargarComprobanteSpy.mockReturnValue(throwError(() => new Error('download error')));
+    component['onDescargarComprobante']();
+    expect(component['descargando']()).toBe(false);
+  });
+
+  it('no dispara una segunda descarga si ya hay una en curso', async () => {
+    const { component, descargarComprobanteSpy } = await setup();
+    descargarComprobanteSpy.mockReturnValue(new Subject<void>().asObservable());
+    component['onDescargarComprobante']();
+    component['onDescargarComprobante']();
+    expect(descargarComprobanteSpy).toHaveBeenCalledTimes(1);
   });
 
   it('debería manejar error en getById: llama a errorHandler y navega a /reservas', async () => {

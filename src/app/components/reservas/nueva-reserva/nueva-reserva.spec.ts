@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
@@ -539,6 +539,16 @@ describe('NuevaReserva', () => {
     vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(true));
     component['guardar']();
     expect(mockReservasService.crear).toHaveBeenCalled();
+    expect(mockReservasService.descargarComprobante).toHaveBeenCalledWith(99);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('navega al listado de inmediato sin esperar a que termine la descarga', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(true));
+    const descargaEnCurso = new Subject<void>(); // nunca completa dentro del test
+    mockReservasService.descargarComprobante.mockReturnValue(descargaEnCurso.asObservable());
+    component['guardar']();
+    // La descarga sigue pendiente y, aun así, ya se navegó al listado.
     expect(mockReservasService.descargarComprobante).toHaveBeenCalledWith(99);
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
   });
