@@ -25,10 +25,7 @@ import {
   ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
-import {
-  mapReservaListadoRow,
-  ReservaListadoRow,
-} from '../mappers/reserva-listado.mapper';
+import { mapReservaListadoRow, ReservaListadoRow } from '../mappers/reserva-listado.mapper';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -77,14 +74,14 @@ export class ListadoReservas {
   protected readonly reservaFinalizacionSeleccionada = signal<ReservaRow | null>(null);
   protected readonly finalizacionCheck = signal<ReservaFinalizacionCheckResponseDto | null>(null);
 
- protected readonly loadDataFn: LoadDataFn<ReservaListadoRow> = (params) =>
-  this.reservasService.getAll(params).pipe(
-    map((page) => ({
-      ...page,
-      content: page.content.map(mapReservaListadoRow),
-    })),
-  );
-  
+  protected readonly loadDataFn: LoadDataFn<ReservaListadoRow> = (params) =>
+    this.reservasService.getAll(params).pipe(
+      map((page) => ({
+        ...page,
+        content: page.content.map(mapReservaListadoRow),
+      })),
+    );
+
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
       label: 'Ver detalle',
@@ -356,5 +353,4 @@ export class ListadoReservas {
   private puedeFinalizar(row: ReservaRow): boolean {
     return row.estadoReserva === EstadoReserva.EnCurso;
   }
-
 }

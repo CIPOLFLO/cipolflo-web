@@ -14,9 +14,7 @@ describe('mapReservaListadoRow', () => {
     vi.useRealTimers();
   });
 
-  function crearReserva(
-    cambios: Partial<ReservaRow> = {},
-  ): ReservaRow {
+  function crearReserva(cambios: Partial<ReservaRow> = {}): ReservaRow {
     return {
       id: 1,
       clienteId: 10,
