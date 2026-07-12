@@ -306,3 +306,4 @@ Usar siempre los tokens del proyecto definidos en `src/styles/variables.css` (`-
 - **No hardcoded backend URLs** — base URL always from `environment`.
 - **No PrimeNG theme overrides** in component styles.
 - **No hardcoded colors/shadows** in component styles — use the tokens from `src/styles/variables.css` (`--color-*`, `--tag-*`, `--shadow-*`); if one is missing, add it there.
+- **Line length (`printWidth: 100`) does not apply to string literals** — Prettier no parte cadenas y el proyecto no usa la regla `max-len` de ESLint. Un mensaje de usuario que supera los 100 caracteres en una sola línea es correcto y **no debe partirse con `+`**: partirlo pelea con el formateo y ensucia los diffs. El límite aplica al código, no al contenido de las cadenas.
