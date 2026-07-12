@@ -16,6 +16,7 @@ export type {
   DateRangeSelection,
 } from './components/occupancy-calendar/occupancy-calendar.models';
 export * from './components/loading-dialog/loading-dialog';
+export { VerificationDialog } from './components/verification-dialog/verification-dialog';
 // Form Components
 export { FormLayout } from './components/form-layout/form-layout';
 export { FormSection } from './components/form-section/form-section';
@@ -79,6 +80,9 @@ export { parseIsoDate, startOfToday, toDisplayDate, toIsoDate } from './utils/da
 // Validators
 export { emailValido } from './validators/email.validator';
 
+// Tag
+export { AppTag } from './components/tag/tag';
+
 //Mobile Layout
 export { MobPageHeader } from './mobile/layout/header/mob-page-header/mob-page-header';
 export { MobSidebar } from './mobile/layout/sidebar/mob-sidebar';
@@ -90,3 +94,9 @@ export { MobStepCard } from './mobile/components/step-card/mob-step-card';
 export { MobStepFooter } from './mobile/components/step-footer/mob-step-footer';
 export { MobFab } from './mobile/components/fab/mob-fab';
 export { MobListCard } from './mobile/components/list-card/mob-list-card';
+export { MobListLayout } from './mobile/components/layout/mob-list-layout/mob-list-layout';
+export { MobFilterPanel } from './mobile/components/filter-panel/mob-filter-panel';
+
+// Mobile List (scroll infinito reutilizable)
+export { MobInfiniteScroll } from './mobile/list/mob-infinite-scroll';
+export { MobileListLoader } from './mobile/list/mobile-list-loader';

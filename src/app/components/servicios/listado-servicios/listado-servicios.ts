@@ -13,6 +13,7 @@ import {
   PROCEDENCIA_LABEL,
   RowAction,
   TableStateService,
+  VerificationDialog,
 } from '../../../shared';
 import { ServiciosColumnsService } from '../services/servicios-columns.service';
 import { ServiciosFilterService } from '../services/servicios-filter.service';
@@ -24,7 +25,6 @@ import {
   ReservaProximaDto,
   ServicioRow,
 } from '../models/servicio.model';
-import { VerificandoReservasDialog } from '../habilitar-deshabilitar/verificando-reservas-dialog/verificando-reservas-dialog';
 import { ReservasActivasDialog } from '../habilitar-deshabilitar/reservas-activas-dialog/reservas-activas-dialog';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
@@ -37,7 +37,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
     AppButton,
     FilterPanel,
     AppTable,
-    VerificandoReservasDialog,
+    VerificationDialog,
     ReservasActivasDialog,
   ],
   providers: [

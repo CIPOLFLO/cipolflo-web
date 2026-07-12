@@ -85,11 +85,17 @@
 
   <ng-template #footer>
     <div class="dialog-footer">
-      <app-button label="Cancelar" intent="secondary" (clicked)="onCancelar()" />
+      <app-button
+        label="Cancelar"
+        intent="secondary"
+        [disabled]="procesando()"
+        (clicked)="onCancelar()"
+      />
       <app-button
         intent="danger"
         label="Confirmar cancelación"
         [disabled]="confirmarDisabled()"
+        [loading]="procesando()"
         [tooltip]="confirmarDisabled() ? 'Complete correctamente todos los campos' : ''"
         (clicked)="onConfirmar()"
       />

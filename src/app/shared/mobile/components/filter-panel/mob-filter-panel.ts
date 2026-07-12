@@ -32,6 +32,7 @@ export class MobFilterPanel {
 
   protected onApply(): void {
     this.filtersApply.emit(buildActiveFilters(this.filterValues()));
+    this.isExpanded.set(false);
   }
 
   protected onClear(): void {

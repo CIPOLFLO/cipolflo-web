@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+
+/* Nombre */
+.cliente-card__name {
+  display: block;
+  padding-right: 1.5rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Fila de tags (tipo + estado). Las tags usan el componente reutilizable app-tag. */
+.cliente-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.1rem;
+}
+
+/* Caja de información (documento / n° socio) */
+.cliente-card__info {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+}
+
+.cliente-card__field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cliente-card__field-icon {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.cliente-card__field-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cliente-card__field-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.cliente-card__field-value {
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.cliente-card__field-value--accent {
+  color: var(--color-primary);
+}

@@ -5,14 +5,14 @@
   [closeOnEscape]="false"
   [resizable]="false"
   [draggable]="false"
-  header="Verificando Reservas"
+  [header]="title()"
   [style]="{ width: '420px' }"
 >
-  <div class="verificando__content">
+  <div class="verification-dialog__content">
     <p-progress-spinner strokeWidth="4" />
-    <p class="verificando__text">
-      Revisando si el servicio <strong>{{ nombreServicio() }}</strong> tiene reservas activas en los
-      próximos 2 meses...
+
+    <p class="verification-dialog__text">
+      {{ message() }}
     </p>
   </div>
 </p-dialog>

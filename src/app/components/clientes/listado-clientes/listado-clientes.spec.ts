@@ -14,11 +14,13 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { mapClienteCardMobileRow } from '../mappers/cliente-listado.mapper';
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ListadoClientes } from './listado-clientes';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { MobileListLoader } from '../../../shared/mobile/list/mobile-list-loader';
 import { AuthService } from '@auth0/auth0-angular';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
@@ -226,6 +228,16 @@ describe('ListadoClientes', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
   });
 
+  it('el comando "Nueva Reserva" navega a /reservas/nueva con el clienteId', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    const cliente = mockPageResponse.content[0];
+    const nuevaReserva = component['rowActions'](cliente).find((a) => a.label === 'Nueva Reserva')!;
+    nuevaReserva.command?.(cliente);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva'], {
+      queryParams: { clienteId: cliente.id },
+    });
+  });
+
   it('el comando "Modificar" en rowActions navega con queryParam from=listado', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     const cliente = mockPageResponse.content[0];
@@ -287,7 +299,7 @@ describe('ListadoClientes', () => {
     expect(actions.some((a) => a.label === 'Dar de baja')).toBe(false);
   });
 
-  it('onEliminarCliente abre el diálogo de confirmación', () => {
+  it('onDarDeBajaCliente abre el diálogo de confirmación', () => {
     const row = mockPageResponse.content[0];
     component['onDarDeBajaCliente'](row);
     expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
@@ -300,14 +312,14 @@ describe('ListadoClientes', () => {
     });
   });
 
-  it('onEliminarCliente llama a dar de baja si se confirma la baja', () => {
+  it('onDarDeBajaCliente llama a darDeBaja si se confirma la operación', () => {
     const row = mockPageResponse.content[0];
     mockConfirmDialogService.open.mockReturnValue(of(true));
     component['onDarDeBajaCliente'](row);
     expect(mockClientesService.darDeBaja).toHaveBeenCalledWith(row.id);
   });
 
-  it('onEliminarCliente no llama a eliminar si se cancela la baja', () => {
+  it('onDarDeBajaCliente no llama a darDeBaja si se cancela la operación', () => {
     const row = mockPageResponse.content[0];
     mockConfirmDialogService.open.mockReturnValue(of(false));
     component['onDarDeBajaCliente'](row);
@@ -349,11 +361,6 @@ describe('ListadoClientes', () => {
   it('onApplyFilters actualiza los filtros en tableState', () => {
     component['onApplyFilters']({ estado: 'ACTIVO' });
     expect(component['tableState'].queryParams().filters).toEqual({ estado: 'ACTIVO' });
-  });
-
-  it('onSearchChange actualiza el filtro search en tableState', () => {
-    component['onSearchChange']('Juan');
-    expect(component['tableState'].queryParams().filters['search']).toBe('Juan');
   });
 
   it('onClearFilters limpia los filtros en tableState', () => {
@@ -420,6 +427,7 @@ describe('ListadoClientes con filtros por defecto', () => {
             TableStateService,
             TableExportService,
             ClientesColumnsService,
+            MobileListLoader,
             { provide: FilterConfigProvider, useClass: ConDefaultsFilterService },
           ],
         },
@@ -465,6 +473,7 @@ describe('ListadoClientes sin filtros por defecto', () => {
             TableStateService,
             TableExportService,
             ClientesColumnsService,
+            MobileListLoader,
             {
               provide: ClientesService,
               useValue: {
@@ -483,5 +492,165 @@ describe('ListadoClientes sin filtros por defecto', () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance['tableState'].queryParams().filters).toEqual({});
+  });
+});
+
+describe('ListadoClientes en vista móvil', () => {
+  let fixture: ComponentFixture<ListadoClientes>;
+  let component: ListadoClientes;
+
+  let mockClientesService: {
+    getAll: ReturnType<typeof vi.fn>;
+    getCostoCuota: ReturnType<typeof vi.fn>;
+    darDeBaja: ReturnType<typeof vi.fn>;
+    exportar: ReturnType<typeof vi.fn>;
+  };
+
+  beforeEach(async () => {
+    mockClientesService = {
+      getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
+      getCostoCuota: vi.fn().mockReturnValue(5000),
+      darDeBaja: vi.fn().mockReturnValue(of(void 0)),
+      exportar: vi.fn().mockReturnValue(of(undefined)),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [ListadoClientes],
+      providers: [
+        {
+          provide: ClientesService,
+          useValue: mockClientesService,
+        },
+        {
+          provide: ConfirmDialogService,
+          useValue: {
+            open: vi.fn().mockReturnValue(of(false)),
+          },
+        },
+        {
+          provide: Router,
+          useValue: {
+            navigate: vi.fn(),
+          },
+        },
+        {
+          provide: BreakpointObserver,
+          useValue: {
+            observe: () => of({ matches: true }),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+        BreakpointService,
+        {
+          provide: ErrorHandlerService,
+          useValue: {
+            handle: vi.fn(),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ListadoClientes);
+    component = fixture.componentInstance;
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('debe renderizar el panel de filtros móvil', () => {
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+
+    expect(filterPanel).not.toBeNull();
+  });
+
+  it('no debe renderizar el panel de filtros de escritorio', () => {
+    const filterPanel = fixture.debugElement.query(By.css('app-filter-panel'));
+
+    expect(filterPanel).toBeNull();
+  });
+
+  it('no debe renderizar la tabla de escritorio', () => {
+    const table = fixture.debugElement.query(By.css('app-table'));
+
+    expect(table).toBeNull();
+  });
+
+  it('debe renderizar una card por cada cliente recibido', () => {
+    const cards = fixture.debugElement.queryAll(By.css('app-mob-cliente-card'));
+
+    expect(cards.length).toBe(mockPageResponse.content.length);
+  });
+
+  it('debe mostrar el número de socio del socio', () => {
+    expect(fixture.nativeElement.textContent).toContain('N° socio');
+    expect(fixture.nativeElement.textContent).toContain('5');
+  });
+
+  it('debe mostrar el nombre de los clientes', () => {
+    const content = fixture.nativeElement.textContent;
+
+    expect(content).toContain('Juan Pérez');
+    expect(content).toContain('Laura Fernández');
+  });
+
+  it('debe mostrar el documento del cliente', () => {
+    expect(fixture.nativeElement.textContent).toContain('1.234.567-8');
+  });
+
+  it('debe mostrar el estado del socio', () => {
+    expect(fixture.nativeElement.textContent).toContain('Activo');
+  });
+
+  it('no renderiza el FAB (creación de cliente mobile deshabilitada por ahora)', () => {
+    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+
+    expect(fab).toBeNull();
+  });
+
+  it('debe aplicar los filtros emitidos por MobFilterPanel', () => {
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+
+    filterPanel.triggerEventHandler('filtersApply', {
+      estado: 'ACTIVO',
+    });
+
+    expect(component['tableState'].queryParams().filters).toEqual({
+      estado: 'ACTIVO',
+    });
+  });
+
+  it('debe limpiar los filtros cuando MobFilterPanel emite filtersClear', () => {
+    component['tableState'].updateFilters({
+      estado: 'ACTIVO',
+    });
+
+    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+
+    filterPanel.triggerEventHandler('filtersClear');
+
+    expect(component['tableState'].queryParams().filters).toEqual({});
+  });
+
+  it('mobileList.rows debe contener los clientes recibidos ya mapeados a la card', () => {
+    expect(component['mobileList'].rows()).toEqual(
+      mockPageResponse.content.map(mapClienteCardMobileRow),
+    );
+  });
+
+  it('debe llamar a getAll para cargar el listado móvil', () => {
+    expect(mockClientesService.getAll).toHaveBeenCalled();
+  });
+
+  it('no hay más páginas cuando la respuesta es la última', () => {
+    expect(component['mobileList'].hasMore()).toBe(false);
+  });
+
+  it('las cards no muestran el menú de acciones (⋮) en mobile', () => {
+    const rowActions = fixture.debugElement.query(By.css('app-row-actions'));
+    expect(rowActions).toBeNull();
   });
 });

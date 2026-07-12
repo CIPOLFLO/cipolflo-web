@@ -1,0 +1,33 @@
+<app-mob-list-card [row]="cliente()" [actions]="actions()">
+  <span class="cliente-card__name">{{ cliente().nombreCompleto }}</span>
+
+  <div class="cliente-card__tags">
+    @for (tag of cliente().tags; track tag.label) {
+      <app-tag [colorClass]="tag.colorClass" [icon]="tag.icon" size="sm">{{ tag.label }}</app-tag>
+    }
+  </div>
+
+  <div class="cliente-card__info">
+    <div class="cliente-card__field">
+      <i class="pi pi-id-card cliente-card__field-icon"></i>
+      <div class="cliente-card__field-body">
+        <span class="cliente-card__field-label">Documento</span>
+        <span class="cliente-card__field-value">
+          {{ (cliente().documento | cedulaFormat) || 'Sin documento' }}
+        </span>
+      </div>
+    </div>
+
+    @if (cliente().numeroSocio !== null) {
+      <div class="cliente-card__field">
+        <i class="pi pi-hashtag cliente-card__field-icon"></i>
+        <div class="cliente-card__field-body">
+          <span class="cliente-card__field-label">N° socio</span>
+          <span class="cliente-card__field-value cliente-card__field-value--accent">
+            {{ cliente().numeroSocio }}
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+</app-mob-list-card>
