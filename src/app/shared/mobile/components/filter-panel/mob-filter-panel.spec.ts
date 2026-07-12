@@ -84,6 +84,17 @@ describe('MobFilterPanel', () => {
     expect(emitted[0]).toEqual({ estado: 'activo' });
   });
 
+  it('aplicar filtros colapsa el panel', () => {
+    api.toggle();
+    fixture.detectChanges();
+
+    api.onApply();
+    fixture.detectChanges();
+
+    const body = fixture.nativeElement.querySelector('.mob-filter-panel__body');
+    expect(body.classList).toContain('mob-filter-panel__body--hidden');
+  });
+
   it('click en "Limpiar" emite filtersClear y resetea los valores internos', () => {
     api.updateFilterValue('estado', 'activo');
     fixture.detectChanges();

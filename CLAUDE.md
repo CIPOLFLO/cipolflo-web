@@ -222,7 +222,10 @@ El componente mobile nunca se renderiza en desktop y viceversa.
 Los componentes exclusivos de resolución mobile viven en `src/app/shared/mobile/`:
 
 - `mobile/layout/` — estructura de página: `MobPageHeader` (`app-mob-page-header`), `MobSidebar` (`app-mob-sidebar`).
-- `mobile/components/` — bloques reutilizables: `MobStepper`, `MobStepCard`, `MobStepFooter`.
+- `mobile/components/` — bloques reutilizables: `MobStepper`, `MobStepCard`, `MobStepFooter`, `MobFab` (botón flotante), `MobFilterPanel`, `MobListCard` (shell genérico de card), `MobListLayout` (shell de página de listado).
+- `mobile/list/` — utilidades de listado mobile: `MobileListLoader` (servicio de scroll infinito) y `MobInfiniteScroll` (directiva centinela).
+
+Los reutilizables se exportan por el barrel `src/app/shared/index.ts`; importarlos desde `'.../shared'`, no por ruta profunda.
 
 **Convención de nombres:**
 
@@ -260,6 +263,38 @@ El **componente padre wizard** es responsable de la lógica de navegación, calc
 
 `MobPageHeader` acepta `<ng-content>` (debajo de la barra menú/título/avatar) para proyectar contenido opcional dentro del header azul. El wizard coloca ahí el `MobStepper`. Si no se proyecta nada, el header se ve igual que siempre.
 
+### Listado mobile (`MobListLayout` / `MobileListLoader` / `MobInfiniteScroll`)
+
+Patrón para la vista mobile de una página de listado. El switch de breakpoint va **a nivel raíz del template** (no dentro de `app-page-layout`):
+
+- **Mobile** usa `MobListLayout` (`app-mob-list-layout`) como shell: ocupa `100dvh` y su lista interna es el contenedor scrolleable, por lo que **reemplaza a `app-page-layout`** (no se anida). Proyecta `MobPageHeader` en el slot `[header]`, `MobFilterPanel` en `[filters]` y las cards en el slot por defecto. Como usa `MobPageHeader` directamente, la página inyecta `SidebarService` y enlaza `(menuToggled)="sidebar.open()"`.
+- **Desktop** sigue con `app-page-layout` + `app-table` en el `@else`.
+
+**Datos con scroll infinito:** `MobileListLoader<T>` es el análogo mobile de `AppTable`. Se **provee a nivel de componente** junto al `TableStateService` y reutiliza su mismo estado (idénticos filtros/paginación que el escritorio); en vez de reemplazar la página, **acumula** las filas. El componente lo conecta en el constructor y expone `rows/hasMore/loading`; la directiva `MobInfiniteScroll` (centinela con `IntersectionObserver`) llama a `loadMore()`.
+
+```typescript
+// inject genérico por token: el cast fija T (no es any)
+protected readonly mobileList = inject(MobileListLoader) as MobileListLoader<MiCardRow>;
+
+constructor() {
+  this.mobileList.connect((params) => this.miService.getAll(params), mapMiCardRow);
+}
+```
+
+```html
+@if (mobileList.hasMore()) {
+<div appMobInfiniteScroll (scrolled)="mobileList.loadMore()"></div>
+}
+```
+
+**Cards:** lo que se muestra en cada card se resuelve en un **mapper** (única cosa específica del listado); el resto se reutiliza. La presentación concreta de la entidad va en un componente de card **específico del módulo** (ej. `MobClienteCard`) que compone el shell genérico `MobListCard`. `MobListCard` oculta el menú de acciones (`⋮`) cuando la lista de `actions` está vacía — si un listado aún no tiene acciones mobile, no pasar `[actions]`.
+
+### Tokens de diseño
+
+Usar siempre los tokens del proyecto definidos en `src/styles/variables.css` (`--color-*`, `--tag-*`, `--shadow-*`), **no** los del tema de PrimeNG (`--primary-color`, `--text-color`, `--surface-*`). Si falta un token para un color o sombra hardcodeado, agregarlo a `variables.css` en vez de dejar el literal.
+
+**Tags:** para cualquier etiqueta de color usar el componente reutilizable `AppTag` (`app-tag`), que aplica los estilos globales `.app-tag` + `.tag--*` (`src/styles.css`). Acepta `colorClass` (`tag--green`, etc.), un `icon` opcional y `size` (`md` por defecto — como la tabla de escritorio — o `sm` compacto para cards mobile). Las tags de escritorio y mobile comparten así el mismo estilo.
+
 ## Hard rules
 
 - **No NgModules** — architecture is 100% standalone.
@@ -270,3 +305,4 @@ El **componente padre wizard** es responsable de la lógica de navegación, calc
 - **No real HTTP requests in tests** — always `provideHttpClientTesting`.
 - **No hardcoded backend URLs** — base URL always from `environment`.
 - **No PrimeNG theme overrides** in component styles.
+- **No hardcoded colors/shadows** in component styles — use the tokens from `src/styles/variables.css` (`--color-*`, `--tag-*`, `--shadow-*`); if one is missing, add it there.

@@ -1,7 +1,9 @@
-<div class="mob-list-card">
-  <div class="mob-list-card-actions">
-    <app-row-actions [actions]="actions()" [row]="row()" />
-  </div>
+<div class="mob-list-card" [class.mob-list-card--with-actions]="actions().length > 0">
+  @if (actions().length > 0) {
+    <div class="mob-list-card-actions">
+      <app-row-actions [actions]="actions()" [row]="row()" />
+    </div>
+  }
   <div class="mob-list-card-content">
     <ng-content />
   </div>

@@ -1,7 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, combineLatest, filter, map, of, switchMap } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs';
 import {
   AppButton,
   AppTable,
@@ -9,6 +8,11 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  MobFilterPanel,
+  MobInfiniteScroll,
+  MobileListLoader,
+  MobListLayout,
+  MobPageHeader,
   PageLayout,
   RowAction,
   TableExportService,
@@ -17,12 +21,15 @@ import {
 
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 
-import { MobFab } from '../../../shared/mobile/components/fab/mob-fab';
-import { MobFilterPanel } from '../../../shared/mobile/components/filter-panel/mob-filter-panel';
-import { MobListCard } from '../../../shared/mobile/components/list-card/mob-list-card';
-
-import { ClienteListadoRow, mapClienteListadoRow } from '../mappers/cliente-listado.mapper';
+import { MobClienteCard } from '../mob-cliente-card/mob-cliente-card';
+import {
+  ClienteCardMobileRow,
+  ClienteListadoRow,
+  mapClienteCardMobileRow,
+  mapClienteListadoRow,
+} from '../mappers/cliente-listado.mapper';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
@@ -37,14 +44,17 @@ import { ClientesService } from '../services/cliente.service';
     FilterPanel,
     AppTable,
     PagoCuota,
+    MobPageHeader,
+    MobListLayout,
     MobFilterPanel,
-    MobListCard,
-    MobFab,
+    MobClienteCard,
+    MobInfiniteScroll,
   ],
   providers: [
     TableStateService,
     TableExportService,
     ClientesColumnsService,
+    MobileListLoader,
     {
       provide: FilterConfigProvider,
       useClass: ClientesFilterService,
@@ -65,6 +75,16 @@ export class ListadoClientes {
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
   protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
+
+  /**
+   * Listado móvil con scroll infinito; reutiliza el mismo estado que la tabla de escritorio.
+   * El servicio es genérico pero se provee por token, que no conserva el parámetro de tipo:
+   * el cast fija `T` a la fila de la card (no es `any`).
+   */
+  protected readonly mobileList = inject(
+    MobileListLoader,
+  ) as MobileListLoader<ClienteCardMobileRow>;
 
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
 
@@ -79,6 +99,11 @@ export class ListadoClientes {
     if (Object.keys(defaults).length) {
       this.tableState.updateFilters(defaults);
     }
+
+    this.mobileList.connect(
+      (params) => this.clientesService.getAll(params),
+      mapClienteCardMobileRow,
+    );
   }
 
   protected readonly columns = this.columnsService.columns;
@@ -90,42 +115,6 @@ export class ListadoClientes {
         content: page.content.map(mapClienteListadoRow),
       })),
     );
-
-  /**
-   * Carga los clientes para la vista móvil.
-   *
-   * La consulta se ejecuta solamente cuando la pantalla es móvil
-   * y vuelve a ejecutarse cuando cambian los filtros.
-   */
-  protected readonly mobilePage = toSignal(
-    combineLatest([
-      toObservable(this.breakpoint.isMobile),
-      toObservable(this.tableState.queryParams),
-    ]).pipe(
-      switchMap(([isMobile, params]) => {
-        if (!isMobile) {
-          return of(null);
-        }
-
-        return this.clientesService.getAll(params).pipe(
-          catchError((error) => {
-            this.errorHandler.handle(error);
-            return of(null);
-          }),
-        );
-      }),
-    ),
-    {
-      initialValue: null,
-    },
-  );
-
-  /**
-   * Lista de clientes que utiliza el HTML móvil.
-   */
-  protected readonly mobileClientes = computed<ClienteRespuestaDto[]>(
-    () => this.mobilePage()?.content ?? [],
-  );
 
   protected readonly rowActions = (row: ClienteRespuestaDto): RowAction<ClienteRespuestaDto>[] => [
     // TODO: temporal — habilitar cuando existan
@@ -259,65 +248,6 @@ export class ListadoClientes {
           this.errorHandler.handle(error);
         },
       });
-  }
-
-  /**
-   * Texto superior de la tarjeta móvil.
-   */
-  protected clienteReferencia(cliente: ClienteRespuestaDto): string {
-    if (cliente.numeroSocio !== null) {
-      return String(cliente.numeroSocio);
-    }
-
-    switch (cliente.tipoCliente) {
-      case TipoCliente.Socio:
-        return 'Socio';
-
-      case TipoCliente.Particular:
-        return 'Particular';
-
-      case TipoCliente.Empresa:
-        return 'Empresa';
-    }
-  }
-
-  /**
-   * Devuelve la cédula o el RUT.
-   */
-  protected clienteDocumento(cliente: ClienteRespuestaDto): string {
-    return cliente.cedula ?? cliente.rut ?? 'Sin documento';
-  }
-
-  /**
-   * Devuelve el estado o tipo mostrado en la insignia.
-   */
-  protected clienteEstadoLabel(cliente: ClienteRespuestaDto): string {
-    switch (cliente.estado) {
-      case EstadoSocio.Activo:
-        return 'Activo';
-
-      case EstadoSocio.Inactivo:
-        return 'Inactivo';
-
-      case EstadoSocio.Baja:
-        return 'De baja';
-
-      default:
-        return this.tipoClienteLabel(cliente.tipoCliente);
-    }
-  }
-
-  protected tipoClienteLabel(tipoCliente: TipoCliente): string {
-    switch (tipoCliente) {
-      case TipoCliente.Socio:
-        return 'Socio';
-
-      case TipoCliente.Particular:
-        return 'Particular';
-
-      case TipoCliente.Empresa:
-        return 'Empresa';
-    }
   }
 
   private recargarTabla(): void {

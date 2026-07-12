@@ -14,11 +14,13 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { mapClienteCardMobileRow } from '../mappers/cliente-listado.mapper';
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ListadoClientes } from './listado-clientes';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { MobileListLoader } from '../../../shared/mobile/list/mobile-list-loader';
 import { AuthService } from '@auth0/auth0-angular';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
@@ -226,6 +228,16 @@ describe('ListadoClientes', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', 1]);
   });
 
+  it('el comando "Nueva Reserva" navega a /reservas/nueva con el clienteId', () => {
+    const navigateSpy = vi.spyOn(component['router'], 'navigate');
+    const cliente = mockPageResponse.content[0];
+    const nuevaReserva = component['rowActions'](cliente).find((a) => a.label === 'Nueva Reserva')!;
+    nuevaReserva.command?.(cliente);
+    expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva'], {
+      queryParams: { clienteId: cliente.id },
+    });
+  });
+
   it('el comando "Modificar" en rowActions navega con queryParam from=listado', () => {
     const navigateSpy = vi.spyOn(component['router'], 'navigate');
     const cliente = mockPageResponse.content[0];
@@ -387,77 +399,6 @@ describe('ListadoClientes', () => {
     component['onDarDeBajaCliente'](row);
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
   });
-  it('clienteReferencia devuelve el número de socio cuando está disponible', () => {
-    const socio = mockPageResponse.content[0];
-
-    expect(component['clienteReferencia'](socio)).toBe('5');
-  });
-
-  it('clienteReferencia devuelve Particular para un cliente particular', () => {
-    const particular = mockPageResponse.content[1];
-
-    expect(component['clienteReferencia'](particular)).toBe('Particular');
-  });
-
-  it('clienteReferencia devuelve Empresa para un cliente empresa', () => {
-    expect(component['clienteReferencia'](empresaMock)).toBe('Empresa');
-  });
-
-  it('clienteDocumento devuelve la cédula cuando el cliente tiene cédula', () => {
-    const socio = mockPageResponse.content[0];
-
-    expect(component['clienteDocumento'](socio)).toBe('1.234.567-8');
-  });
-
-  it('clienteDocumento devuelve el RUT cuando la empresa no tiene cédula', () => {
-    expect(component['clienteDocumento'](empresaMock)).toBe('210001230018');
-  });
-
-  it('clienteDocumento devuelve Sin documento cuando no existe cédula ni RUT', () => {
-    const clienteSinDocumento: ClienteRespuestaDto = {
-      ...mockPageResponse.content[1],
-      cedula: null,
-      rut: null,
-    };
-
-    expect(component['clienteDocumento'](clienteSinDocumento)).toBe('Sin documento');
-  });
-
-  it('clienteEstadoLabel devuelve Activo para un socio activo', () => {
-    const socio = mockPageResponse.content[0];
-
-    expect(component['clienteEstadoLabel'](socio)).toBe('Activo');
-  });
-
-  it('clienteEstadoLabel devuelve Inactivo para un socio inactivo', () => {
-    const socioInactivo: ClienteRespuestaDto = {
-      ...mockPageResponse.content[0],
-      estado: EstadoSocio.Inactivo,
-    };
-
-    expect(component['clienteEstadoLabel'](socioInactivo)).toBe('Inactivo');
-  });
-
-  it('clienteEstadoLabel devuelve De baja para un socio dado de baja', () => {
-    const socioDeBaja: ClienteRespuestaDto = {
-      ...mockPageResponse.content[0],
-      estado: EstadoSocio.Baja,
-    };
-
-    expect(component['clienteEstadoLabel'](socioDeBaja)).toBe('De baja');
-  });
-
-  it('clienteEstadoLabel devuelve Particular cuando el cliente no tiene estado', () => {
-    const particular = mockPageResponse.content[1];
-
-    expect(component['clienteEstadoLabel'](particular)).toBe('Particular');
-  });
-
-  it('tipoClienteLabel devuelve la etiqueta correspondiente', () => {
-    expect(component['tipoClienteLabel'](TipoCliente.Socio)).toBe('Socio');
-    expect(component['tipoClienteLabel'](TipoCliente.Particular)).toBe('Particular');
-    expect(component['tipoClienteLabel'](TipoCliente.Empresa)).toBe('Empresa');
-  });
 });
 
 describe('ListadoClientes con filtros por defecto', () => {
@@ -486,6 +427,7 @@ describe('ListadoClientes con filtros por defecto', () => {
             TableStateService,
             TableExportService,
             ClientesColumnsService,
+            MobileListLoader,
             { provide: FilterConfigProvider, useClass: ConDefaultsFilterService },
           ],
         },
@@ -531,6 +473,7 @@ describe('ListadoClientes sin filtros por defecto', () => {
             TableStateService,
             TableExportService,
             ClientesColumnsService,
+            MobileListLoader,
             {
               provide: ClientesService,
               useValue: {
@@ -637,13 +580,14 @@ describe('ListadoClientes en vista móvil', () => {
   });
 
   it('debe renderizar una card por cada cliente recibido', () => {
-    const cards = fixture.debugElement.queryAll(By.css('app-mob-list-card'));
+    const cards = fixture.debugElement.queryAll(By.css('app-mob-cliente-card'));
 
     expect(cards.length).toBe(mockPageResponse.content.length);
   });
 
   it('debe mostrar el número de socio del socio', () => {
-    expect(fixture.nativeElement.textContent).toContain('Nro. de socio: 5');
+    expect(fixture.nativeElement.textContent).toContain('N° socio');
+    expect(fixture.nativeElement.textContent).toContain('5');
   });
 
   it('debe mostrar el nombre de los clientes', () => {
@@ -661,19 +605,10 @@ describe('ListadoClientes en vista móvil', () => {
     expect(fixture.nativeElement.textContent).toContain('Activo');
   });
 
-  it('debe renderizar el botón flotante', () => {
+  it('no renderiza el FAB (creación de cliente mobile deshabilitada por ahora)', () => {
     const fab = fixture.debugElement.query(By.css('app-mob-fab'));
 
-    expect(fab).not.toBeNull();
-  });
-
-  it('debe navegar al alta de cliente cuando el FAB emite clicked', () => {
-    const navigateSpy = vi.spyOn(component['router'], 'navigate');
-
-    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
-    fab.triggerEventHandler('clicked');
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/clientes/nuevo']);
+    expect(fab).toBeNull();
   });
 
   it('debe aplicar los filtros emitidos por MobFilterPanel', () => {
@@ -700,11 +635,22 @@ describe('ListadoClientes en vista móvil', () => {
     expect(component['tableState'].queryParams().filters).toEqual({});
   });
 
-  it('mobileClientes debe contener los clientes recibidos', () => {
-    expect(component['mobileClientes']()).toEqual(mockPageResponse.content);
+  it('mobileList.rows debe contener los clientes recibidos ya mapeados a la card', () => {
+    expect(component['mobileList'].rows()).toEqual(
+      mockPageResponse.content.map(mapClienteCardMobileRow),
+    );
   });
 
   it('debe llamar a getAll para cargar el listado móvil', () => {
     expect(mockClientesService.getAll).toHaveBeenCalled();
+  });
+
+  it('no hay más páginas cuando la respuesta es la última', () => {
+    expect(component['mobileList'].hasMore()).toBe(false);
+  });
+
+  it('las cards no muestran el menú de acciones (⋮) en mobile', () => {
+    const rowActions = fixture.debugElement.query(By.css('app-row-actions'));
+    expect(rowActions).toBeNull();
   });
 });
