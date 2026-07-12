@@ -8,7 +8,7 @@ export class ReservasColumnsService {
       key: 'requiereAtencion',
       label: '',
       cellType: 'warning',
-      tooltip: 'Debe entregar la documentación o confirmar el pago antes de las 24 hs',
+      tooltip: 'Debe cumplir los requisitos para evitar la cancelación de la reserva.',
     },
     { key: 'nombreCliente', label: 'Cliente', sortable: true },
     { key: 'servicioNombre', label: 'Servicio' },

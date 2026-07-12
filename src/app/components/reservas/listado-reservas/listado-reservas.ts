@@ -25,10 +25,10 @@ import {
   ReservaFinalizacionRequestDto,
 } from '../models/reserva.model';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
-
-type ReservaRowConAlerta = ReservaRow & {
-  requiereAtencion: boolean;
-};
+import {
+  mapReservaListadoRow,
+  ReservaListadoRow,
+} from '../mappers/reserva-listado.mapper';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -77,17 +77,14 @@ export class ListadoReservas {
   protected readonly reservaFinalizacionSeleccionada = signal<ReservaRow | null>(null);
   protected readonly finalizacionCheck = signal<ReservaFinalizacionCheckResponseDto | null>(null);
 
-  protected readonly loadDataFn: LoadDataFn<ReservaRowConAlerta> = (params) =>
-    this.reservasService.getAll(params).pipe(
-      map((page) => ({
-        ...page,
-        content: page.content.map((reserva) => ({
-          ...reserva,
-          requiereAtencion: this.requiereAtencion(reserva),
-        })),
-      })),
-    );
-
+ protected readonly loadDataFn: LoadDataFn<ReservaListadoRow> = (params) =>
+  this.reservasService.getAll(params).pipe(
+    map((page) => ({
+      ...page,
+      content: page.content.map(mapReservaListadoRow),
+    })),
+  );
+  
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
       label: 'Ver detalle',
@@ -360,18 +357,4 @@ export class ListadoReservas {
     return row.estadoReserva === EstadoReserva.EnCurso;
   }
 
-  private requiereAtencion(row: ReservaRow): boolean {
-    const ahora = new Date();
-    const fechaEntrada = new Date(row.fechaEntrada);
-
-    const diferenciaMs = fechaEntrada.getTime() - ahora.getTime();
-    const horasRestantes = diferenciaMs / (1000 * 60 * 60);
-
-    const faltan24HorasOMenos = horasRestantes <= 24;
-
-    const faltaPagoConfirmacion = row.requiereSena && !row.pago;
-    const faltaDocumentacion = row.requiereDocumentacion && !row.tieneDocumentacion;
-
-    return faltan24HorasOMenos && (faltaPagoConfirmacion || faltaDocumentacion);
-  }
 }
