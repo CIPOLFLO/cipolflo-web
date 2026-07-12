@@ -58,6 +58,8 @@ export class ReservaValidacionesService {
         errors['documento'] = 'La cédula ingresada no es válida.';
       } else if (documento?.hasError('rutInvalido')) {
         errors['documento'] = 'El RUT ingresado no es válido.';
+      } else if (documento?.hasError('rutNoEncontrado')) {
+        errors['documento'] = 'No se encontró ninguna Empresa registrada con ese RUT.';
       }
     }
 

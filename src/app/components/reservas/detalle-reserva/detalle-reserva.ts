@@ -18,12 +18,8 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ReservasService } from '../services/reservas.service';
-import {
-  FORMA_PAGO_RESERVA_LABEL,
-  TIPO_CLIENTE_LABEL,
-  TIPO_RESERVA_LABEL,
-  TipoReserva,
-} from '../models/reserva.model';
+import { FORMA_PAGO_RESERVA_LABEL, TIPO_RESERVA_LABEL, TipoReserva } from '../models/reserva.model';
+import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
 
 @Component({
   selector: 'app-detalle-reserva',
@@ -157,17 +153,10 @@ export class DetalleReserva {
   });
 
   protected readonly clienteFields = computed<DetailFieldConfig[]>(() => {
-    const e = this.reserva();
-    if (!e || !e.cliente) return [];
-    const c = e.cliente;
-    return [
-      { key: 'tipoCliente', label: 'Tipo de Cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
-      { key: 'cedula', label: 'Cédula', value: c.cedula },
-      { key: 'nombre', label: 'Nombre', value: c.nombre },
-      { key: 'telefono', label: 'Teléfono', value: c.telefono },
-      { key: 'email', label: 'Email', value: c.email },
-    ];
+    const c = this.reserva()?.cliente;
+    return c ? buildClienteReservaFields(c) : [];
   });
+
   protected readonly adicionalFields = computed<DetailFieldConfig[]>(() => {
     const e = this.reserva();
     if (!e) return [];

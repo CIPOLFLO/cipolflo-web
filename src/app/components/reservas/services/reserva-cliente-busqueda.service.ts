@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { map, Observable, of, switchMap } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { catchError, map, Observable, of, switchMap } from 'rxjs';
 import { ClientesService } from '../../clientes/services/cliente.service';
 import { ClienteBusquedaReservaDto, TipoDocumento } from '../models/reserva.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
@@ -19,22 +20,24 @@ export class ReservaClienteBusquedaService {
 
   buscarPorRut(rut: string): Observable<ClienteBusquedaReservaDto | null> {
     return this.clientesService.getByRut(rut).pipe(
-      map((dto) =>
-        dto
-          ? {
-              id: dto.id,
-              nombre: dto.nombre,
-              documento: dto.rut,
-              tipoDocumento: TipoDocumento.Rut,
-              tipoCliente: dto.tipoCliente,
-              numeroSocio: null,
-              estado: null,
-              telefono: dto.telefono,
-              email: dto.mail,
-              observaciones: dto.observaciones,
-            }
-          : null,
-      ),
+      map((dto) => ({
+        id: dto.id,
+        nombre: dto.nombre,
+        documento: dto.rut,
+        tipoDocumento: TipoDocumento.Rut,
+        tipoCliente: dto.tipoCliente,
+        numeroSocio: null,
+        estado: null,
+        telefono: dto.telefono,
+        email: dto.mail,
+        observaciones: dto.observaciones,
+      })),
+      // El backend responde 404 cuando no hay ninguna Empresa con ese RUT: no es un
+      // error a propagar sino la señal de "no encontrado" que el flujo traduce a null.
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404) return of(null);
+        throw error;
+      }),
     );
   }
 

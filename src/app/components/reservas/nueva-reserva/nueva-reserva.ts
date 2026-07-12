@@ -132,8 +132,12 @@ export class NuevaReserva extends ReservaFormBase {
         }
 
         if (tipoDocumento === TipoDocumento.Rut) {
-          // RUT no encontrado: bloquea la creación, no habilita campos manuales.
+          // RUT no encontrado: bloquea la creación, no habilita campos manuales. Se marca
+          // el campo en rojo para que el error siga visible tras cerrar el diálogo.
           this.clienteBusqueda.set(null);
+          const documento = this.form.get('documento');
+          documento?.setErrors({ rutNoEncontrado: true });
+          documento?.markAsTouched();
           this.errorDialog.open({
             title: 'RUT no encontrado',
             message: 'No se encontró ninguna Empresa registrada con ese RUT.',

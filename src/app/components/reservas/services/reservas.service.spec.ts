@@ -43,6 +43,7 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
     id: 10,
     nombre: 'Carlos Martínez Gómez',
     cedula: '12345678',
+    rut: null,
     telefono: '+598 99 123 456',
     email: 'carlos.martinez@email.com',
     tipoCliente: TipoCliente.Socio,

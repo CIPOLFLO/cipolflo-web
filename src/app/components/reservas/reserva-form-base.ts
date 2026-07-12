@@ -112,7 +112,7 @@ export abstract class ReservaFormBase {
 
   /** Verdadero mientras aún no se buscó/confirmó el cliente y hay un costo estimado visible. */
   protected readonly costoEsParaParticular = computed(
-    () => this.costo() !== null && !this.busquedaRealizada() && !this.esColaboracion(),
+    () => this.costo() !== null && !this.busquedaRealizada(),
   );
 
   protected readonly observacionesCliente = computed(() => {

@@ -12,7 +12,11 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { UserService } from '../../../core/services/user.service';
 import { ReservasService } from '../services/reservas.service';
 import { ServicioService } from '../../servicios/services/servicio.service';
-import { TipoReserva, type ReservaDetalleRespuestaDto } from '../models/reserva.model';
+import {
+  TipoDocumento,
+  TipoReserva,
+  type ReservaDetalleRespuestaDto,
+} from '../models/reserva.model';
 import { EditarReserva } from './editar-reserva';
 
 const mockAuthService = {
@@ -66,6 +70,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
     id: 10,
     nombre: 'Carlos Martínez Gómez',
     cedula: '12345678',
+    rut: null,
     telefono: '+598 99 123 456',
     email: 'carlos.martinez@email.com',
     tipoCliente: TipoCliente.Socio,
@@ -89,7 +94,8 @@ const mockColaboracion: ReservaDetalleRespuestaDto = {
   cliente: {
     id: 20,
     nombre: 'Org Solidaria S.A.',
-    cedula: null as unknown as string,
+    cedula: null,
+    rut: '211003420017',
     telefono: '099222222',
     email: 'org@mail.com',
     tipoCliente: TipoCliente.Empresa,
@@ -195,6 +201,9 @@ describe('EditarReserva', () => {
     expect(component['busquedaRealizada']()).toBe(true);
     expect(component['clienteBusqueda']()?.nombre).toBe('Org Solidaria S.A.');
     expect(component['clienteBusqueda']()?.tipoCliente).toBe(TipoCliente.Empresa);
+    // La Empresa se identifica por RUT: el documento precargado es el RUT, no la cédula.
+    expect(component['clienteBusqueda']()?.documento).toBe('211003420017');
+    expect(component['clienteBusqueda']()?.tipoDocumento).toBe(TipoDocumento.Rut);
   });
 
   it('los validadores de cliente quedan limpios (cliente es de sólo lectura)', async () => {
@@ -218,10 +227,12 @@ describe('EditarReserva', () => {
       expect(fields.find((f) => f.key === 'email')?.value).toBe('carlos.martinez@email.com');
     });
 
-    it('COLABORACION: incluye los datos de la Empresa asociada', async () => {
+    it('COLABORACION: incluye los datos de la Empresa asociada, con RUT en lugar de cédula', async () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
       expect(fields.find((f) => f.key === 'tipoCliente')?.value).toBe('Empresa');
+      expect(fields.find((f) => f.key === 'rut')?.value).toBe('211003420017');
+      expect(fields.find((f) => f.key === 'cedula')).toBeUndefined();
       expect(fields.find((f) => f.key === 'nombre')?.value).toBe('Org Solidaria S.A.');
       expect(fields.find((f) => f.key === 'telefono')?.value).toBe('099222222');
       expect(fields.find((f) => f.key === 'email')?.value).toBe('org@mail.com');

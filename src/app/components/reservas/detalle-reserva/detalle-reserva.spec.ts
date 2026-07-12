@@ -35,6 +35,7 @@ const mockReserva: ReservaDetalleRespuestaDto = {
     id: 10,
     nombre: 'Carlos Martínez Gómez',
     cedula: '12345678',
+    rut: null,
     telefono: '+598 99 123 456',
     email: 'carlos.martinez@email.com',
     tipoCliente: TipoCliente.Socio,
@@ -219,7 +220,8 @@ describe('DetalleReserva', () => {
         cliente: {
           id: 20,
           nombre: 'Org Solidaria S.A.',
-          cedula: null as unknown as string,
+          cedula: null,
+          rut: '211003420017',
           telefono: '099222222',
           email: 'org@mail.com',
           tipoCliente: TipoCliente.Empresa,
@@ -251,7 +253,8 @@ describe('DetalleReserva', () => {
       cliente: {
         id: 20,
         nombre: 'Org Solidaria S.A.',
-        cedula: null as unknown as string,
+        cedula: null,
+        rut: '211003420017',
         telefono: '099222222',
         email: 'org@mail.com',
         tipoCliente: TipoCliente.Empresa,
@@ -262,6 +265,13 @@ describe('DetalleReserva', () => {
       const { component } = await setup(mockColaboracion);
       const fields = component['clienteFields']();
       expect(fields.find((f) => f.key === 'tipoCliente')?.value).toBe('Empresa');
+    });
+
+    it('muestra el RUT de la Empresa (no el campo cédula)', async () => {
+      const { component } = await setup(mockColaboracion);
+      const fields = component['clienteFields']();
+      expect(fields.find((f) => f.key === 'rut')?.value).toBe('211003420017');
+      expect(fields.find((f) => f.key === 'cedula')).toBeUndefined();
     });
 
     it('muestra el nombre de la organización', async () => {

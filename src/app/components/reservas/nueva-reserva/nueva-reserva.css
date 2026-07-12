@@ -4,15 +4,42 @@
   flex: 1;
 }
 
-.nueva-reserva__cedula {
+/* La sección de documento ocupa toda la fila para que los radios apilados y el
+   input + lupa respiren, en vez de comprimirse en una sola celda de la grilla. */
+.nueva-reserva__documento {
+  grid-column: 1 / -1;
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.875rem;
   align-self: start;
 }
 
-.nueva-reserva__cedula-field {
+/* Cédula / RUT uno debajo del otro. */
+.nueva-reserva__documento-radio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nueva-reserva__radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+/* Input y lupa en la misma línea, como estaba antes. */
+.nueva-reserva__documento-input {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.nueva-reserva__documento-field {
   flex: 1;
+  max-width: 22rem;
 }
 
 /* Alinea lupita + chip con el input salteando la altura del label, de modo que el

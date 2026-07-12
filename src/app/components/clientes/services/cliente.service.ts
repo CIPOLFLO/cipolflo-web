@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseHttpService } from '../../../core/services/base-http.service';
 import { BlobExportService } from '../../../core/services/blob-export.service';
 import { PageResponse, TableQueryParams } from '../../../shared';
@@ -47,16 +46,9 @@ export class ClientesService extends BaseHttpService {
     });
   }
 
-  /** Busca un cliente Empresa por RUT. Devuelve null si no existe (404). */
-  getByRut(rut: string): Observable<BusquedaRutResponseDto | null> {
-    return this.get<BusquedaRutResponseDto>(`clientes/rut/${rut}`).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 404) {
-          return of(null);
-        }
-        throw error;
-      }),
-    );
+  /** Busca un cliente Empresa por RUT. El backend responde 404 si no existe. */
+  getByRut(rut: string): Observable<BusquedaRutResponseDto> {
+    return this.get<BusquedaRutResponseDto>(`clientes/rut/${rut}`);
   }
 
   /** Estado puntual de un socio (ACTIVO / INACTIVO / DE_BAJA), de sólo lectura. */

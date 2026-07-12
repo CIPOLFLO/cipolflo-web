@@ -75,6 +75,20 @@ export enum TipoDocumento {
 }
 
 /**
+ * Regla única de dominio: una Empresa se identifica por RUT; el resto (Socio/Particular)
+ * por cédula. Devuelve el tipo de documento y su valor para un cliente dado.
+ */
+export function documentoDeCliente(cliente: {
+  tipoCliente: TipoCliente;
+  cedula: string | null;
+  rut: string | null;
+}): { tipoDocumento: TipoDocumento; documento: string | null } {
+  return cliente.tipoCliente === TipoCliente.Empresa
+    ? { tipoDocumento: TipoDocumento.Rut, documento: cliente.rut }
+    : { tipoDocumento: TipoDocumento.Cedula, documento: cliente.cedula };
+}
+
+/**
  * Datos del cliente para precargar la sección de cliente de la reserva. Representa el
  * resultado combinado de la búsqueda por cédula o RUT + el detalle (observaciones, teléfono).
  */
@@ -160,7 +174,8 @@ export interface CostoReservaRespuestaDto {
 export interface ClienteDetalleReservaDto {
   id: number;
   nombre: string;
-  cedula: string;
+  cedula: string | null;
+  rut: string | null;
   telefono: string | null;
   email: string | null;
   tipoCliente: TipoCliente;

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@auth0/auth0-angular';
 import { NuevaReserva } from './nueva-reserva';
@@ -135,7 +135,11 @@ describe('NuevaReserva', () => {
         of(page(params.filters?.['identificador'] === '12345678' ? [{ id: 1 }] : [])),
       ),
       getByCedula: vi.fn((cedula: string) => of(page(cedula === '12345672' ? [{ id: 1 }] : []))),
-      getByRut: vi.fn((rut: string) => of(rut === '211003420017' ? busquedaEmpresa : null)),
+      getByRut: vi.fn((rut: string) =>
+        rut === '211003420017'
+          ? of(busquedaEmpresa)
+          : throwError(() => new HttpErrorResponse({ status: 404 })),
+      ),
       getById: vi.fn((id: number) =>
         of(id === 2 ? detalleParticular : id === 3 ? detalleEmpresaPrecarga : detalleSocio),
       ),
@@ -372,6 +376,29 @@ describe('NuevaReserva', () => {
     expect(errorSpy).toHaveBeenCalled();
     expect(component['busquedaRealizada']()).toBe(false);
     expect(component['mostrarFormularioManual']()).toBe(false);
+  });
+
+  it('RUT válido no encontrado marca el campo en rojo con el error visible tras el diálogo', () => {
+    vi.spyOn(component['errorDialog'], 'open');
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('999999999997');
+    component['buscarCliente']();
+    fixture.detectChanges();
+    expect(component['form'].get('documento')?.hasError('rutNoEncontrado')).toBe(true);
+    expect(component['clienteErrors']()['documento']).toBe(
+      'No se encontró ninguna Empresa registrada con ese RUT.',
+    );
+  });
+
+  it('al editar el documento tras un RUT no encontrado se limpia el error', () => {
+    vi.spyOn(component['errorDialog'], 'open');
+    component['form'].get('tipoDocumento')?.setValue(TipoDocumento.Rut);
+    component['form'].get('documento')?.setValue('999999999997');
+    component['buscarCliente']();
+    expect(component['form'].get('documento')?.hasError('rutNoEncontrado')).toBe(true);
+
+    component['form'].get('documento')?.setValue('211003420018');
+    expect(component['form'].get('documento')?.hasError('rutNoEncontrado')).toBe(false);
   });
 
   it('en Colaboración el tipoDocumento queda fijo en RUT y deshabilitado', () => {
