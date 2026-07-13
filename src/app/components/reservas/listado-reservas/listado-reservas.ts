@@ -26,6 +26,20 @@ import {
 } from '../models/reserva.model';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
 import { mapReservaListadoRow, ReservaListadoRow } from '../mappers/reserva-listado.mapper';
+import {
+  MobFilterPanel,
+  MobInfiniteScroll,
+  MobileListLoader,
+  MobListLayout,
+  MobPageHeader,
+} from '../../../shared';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+import { MobReservaCard } from '../mob-reserva-card/mob-reserva-card';
+import {
+  mapReservaCardMobileRow,
+  ReservaCardMobileRow,
+} from '../mappers/reserva-card-mobile.mapper';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -39,12 +53,18 @@ import { mapReservaListadoRow, ReservaListadoRow } from '../mappers/reserva-list
     VerificationDialog,
     PagosAsociadosDialog,
     CompletarPagoDialog,
+    MobPageHeader,
+    MobListLayout,
+    MobFilterPanel,
+    MobReservaCard,
+    MobInfiniteScroll
   ],
   providers: [
     TableStateService,
     TableExportService,
     ReservasService,
     ReservasColumnsService,
+    MobileListLoader,
     { provide: FilterConfigProvider, useClass: ReservasFilterService },
   ],
   templateUrl: './listado-reservas.html',
@@ -82,6 +102,20 @@ export class ListadoReservas {
       })),
     );
 
+  protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
+
+  protected readonly mobileList = inject(
+    MobileListLoader,
+  ) as MobileListLoader<ReservaCardMobileRow>;
+
+  constructor() {
+    this.mobileList.connect(
+      (params) => this.reservasService.getAll(params),
+      mapReservaCardMobileRow,
+    );
+  }
+
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
       label: 'Ver detalle',
@@ -89,57 +123,61 @@ export class ListadoReservas {
       command: () => this.router.navigate(['/reservas', row.id]),
     },
     ...(row.estadoReserva === EstadoReserva.Pendiente ||
-    row.estadoReserva === EstadoReserva.Confirmada
+      row.estadoReserva === EstadoReserva.Confirmada
       ? [
-          {
-            label: 'Modificar',
-            icon: 'pi pi-pencil',
-            command: () =>
-              this.router.navigate(['/reservas', row.id, 'modificar'], {
-                queryParams: { from: 'listado' },
-              }),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Modificar',
+          icon: 'pi pi-pencil',
+          command: () =>
+            this.router.navigate(['/reservas', row.id, 'modificar'], {
+              queryParams: { from: 'listado' },
+            }),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(this.puedeConfirmarPago(row)
       ? [
-          {
-            label: 'Confirmar pago',
-            icon: 'pi pi-dollar',
-            command: () => this.onConfirmarPago(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Confirmar pago',
+          icon: 'pi pi-dollar',
+          command: () => this.onConfirmarPago(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(this.puedeCancelar(row)
       ? [
-          {
-            label: 'Cancelar',
-            icon: 'pi pi-ban',
-            command: () => this.iniciarCancelacion(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Cancelar',
+          icon: 'pi pi-ban',
+          command: () => this.iniciarCancelacion(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(this.puedeFinalizar(row)
       ? [
-          {
-            label: 'Finalizar',
-            icon: 'pi pi-check-circle',
-            command: () => this.iniciarFinalizacion(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Finalizar',
+          icon: 'pi pi-check-circle',
+          command: () => this.iniciarFinalizacion(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
     ...(row.requiereDocumentacion && !row.tieneDocumentacion
       ? [
-          {
-            label: 'Confirmar documentación',
-            icon: 'pi pi-file-check',
-            command: () => this.onConfirmarDocumentacion(row),
-          } satisfies RowAction<ReservaRow>,
-        ]
+        {
+          label: 'Confirmar documentación',
+          icon: 'pi pi-file-check',
+          command: () => this.onConfirmarDocumentacion(row),
+        } satisfies RowAction<ReservaRow>,
+      ]
       : []),
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
+    this.tableState.updateFilters(filters);
+  }
+
+  protected onApplyFilters(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }
 

@@ -11,8 +11,9 @@ import {
   PageResponse,
   TableStateService,
   TableExportService,
+  EstadoReserva,
+  MobileListLoader
 } from '../../../shared';
-import { EstadoReserva } from '../../../shared';
 import { ReservaRow, ReservaRespuestaDto, TipoReserva } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
@@ -109,6 +110,7 @@ describe('ListadoReservas', () => {
           providers: [
             TableStateService,
             TableExportService,
+              MobileListLoader,
             ReservasColumnsService,
             { provide: ReservasService, useValue: mockReservasService },
             { provide: FilterConfigProvider, useClass: MinimalFilterProvider },
