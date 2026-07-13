@@ -674,4 +674,65 @@ describe('NuevaReserva', () => {
     expect(dto.horaInicio).toBeNull();
     expect(dto.horaFin).toBeNull();
   });
+
+  it('debería iniciar el wizard en el primer paso', () => {
+    expect(component['currentStep']()).toBe(0);
+  });
+
+  it('debería definir los tres pasos del wizard', () => {
+    expect(component['steps']).toEqual([
+      { label: 'Reserva' },
+      { label: 'Cliente' },
+      { label: 'Adicional' },
+    ]);
+  });
+
+  it('next debería avanzar al siguiente paso cuando el paso actual es válido', () => {
+    component['form'].patchValue({
+      tipoReserva: TipoReserva.Comun,
+      procedencia: Procedencia.Sede,
+      servicioId: '1',
+      fechaInicio: '2026-07-20',
+      fechaFin: '2026-07-21',
+    });
+
+    component['next']();
+
+    expect(component['currentStep']()).toBe(1);
+  });
+
+  it('next no debería avanzar más allá del último paso', () => {
+    component['currentStep'].set(2);
+
+    component['next']();
+
+    expect(component['currentStep']()).toBe(2);
+  });
+
+  it('previous debería volver al paso anterior', () => {
+    component['currentStep'].set(2);
+
+    component['previous']();
+
+    expect(component['currentStep']()).toBe(1);
+  });
+
+  it('previous no debería retroceder antes del primer paso', () => {
+    component['previous']();
+
+    expect(component['currentStep']()).toBe(0);
+  });
+  it('debería deshabilitar Siguiente en el primer paso cuando faltan datos obligatorios', () => {
+    component['currentStep'].set(0);
+
+    expect(component['nextDisabled']()).toBe(true);
+  });
+
+  it('no debería avanzar desde el primer paso cuando está incompleto', () => {
+    component['currentStep'].set(0);
+
+    component['next']();
+
+    expect(component['currentStep']()).toBe(0);
+  });
 });

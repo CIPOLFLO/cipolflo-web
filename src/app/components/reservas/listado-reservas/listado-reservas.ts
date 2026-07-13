@@ -32,6 +32,7 @@ import {
   MobileListLoader,
   MobListLayout,
   MobPageHeader,
+  MobFab,
 } from '../../../shared';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
@@ -58,6 +59,7 @@ import {
     MobFilterPanel,
     MobReservaCard,
     MobInfiniteScroll,
+    MobFab,
   ],
   providers: [
     TableStateService,

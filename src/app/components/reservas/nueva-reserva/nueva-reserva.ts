@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { catchError, EMPTY, filter, finalize, map, Subject, switchMap } from 'rxjs';
@@ -18,6 +18,12 @@ import {
   Procedencia,
   type DateRangeSelection,
   type FormFieldConfig,
+  MobPageHeader,
+  MobStepper,
+  MobStepCard,
+  MobStepFooter,
+  StepConfig,
+  MobListLayout
 } from '../../../shared';
 import {
   EstadoSocio,
@@ -35,6 +41,9 @@ import {
 } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
@@ -50,6 +59,11 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
     CurrencyFormatPipe,
     FormsModule,
     RadioButtonModule,
+    MobPageHeader,
+    MobStepper,
+    MobStepCard,
+    MobStepFooter,
+    MobListLayout,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
   templateUrl: './nueva-reserva.html',
@@ -62,8 +76,38 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
 
+  protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
   /** Expuesto para el template (radio Cédula/RUT). */
   protected readonly TipoDocumento = TipoDocumento;
+
+  protected readonly currentStep = signal(0);
+
+  private readonly wizardFormValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
+
+  protected readonly nextDisabled = computed(() => {
+    this.wizardFormValue();
+
+    if (this.currentStep() === 0) {
+      return this.pasoReservaInvalido();
+    }
+    if (this.currentStep() === 1) {
+      return this.pasoClienteInvalido();
+    }
+    if (this.currentStep() === 2) {
+      return this.confirmDisabled();
+    }
+
+    return false;
+  });
+
+  protected readonly steps: StepConfig[] = [
+    { label: 'Reserva' },
+    { label: 'Cliente' },
+    { label: 'Adicional' },
+  ];
 
   private readonly buscarClienteTrigger = new Subject<{
     documento: string;
@@ -286,6 +330,87 @@ export class NuevaReserva extends ReservaFormBase {
   protected onRangoSeleccionado(rango: DateRangeSelection): void {
     this.onControlChange('fechaInicio', rango.inicio);
     this.onControlChange('fechaFin', rango.fin);
+  }
+
+  protected next(): void {
+    if (this.nextDisabled()) return;
+
+    if (this.currentStep() < this.steps.length - 1) {
+      this.currentStep.update((step) => step + 1);
+    }
+  }
+
+  protected previous(): void {
+    if (this.currentStep() > 0) {
+      this.currentStep.update((step) => step - 1);
+    }
+  }
+
+  private pasoReservaInvalido(): boolean {
+    const controlesBase = [
+      'tipoReserva',
+      'procedencia',
+      'servicioId',
+      'fechaInicio',
+      'fechaFin',
+    ];
+
+    const controlesCondicionales: string[] = [];
+
+    if (this.modoCapacidad()) {
+      controlesCondicionales.push('cantidadTotal');
+    }
+
+    if (this.modoCantidad()) {
+      controlesCondicionales.push('cantidad');
+    }
+
+    if (this.modoHora()) {
+      controlesCondicionales.push('horaInicio', 'horaFin');
+    }
+
+    return [...controlesBase, ...controlesCondicionales].some(
+      (key) => this.form.get(key)?.invalid ?? true,
+    );
+  }
+
+  private pasoClienteInvalido(): boolean {
+    const documentoInvalido = this.form.get('documento')?.invalid ?? true;
+
+    if (!this.busquedaRealizada()) {
+      return true;
+    }
+
+    if (this.clienteCamposReadonly()) {
+      return documentoInvalido;
+    }
+
+    const nombreInvalido = this.form.get('nombre')?.invalid ?? true;
+    const celularInvalido = this.form.get('celular')?.invalid ?? true;
+    const emailInvalido = this.form.get('email')?.invalid ?? false;
+
+    return documentoInvalido || nombreInvalido || celularInvalido || emailInvalido;
+  }
+  private pasoDetalleInvalido(): boolean {
+    if (this.modoCantidad()) {
+      return this.form.get('cantidad')?.invalid ?? true;
+    }
+
+    if (this.modoCapacidad()) {
+      return (
+        (this.form.get('cantidadTotal')?.invalid ?? true) ||
+        (this.form.get('cantidadMenores')?.invalid ?? true)
+      );
+    }
+
+    if (this.modoHora()) {
+      return (
+        (this.form.get('horaInicio')?.invalid ?? true) ||
+        (this.form.get('horaFin')?.invalid ?? true)
+      );
+    }
+
+    return false;
   }
 
   override onConfirmar(): void {
