@@ -23,7 +23,7 @@ import {
   MobStepCard,
   MobStepFooter,
   StepConfig,
-  MobListLayout
+  MobListLayout,
 } from '../../../shared';
 import {
   EstadoSocio,
@@ -347,13 +347,7 @@ export class NuevaReserva extends ReservaFormBase {
   }
 
   private pasoReservaInvalido(): boolean {
-    const controlesBase = [
-      'tipoReserva',
-      'procedencia',
-      'servicioId',
-      'fechaInicio',
-      'fechaFin',
-    ];
+    const controlesBase = ['tipoReserva', 'procedencia', 'servicioId', 'fechaInicio', 'fechaFin'];
 
     const controlesCondicionales: string[] = [];
 
