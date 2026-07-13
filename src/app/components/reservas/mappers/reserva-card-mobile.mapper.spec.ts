@@ -32,22 +32,17 @@ describe('mapReservaCardMobileRow', () => {
     [EstadoReserva.Finalizada, 'Finalizada', 'tag--purple'],
     [EstadoReserva.Cancelada, 'Cancelada', 'tag--gray'],
     [EstadoReserva.Pendiente, 'Pendiente', 'tag--yellow'],
-  ])(
-    'debería mapear %s con su etiqueta y color',
-    (estadoReserva, label, colorClass) => {
-      const resultado = mapReservaCardMobileRow(crearReserva(estadoReserva));
+  ])('debería mapear %s con su etiqueta y color', (estadoReserva, label, colorClass) => {
+    const resultado = mapReservaCardMobileRow(crearReserva(estadoReserva));
 
-      expect(resultado.estadoTag).toEqual({
-        label,
-        colorClass,
-      });
-    },
-  );
+    expect(resultado.estadoTag).toEqual({
+      label,
+      colorClass,
+    });
+  });
 
   it('debería preparar los campos que muestra la card', () => {
-    const resultado = mapReservaCardMobileRow(
-      crearReserva(EstadoReserva.Confirmada),
-    );
+    const resultado = mapReservaCardMobileRow(crearReserva(EstadoReserva.Confirmada));
 
     expect(resultado.cliente).toBe('Juan Pérez');
     expect(resultado.servicio).toBe('Hospedaje en camping');

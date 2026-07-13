@@ -75,9 +75,7 @@ describe('MobReservaCard', () => {
   });
 
   it('no debería mostrar el menú de acciones cuando no se pasan acciones', () => {
-    const menuButton = fixture.debugElement.query(
-      By.css('app-mob-list-card .mob-list-card__menu'),
-    );
+    const menuButton = fixture.debugElement.query(By.css('app-mob-list-card .mob-list-card__menu'));
 
     expect(menuButton).toBeNull();
   });

@@ -1,10 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import {
-  AppTag,
-  CurrencyFormatPipe,
-  MobListCard,
-  RowAction,
-} from '../../../shared';
+import { AppTag, CurrencyFormatPipe, MobListCard, RowAction } from '../../../shared';
 import { ReservaCardMobileRow } from '../mappers/reserva-card-mobile.mapper';
 import { ReservaRow } from '../models/reserva.model';
 

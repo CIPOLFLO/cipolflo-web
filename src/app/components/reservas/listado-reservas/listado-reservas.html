@@ -1,10 +1,6 @@
 @if (breakpoint.isMobile()) {
   <app-mob-list-layout>
-    <app-mob-page-header
-      header
-      title="Reservas"
-      (menuToggled)="sidebar.open()"
-    />
+    <app-mob-page-header header title="Reservas" (menuToggled)="sidebar.open()" />
 
     <app-mob-filter-panel
       filters
@@ -19,17 +15,11 @@
       -->
       <app-mob-reserva-card [reserva]="reserva" />
     } @empty {
-      <div class="reservas-mobile__empty">
-        No se encontraron reservas.
-      </div>
+      <div class="reservas-mobile__empty">No se encontraron reservas.</div>
     }
 
     @if (mobileList.hasMore()) {
-      <div
-        appMobInfiniteScroll
-        (scrolled)="mobileList.loadMore()"
-        aria-hidden="true"
-      ></div>
+      <div appMobInfiniteScroll (scrolled)="mobileList.loadMore()" aria-hidden="true"></div>
     }
   </app-mob-list-layout>
 } @else {
@@ -102,10 +92,6 @@
 
     <app-filter-panel (filterChange)="onFilterChange($event)" />
 
-    <app-table
-      [columns]="columns"
-      [loadDataFn]="loadDataFn"
-      [getRowActions]="rowActions"
-    />
+    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
   </app-page-layout>
 }
