@@ -98,11 +98,7 @@ export class NuevaReserva extends ReservaFormBase {
     if (this.currentStep() === 1) {
       return this.pasoClienteInvalido();
     }
-    if (this.currentStep() === 2) {
-      return this.confirmDisabled();
-    }
-
-    return false;
+    return this.confirmDisabled();
   });
 
   protected readonly steps: StepConfig[] = [
@@ -386,27 +382,6 @@ export class NuevaReserva extends ReservaFormBase {
     const emailInvalido = this.form.get('email')?.invalid ?? false;
 
     return documentoInvalido || nombreInvalido || celularInvalido || emailInvalido;
-  }
-  private pasoDetalleInvalido(): boolean {
-    if (this.modoCantidad()) {
-      return this.form.get('cantidad')?.invalid ?? true;
-    }
-
-    if (this.modoCapacidad()) {
-      return (
-        (this.form.get('cantidadTotal')?.invalid ?? true) ||
-        (this.form.get('cantidadMenores')?.invalid ?? true)
-      );
-    }
-
-    if (this.modoHora()) {
-      return (
-        (this.form.get('horaInicio')?.invalid ?? true) ||
-        (this.form.get('horaFin')?.invalid ?? true)
-      );
-    }
-
-    return false;
   }
 
   override onConfirmar(): void {

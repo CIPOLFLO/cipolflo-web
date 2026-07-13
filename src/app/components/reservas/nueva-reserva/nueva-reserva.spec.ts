@@ -869,4 +869,83 @@ describe('NuevaReserva', () => {
 
     expect(component['currentStep']()).toBe(2);
   });
+  it('debería habilitar Siguiente en el paso reserva cuando el modo capacidad está completo', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('2');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidadTotal: '4',
+    });
+    component['currentStep'].set(0);
+
+    expect(component['modoCapacidad']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(false);
+  });
+  it('debería deshabilitar Siguiente si falta la cantidad en modo cantidad', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidad: null,
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+    component['currentStep'].set(0);
+
+    expect(component['modoCantidad']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(true);
+  });
+  it('debería deshabilitar Siguiente si faltan las horas en modo por hora', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidad: '1',
+      horaInicio: null,
+      horaFin: null,
+    });
+    component['currentStep'].set(0);
+
+    expect(component['modoHora']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(true);
+  });
+  it('debería habilitar Siguiente cuando el modo por hora está completo', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidad: '1',
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+    component['currentStep'].set(0);
+
+    expect(component['nextDisabled']()).toBe(false);
+  });
+  it('debería deshabilitar Siguiente si el email manual es inválido', () => {
+    component['form'].get('documento')?.setValue('00000000');
+    component['buscarCliente']();
+
+    component['form'].patchValue({
+      nombre: 'Cliente nuevo',
+      celular: '099123456',
+      email: 'correo-invalido',
+    });
+
+    component['currentStep'].set(1);
+
+    expect(component['nextDisabled']()).toBe(true);
+  });
+  it('debería validar solamente el documento cuando el cliente está en modo readonly', () => {
+    component['form'].get('documento')?.setValue('12345672');
+    component['buscarCliente']();
+    component['currentStep'].set(1);
+
+    expect(component['clienteCamposReadonly']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(false);
+  });
 });
