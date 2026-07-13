@@ -17,6 +17,10 @@ import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
 import { TipoDocumento, TipoReserva } from '../models/reserva.model';
 import { UserService } from '../../../core/services/user.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { signal } from '@angular/core';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+
 
 const mockAuthService = { user$: of({ name: 'Juan', email: 'j@e.com' }), logout: vi.fn() };
 const mockUserService = { userInitials: () => 'JP', userEmail: () => 'j@e.com' };
@@ -122,6 +126,9 @@ describe('NuevaReserva', () => {
     calcularCosto: ReturnType<typeof vi.fn>;
     descargarComprobante: ReturnType<typeof vi.fn>;
   };
+  let isMobile: ReturnType<typeof signal<boolean>>;
+  let sidebarOpenSpy: ReturnType<typeof vi.fn>;
+
 
   beforeEach(async () => {
     navigateSpy = vi.fn();
@@ -150,6 +157,8 @@ describe('NuevaReserva', () => {
       calcularCosto: vi.fn(() => of({ costoTotal: 5000 })),
       descargarComprobante: vi.fn(() => of(undefined)),
     };
+    isMobile = signal(false);
+    sidebarOpenSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [NuevaReserva],
@@ -166,6 +175,8 @@ describe('NuevaReserva', () => {
         { provide: ClientesService, useValue: mockClientesService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
+        { provide: BreakpointService, useValue: { isMobile }, },
+        { provide: SidebarService, useValue: { open: sidebarOpenSpy }, },
       ],
     })
       .overrideComponent(NuevaReserva, {
@@ -734,5 +745,130 @@ describe('NuevaReserva', () => {
     component['next']();
 
     expect(component['currentStep']()).toBe(0);
+  });
+  it('debería mostrar el wizard en resolución mobile', () => {
+    isMobile.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-stepper'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-step-card'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-step-footer'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
+  });
+
+  it('debería mantener el formulario desktop fuera de resolución mobile', () => {
+    isMobile.set(false);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeNull();
+  });
+  it('debería abrir el sidebar desde el encabezado mobile', () => {
+    isMobile.set(true);
+    fixture.detectChanges();
+
+    const header = fixture.debugElement.query(By.css('app-mob-page-header'));
+    header.triggerEventHandler('menuToggled');
+
+    expect(sidebarOpenSpy).toHaveBeenCalled();
+  });
+  it('debería mostrar Información de la Reserva en el primer paso', () => {
+    isMobile.set(true);
+    component['currentStep'].set(0);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Información de la Reserva');
+  });
+
+  it('debería mostrar Información del Cliente en el segundo paso', () => {
+    isMobile.set(true);
+    component['currentStep'].set(1);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Información del Cliente');
+  });
+
+  it('debería mostrar Información Adicional y el resumen en el último paso', () => {
+    isMobile.set(true);
+    component['currentStep'].set(2);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).toContain('Información Adicional');
+    expect(text).toContain('Resumen de la Reserva');
+  });
+  it('debería deshabilitar Siguiente en el paso cliente si todavía no se buscó el documento', () => {
+    component['currentStep'].set(1);
+    component['form'].get('documento')?.setValue('12345672');
+
+    expect(component['nextDisabled']()).toBe(true);
+  });
+
+  it('debería habilitar Siguiente si se encontró un cliente válido', () => {
+    component['form'].get('documento')?.setValue('12345672');
+    component['buscarCliente']();
+    component['currentStep'].set(1);
+
+    expect(component['nextDisabled']()).toBe(false);
+  });
+
+  it('debería mantener deshabilitado Siguiente si la cédula no existe y faltan datos manuales', () => {
+    component['form'].get('documento')?.setValue('00000000');
+    component['buscarCliente']();
+    component['currentStep'].set(1);
+
+    expect(component['mostrarFormularioManual']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(true);
+  });
+
+  it('debería habilitar Siguiente tras completar el alta manual del cliente', () => {
+    component['form'].get('documento')?.setValue('00000000');
+    component['buscarCliente']();
+
+    component['form'].patchValue({
+      nombre: 'Cliente nuevo',
+      celular: '099123456',
+      email: 'cliente@mail.com',
+    });
+
+    component['currentStep'].set(1);
+
+    expect(component['nextDisabled']()).toBe(false);
+  });
+  it('debería conservar los datos del formulario al avanzar y retroceder', () => {
+    component['form'].get('notas')?.setValue('Nota persistente');
+    component['currentStep'].set(2);
+
+    component['previous']();
+    component['previous']();
+
+    expect(component['currentStep']()).toBe(0);
+    expect(component['form'].get('notas')?.value).toBe('Nota persistente');
+  });
+  it('el footer mobile debería retroceder al emitir previous', () => {
+    isMobile.set(true);
+    component['currentStep'].set(1);
+    fixture.detectChanges();
+
+    const footer = fixture.debugElement.query(By.css('app-mob-step-footer'));
+    footer.triggerEventHandler('previous');
+
+    expect(component['currentStep']()).toBe(0);
+  });
+  it('el footer mobile debería avanzar cuando el paso actual es válido', () => {
+    isMobile.set(true);
+    component['currentStep'].set(1);
+
+    component['form'].get('documento')?.setValue('12345672');
+    component['buscarCliente']();
+
+    fixture.detectChanges();
+
+    const footer = fixture.debugElement.query(By.css('app-mob-step-footer'));
+    footer.triggerEventHandler('next');
+
+    expect(component['currentStep']()).toBe(2);
   });
 });
