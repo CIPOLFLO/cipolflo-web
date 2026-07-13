@@ -297,3 +297,24 @@
   text-align: right;
   overflow-wrap: anywhere;
 }
+
+@media (max-width: 767px) {
+  .nueva-reserva__documento-input {
+    flex-direction: column;
+  }
+
+  .nueva-reserva__documento-field {
+    width: 100%;
+    max-width: none;
+  }
+
+  .nueva-reserva__cedula-actions {
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .nueva-reserva__checkbox-grupo {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}

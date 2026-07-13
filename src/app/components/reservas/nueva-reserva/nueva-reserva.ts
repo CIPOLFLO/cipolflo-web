@@ -44,6 +44,7 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { NgTemplateOutlet } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -64,6 +65,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MobStepCard,
     MobStepFooter,
     MobListLayout,
+    NgTemplateOutlet,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
   templateUrl: './nueva-reserva.html',
