@@ -109,8 +109,8 @@ describe('ListadoReservas', () => {
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: AuthService, useValue: mockAuthService },
         { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
-        { provide: BreakpointService, useValue: { isMobile }, },
-        { provide: SidebarService, useValue: { open: sidebarOpenSpy }, },
+        { provide: BreakpointService, useValue: { isMobile } },
+        { provide: SidebarService, useValue: { open: sidebarOpenSpy } },
       ],
     })
       .overrideComponent(ListadoReservas, {
@@ -668,8 +668,6 @@ describe('ListadoReservas', () => {
     await emptyFixture.whenStable();
     emptyFixture.detectChanges();
 
-    expect(emptyFixture.nativeElement.textContent).toContain(
-      'No se encontraron reservas.',
-    );
+    expect(emptyFixture.nativeElement.textContent).toContain('No se encontraron reservas.');
   });
 });

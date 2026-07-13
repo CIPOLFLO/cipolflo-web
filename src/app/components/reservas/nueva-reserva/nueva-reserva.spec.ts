@@ -21,7 +21,6 @@ import { signal } from '@angular/core';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
 
-
 const mockAuthService = { user$: of({ name: 'Juan', email: 'j@e.com' }), logout: vi.fn() };
 const mockUserService = { userInitials: () => 'JP', userEmail: () => 'j@e.com' };
 
@@ -129,7 +128,6 @@ describe('NuevaReserva', () => {
   let isMobile: ReturnType<typeof signal<boolean>>;
   let sidebarOpenSpy: ReturnType<typeof vi.fn>;
 
-
   beforeEach(async () => {
     navigateSpy = vi.fn();
     queryParamGet = vi.fn().mockReturnValue(null);
@@ -175,8 +173,8 @@ describe('NuevaReserva', () => {
         { provide: ClientesService, useValue: mockClientesService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
-        { provide: BreakpointService, useValue: { isMobile }, },
-        { provide: SidebarService, useValue: { open: sidebarOpenSpy }, },
+        { provide: BreakpointService, useValue: { isMobile } },
+        { provide: SidebarService, useValue: { open: sidebarOpenSpy } },
       ],
     })
       .overrideComponent(NuevaReserva, {
