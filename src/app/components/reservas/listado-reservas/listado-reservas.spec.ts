@@ -561,113 +561,115 @@ describe('ListadoReservas', () => {
       expect(mockReservasService.confirmarDocumentacion).not.toHaveBeenCalled();
     });
   });
-  it('en mobile debería mostrar cards de reserva y ocultar la tabla', async () => {
-    isMobile.set(true);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+  describe('VistaMobile', () => {
+    it('en mobile debería mostrar cards de reserva y ocultar la tabla', async () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-    expect(fixture.debugElement.query(By.css('app-mob-reserva-card'))).toBeTruthy();
-    expect(fixture.debugElement.query(By.css('app-table'))).toBeNull();
-  });
-  it('en desktop debería mostrar la tabla y ocultar las cards mobile', () => {
-    isMobile.set(false);
-    fixture.detectChanges();
-
-    expect(fixture.debugElement.query(By.css('app-table'))).toBeTruthy();
-    expect(fixture.debugElement.query(By.css('app-mob-reserva-card'))).toBeNull();
-  });
-  it('el encabezado mobile debería abrir el sidebar', () => {
-    isMobile.set(true);
-    fixture.detectChanges();
-
-    const header = fixture.debugElement.query(By.css('app-mob-page-header'));
-    header.triggerEventHandler('menuToggled');
-
-    expect(sidebarOpenSpy).toHaveBeenCalled();
-  });
-  it('onApplyFilters debería actualizar el mismo TableStateService', () => {
-    component['onApplyFilters']({
-      estadoReserva: EstadoReserva.Pendiente,
+      expect(fixture.debugElement.query(By.css('app-mob-reserva-card'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-table'))).toBeNull();
     });
+    it('en desktop debería mostrar la tabla y ocultar las cards mobile', () => {
+      isMobile.set(false);
+      fixture.detectChanges();
 
-    expect(component['tableState'].queryParams().filters).toEqual({
-      estadoReserva: EstadoReserva.Pendiente,
+      expect(fixture.debugElement.query(By.css('app-table'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-mob-reserva-card'))).toBeNull();
     });
-  });
-  it('filtersApply del panel mobile debería aplicar los filtros', () => {
-    isMobile.set(true);
-    fixture.detectChanges();
+    it('el encabezado mobile debería abrir el sidebar', () => {
+      isMobile.set(true);
+      fixture.detectChanges();
 
-    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+      const header = fixture.debugElement.query(By.css('app-mob-page-header'));
+      header.triggerEventHandler('menuToggled');
 
-    filterPanel.triggerEventHandler('filtersApply', {
-      estadoReserva: EstadoReserva.Confirmada,
+      expect(sidebarOpenSpy).toHaveBeenCalled();
     });
+    it('onApplyFilters debería actualizar el mismo TableStateService', () => {
+      component['onApplyFilters']({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
 
-    expect(component['tableState'].queryParams().filters).toEqual({
-      estadoReserva: EstadoReserva.Confirmada,
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
     });
-  });
-  it('filtersClear del panel mobile debería limpiar los filtros', () => {
-    isMobile.set(true);
-    component['tableState'].updateFilters({
-      estadoReserva: EstadoReserva.Pendiente,
+    it('filtersApply del panel mobile debería aplicar los filtros', () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+
+      const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+
+      filterPanel.triggerEventHandler('filtersApply', {
+        estadoReserva: EstadoReserva.Confirmada,
+      });
+
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estadoReserva: EstadoReserva.Confirmada,
+      });
     });
-    fixture.detectChanges();
+    it('filtersClear del panel mobile debería limpiar los filtros', () => {
+      isMobile.set(true);
+      component['tableState'].updateFilters({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
+      fixture.detectChanges();
 
-    const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
-    filterPanel.triggerEventHandler('filtersClear');
+      const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+      filterPanel.triggerEventHandler('filtersClear');
 
-    expect(component['tableState'].queryParams().filters).toEqual({});
-  });
-  it('onSearchChange debería conservar filtros y agregar la búsqueda', () => {
-    component['tableState'].updateFilters({
-      estadoReserva: EstadoReserva.Pendiente,
+      expect(component['tableState'].queryParams().filters).toEqual({});
     });
+    it('onSearchChange debería conservar filtros y agregar la búsqueda', () => {
+      component['tableState'].updateFilters({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
 
-    component['onSearchChange']('Juan');
+      component['onSearchChange']('Juan');
 
-    expect(component['tableState'].queryParams().filters).toEqual({
-      estadoReserva: EstadoReserva.Pendiente,
-      search: 'Juan',
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estadoReserva: EstadoReserva.Pendiente,
+        search: 'Juan',
+      });
     });
-  });
-  it('la card mobile no debería recibir acciones ni mostrar menú', async () => {
-    isMobile.set(true);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    it('la card mobile no debería recibir acciones ni mostrar menú', async () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-    const card = fixture.debugElement.query(By.css('app-mob-reserva-card'));
+      const card = fixture.debugElement.query(By.css('app-mob-reserva-card'));
 
-    expect(card).toBeTruthy();
-    expect(card.componentInstance.actions()).toEqual([]);
-  });
-  it('el FAB mobile debería navegar a Nueva Reserva', () => {
-    isMobile.set(true);
-    fixture.detectChanges();
+      expect(card).toBeTruthy();
+      expect(card.componentInstance.actions()).toEqual([]);
+    });
+    it('el FAB mobile debería navegar a Nueva Reserva', () => {
+      isMobile.set(true);
+      fixture.detectChanges();
 
-    const fab = fixture.debugElement.query(By.css('app-mob-fab'));
-    fab.triggerEventHandler('clicked');
+      const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+      fab.triggerEventHandler('clicked');
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
-  });
-  it('debería mostrar el estado vacío mobile cuando no hay reservas', async () => {
-    mockReservasService.getAll.mockReturnValue(
-      of({
-        ...mockPage,
-        content: [],
-        totalElements: 0,
-      }),
-    );
+      expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
+    });
+    it('debería mostrar el estado vacío mobile cuando no hay reservas', async () => {
+      mockReservasService.getAll.mockReturnValue(
+        of({
+          ...mockPage,
+          content: [],
+          totalElements: 0,
+        }),
+      );
 
-    const emptyFixture = TestBed.createComponent(ListadoReservas);
-    isMobile.set(true);
-    emptyFixture.detectChanges();
-    await emptyFixture.whenStable();
-    emptyFixture.detectChanges();
+      const emptyFixture = TestBed.createComponent(ListadoReservas);
+      isMobile.set(true);
+      emptyFixture.detectChanges();
+      await emptyFixture.whenStable();
+      emptyFixture.detectChanges();
 
-    expect(emptyFixture.nativeElement.textContent).toContain('No se encontraron reservas.');
+      expect(emptyFixture.nativeElement.textContent).toContain('No se encontraron reservas.');
+    });
   });
 });

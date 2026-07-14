@@ -68,7 +68,7 @@ export type { NavItem } from './models/nav-item.model';
 export { DateTimeFormatPipe } from './pipes/date-time-format.pipe';
 export { CurrencyFormatPipe } from './pipes/currency-format.pipe';
 export { DateShortFormatPipe } from './pipes/date-short-format.pipe';
-
+export * from './components/table/pipes/date-format.pipe';
 // Services
 export { FilterConfigProvider } from './services/filter-config.provider';
 

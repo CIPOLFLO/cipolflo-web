@@ -315,62 +315,16 @@
               <section class="nueva-reserva-mobile__summary">
                 <h3 class="nueva-reserva-mobile__summary-title">Resumen de la Reserva</h3>
 
-                <div class="nueva-reserva-mobile__summary-row">
-                  <span>Concepto:</span>
-                  <strong>{{ servicioSeleccionado()?.nombre ?? 'Sin seleccionar' }}</strong>
-                </div>
-
-                <div class="nueva-reserva-mobile__summary-row">
-                  <span>Procedencia:</span>
-                  <strong>{{ controlValue('procedencia') ?? 'Sin seleccionar' }}</strong>
-                </div>
-
-                <div class="nueva-reserva-mobile__summary-row">
-                  <span>Fechas:</span>
-                  <strong>
-                    {{ controlValue('fechaInicio') ?? '—' }}
-                    -
-                    {{ controlValue('fechaFin') ?? '—' }}
-                  </strong>
-                </div>
-
-                @if (modoCapacidad()) {
+                @for (row of summaryRows(); track row.label) {
                   <div class="nueva-reserva-mobile__summary-row">
-                    <span>Personas:</span>
-                    <strong>{{ controlValue('cantidadTotal') ?? '—' }}</strong>
+                    <span>{{ row.label }}:</span>
+                    <strong>{{ row.value }}</strong>
                   </div>
                 }
-
-                @if (modoCantidad()) {
-                  <div class="nueva-reserva-mobile__summary-row">
-                    <span>Cantidad:</span>
-                    <strong>{{ controlValue('cantidad') ?? '—' }}</strong>
-                  </div>
-                }
-
-                @if (modoHora()) {
-                  <div class="nueva-reserva-mobile__summary-row">
-                    <span>Horario:</span>
-                    <strong>
-                      {{ controlValue('horaInicio') ?? '—' }}
-                      -
-                      {{ controlValue('horaFin') ?? '—' }}
-                    </strong>
-                  </div>
-                }
-
-                <div class="nueva-reserva-mobile__summary-row">
-                  <span>Cliente:</span>
-                  <strong>{{ controlValue('nombre') ?? 'Sin cliente' }}</strong>
-                </div>
-
-                <div class="nueva-reserva-mobile__summary-row">
-                  <span>Tipo:</span>
-                  <strong>{{ tipoClienteLabel() ?? 'Particular' }}</strong>
-                </div>
 
                 <div class="nueva-reserva-mobile__summary-row">
                   <span>Costo:</span>
+
                   <strong>
                     @if (costoCargando()) {
                       Calculando…

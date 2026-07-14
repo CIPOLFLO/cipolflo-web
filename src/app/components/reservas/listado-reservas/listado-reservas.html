@@ -22,7 +22,7 @@
       <div appMobInfiniteScroll (scrolled)="mobileList.loadMore()" aria-hidden="true"></div>
     }
   </app-mob-list-layout>
-  <app-mob-fab icon="pi-plus" ariaLabel="Nueva reserva" (clicked)="onNuevaReserva()" />
+  <app-mob-fab (clicked)="onNuevaReserva()" />
 } @else {
   <app-page-layout
     pageTitle="Listado de Reservas"

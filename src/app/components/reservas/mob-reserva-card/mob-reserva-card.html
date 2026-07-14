@@ -36,9 +36,15 @@
       </div>
     </div>
   </div>
-
   <div class="reserva-card__saldo">
-    <span>Saldo pendiente</span>
-    <strong>{{ reserva().montoImpago | currencyFormat }}</strong>
+    @if (reserva().montoImpago > 0) {
+      <span>Saldo pendiente</span>
+      <strong>{{ reserva().montoImpago | currencyFormat }}</strong>
+    } @else {
+      <span class="reserva-card__pago-ok">
+        <i class="pi pi-check-circle"></i>
+        Paga
+      </span>
+    }
   </div>
 </app-mob-list-card>

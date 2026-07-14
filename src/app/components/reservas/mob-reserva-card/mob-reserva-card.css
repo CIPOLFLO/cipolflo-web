@@ -82,3 +82,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+.reserva-card__pago-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: var(--tag-green-color);
+}
+
+.reserva-card__pago-ok .pi {
+  font-size: 0.9rem;
+}

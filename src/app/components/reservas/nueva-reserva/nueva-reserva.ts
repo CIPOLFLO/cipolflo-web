@@ -24,6 +24,7 @@ import {
   MobStepFooter,
   StepConfig,
   MobListLayout,
+  DateFormatPipe,
 } from '../../../shared';
 import {
   EstadoSocio,
@@ -43,8 +44,12 @@ import { ReservasService } from '../services/reservas.service';
 import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
+
+interface ReservaSummaryRow {
+  label: string;
+  value: string;
+}
 
 @Component({
   standalone: true,
@@ -85,12 +90,10 @@ export class NuevaReserva extends ReservaFormBase {
 
   protected readonly currentStep = signal(0);
 
-  private readonly wizardFormValue = toSignal(this.form.valueChanges, {
-    initialValue: this.form.getRawValue(),
-  });
+  private readonly dateFormatPipe = new DateFormatPipe();
 
   protected readonly nextDisabled = computed(() => {
-    this.wizardFormValue();
+    this.formEvents();
 
     if (this.currentStep() === 0) {
       return this.pasoReservaInvalido();
@@ -107,6 +110,64 @@ export class NuevaReserva extends ReservaFormBase {
     { label: 'Adicional' },
   ];
 
+  protected readonly summaryRows = computed<ReservaSummaryRow[]>(() => {
+    this.formEvents();
+
+    const rows: ReservaSummaryRow[] = [
+      {
+        label: 'Concepto',
+        value: this.servicioSeleccionado()?.nombre ?? 'Sin seleccionar',
+      },
+      {
+        label: 'Procedencia',
+        value: this.procedenciaLabel(),
+      },
+      {
+        label: 'Fechas',
+        value: `${this.formatDate(
+          this.controlValue('fechaInicio') as string | null,
+        )} - ${this.formatDate(this.controlValue('fechaFin') as string | null)}`,
+      },
+    ];
+
+    if (this.modoCapacidad()) {
+      rows.push({
+        label: 'Personas',
+        value: String(this.controlValue('cantidadTotal') ?? '—'),
+      });
+    }
+
+    if (this.modoCantidad()) {
+      rows.push({
+        label: 'Cantidad',
+        value: String(this.controlValue('cantidad') ?? '—'),
+      });
+    }
+
+    if (this.modoHora()) {
+      rows.push({
+        label: 'Horario',
+        value: `${this.controlValue('horaInicio') ?? '—'} - ${this.controlValue('horaFin') ?? '—'}`,
+      });
+    }
+
+    rows.push(
+      {
+        label: 'Cliente',
+        value: String(this.controlValue('nombre') ?? 'Sin cliente'),
+      },
+      {
+        label: 'Tipo',
+        value: this.tipoClienteLabel() ?? 'Particular',
+      },
+    );
+
+    return rows;
+  });
+
+  protected formatDate(date: string | null): string {
+    return date ? this.dateFormatPipe.transform(date) : '--';
+  }
   private readonly buscarClienteTrigger = new Subject<{
     documento: string;
     tipoDocumento: TipoDocumento;
@@ -342,6 +403,14 @@ export class NuevaReserva extends ReservaFormBase {
     if (this.currentStep() > 0) {
       this.currentStep.update((step) => step - 1);
     }
+  }
+
+  protected procedenciaLabel(): string {
+    const value = this.controlValue('procedencia');
+
+    const option = this.procedenciaField.options?.find((o) => o.value === value);
+
+    return option?.label ?? 'Sin seleccionar';
   }
 
   private pasoReservaInvalido(): boolean {

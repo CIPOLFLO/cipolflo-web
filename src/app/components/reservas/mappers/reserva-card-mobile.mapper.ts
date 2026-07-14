@@ -1,5 +1,6 @@
 import { EstadoReserva } from '../../../shared';
 import { ReservaRow } from '../models/reserva.model';
+import { DateFormatPipe } from '../../../shared/components/table/pipes/date-format.pipe';
 
 interface TagView {
   label: string;
@@ -37,24 +38,19 @@ const ESTADO_TAG: Record<EstadoReserva, TagView> = {
   },
 };
 
-const DATE_FORMATTER = new Intl.DateTimeFormat('es-UY', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  timeZone: 'UTC',
-});
+const dateFormatPipe = new DateFormatPipe();
 
 export function mapReservaCardMobileRow(reserva: ReservaRow): ReservaCardMobileRow {
   return {
     ...reserva,
     cliente: reserva.nombreCliente,
     servicio: reserva.servicioNombre,
-    fechaEntradaFormateada: formatearFecha(reserva.fechaEntrada),
-    fechaSalidaFormateada: formatearFecha(reserva.fechaSalida),
+    fechaEntradaFormateada: formatDate(reserva.fechaEntrada),
+    fechaSalidaFormateada: formatDate(reserva.fechaSalida),
     estadoTag: ESTADO_TAG[reserva.estadoReserva],
   };
 }
 
-function formatearFecha(fecha: string): string {
-  return DATE_FORMATTER.format(new Date(fecha));
+function formatDate(date: string): string {
+  return dateFormatPipe.transform(date);
 }

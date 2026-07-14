@@ -62,7 +62,7 @@ export abstract class ReservaFormBase {
   protected readonly destroyRef = inject(DestroyRef);
 
   protected readonly form: FormGroup;
-  private readonly formEvents: Signal<unknown>;
+  protected readonly formEvents: Signal<unknown>;
   private readonly blurCount = signal(0);
   protected readonly tipoDocumentoValue = signal<TipoDocumento>(TipoDocumento.Cedula);
 

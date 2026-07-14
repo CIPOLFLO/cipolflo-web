@@ -125,6 +125,7 @@
   gap: 0.25rem;
   line-height: 1.4;
 }
+
 .nueva-reserva__checkbox-grupo {
   grid-column: 1 / -1;
   display: flex;
@@ -316,5 +317,68 @@
   .nueva-reserva__checkbox-grupo {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .nueva-reserva__costo {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 0.75rem;
+    align-items: start;
+  }
+
+  .nueva-reserva__costo-label {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .nueva-reserva__costo-valor {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .nueva-reserva__costo-nota {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: block;
+    margin-top: 0.25rem;
+    line-height: 1.4;
+  }
+
+  .nueva-reserva__advertencia {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .nueva-reserva__advertencia i {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  :host ::ng-deep .p-dialog {
+    width: calc(100vw - 2rem) !important;
+    max-width: 28rem;
+    margin: 1rem;
+  }
+
+  :host ::ng-deep .p-dialog-content {
+    padding: 1rem 1.25rem;
+  }
+
+  :host ::ng-deep .p-dialog-footer {
+    padding: 0.75rem 1.25rem 1.25rem;
+  }
+
+  .dialog-footer {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .dialog-footer app-button {
+    width: 100%;
   }
 }
