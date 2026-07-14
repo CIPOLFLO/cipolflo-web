@@ -18,6 +18,7 @@ describe('ESTADO_RESERVA_LABEL', () => {
     expect(ESTADO_RESERVA_LABEL[EstadoReserva.EnCurso]).toBe('En curso');
     expect(ESTADO_RESERVA_LABEL[EstadoReserva.Finalizada]).toBe('Finalizada');
     expect(ESTADO_RESERVA_LABEL[EstadoReserva.Cancelada]).toBe('Cancelada');
+    expect(ESTADO_RESERVA_LABEL[EstadoReserva.VencidaSinPago]).toBe('Vencida sin pago');
   });
 });
 
@@ -27,8 +28,9 @@ describe('ESTADO_RESERVA_VALUE_CLASS', () => {
     expect(ESTADO_RESERVA_VALUE_CLASS[EstadoReserva.EnCurso]).toBe('success');
   });
 
-  it('asigna danger a Cancelada', () => {
+  it('asigna danger a Cancelada y VencidaSinPago', () => {
     expect(ESTADO_RESERVA_VALUE_CLASS[EstadoReserva.Cancelada]).toBe('danger');
+    expect(ESTADO_RESERVA_VALUE_CLASS[EstadoReserva.VencidaSinPago]).toBe('danger');
   });
 
   it('no asigna clase a Pendiente ni Finalizada', () => {
