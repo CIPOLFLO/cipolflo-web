@@ -86,6 +86,8 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   createdBy: 'Juan Pérez',
   updatedBy: 'Juan Pérez',
   requiereSena: false,
+  plazoConfirmacion: null,
+  fechaLimiteConfirmacion: null,
 };
 
 const mockColaboracion: ReservaDetalleRespuestaDto = {

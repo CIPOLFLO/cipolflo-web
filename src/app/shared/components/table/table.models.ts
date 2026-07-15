@@ -20,7 +20,7 @@ export type ColumnConfig =
   | (BaseColumnConfig & { cellType?: 'text' | 'amount' | 'date' })
   | (BaseColumnConfig & { cellType: 'tag'; tagMap: Record<string, TagStyle> })
   | (BaseColumnConfig & { cellType: 'price'; colorVariant?: 'green' })
-  | (BaseColumnConfig & { cellType: 'warning'; tooltip: string });
+  | (BaseColumnConfig & { cellType: 'warning'; tooltip: string; tooltipKey?: string });
 
 export interface PageResponse<T> {
   content: T[];

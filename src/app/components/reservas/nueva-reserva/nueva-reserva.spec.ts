@@ -14,7 +14,7 @@ import { ServicioService } from '../../servicios/services/servicio.service';
 import { ClientesService } from '../../clientes/services/cliente.service';
 import { Procedencia } from '../../../shared';
 import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
-import { TipoDocumento, TipoReserva } from '../models/reserva.model';
+import { PlazoConfirmacion, TipoDocumento, TipoReserva } from '../models/reserva.model';
 import { UserService } from '../../../core/services/user.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
@@ -191,6 +191,15 @@ describe('NuevaReserva', () => {
       .queryAll(By.directive(FormField))
       .map((f) => f.componentInstance as FormField)
       .find((c) => c.config().key === 'tipoCliente');
+  };
+
+  /** Campo "Plazo para confirmar la reserva" renderizado, o `undefined` si no está presente. */
+  const plazoConfirmacionField = (): FormField | undefined => {
+    fixture.detectChanges();
+    return fixture.debugElement
+      .queryAll(By.directive(FormField))
+      .map((f) => f.componentInstance as FormField)
+      .find((c) => c.config().key === 'plazoConfirmacion');
   };
 
   it('debería crear el componente', () => {
@@ -673,5 +682,69 @@ describe('NuevaReserva', () => {
     const dto = component['construirDto']();
     expect(dto.horaInicio).toBeNull();
     expect(dto.horaFin).toBeNull();
+  });
+
+  // --- Plazo de confirmación ---
+
+  it('mostrarPlazoConfirmacion es false cuando no requiere seña ni documentación', () => {
+    expect(component['mostrarPlazoConfirmacion']()).toBe(false);
+    expect(plazoConfirmacionField()).toBeUndefined();
+  });
+
+  it('marcar requiereSena muestra el select de plazo de confirmación', () => {
+    component['onCheckboxChange']('requiereSena', true);
+    expect(component['mostrarPlazoConfirmacion']()).toBe(true);
+    expect(plazoConfirmacionField()).toBeDefined();
+  });
+
+  it('marcar requiereDocumentacion también muestra el select de plazo de confirmación', () => {
+    component['onCheckboxChange']('requiereDocumentacion', true);
+    expect(component['mostrarPlazoConfirmacion']()).toBe(true);
+    expect(plazoConfirmacionField()).toBeDefined();
+  });
+
+  it('el plazo de confirmación es obligatorio mientras el select está visible', () => {
+    component['onCheckboxChange']('requiereSena', true);
+    component['submitted'].set(true);
+    fixture.detectChanges();
+    expect(component['reservaErrors']()['plazoConfirmacion']).toBe(
+      'El plazo para confirmar la reserva es obligatorio.',
+    );
+  });
+
+  it('desmarcar ambos checkboxes limpia el plazo y oculta el select', () => {
+    component['onCheckboxChange']('requiereSena', true);
+    component['form'].get('plazoConfirmacion')?.setValue(PlazoConfirmacion.TresMeses);
+
+    component['onCheckboxChange']('requiereSena', false);
+
+    expect(component['form'].get('plazoConfirmacion')?.value).toBeNull();
+    expect(component['mostrarPlazoConfirmacion']()).toBe(false);
+    expect(plazoConfirmacionField()).toBeUndefined();
+  });
+
+  it('el select sigue visible si se desmarca uno mientras el otro sigue marcado', () => {
+    component['onCheckboxChange']('requiereSena', true);
+    component['onCheckboxChange']('requiereDocumentacion', true);
+    component['form'].get('plazoConfirmacion')?.setValue(PlazoConfirmacion.VeinticuatroHoras);
+
+    component['onCheckboxChange']('requiereSena', false);
+
+    expect(component['mostrarPlazoConfirmacion']()).toBe(true);
+    expect(component['form'].get('plazoConfirmacion')?.value).toBe(
+      PlazoConfirmacion.VeinticuatroHoras,
+    );
+  });
+
+  it('plazoConfirmacion viaja en el DTO cuando se seleccionó', () => {
+    component['onCheckboxChange']('requiereSena', true);
+    component['form'].get('plazoConfirmacion')?.setValue(PlazoConfirmacion.VeinticuatroHoras);
+    const dto = component['construirDto']();
+    expect(dto.plazoConfirmacion).toBe(PlazoConfirmacion.VeinticuatroHoras);
+  });
+
+  it('sin requerir seña ni documentación el DTO envía plazoConfirmacion null', () => {
+    const dto = component['construirDto']();
+    expect(dto.plazoConfirmacion).toBeNull();
   });
 });

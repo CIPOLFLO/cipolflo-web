@@ -131,6 +131,16 @@
           Requiere seña
         </label>
       </div>
+
+      @if (mostrarPlazoConfirmacion()) {
+        <app-form-field
+          [config]="plazoConfirmacionField"
+          [value]="controlValue('plazoConfirmacion')"
+          [error]="reservaErrors()['plazoConfirmacion']"
+          (valueChange)="onControlChange('plazoConfirmacion', $event)"
+          (blurred)="onFieldBlur('plazoConfirmacion')"
+        />
+      }
     </app-form-section>
 
     <!-- Información del Cliente -->

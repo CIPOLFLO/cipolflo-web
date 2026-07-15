@@ -8,7 +8,11 @@ import { TipoCliente } from '../../clientes/models/cliente.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { UserService } from '../../../core/services/user.service';
 import { ReservasService } from '../services/reservas.service';
-import { TipoReserva, type ReservaDetalleRespuestaDto } from '../models/reserva.model';
+import {
+  PlazoConfirmacion,
+  TipoReserva,
+  type ReservaDetalleRespuestaDto,
+} from '../models/reserva.model';
 import { DetalleReserva } from './detalle-reserva';
 
 const mockReserva: ReservaDetalleRespuestaDto = {
@@ -30,6 +34,8 @@ const mockReserva: ReservaDetalleRespuestaDto = {
   requiereDocumentacion: true,
   tieneDocumentacion: false,
   requiereSena: false,
+  plazoConfirmacion: PlazoConfirmacion.TresMeses,
+  fechaLimiteConfirmacion: '2026-05-10T00:00:00',
   notas: 'Llegan a las 14hs',
   cliente: {
     id: 10,
@@ -176,7 +182,12 @@ describe('DetalleReserva', () => {
     });
 
     it('no incluye Tiene Documentación cuando requiereDocumentacion es false', async () => {
-      const { component } = await setup({ ...mockReserva, requiereDocumentacion: false });
+      const { component } = await setup({
+        ...mockReserva,
+        requiereDocumentacion: false,
+        plazoConfirmacion: null,
+        fechaLimiteConfirmacion: null,
+      });
       const field = component['reservaFields']().find((f) => f.key === 'tieneDocumentacion');
       expect(field).toBeUndefined();
     });
@@ -231,6 +242,66 @@ describe('DetalleReserva', () => {
       expect(fields.find((f) => f.key === 'pago')).toBeUndefined();
       expect(fields.find((f) => f.key === 'importe')).toBeUndefined();
       expect(fields.find((f) => f.key === 'formaPago')).toBeUndefined();
+    });
+
+    // --- Plazo de confirmación ---
+
+    it('muestra el plazo de confirmación cuando requiere documentación y hay plazo', async () => {
+      const { component } = await setup();
+      const field = component['reservaFields']().find((f) => f.key === 'plazoConfirmacion');
+      expect(field?.value).toBe('3 meses');
+    });
+
+    it('muestra la fecha límite de confirmación cuando corresponde', async () => {
+      const { component } = await setup();
+      const field = component['reservaFields']().find((f) => f.key === 'fechaLimiteConfirmacion');
+      expect(field?.value).toBe('2026-05-10T00:00:00');
+    });
+
+    it('muestra el plazo con label "24 horas" para PlazoConfirmacion.VeinticuatroHoras', async () => {
+      const { component } = await setup({
+        ...mockReserva,
+        plazoConfirmacion: PlazoConfirmacion.VeinticuatroHoras,
+      });
+      const field = component['reservaFields']().find((f) => f.key === 'plazoConfirmacion');
+      expect(field?.value).toBe('24 horas');
+    });
+
+    it('oculta el plazo y la fecha límite cuando no requiere ni seña ni documentación', async () => {
+      const { component } = await setup({
+        ...mockReserva,
+        requiereDocumentacion: false,
+        requiereSena: false,
+        plazoConfirmacion: null,
+        fechaLimiteConfirmacion: null,
+      });
+      const fields = component['reservaFields']();
+      expect(fields.find((f) => f.key === 'plazoConfirmacion')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'fechaLimiteConfirmacion')).toBeUndefined();
+    });
+
+    it('oculta el plazo y la fecha límite si el back todavía no los seteó, aunque requiera documentación', async () => {
+      const { component } = await setup({
+        ...mockReserva,
+        requiereDocumentacion: true,
+        plazoConfirmacion: null,
+        fechaLimiteConfirmacion: null,
+      });
+      const fields = component['reservaFields']();
+      expect(fields.find((f) => f.key === 'plazoConfirmacion')).toBeUndefined();
+      expect(fields.find((f) => f.key === 'fechaLimiteConfirmacion')).toBeUndefined();
+    });
+
+    it('muestra el plazo cuando requiere seña (aunque no requiera documentación)', async () => {
+      const { component } = await setup({
+        ...mockReserva,
+        requiereDocumentacion: false,
+        requiereSena: true,
+        plazoConfirmacion: PlazoConfirmacion.VeinticuatroHoras,
+        fechaLimiteConfirmacion: '2026-08-09T00:00:00',
+      });
+      const field = component['reservaFields']().find((f) => f.key === 'plazoConfirmacion');
+      expect(field?.value).toBe('24 horas');
     });
   });
 

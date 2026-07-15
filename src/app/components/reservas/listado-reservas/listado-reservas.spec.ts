@@ -37,6 +37,9 @@ const mockRow: ReservaRespuestaDto = {
   fechaLimitePago: null,
   pago: false,
   pendienteDocumentacion: false,
+  plazoConfirmacion: null,
+  fechaLimiteConfirmacion: null,
+  fechaInicioAlerta: null,
 };
 
 const mockPage: PageResponse<ReservaRespuestaDto> = {

@@ -8,6 +8,7 @@ export class ReservasColumnsService {
       key: 'requiereAtencion',
       label: '',
       cellType: 'warning',
+      tooltipKey: 'mensajeAtencion',
       tooltip: 'Debe cumplir los requisitos para evitar la cancelación de la reserva.',
     },
     { key: 'nombreCliente', label: 'Cliente', sortable: true },

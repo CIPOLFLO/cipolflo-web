@@ -38,6 +38,8 @@ const mockDetalle: ReservaDetalleRespuestaDto = {
   requiereDocumentacion: true,
   tieneDocumentacion: false,
   requiereSena: false,
+  plazoConfirmacion: null,
+  fechaLimiteConfirmacion: null,
   notas: 'Llegan a las 14hs',
   cliente: {
     id: 10,
@@ -81,6 +83,7 @@ const dto: ReservaCreacionRequestDto = {
   notas: null,
   requiereDocumentacion: false,
   requiereSena: false,
+  plazoConfirmacion: null,
 };
 
 describe('ReservasService', () => {
@@ -128,7 +131,9 @@ describe('ReservasService', () => {
       requiereSena: true,
       tipoReserva: TipoReserva.Comun,
       montoImpago: 5000,
-      fechaLimitePago: null,
+      plazoConfirmacion: null,
+      fechaLimiteConfirmacion: null,
+      fechaInicioAlerta: null,
       pago: false,
       pendienteDocumentacion: false,
     };
