@@ -46,7 +46,7 @@ describe('ReservasColumnsService', () => {
       expect(col?.cellType).toBe('tag');
     });
 
-    it('el tagMap cubre los 5 estados posibles', () => {
+    it('el tagMap cubre los 6 estados posibles', () => {
       const col = service.columns.find((c) => c.key === 'estadoReserva');
       if (!col || !('tagMap' in col)) throw new Error('columna estadoReserva no es de tipo tag');
       const keys = Object.keys(col.tagMap);
@@ -55,6 +55,7 @@ describe('ReservasColumnsService', () => {
       expect(keys).toContain('FINALIZADA');
       expect(keys).toContain('CANCELADA');
       expect(keys).toContain('PENDIENTE');
+      expect(keys).toContain('VENCIDA_SIN_PAGO');
     });
 
     it('cada entrada del tagMap tiene styleClass y label', () => {
