@@ -17,6 +17,9 @@ import { EstadoSocio, TipoCliente } from '../../clientes/models/cliente.model';
 import { TipoDocumento, TipoReserva } from '../models/reserva.model';
 import { UserService } from '../../../core/services/user.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { signal } from '@angular/core';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 
 const mockAuthService = { user$: of({ name: 'Juan', email: 'j@e.com' }), logout: vi.fn() };
 const mockUserService = { userInitials: () => 'JP', userEmail: () => 'j@e.com' };
@@ -122,6 +125,8 @@ describe('NuevaReserva', () => {
     calcularCosto: ReturnType<typeof vi.fn>;
     descargarComprobante: ReturnType<typeof vi.fn>;
   };
+  let isMobile: ReturnType<typeof signal<boolean>>;
+  let sidebarOpenSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     navigateSpy = vi.fn();
@@ -150,6 +155,8 @@ describe('NuevaReserva', () => {
       calcularCosto: vi.fn(() => of({ costoTotal: 5000 })),
       descargarComprobante: vi.fn(() => of(undefined)),
     };
+    isMobile = signal(false);
+    sidebarOpenSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [NuevaReserva],
@@ -166,6 +173,8 @@ describe('NuevaReserva', () => {
         { provide: ClientesService, useValue: mockClientesService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
+        { provide: BreakpointService, useValue: { isMobile } },
+        { provide: SidebarService, useValue: { open: sidebarOpenSpy } },
       ],
     })
       .overrideComponent(NuevaReserva, {
@@ -673,5 +682,270 @@ describe('NuevaReserva', () => {
     const dto = component['construirDto']();
     expect(dto.horaInicio).toBeNull();
     expect(dto.horaFin).toBeNull();
+  });
+
+  it('debería iniciar el wizard en el primer paso', () => {
+    expect(component['currentStep']()).toBe(0);
+  });
+
+  it('debería definir los tres pasos del wizard', () => {
+    expect(component['steps']).toEqual([
+      { label: 'Reserva' },
+      { label: 'Cliente' },
+      { label: 'Adicional' },
+    ]);
+  });
+
+  it('next debería avanzar al siguiente paso cuando el paso actual es válido', () => {
+    component['form'].patchValue({
+      tipoReserva: TipoReserva.Comun,
+      procedencia: Procedencia.Sede,
+      servicioId: '1',
+      fechaInicio: '2026-07-20',
+      fechaFin: '2026-07-21',
+    });
+
+    component['next']();
+
+    expect(component['currentStep']()).toBe(1);
+  });
+
+  it('next no debería avanzar más allá del último paso', () => {
+    component['currentStep'].set(2);
+
+    component['next']();
+
+    expect(component['currentStep']()).toBe(2);
+  });
+
+  it('previous debería volver al paso anterior', () => {
+    component['currentStep'].set(2);
+
+    component['previous']();
+
+    expect(component['currentStep']()).toBe(1);
+  });
+
+  it('previous no debería retroceder antes del primer paso', () => {
+    component['previous']();
+
+    expect(component['currentStep']()).toBe(0);
+  });
+  it('debería deshabilitar Siguiente en el primer paso cuando faltan datos obligatorios', () => {
+    component['currentStep'].set(0);
+
+    expect(component['nextDisabled']()).toBe(true);
+  });
+
+  it('no debería avanzar desde el primer paso cuando está incompleto', () => {
+    component['currentStep'].set(0);
+
+    component['next']();
+
+    expect(component['currentStep']()).toBe(0);
+  });
+  it('debería mostrar el wizard en resolución mobile', () => {
+    isMobile.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-stepper'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-step-card'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-step-footer'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
+  });
+
+  it('debería mantener el formulario desktop fuera de resolución mobile', () => {
+    isMobile.set(false);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeNull();
+  });
+  it('debería abrir el sidebar desde el encabezado mobile', () => {
+    isMobile.set(true);
+    fixture.detectChanges();
+
+    const header = fixture.debugElement.query(By.css('app-mob-page-header'));
+    header.triggerEventHandler('menuToggled');
+
+    expect(sidebarOpenSpy).toHaveBeenCalled();
+  });
+  it('debería mostrar Información de la Reserva en el primer paso', () => {
+    isMobile.set(true);
+    component['currentStep'].set(0);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Información de la Reserva');
+  });
+
+  it('debería mostrar Información del Cliente en el segundo paso', () => {
+    isMobile.set(true);
+    component['currentStep'].set(1);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Información del Cliente');
+  });
+
+  it('debería mostrar Información Adicional y el resumen en el último paso', () => {
+    isMobile.set(true);
+    component['currentStep'].set(2);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).toContain('Información Adicional');
+    expect(text).toContain('Resumen de la Reserva');
+  });
+  it('debería deshabilitar Siguiente en el paso cliente si todavía no se buscó el documento', () => {
+    component['currentStep'].set(1);
+    component['form'].get('documento')?.setValue('12345672');
+
+    expect(component['nextDisabled']()).toBe(true);
+  });
+
+  it('debería habilitar Siguiente si se encontró un cliente válido', () => {
+    component['form'].get('documento')?.setValue('12345672');
+    component['buscarCliente']();
+    component['currentStep'].set(1);
+
+    expect(component['nextDisabled']()).toBe(false);
+  });
+
+  it('debería mantener deshabilitado Siguiente si la cédula no existe y faltan datos manuales', () => {
+    component['form'].get('documento')?.setValue('00000000');
+    component['buscarCliente']();
+    component['currentStep'].set(1);
+
+    expect(component['mostrarFormularioManual']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(true);
+  });
+
+  it('debería habilitar Siguiente tras completar el alta manual del cliente', () => {
+    component['form'].get('documento')?.setValue('00000000');
+    component['buscarCliente']();
+
+    component['form'].patchValue({
+      nombre: 'Cliente nuevo',
+      celular: '099123456',
+      email: 'cliente@mail.com',
+    });
+
+    component['currentStep'].set(1);
+
+    expect(component['nextDisabled']()).toBe(false);
+  });
+  it('debería conservar los datos del formulario al avanzar y retroceder', () => {
+    component['form'].get('notas')?.setValue('Nota persistente');
+    component['currentStep'].set(2);
+
+    component['previous']();
+    component['previous']();
+
+    expect(component['currentStep']()).toBe(0);
+    expect(component['form'].get('notas')?.value).toBe('Nota persistente');
+  });
+  it('el footer mobile debería retroceder al emitir previous', () => {
+    isMobile.set(true);
+    component['currentStep'].set(1);
+    fixture.detectChanges();
+
+    const footer = fixture.debugElement.query(By.css('app-mob-step-footer'));
+    footer.triggerEventHandler('previous');
+
+    expect(component['currentStep']()).toBe(0);
+  });
+  it('el footer mobile debería avanzar cuando el paso actual es válido', () => {
+    isMobile.set(true);
+    component['currentStep'].set(1);
+
+    component['form'].get('documento')?.setValue('12345672');
+    component['buscarCliente']();
+
+    fixture.detectChanges();
+
+    const footer = fixture.debugElement.query(By.css('app-mob-step-footer'));
+    footer.triggerEventHandler('next');
+
+    expect(component['currentStep']()).toBe(2);
+  });
+  it('debería habilitar Siguiente en el paso reserva cuando el modo capacidad está completo', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('2');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidadTotal: '4',
+    });
+    component['currentStep'].set(0);
+
+    expect(component['modoCapacidad']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(false);
+  });
+  it('debería deshabilitar Siguiente si falta la cantidad en modo cantidad', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidad: null,
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+    component['currentStep'].set(0);
+
+    expect(component['modoCantidad']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(true);
+  });
+  it('debería deshabilitar Siguiente si faltan las horas en modo por hora', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidad: '1',
+      horaInicio: null,
+      horaFin: null,
+    });
+    component['currentStep'].set(0);
+
+    expect(component['modoHora']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(true);
+  });
+  it('debería habilitar Siguiente cuando el modo por hora está completo', () => {
+    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    component['form'].get('servicioId')?.setValue('3');
+    component['form'].patchValue({
+      fechaInicio: '2026-08-01',
+      fechaFin: '2026-08-03',
+      cantidad: '1',
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+    component['currentStep'].set(0);
+
+    expect(component['nextDisabled']()).toBe(false);
+  });
+  it('debería deshabilitar Siguiente si el email manual es inválido', () => {
+    component['form'].get('documento')?.setValue('00000000');
+    component['buscarCliente']();
+
+    component['form'].patchValue({
+      nombre: 'Cliente nuevo',
+      celular: '099123456',
+      email: 'correo-invalido',
+    });
+
+    component['currentStep'].set(1);
+
+    expect(component['nextDisabled']()).toBe(true);
+  });
+  it('debería validar solamente el documento cuando el cliente está en modo readonly', () => {
+    component['form'].get('documento')?.setValue('12345672');
+    component['buscarCliente']();
+    component['currentStep'].set(1);
+
+    expect(component['clienteCamposReadonly']()).toBe(true);
+    expect(component['nextDisabled']()).toBe(false);
   });
 });

@@ -1,6 +1,12 @@
 :host {
   display: flex;
+  min-height: 100%;
   flex-direction: column;
-  flex: 1;
-  gap: 1rem;
+}
+
+.reservas-mobile__empty {
+  padding: 32px 16px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  text-align: center;
 }

@@ -12,7 +12,17 @@ import { ReservasFilterService } from '../services/reservas-filter.service';
 import { ReservasService } from '../services/reservas.service';
 import { LoadDataFn, RowAction } from '../../../shared/components/table/table.models';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
-import { EstadoReserva, ConfirmDialogService, VerificationDialog } from '../../../shared';
+import {
+  EstadoReserva,
+  ConfirmDialogService,
+  VerificationDialog,
+  MobFilterPanel,
+  MobInfiniteScroll,
+  MobileListLoader,
+  MobListLayout,
+  MobPageHeader,
+  MobFab,
+} from '../../../shared';
 import { PagoReserva } from '../pago-reserva/pago-reserva';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { PagosAsociadosDialog } from '../cancelar-reserva/pagos-asociados-dialog/pagos-asociados-dialog';
@@ -26,6 +36,13 @@ import {
 } from '../models/reserva.model';
 import { CompletarPagoDialog } from '../finalizar-reserva/completar-pago-dialog/completar-pago-dialog';
 import { mapReservaListadoRow, ReservaListadoRow } from '../mappers/reserva-listado.mapper';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+import { MobReservaCard } from '../mob-reserva-card/mob-reserva-card';
+import {
+  mapReservaCardMobileRow,
+  ReservaCardMobileRow,
+} from '../mappers/reserva-card-mobile.mapper';
 
 @Component({
   selector: 'app-listado-reservas',
@@ -39,12 +56,19 @@ import { mapReservaListadoRow, ReservaListadoRow } from '../mappers/reserva-list
     VerificationDialog,
     PagosAsociadosDialog,
     CompletarPagoDialog,
+    MobPageHeader,
+    MobListLayout,
+    MobFilterPanel,
+    MobReservaCard,
+    MobInfiniteScroll,
+    MobFab,
   ],
   providers: [
     TableStateService,
     TableExportService,
     ReservasService,
     ReservasColumnsService,
+    MobileListLoader,
     { provide: FilterConfigProvider, useClass: ReservasFilterService },
   ],
   templateUrl: './listado-reservas.html',
@@ -81,6 +105,20 @@ export class ListadoReservas {
         content: page.content.map(mapReservaListadoRow),
       })),
     );
+
+  protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
+
+  protected readonly mobileList = inject(
+    MobileListLoader,
+  ) as MobileListLoader<ReservaCardMobileRow>;
+
+  constructor() {
+    this.mobileList.connect(
+      (params) => this.reservasService.getAll(params),
+      mapReservaCardMobileRow,
+    );
+  }
 
   protected readonly rowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
     {
@@ -140,6 +178,10 @@ export class ListadoReservas {
   ];
 
   protected onFilterChange(filters: Record<string, string>): void {
+    this.tableState.updateFilters(filters);
+  }
+
+  protected onApplyFilters(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }
 
