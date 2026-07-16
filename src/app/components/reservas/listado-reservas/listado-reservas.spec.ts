@@ -686,15 +686,13 @@ describe('ListadoReservas', () => {
         estadoReserva: EstadoReserva.Confirmada,
       } as ReservaRow;
 
-      const verificarSpy = vi
-        .spyOn(mockReservasService, 'verificarCancelacion')
-        .mockReturnValue(
-          of({
-            puedeCancelarseDirectamente: false,
-            pagosAsociados: [],
-            importeTotalPagos: 0,
-          }),
-        );
+      const verificarSpy = vi.spyOn(mockReservasService, 'verificarCancelacion').mockReturnValue(
+        of({
+          puedeCancelarseDirectamente: false,
+          pagosAsociados: [],
+          importeTotalPagos: 0,
+        }),
+      );
 
       component['mobileRowActions'](row)[0].command?.(row);
 
