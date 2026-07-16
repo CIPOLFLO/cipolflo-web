@@ -36,6 +36,10 @@ const ESTADO_TAG: Record<EstadoReserva, TagView> = {
     label: 'Pendiente',
     colorClass: 'tag--yellow',
   },
+  [EstadoReserva.VencidaSinPago]: {
+    label: 'Vencida sin pago',
+    colorClass: 'tag--red',
+  },
 };
 
 const dateFormatPipe = new DateFormatPipe();

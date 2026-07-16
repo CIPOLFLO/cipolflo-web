@@ -23,7 +23,6 @@ import {
   MobStepCard,
   MobStepFooter,
   StepConfig,
-  MobListLayout,
   DateFormatPipe,
 } from '../../../shared';
 import {
@@ -69,7 +68,6 @@ interface ReservaSummaryRow {
     MobStepper,
     MobStepCard,
     MobStepFooter,
-    MobListLayout,
     NgTemplateOutlet,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
