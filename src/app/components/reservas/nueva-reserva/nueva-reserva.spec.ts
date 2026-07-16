@@ -755,6 +755,7 @@ describe('NuevaReserva', () => {
   it('sin requerir seña ni documentación el DTO envía plazoConfirmacion null', () => {
     const dto = component['construirDto']();
     expect(dto.plazoConfirmacion).toBeNull();
+  });
   it('debería iniciar el wizard en el primer paso', () => {
     expect(component['currentStep']()).toBe(0);
   });
