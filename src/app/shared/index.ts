@@ -76,7 +76,13 @@ export { FilterConfigProvider } from './services/filter-config.provider';
 // Utils
 export { applySectionChange, markFieldAsTouched } from './utils/form-section.helper';
 export { parseNumberOrNull } from './utils/parse-number.helper';
-export { parseIsoDate, startOfToday, toDisplayDate, toIsoDate } from './utils/date.helper';
+export {
+  parseIsoDate,
+  rangoOcupacionAnual,
+  startOfToday,
+  toDisplayDate,
+  toIsoDate,
+} from './utils/date.helper';
 
 // Validators
 export { emailValido } from './validators/email.validator';

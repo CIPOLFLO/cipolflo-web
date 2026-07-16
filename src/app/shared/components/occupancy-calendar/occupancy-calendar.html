@@ -11,6 +11,14 @@
       [maxDate]="maxDate()"
       dateFormat="dd/mm/yy"
     >
+      @if (readOnly()) {
+        <ng-template #date let-date>
+          <span class="occupancy-calendar__day-disponible" (click)="onDiaClick($event)">
+            {{ date.day }}
+          </span>
+        </ng-template>
+      }
+
       <ng-template #disabledDate let-date>
         @if (diaOcupado(date); as ocupado) {
           <a
@@ -21,7 +29,7 @@
             rel="noopener noreferrer"
             [pTooltip]="tooltipTextoFor(ocupado)"
             tooltipPosition="top"
-            (click)="onDiaOcupadoClick($event)"
+            (click)="onDiaClick($event)"
           >
             {{ date.day }}
           </a>
@@ -41,8 +49,8 @@
     }
   </div>
 
-  @if (estadosEnLeyenda().length) {
-    <div class="occupancy-calendar__leyenda-panel">
+  <div class="occupancy-calendar__leyenda-panel">
+    @if (estadosEnLeyenda().length) {
       <p class="occupancy-calendar__leyenda-titulo">Referencias de estado de reservas</p>
       <ul class="occupancy-calendar__leyenda">
         @for (estado of estadosEnLeyenda(); track estado) {
@@ -52,6 +60,25 @@
           </li>
         }
       </ul>
-    </div>
-  }
+    } @else {
+      <p class="occupancy-calendar__leyenda-vacio">
+        El servicio no tiene reservas registradas en el próximo año.
+      </p>
+    }
+
+    @if (readOnly() && proximaReserva(); as proxima) {
+      <div class="occupancy-calendar__proxima">
+        <p class="occupancy-calendar__proxima-titulo">Próxima reserva</p>
+        <a
+          class="occupancy-calendar__proxima-link"
+          [href]="proxima.reservaId ? getReservaUrl(proxima.reservaId) : null"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ isoADisplay(proxima.fechaInicio) }} — {{ isoADisplay(proxima.fechaFin) }}
+          <i class="pi pi-external-link"></i>
+        </a>
+      </div>
+    }
+  </div>
 </div>

@@ -30,3 +30,10 @@
   (deshabilitarSinCancelar)="onDeshabilitarSinCancelar()"
   (deshabilitarYCancelar)="onDeshabilitarYCancelar($event)"
 />
+
+<app-ocupacion-servicio-dialog
+  [visible]="ocupacionVisible()"
+  [nombreServicio]="servicioParaOcupacion()?.nombre ?? ''"
+  [occupiedRanges]="fechasOcupadasServicio()"
+  (cerrar)="onCerrarOcupacion()"
+/>

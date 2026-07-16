@@ -28,6 +28,40 @@
   font-weight: 600;
 }
 
+.occupancy-calendar__leyenda-vacio {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.occupancy-calendar__proxima {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.occupancy-calendar__proxima-titulo {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.occupancy-calendar__proxima-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.occupancy-calendar__proxima-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
 .occupancy-calendar__leyenda {
   display: flex;
   flex-direction: column;
@@ -50,6 +84,15 @@
   height: 0.85rem;
   border-radius: 4px;
   flex-shrink: 0;
+}
+
+.occupancy-calendar__day-disponible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: default;
 }
 
 /* Día ocupado: PrimeNG lo marca .p-disabled, que por defecto deshabilita pointer-events y el

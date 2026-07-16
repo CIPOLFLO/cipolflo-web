@@ -1,0 +1,12 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="'Ocupación: ' + nombreServicio()"
+  [style]="{ width: '640px', height: '510px' }"
+>
+  <app-occupancy-calendar [occupiedRanges]="occupiedRanges()" [readOnly]="true" />
+</p-dialog>

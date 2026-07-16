@@ -238,6 +238,28 @@ describe('OccupancyCalendar', () => {
     });
   });
 
+  describe('proximaReserva', () => {
+    it('es null sin rangos ocupados', () => {
+      expect(component['proximaReserva']()).toBeNull();
+    });
+
+    it('devuelve el rango con la fecha de inicio más temprana', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-08-10', fechaFin: '2026-08-12', reservaId: 22 },
+        { fechaInicio: '2026-07-10', fechaFin: '2026-07-11', reservaId: 21 },
+        { fechaInicio: '2026-09-01', fechaFin: '2026-09-02', reservaId: 23 },
+      ]);
+      fixture.detectChanges();
+      expect(component['proximaReserva']()?.reservaId).toBe(21);
+    });
+  });
+
+  describe('isoADisplay', () => {
+    it('formatea una fecha ISO a dd/mm/yyyy', () => {
+      expect(component['isoADisplay']('2026-08-10')).toBe('10/08/2026');
+    });
+  });
+
   describe('diaOcupado', () => {
     it('devuelve la reserva del día cuando cae dentro de un rango ocupado', () => {
       fixture.componentRef.setInput('occupiedRanges', [
@@ -303,10 +325,10 @@ describe('OccupancyCalendar', () => {
     });
   });
 
-  describe('onDiaOcupadoClick', () => {
-    it('detiene la propagación del evento para no cancelar la navegación del link', () => {
+  describe('onDiaClick', () => {
+    it('detiene la propagación del evento para no cancelar la navegación del link ni la selección', () => {
       const event = { stopPropagation: vi.fn() } as unknown as MouseEvent;
-      component['onDiaOcupadoClick'](event);
+      component['onDiaClick'](event);
       expect(event.stopPropagation).toHaveBeenCalled();
     });
   });

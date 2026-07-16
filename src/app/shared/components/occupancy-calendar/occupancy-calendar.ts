@@ -40,6 +40,7 @@ export class OccupancyCalendar {
   readonly occupiedRanges = input<OccupiedRange[]>([]);
   readonly minDate = input<Date>(startOfToday());
   readonly initialRange = input<DateRangeSelection | null>(null);
+  readonly readOnly = input<boolean>(false);
 
   readonly rangeSelected = output<DateRangeSelection>();
 
@@ -145,6 +146,17 @@ export class OccupancyCalendar {
     return Array.from(presentes);
   });
 
+  /** Rango ocupado con la fecha de inicio más temprana, para destacar la próxima reserva. */
+  protected readonly proximaReserva = computed<OccupiedRange | null>(() => {
+    return this.occupiedRanges().reduce<OccupiedRange | null>((proxima, rango) => {
+      const fechaRango = parseIsoDate(rango.fechaInicio);
+      const fechaProxima = proxima ? parseIsoDate(proxima.fechaInicio) : null;
+      if (!fechaRango) return proxima;
+      if (!fechaProxima || fechaRango < fechaProxima) return rango;
+      return proxima;
+    }, null);
+  });
+
   protected fechaIsoDeMeta(meta: DatePickerDateMeta): string | null {
     return toIsoDate(new Date(meta.year, meta.month, meta.day));
   }
@@ -158,9 +170,10 @@ export class OccupancyCalendar {
     return iso ? this.ocupacionPorFecha().get(iso) : undefined;
   }
 
-  /** Evita que el click en el link burbujee al datepicker: PrimeNG llama preventDefault()
-   *  sobre días no seleccionables, lo que cancelaría también la navegación del link. */
-  protected onDiaOcupadoClick(event: MouseEvent): void {
+  /** Evita que el click en el día burbujee al datepicker: en un día ocupado cancelaría la
+   *  navegación del link (PrimeNG llama preventDefault() sobre días no seleccionables); en un
+   *  día disponible en modo readOnly evita que dispare la selección de rango. */
+  protected onDiaClick(event: MouseEvent): void {
     event.stopPropagation();
   }
 
@@ -178,5 +191,9 @@ export class OccupancyCalendar {
 
   protected tooltipTextoFor(ocupado: DiaOcupado): string {
     return `Ver reserva #${ocupado.reservaId}`;
+  }
+
+  protected isoADisplay(iso: string): string {
+    return toDisplayDate(parseIsoDate(iso));
   }
 }
