@@ -125,6 +125,7 @@
   gap: 0.25rem;
   line-height: 1.4;
 }
+
 .nueva-reserva__checkbox-grupo {
   grid-column: 1 / -1;
   display: flex;
@@ -147,4 +148,237 @@
   height: 1rem;
   cursor: pointer;
   accent-color: var(--color-primary, currentColor);
+}
+
+.nueva-reserva-mobile {
+  display: flex;
+  min-height: 100%;
+  flex: 1;
+  flex-direction: column;
+}
+
+.nueva-reserva-mobile__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.nueva-reserva-mobile__placeholder {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.nueva-reserva-mobile__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nueva-reserva-mobile__calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.nueva-reserva-mobile__label {
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nueva-reserva-mobile__cost {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.875rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 0.5rem;
+  background: var(--color-bg-subtle);
+}
+
+.nueva-reserva-mobile__cost-label,
+.nueva-reserva-mobile__cost-note {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.nueva-reserva-mobile__cost-value {
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
+}
+
+.nueva-reserva-mobile__field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nueva-reserva-mobile__checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.nueva-reserva-mobile__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.nueva-reserva-mobile__checkbox input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+}
+
+.nueva-reserva-mobile__documento {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.nueva-reserva-mobile__documento-radio {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.nueva-reserva-mobile__radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.nueva-reserva-mobile__documento-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nueva-reserva-mobile__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 0.5rem;
+  background: var(--color-bg-subtle);
+}
+
+.nueva-reserva-mobile__summary-title {
+  margin: 0 0 0.25rem;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.nueva-reserva-mobile__summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8125rem;
+}
+
+.nueva-reserva-mobile__summary-row span {
+  color: var(--color-text-secondary);
+}
+
+.nueva-reserva-mobile__summary-row strong {
+  max-width: 65%;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .nueva-reserva__documento-input {
+    flex-direction: column;
+  }
+
+  .nueva-reserva__documento-field {
+    width: 100%;
+    max-width: none;
+  }
+
+  .nueva-reserva__cedula-actions {
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .nueva-reserva__checkbox-grupo {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .nueva-reserva__costo {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 0.75rem;
+    align-items: start;
+  }
+
+  .nueva-reserva__costo-label {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .nueva-reserva__costo-valor {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .nueva-reserva__costo-nota {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: block;
+    margin-top: 0.25rem;
+    line-height: 1.4;
+  }
+
+  .nueva-reserva__advertencia {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .nueva-reserva__advertencia i {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  :host ::ng-deep .p-dialog {
+    width: calc(100vw - 2rem) !important;
+    max-width: 28rem;
+    margin: 1rem;
+  }
+
+  :host ::ng-deep .p-dialog-content {
+    padding: 1rem 1.25rem;
+  }
+
+  :host ::ng-deep .p-dialog-footer {
+    padding: 0.75rem 1.25rem 1.25rem;
+  }
+
+  .dialog-footer {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .dialog-footer app-button {
+    width: 100%;
+  }
 }

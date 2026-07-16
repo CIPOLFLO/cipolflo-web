@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { catchError, EMPTY, filter, finalize, map, Subject, switchMap } from 'rxjs';
@@ -18,6 +18,13 @@ import {
   Procedencia,
   type DateRangeSelection,
   type FormFieldConfig,
+  MobPageHeader,
+  MobStepper,
+  MobStepCard,
+  MobStepFooter,
+  StepConfig,
+  MobListLayout,
+  DateFormatPipe,
 } from '../../../shared';
 import {
   EstadoSocio,
@@ -37,6 +44,14 @@ import {
 } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqueda.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+import { NgTemplateOutlet } from '@angular/common';
+
+interface ReservaSummaryRow {
+  label: string;
+  value: string;
+}
 
 @Component({
   standalone: true,
@@ -52,6 +67,12 @@ import { ReservaClienteBusquedaService } from '../services/reserva-cliente-busqu
     CurrencyFormatPipe,
     FormsModule,
     RadioButtonModule,
+    MobPageHeader,
+    MobStepper,
+    MobStepCard,
+    MobStepFooter,
+    MobListLayout,
+    NgTemplateOutlet,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
   templateUrl: './nueva-reserva.html',
@@ -64,9 +85,91 @@ export class NuevaReserva extends ReservaFormBase {
   private readonly clienteBusquedaService = inject(ReservaClienteBusquedaService);
   private readonly clientesService = inject(ClientesService);
 
+  protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
   /** Expuesto para el template (radio Cédula/RUT). */
   protected readonly TipoDocumento = TipoDocumento;
 
+  protected readonly currentStep = signal(0);
+
+  private readonly dateFormatPipe = new DateFormatPipe();
+
+  protected readonly nextDisabled = computed(() => {
+    this.formEvents();
+
+    if (this.currentStep() === 0) {
+      return this.pasoReservaInvalido();
+    }
+    if (this.currentStep() === 1) {
+      return this.pasoClienteInvalido();
+    }
+    return this.confirmDisabled();
+  });
+
+  protected readonly steps: StepConfig[] = [
+    { label: 'Reserva' },
+    { label: 'Cliente' },
+    { label: 'Adicional' },
+  ];
+
+  protected readonly summaryRows = computed<ReservaSummaryRow[]>(() => {
+    this.formEvents();
+
+    const rows: ReservaSummaryRow[] = [
+      {
+        label: 'Concepto',
+        value: this.servicioSeleccionado()?.nombre ?? 'Sin seleccionar',
+      },
+      {
+        label: 'Procedencia',
+        value: this.procedenciaLabel(),
+      },
+      {
+        label: 'Fechas',
+        value: `${this.formatDate(
+          this.controlValue('fechaInicio') as string | null,
+        )} - ${this.formatDate(this.controlValue('fechaFin') as string | null)}`,
+      },
+    ];
+
+    if (this.modoCapacidad()) {
+      rows.push({
+        label: 'Personas',
+        value: String(this.controlValue('cantidadTotal') ?? '—'),
+      });
+    }
+
+    if (this.modoCantidad()) {
+      rows.push({
+        label: 'Cantidad',
+        value: String(this.controlValue('cantidad') ?? '—'),
+      });
+    }
+
+    if (this.modoHora()) {
+      rows.push({
+        label: 'Horario',
+        value: `${this.controlValue('horaInicio') ?? '—'} - ${this.controlValue('horaFin') ?? '—'}`,
+      });
+    }
+
+    rows.push(
+      {
+        label: 'Cliente',
+        value: String(this.controlValue('nombre') ?? 'Sin cliente'),
+      },
+      {
+        label: 'Tipo',
+        value: this.tipoClienteLabel() ?? 'Particular',
+      },
+    );
+
+    return rows;
+  });
+
+  protected formatDate(date: string | null): string {
+    return date ? this.dateFormatPipe.transform(date) : '--';
+  }
   private readonly buscarClienteTrigger = new Subject<{
     documento: string;
     tipoDocumento: TipoDocumento;
@@ -301,6 +404,68 @@ export class NuevaReserva extends ReservaFormBase {
   protected onRangoSeleccionado(rango: DateRangeSelection): void {
     this.onControlChange('fechaInicio', rango.inicio);
     this.onControlChange('fechaFin', rango.fin);
+  }
+
+  protected next(): void {
+    if (this.nextDisabled()) return;
+
+    if (this.currentStep() < this.steps.length - 1) {
+      this.currentStep.update((step) => step + 1);
+    }
+  }
+
+  protected previous(): void {
+    if (this.currentStep() > 0) {
+      this.currentStep.update((step) => step - 1);
+    }
+  }
+
+  protected procedenciaLabel(): string {
+    const value = this.controlValue('procedencia');
+
+    const option = this.procedenciaField.options?.find((o) => o.value === value);
+
+    return option?.label ?? 'Sin seleccionar';
+  }
+
+  private pasoReservaInvalido(): boolean {
+    const controlesBase = ['tipoReserva', 'procedencia', 'servicioId', 'fechaInicio', 'fechaFin'];
+
+    const controlesCondicionales: string[] = [];
+
+    if (this.modoCapacidad()) {
+      controlesCondicionales.push('cantidadTotal');
+    }
+
+    if (this.modoCantidad()) {
+      controlesCondicionales.push('cantidad');
+    }
+
+    if (this.modoHora()) {
+      controlesCondicionales.push('horaInicio', 'horaFin');
+    }
+
+    return [...controlesBase, ...controlesCondicionales].some(
+      (key) => this.form.get(key)?.invalid ?? true,
+    );
+  }
+
+  private pasoClienteInvalido(): boolean {
+    const documentoInvalido = this.form.get('documento')?.invalid ?? true;
+
+    if (!this.busquedaRealizada()) {
+      return true;
+    }
+
+    if (this.clienteCamposReadonly()) {
+      return documentoInvalido;
+    }
+
+    const nombreInvalido = this.form.get('nombre')?.invalid ?? true;
+    const celularInvalido = this.form.get('celular')?.invalid ?? true;
+    const emailInvalido = this.form.get('email')?.invalid ?? false;
+
+    return documentoInvalido || nombreInvalido || celularInvalido || emailInvalido;
   }
 
   override onConfirmar(): void {

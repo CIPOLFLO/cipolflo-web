@@ -25,6 +25,7 @@ export class ReservasColumnsService {
         FINALIZADA: { styleClass: 'tag--purple', label: 'Finalizada' },
         CANCELADA: { styleClass: 'tag--gray', label: 'Cancelada' },
         PENDIENTE: { styleClass: 'tag--yellow', label: 'Pendiente' },
+        VENCIDA_SIN_PAGO: { styleClass: 'tag--red', label: 'Vencida sin pago' },
       },
     },
   ];

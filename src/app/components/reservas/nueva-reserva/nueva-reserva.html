@@ -1,287 +1,391 @@
-<app-page-layout
-  pageTitle="Nueva Reserva"
-  pageDescription="Complete los datos para registrar una nueva reserva"
-  [showBackButton]="true"
-  backButtonLink="backLink()"
->
-  <app-form-layout>
-    <!-- Información de la Reserva -->
-    <app-form-section title="Información de la Reserva">
-      <app-form-field
-        [config]="tipoReservaField()"
-        [value]="controlValue('tipoReserva')"
-        [error]="reservaErrors()['tipoReserva']"
-        (valueChange)="onControlChange('tipoReserva', $event)"
-        (blurred)="onFieldBlur('tipoReserva')"
+<!-- =========================================================
+     CONTENIDO COMPARTIDO: INFORMACIÓN DE LA RESERVA
+     Se utiliza tanto en mobile como en desktop.
+     ========================================================= -->
+<ng-template #reservaFields>
+  <app-form-field
+    [config]="tipoReservaField()"
+    [value]="controlValue('tipoReserva')"
+    [error]="reservaErrors()['tipoReserva']"
+    (valueChange)="onControlChange('tipoReserva', $event)"
+    (blurred)="onFieldBlur('tipoReserva')"
+  />
+
+  <app-form-field
+    [config]="procedenciaField"
+    [value]="controlValue('procedencia')"
+    [error]="reservaErrors()['procedencia']"
+    (valueChange)="onControlChange('procedencia', $event)"
+    (blurred)="onFieldBlur('procedencia')"
+  />
+
+  <app-form-field
+    [config]="servicioField()"
+    [value]="controlValue('servicioId')"
+    [error]="reservaErrors()['servicioId']"
+    (valueChange)="onControlChange('servicioId', $event)"
+    (blurred)="onFieldBlur('servicioId')"
+  />
+
+  @if (servicioSeleccionado()) {
+    <div class="nueva-reserva__calendario">
+      <span class="nueva-reserva__calendario-label">
+        Fechas de la reserva
+        <span class="nueva-reserva__required" aria-hidden="true">*</span>
+      </span>
+
+      <app-occupancy-calendar
+        [occupiedRanges]="fechasOcupadas()"
+        (rangeSelected)="onRangoSeleccionado($event)"
       />
-      <app-form-field
-        [config]="procedenciaField"
-        [value]="controlValue('procedencia')"
-        [error]="reservaErrors()['procedencia']"
-        (valueChange)="onControlChange('procedencia', $event)"
-        (blurred)="onFieldBlur('procedencia')"
-      />
-      <app-form-field
-        [config]="servicioField()"
-        [value]="controlValue('servicioId')"
-        [error]="reservaErrors()['servicioId']"
-        (valueChange)="onControlChange('servicioId', $event)"
-        (blurred)="onFieldBlur('servicioId')"
-      />
-      @if (servicioSeleccionado()) {
-        <div class="nueva-reserva__calendario">
-          <span class="nueva-reserva__calendario-label"
-            >Fechas de la reserva
-            <span class="nueva-reserva__required" aria-hidden="true">*</span></span
-          >
-          <app-occupancy-calendar
-            [occupiedRanges]="fechasOcupadas()"
-            (rangeSelected)="onRangoSeleccionado($event)"
-          />
-          @if (costoCargando() || costo() !== null) {
-            <div class="nueva-reserva__costo">
-              <span class="nueva-reserva__costo-label">Costo de la reserva</span>
-              @if (costoCargando()) {
-                <span class="nueva-reserva__costo-valor">Calculando…</span>
-              } @else {
-                <span class="nueva-reserva__costo-valor">$ {{ costo() | currencyFormat }}</span>
-              }
-              @if (costoEsParaParticular()) {
-                <span class="nueva-reserva__costo-nota"
-                  >Calculado a tarifa Particular. Si el cliente es Socio, el costo puede ser
-                  diferente.</span
-                >
-              }
-            </div>
+
+      @if (costoCargando() || costo() !== null) {
+        <div class="nueva-reserva__costo">
+          <span class="nueva-reserva__costo-label">Costo de la reserva</span>
+
+          @if (costoCargando()) {
+            <span class="nueva-reserva__costo-valor">Calculando…</span>
+          } @else {
+            <span class="nueva-reserva__costo-valor"> $ {{ costo() | currencyFormat }} </span>
+          }
+
+          @if (costoEsParaParticular()) {
+            <span class="nueva-reserva__costo-nota">
+              Calculado a tarifa Particular. Si el cliente es Socio, el costo puede ser diferente.
+            </span>
           }
         </div>
       }
+    </div>
+  }
 
-      @if (modoCapacidad()) {
-        <div class="nueva-reserva__campo-grupo">
-          <app-form-field
-            [config]="cantidadTotalField"
-            [value]="controlValue('cantidadTotal')"
-            [error]="reservaErrors()['cantidadTotal']"
-            (valueChange)="onControlChange('cantidadTotal', $event)"
-            (blurred)="onFieldBlur('cantidadTotal')"
-          />
-          <p class="nueva-reserva__advertencia">
-            <i class="pi pi-info-circle"></i>
-            La capacidad máxima de este servicio es de
-            <strong>{{ servicioSeleccionado()!.capacidad }}</strong> personas.
-          </p>
-        </div>
-        <app-form-field
-          [config]="cantidadMenoresField"
-          [value]="controlValue('cantidadMenores')"
-          [error]="reservaErrors()['cantidadMenores']"
-          (valueChange)="onControlChange('cantidadMenores', $event)"
-          (blurred)="onFieldBlur('cantidadMenores')"
-        />
-      }
-      @if (modoCantidad()) {
-        <div class="nueva-reserva__campo-grupo">
-          <app-form-field
-            [config]="cantidadField"
-            [value]="controlValue('cantidad')"
-            [error]="reservaErrors()['cantidad']"
-            (valueChange)="onControlChange('cantidad', $event)"
-            (blurred)="onFieldBlur('cantidad')"
-          />
-          <p class="nueva-reserva__advertencia">
-            <i class="pi pi-info-circle"></i>
-            Actualmente hay <strong>{{ servicioSeleccionado()!.cantidad }}</strong> unidades
-            disponibles en existencia.
-          </p>
-        </div>
-      }
-      @if (modoHora()) {
-        <app-form-field
-          [config]="horaInicioField"
-          [value]="controlValue('horaInicio')"
-          [error]="reservaErrors()['horaInicio']"
-          (valueChange)="onControlChange('horaInicio', $event)"
-          (blurred)="onFieldBlur('horaInicio')"
-        />
-        <app-form-field
-          [config]="horaFinField"
-          [value]="controlValue('horaFin')"
-          [error]="reservaErrors()['horaFin']"
-          (valueChange)="onControlChange('horaFin', $event)"
-          (blurred)="onFieldBlur('horaFin')"
-        />
-      }
+  @if (modoCapacidad()) {
+    <div class="nueva-reserva__campo-grupo">
+      <app-form-field
+        [config]="cantidadTotalField"
+        [value]="controlValue('cantidadTotal')"
+        [error]="reservaErrors()['cantidadTotal']"
+        (valueChange)="onControlChange('cantidadTotal', $event)"
+        (blurred)="onFieldBlur('cantidadTotal')"
+      />
 
-      <div class="nueva-reserva__checkbox-grupo">
-        <label class="nueva-reserva__checkbox">
-          <input
-            type="checkbox"
-            [checked]="controlChecked('requiereDocumentacion')"
-            (change)="onCheckboxChange('requiereDocumentacion', checkboxChecked($event))"
-          />
-          Requiere documentación
-        </label>
-        <label class="nueva-reserva__checkbox">
-          <input
-            type="checkbox"
-            [checked]="controlChecked('requiereSena')"
-            (change)="onCheckboxChange('requiereSena', checkboxChecked($event))"
-          />
-          Requiere seña
-        </label>
-      </div>
+      <p class="nueva-reserva__advertencia">
+        <i class="pi pi-info-circle"></i>
+        La capacidad máxima de este servicio es de
+        <strong>{{ servicioSeleccionado()!.capacidad }}</strong>
+        personas.
+      </p>
+    </div>
 
-      @if (mostrarPlazoConfirmacion()) {
-        <app-form-field
-          [config]="plazoConfirmacionField"
-          [value]="controlValue('plazoConfirmacion')"
-          [error]="reservaErrors()['plazoConfirmacion']"
-          (valueChange)="onControlChange('plazoConfirmacion', $event)"
-          (blurred)="onFieldBlur('plazoConfirmacion')"
+    <app-form-field
+      [config]="cantidadMenoresField"
+      [value]="controlValue('cantidadMenores')"
+      [error]="reservaErrors()['cantidadMenores']"
+      (valueChange)="onControlChange('cantidadMenores', $event)"
+      (blurred)="onFieldBlur('cantidadMenores')"
+    />
+  }
+
+  @if (modoCantidad()) {
+    <div class="nueva-reserva__campo-grupo">
+      <app-form-field
+        [config]="cantidadField"
+        [value]="controlValue('cantidad')"
+        [error]="reservaErrors()['cantidad']"
+        (valueChange)="onControlChange('cantidad', $event)"
+        (blurred)="onFieldBlur('cantidad')"
+      />
+
+      <p class="nueva-reserva__advertencia">
+        <i class="pi pi-info-circle"></i>
+        Actualmente hay
+        <strong>{{ servicioSeleccionado()!.cantidad }}</strong>
+        unidades disponibles en existencia.
+      </p>
+    </div>
+  }
+
+  @if (modoHora()) {
+    <app-form-field
+      [config]="horaInicioField"
+      [value]="controlValue('horaInicio')"
+      [error]="reservaErrors()['horaInicio']"
+      (valueChange)="onControlChange('horaInicio', $event)"
+      (blurred)="onFieldBlur('horaInicio')"
+    />
+
+    <app-form-field
+      [config]="horaFinField"
+      [value]="controlValue('horaFin')"
+      [error]="reservaErrors()['horaFin']"
+      (valueChange)="onControlChange('horaFin', $event)"
+      (blurred)="onFieldBlur('horaFin')"
+    />
+  }
+
+  <div class="nueva-reserva__checkbox-grupo">
+    <label class="nueva-reserva__checkbox">
+      <input
+        type="checkbox"
+        [checked]="controlChecked('requiereDocumentacion')"
+        (change)="onCheckboxChange('requiereDocumentacion', checkboxChecked($event))"
+      />
+      Requiere documentación
+    </label>
+
+    <label class="nueva-reserva__checkbox">
+      <input
+        type="checkbox"
+        [checked]="controlChecked('requiereSena')"
+        (change)="onCheckboxChange('requiereSena', checkboxChecked($event))"
+      />
+      Requiere seña
+    </label>
+  </div>
+</ng-template>
+
+<!-- =========================================================
+     CONTENIDO COMPARTIDO: INFORMACIÓN DEL CLIENTE
+     ========================================================= -->
+<ng-template #clienteFields>
+  <div class="nueva-reserva__documento">
+    <div class="nueva-reserva__documento-radio">
+      <span class="nueva-reserva__radio-option">
+        <p-radioButton
+          inputId="tipoDocumentoCedula"
+          name="tipoDocumento"
+          value="CEDULA"
+          [ngModel]="controlValue('tipoDocumento')"
+          [disabled]="documentoRadioDisabled()"
+          (ngModelChange)="onControlChange('tipoDocumento', $event)"
         />
-      }
-    </app-form-section>
+        <label for="tipoDocumentoCedula">Cédula</label>
+      </span>
 
-    <!-- Información del Cliente -->
-    <app-form-section title="Información del Cliente">
-      <div class="nueva-reserva__documento">
-        <div class="nueva-reserva__documento-radio">
-          <span class="nueva-reserva__radio-option">
-            <p-radioButton
-              inputId="tipoDocumentoCedula"
-              name="tipoDocumento"
-              value="CEDULA"
-              [ngModel]="controlValue('tipoDocumento')"
-              [disabled]="documentoRadioDisabled()"
-              (ngModelChange)="onControlChange('tipoDocumento', $event)"
-            />
-            <label for="tipoDocumentoCedula">Cédula</label>
+      <span class="nueva-reserva__radio-option">
+        <p-radioButton
+          inputId="tipoDocumentoRut"
+          name="tipoDocumento"
+          value="RUT"
+          [ngModel]="controlValue('tipoDocumento')"
+          [disabled]="documentoRadioDisabled()"
+          (ngModelChange)="onControlChange('tipoDocumento', $event)"
+        />
+        <label for="tipoDocumentoRut">RUT</label>
+      </span>
+    </div>
+
+    <div class="nueva-reserva__documento-input">
+      <app-form-field
+        class="nueva-reserva__documento-field"
+        [config]="documentoField()"
+        [value]="controlValue('documento')"
+        [error]="clienteErrors()['documento']"
+        (valueChange)="onControlChange('documento', $event)"
+        (blurred)="onFieldBlur('documento')"
+      />
+
+      @if (lupitaVisible()) {
+        <div class="nueva-reserva__cedula-actions">
+          <app-button
+            class="nueva-reserva__lupa"
+            intent="secondary"
+            icon="pi-search"
+            tooltip="Buscar cliente"
+            [disabled]="loading()"
+            (clicked)="buscarCliente()"
+          />
+
+          <span class="nueva-reserva__verif" [class.nueva-reserva__verif--ok]="busquedaRealizada()">
+            @if (busquedaRealizada()) {
+              <i class="pi pi-check-circle"></i>
+              Verificada
+            } @else {
+              <i class="pi pi-exclamation-circle"></i>
+              Sin verificar
+            }
           </span>
-          <span class="nueva-reserva__radio-option">
-            <p-radioButton
-              inputId="tipoDocumentoRut"
-              name="tipoDocumento"
-              value="RUT"
-              [ngModel]="controlValue('tipoDocumento')"
-              [disabled]="documentoRadioDisabled()"
-              (ngModelChange)="onControlChange('tipoDocumento', $event)"
-            />
-            <label for="tipoDocumentoRut">RUT</label>
-          </span>
         </div>
+      }
+    </div>
+  </div>
 
-        <div class="nueva-reserva__documento-input">
-          <app-form-field
-            class="nueva-reserva__documento-field"
-            [config]="documentoField()"
-            [value]="controlValue('documento')"
-            [error]="clienteErrors()['documento']"
-            (valueChange)="onControlChange('documento', $event)"
-            (blurred)="onFieldBlur('documento')"
-          />
+  @if (clienteCamposReadonly()) {
+    <app-form-field
+      [config]="tipoClienteDisplayField"
+      [displayOnly]="true"
+      [value]="tipoClienteLabel()"
+    />
+  } @else if (mostrarFormularioManual()) {
+    <p class="nueva-reserva__sin-cliente">
+      No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente.
+    </p>
+  }
 
-          @if (lupitaVisible()) {
-            <div class="nueva-reserva__cedula-actions">
-              <app-button
-                class="nueva-reserva__lupa"
-                intent="secondary"
-                icon="pi-search"
-                tooltip="Buscar cliente"
-                [disabled]="loading()"
-                (clicked)="buscarCliente()"
-              />
-              <span
-                class="nueva-reserva__verif"
-                [class.nueva-reserva__verif--ok]="busquedaRealizada()"
-              >
-                @if (busquedaRealizada()) {
-                  <i class="pi pi-check-circle"></i> Verificada
-                } @else {
-                  <i class="pi pi-exclamation-circle"></i> Sin verificar
+  @if (clienteCamposReadonly() || mostrarFormularioManual()) {
+    <app-form-field
+      [config]="nombreField"
+      [displayOnly]="clienteCamposReadonly()"
+      [value]="controlValue('nombre')"
+      [error]="clienteErrors()['nombre']"
+      (valueChange)="onControlChange('nombre', $event)"
+      (blurred)="onFieldBlur('nombre')"
+    />
+
+    <app-form-field
+      [config]="celularField"
+      [displayOnly]="clienteCamposReadonly()"
+      [value]="controlValue('celular')"
+      [error]="clienteErrors()['celular']"
+      (valueChange)="onControlChange('celular', $event)"
+      (blurred)="onFieldBlur('celular')"
+    />
+
+    <app-form-field
+      [config]="emailField"
+      [displayOnly]="clienteCamposReadonly()"
+      [value]="controlValue('email')"
+      [error]="clienteErrors()['email']"
+      (valueChange)="onControlChange('email', $event)"
+      (blurred)="onFieldBlur('email')"
+    />
+
+    @if (esSocio()) {
+      <app-form-field
+        [config]="numeroSocioField"
+        [displayOnly]="true"
+        [value]="controlValue('numeroSocio')"
+      />
+    }
+
+    @if (mostrarObservaciones()) {
+      <app-form-field
+        [config]="observacionesField"
+        [displayOnly]="true"
+        [value]="observacionesCliente()"
+      />
+    }
+  }
+</ng-template>
+
+<!-- =========================================================
+     CONTENIDO COMPARTIDO: INFORMACIÓN ADICIONAL
+     ========================================================= -->
+<ng-template #additionalFields>
+  <app-form-field
+    [config]="notasField"
+    [value]="controlValue('notas')"
+    (valueChange)="onControlChange('notas', $event)"
+    (blurred)="onFieldBlur('notas')"
+  />
+</ng-template>
+
+<!-- =========================================================
+     VISTA MOBILE
+     ========================================================= -->
+@if (breakpoint.isMobile()) {
+  <div class="nueva-reserva-mobile">
+    <app-mob-page-header title="Nueva Reserva" (menuToggled)="sidebar.open()">
+      <app-mob-stepper [steps]="steps" [currentStep]="currentStep()" />
+    </app-mob-page-header>
+
+    <main class="nueva-reserva-mobile__content">
+      @switch (currentStep()) {
+        @case (0) {
+          <app-mob-step-card [stepNumber]="1" title="Información de la Reserva">
+            <div class="nueva-reserva-mobile__fields">
+              <ng-container [ngTemplateOutlet]="reservaFields" />
+            </div>
+          </app-mob-step-card>
+        }
+
+        @case (1) {
+          <app-mob-step-card [stepNumber]="2" title="Información del Cliente">
+            <div class="nueva-reserva-mobile__fields">
+              <ng-container [ngTemplateOutlet]="clienteFields" />
+            </div>
+          </app-mob-step-card>
+        }
+
+        @case (2) {
+          <app-mob-step-card [stepNumber]="3" title="Información Adicional">
+            <div class="nueva-reserva-mobile__fields">
+              <ng-container [ngTemplateOutlet]="additionalFields" />
+
+              <section class="nueva-reserva-mobile__summary">
+                <h3 class="nueva-reserva-mobile__summary-title">Resumen de la Reserva</h3>
+
+                @for (row of summaryRows(); track row.label) {
+                  <div class="nueva-reserva-mobile__summary-row">
+                    <span>{{ row.label }}:</span>
+                    <strong>{{ row.value }}</strong>
+                  </div>
                 }
-              </span>
+
+                <div class="nueva-reserva-mobile__summary-row">
+                  <span>Costo:</span>
+
+                  <strong>
+                    @if (costoCargando()) {
+                      Calculando…
+                    } @else if (costo() !== null) {
+                      $ {{ costo() | currencyFormat }}
+                    } @else {
+                      Sin calcular
+                    }
+                  </strong>
+                </div>
+              </section>
             </div>
-          }
-        </div>
-      </div>
-
-      @if (clienteCamposReadonly()) {
-        <app-form-field
-          [config]="tipoClienteDisplayField"
-          [displayOnly]="true"
-          [value]="tipoClienteLabel()"
-        />
-      } @else if (mostrarFormularioManual()) {
-        <p class="nueva-reserva__sin-cliente">
-          No se encontró ningún cliente con esa cédula. Ingrese los datos básicos del cliente.
-        </p>
-      }
-
-      @if (clienteCamposReadonly() || mostrarFormularioManual()) {
-        <app-form-field
-          [config]="nombreField"
-          [displayOnly]="clienteCamposReadonly()"
-          [value]="controlValue('nombre')"
-          [error]="clienteErrors()['nombre']"
-          (valueChange)="onControlChange('nombre', $event)"
-          (blurred)="onFieldBlur('nombre')"
-        />
-        <app-form-field
-          [config]="celularField"
-          [displayOnly]="clienteCamposReadonly()"
-          [value]="controlValue('celular')"
-          [error]="clienteErrors()['celular']"
-          (valueChange)="onControlChange('celular', $event)"
-          (blurred)="onFieldBlur('celular')"
-        />
-        <app-form-field
-          [config]="emailField"
-          [displayOnly]="clienteCamposReadonly()"
-          [value]="controlValue('email')"
-          [error]="clienteErrors()['email']"
-          (valueChange)="onControlChange('email', $event)"
-          (blurred)="onFieldBlur('email')"
-        />
-
-        @if (esSocio()) {
-          <app-form-field
-            [config]="numeroSocioField"
-            [displayOnly]="true"
-            [value]="controlValue('numeroSocio')"
-          />
-        }
-
-        @if (mostrarObservaciones()) {
-          <app-form-field
-            [config]="observacionesField"
-            [displayOnly]="true"
-            [value]="observacionesCliente()"
-          />
+          </app-mob-step-card>
         }
       }
-    </app-form-section>
+    </main>
 
-    <!-- Información Adicional -->
-    <app-form-section title="Información Adicional">
-      <app-form-field
-        [config]="notasField"
-        [value]="controlValue('notas')"
-        (valueChange)="onControlChange('notas', $event)"
-        (blurred)="onFieldBlur('notas')"
-      />
-    </app-form-section>
+    <app-mob-step-footer
+      [showPrevious]="currentStep() > 0"
+      [nextDisabled]="nextDisabled()"
+      [isLastStep]="currentStep() === steps.length - 1"
+      (previous)="previous()"
+      (next)="next()"
+      (confirm)="onConfirmar()"
+    />
+  </div>
+} @else {
+  <!-- =======================================================
+       VISTA DESKTOP
+       ======================================================= -->
+  <app-page-layout
+    pageTitle="Nueva Reserva"
+    pageDescription="Complete los datos para registrar una nueva reserva"
+    [showBackButton]="true"
+    backButtonLink="backLink()"
+  >
+    <app-form-layout>
+      <app-form-section title="Información de la Reserva">
+        <ng-container [ngTemplateOutlet]="reservaFields" />
+      </app-form-section>
 
-    <app-form-actions actions>
-      <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
-      <app-button
-        label="Confirmar"
-        intent="primary"
-        icon="pi-save"
-        [disabled]="confirmDisabled()"
-        tooltip="Complete los datos requeridos para continuar"
-        (clicked)="onConfirmar()"
-      />
-    </app-form-actions>
-  </app-form-layout>
-</app-page-layout>
+      <app-form-section title="Información del Cliente">
+        <ng-container [ngTemplateOutlet]="clienteFields" />
+      </app-form-section>
+
+      <app-form-section title="Información Adicional">
+        <ng-container [ngTemplateOutlet]="additionalFields" />
+      </app-form-section>
+
+      <app-form-actions actions>
+        <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+
+        <app-button
+          label="Confirmar"
+          intent="primary"
+          icon="pi-save"
+          [disabled]="confirmDisabled()"
+          tooltip="Complete los datos requeridos para continuar"
+          (clicked)="onConfirmar()"
+        />
+      </app-form-actions>
+    </app-form-layout>
+  </app-page-layout>
+}

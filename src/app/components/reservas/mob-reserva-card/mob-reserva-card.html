@@ -1,0 +1,50 @@
+<app-mob-list-card [row]="reserva()" [actions]="actions()">
+  <div class="reserva-card__header">
+    <span class="reserva-card__cliente">
+      {{ reserva().cliente }}
+    </span>
+
+    <app-tag [colorClass]="reserva().estadoTag.colorClass" size="sm">
+      {{ reserva().estadoTag.label }}
+    </app-tag>
+  </div>
+
+  <span class="reserva-card__servicio">
+    {{ reserva().servicio }}
+  </span>
+
+  <div class="reserva-card__info">
+    <div class="reserva-card__field">
+      <i class="pi pi-calendar reserva-card__field-icon"></i>
+
+      <div class="reserva-card__field-body">
+        <span class="reserva-card__field-label">Entrada</span>
+        <span class="reserva-card__field-value">
+          {{ reserva().fechaEntradaFormateada }}
+        </span>
+      </div>
+    </div>
+
+    <div class="reserva-card__field">
+      <i class="pi pi-calendar-times reserva-card__field-icon"></i>
+
+      <div class="reserva-card__field-body">
+        <span class="reserva-card__field-label">Salida</span>
+        <span class="reserva-card__field-value">
+          {{ reserva().fechaSalidaFormateada }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="reserva-card__saldo">
+    @if (reserva().montoImpago > 0) {
+      <span>Saldo pendiente</span>
+      <strong>{{ reserva().montoImpago | currencyFormat }}</strong>
+    } @else {
+      <span class="reserva-card__pago-ok">
+        <i class="pi pi-check-circle"></i>
+        Paga
+      </span>
+    }
+  </div>
+</app-mob-list-card>

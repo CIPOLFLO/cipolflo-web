@@ -11,14 +11,17 @@ import {
   PageResponse,
   TableStateService,
   TableExportService,
+  EstadoReserva,
+  MobileListLoader,
 } from '../../../shared';
-import { EstadoReserva } from '../../../shared';
 import { ReservaRow, ReservaRespuestaDto, TipoReserva } from '../models/reserva.model';
 import { ReservasService } from '../services/reservas.service';
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import { ListadoReservas } from './listado-reservas';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
 
 const mockRow: ReservaRespuestaDto = {
   id: 1,
@@ -74,6 +77,8 @@ describe('ListadoReservas', () => {
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
+  let isMobile: ReturnType<typeof signal<boolean>>;
+  let sidebarOpenSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     mockReservasService = {
@@ -98,6 +103,8 @@ describe('ListadoReservas', () => {
     };
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
+    isMobile = signal(false);
+    sidebarOpenSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [ListadoReservas],
@@ -105,6 +112,8 @@ describe('ListadoReservas', () => {
         { provide: Router, useValue: { navigate: navigateSpy } },
         { provide: AuthService, useValue: mockAuthService },
         { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
+        { provide: BreakpointService, useValue: { isMobile } },
+        { provide: SidebarService, useValue: { open: sidebarOpenSpy } },
       ],
     })
       .overrideComponent(ListadoReservas, {
@@ -112,6 +121,7 @@ describe('ListadoReservas', () => {
           providers: [
             TableStateService,
             TableExportService,
+            MobileListLoader,
             ReservasColumnsService,
             { provide: ReservasService, useValue: mockReservasService },
             { provide: FilterConfigProvider, useClass: MinimalFilterProvider },
@@ -552,6 +562,117 @@ describe('ListadoReservas', () => {
       action?.command?.(mockRowRequiereDoc);
 
       expect(mockReservasService.confirmarDocumentacion).not.toHaveBeenCalled();
+    });
+  });
+  describe('VistaMobile', () => {
+    it('en mobile debería mostrar cards de reserva y ocultar la tabla', async () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('app-mob-reserva-card'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-table'))).toBeNull();
+    });
+    it('en desktop debería mostrar la tabla y ocultar las cards mobile', () => {
+      isMobile.set(false);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('app-table'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-mob-reserva-card'))).toBeNull();
+    });
+    it('el encabezado mobile debería abrir el sidebar', () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+
+      const header = fixture.debugElement.query(By.css('app-mob-page-header'));
+      header.triggerEventHandler('menuToggled');
+
+      expect(sidebarOpenSpy).toHaveBeenCalled();
+    });
+    it('onApplyFilters debería actualizar el mismo TableStateService', () => {
+      component['onApplyFilters']({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
+
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
+    });
+    it('filtersApply del panel mobile debería aplicar los filtros', () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+
+      const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+
+      filterPanel.triggerEventHandler('filtersApply', {
+        estadoReserva: EstadoReserva.Confirmada,
+      });
+
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estadoReserva: EstadoReserva.Confirmada,
+      });
+    });
+    it('filtersClear del panel mobile debería limpiar los filtros', () => {
+      isMobile.set(true);
+      component['tableState'].updateFilters({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
+      fixture.detectChanges();
+
+      const filterPanel = fixture.debugElement.query(By.css('app-mob-filter-panel'));
+      filterPanel.triggerEventHandler('filtersClear');
+
+      expect(component['tableState'].queryParams().filters).toEqual({});
+    });
+    it('onSearchChange debería conservar filtros y agregar la búsqueda', () => {
+      component['tableState'].updateFilters({
+        estadoReserva: EstadoReserva.Pendiente,
+      });
+
+      component['onSearchChange']('Juan');
+
+      expect(component['tableState'].queryParams().filters).toEqual({
+        estadoReserva: EstadoReserva.Pendiente,
+        search: 'Juan',
+      });
+    });
+    it('la card mobile no debería recibir acciones ni mostrar menú', async () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const card = fixture.debugElement.query(By.css('app-mob-reserva-card'));
+
+      expect(card).toBeTruthy();
+      expect(card.componentInstance.actions()).toEqual([]);
+    });
+    it('el FAB mobile debería navegar a Nueva Reserva', () => {
+      isMobile.set(true);
+      fixture.detectChanges();
+
+      const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+      fab.triggerEventHandler('clicked');
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/reservas/nueva']);
+    });
+    it('debería mostrar el estado vacío mobile cuando no hay reservas', async () => {
+      mockReservasService.getAll.mockReturnValue(
+        of({
+          ...mockPage,
+          content: [],
+          totalElements: 0,
+        }),
+      );
+
+      const emptyFixture = TestBed.createComponent(ListadoReservas);
+      isMobile.set(true);
+      emptyFixture.detectChanges();
+      await emptyFixture.whenStable();
+      emptyFixture.detectChanges();
+
+      expect(emptyFixture.nativeElement.textContent).toContain('No se encontraron reservas.');
     });
   });
 });
