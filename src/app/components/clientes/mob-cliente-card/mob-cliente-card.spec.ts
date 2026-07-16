@@ -1,7 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { RowAction } from '../../../shared';
-import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteRespuestaDto,
+  EstadoSocio,
+  TipoCliente,
+  CategoriaSocio,
+} from '../models/cliente.model';
 import { mapClienteCardMobileRow } from '../mappers/cliente-listado.mapper';
 import { MobClienteCard } from './mob-cliente-card';
 
@@ -15,6 +20,8 @@ const socio: ClienteRespuestaDto = {
   email: null,
   estado: EstadoSocio.Activo,
   ultimaCuotaDto: null,
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
 };
 
 const empresa: ClienteRespuestaDto = {
@@ -27,6 +34,8 @@ const empresa: ClienteRespuestaDto = {
   email: null,
   estado: null,
   ultimaCuotaDto: null,
+  categoriaSocio: null,
+  fechaIngreso: null,
 };
 
 const actions: RowAction<ClienteRespuestaDto>[] = [{ label: 'Ver detalle', icon: 'pi pi-eye' }];

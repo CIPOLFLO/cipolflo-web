@@ -12,6 +12,7 @@ import {
   EstadoSocio,
   MetodoCobro,
   TipoCliente,
+  CategoriaSocio,
 } from '../models/cliente.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
@@ -28,6 +29,8 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: 'Nota',
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,

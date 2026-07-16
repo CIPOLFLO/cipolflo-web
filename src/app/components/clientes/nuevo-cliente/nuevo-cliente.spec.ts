@@ -1,7 +1,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
-import { EstadoSocio, MetodoCobro, TipoCliente } from '../models/cliente.model';
+import { EstadoSocio, MetodoCobro, TipoCliente, CategoriaSocio } from '../models/cliente.model';
 import { NEVER, of, throwError } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
@@ -23,6 +23,8 @@ const clienteMock = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: null,
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import {
+  CategoriaSocio,
   ClienteDetalleRespuestaDto,
   EstadoSocio,
   MetodoCobro,
@@ -29,6 +30,8 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: 'Socia Nueva',
   createdAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',

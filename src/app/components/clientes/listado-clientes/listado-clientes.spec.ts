@@ -13,7 +13,12 @@ import {
   TableExportService,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteRespuestaDto,
+  EstadoSocio,
+  TipoCliente,
+  CategoriaSocio,
+} from '../models/cliente.model';
 import { mapClienteCardMobileRow } from '../mappers/cliente-listado.mapper';
 import { ClientesService } from '../services/cliente.service';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
@@ -34,6 +39,8 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       rut: null,
       email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
+      categoriaSocio: CategoriaSocio.SocioComun,
+      fechaIngreso: '2020-01-01',
       ultimaCuotaDto: {
         anio: 2026,
         mes: 6,
@@ -50,6 +57,8 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       rut: null,
       email: null,
       estado: null,
+      categoriaSocio: null,
+      fechaIngreso: null,
       ultimaCuotaDto: null,
     },
   ],
@@ -70,6 +79,8 @@ const empresaMock: ClienteRespuestaDto = {
   rut: '210001230018',
   email: 'empresa@mail.com',
   estado: null,
+  categoriaSocio: null,
+  fechaIngreso: null,
   ultimaCuotaDto: null,
 };
 

@@ -3,7 +3,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { PagoCuota } from './pago-cuota';
-import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteRespuestaDto,
+  EstadoSocio,
+  TipoCliente,
+  CategoriaSocio,
+} from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
 import { MetodoCobro } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
@@ -16,6 +21,8 @@ const mockCliente: ClienteRespuestaDto = {
   rut: null,
   email: 'lucia@example.com',
   estado: EstadoSocio.Activo,
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   ultimaCuotaDto: {
     anio: 2026,
     mes: 6,

@@ -12,6 +12,7 @@ import {
   TipoCliente,
   EstadoSocio,
   MetodoCobro,
+  CategoriaSocio,
 } from '../models/cliente.model';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
@@ -33,6 +34,8 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   observaciones: 'Socio nuevo',
   estado: EstadoSocio.Activo,
   fechaNacimiento: '1999-06-29',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   createdAt: '15 mar 2026, 14:30',
   createdBy: 'Juan Pérez',
   updatedAt: '',
@@ -260,6 +263,8 @@ describe('ModificarCliente', () => {
       departamento: 'Flores',
       ciudad: 'Trinidad',
       direccion: 'Calle A 123',
+      categoriaSocio: 'SOCIO_COMUN',
+      fechaIngreso: '2020-01-01',
       metodoCobro: MetodoCobro.Cobradora,
     });
   });
