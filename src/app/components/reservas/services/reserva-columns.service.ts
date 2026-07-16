@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { ColumnConfig } from '../../../shared';
+import {
+  ColumnConfig,
+  EstadoReserva,
+  ESTADO_RESERVA_LABEL,
+  ESTADO_RESERVA_TAG_CLASS,
+} from '../../../shared';
 
 @Injectable()
 export class ReservasColumnsService {
@@ -18,14 +23,12 @@ export class ReservasColumnsService {
       key: 'estadoReserva',
       label: 'Estado',
       cellType: 'tag',
-      tagMap: {
-        CONFIRMADA: { styleClass: 'tag--green', label: 'Confirmada' },
-        EN_CURSO: { styleClass: 'tag--blue', label: 'En curso' },
-        FINALIZADA: { styleClass: 'tag--purple', label: 'Finalizada' },
-        CANCELADA: { styleClass: 'tag--gray', label: 'Cancelada' },
-        PENDIENTE: { styleClass: 'tag--yellow', label: 'Pendiente' },
-        VENCIDA_SIN_PAGO: { styleClass: 'tag--red', label: 'Vencida sin pago' },
-      },
+      tagMap: Object.fromEntries(
+        Object.values(EstadoReserva).map((estado) => [
+          estado,
+          { styleClass: ESTADO_RESERVA_TAG_CLASS[estado], label: ESTADO_RESERVA_LABEL[estado] },
+        ]),
+      ),
     },
   ];
 }

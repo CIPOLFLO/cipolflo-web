@@ -60,6 +60,7 @@ export {
   EstadoReserva,
   ESTADO_RESERVA_LABEL,
   ESTADO_RESERVA_VALUE_CLASS,
+  ESTADO_RESERVA_TAG_CLASS,
 } from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
 export type { NavItem } from './models/nav-item.model';

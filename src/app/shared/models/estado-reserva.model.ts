@@ -31,3 +31,12 @@ export const ESTADO_RESERVA_VALUE_CLASS: Partial<Record<EstadoReserva, 'success'
   [EstadoReserva.Cancelada]: 'danger',
   [EstadoReserva.VencidaSinPago]: 'danger',
 };
+
+export const ESTADO_RESERVA_TAG_CLASS: Record<EstadoReserva, string> = {
+  [EstadoReserva.Pendiente]: 'tag--yellow',
+  [EstadoReserva.Confirmada]: 'tag--green',
+  [EstadoReserva.EnCurso]: 'tag--blue',
+  [EstadoReserva.Finalizada]: 'tag--purple',
+  [EstadoReserva.Cancelada]: 'tag--gray',
+  [EstadoReserva.VencidaSinPago]: 'tag--red',
+};

@@ -1,19 +1,57 @@
-<p-datepicker
-  [ngModel]="selection()"
-  (ngModelChange)="onSelectionChange($event)"
-  selectionMode="range"
-  [inline]="true"
-  [readonlyInput]="true"
-  [disabledDates]="disabledDates()"
-  [minDate]="minDate()"
-  dateFormat="dd/mm/yy"
-/>
+<div class="occupancy-calendar__layout">
+  <div class="occupancy-calendar__calendario">
+    <p-datepicker
+      [ngModel]="selection()"
+      (ngModelChange)="onSelectionChange($event)"
+      selectionMode="range"
+      [inline]="true"
+      [readonlyInput]="true"
+      [disabledDates]="disabledDates()"
+      [minDate]="minDate()"
+      [maxDate]="maxDate()"
+      dateFormat="dd/mm/yy"
+    >
+      <ng-template #disabledDate let-date>
+        @if (diaOcupado(date); as ocupado) {
+          <a
+            class="occupancy-calendar__day occupancy-calendar__day--ocupado"
+            [class]="tagClassFor(ocupado.estado)"
+            [href]="ocupado.reservaId ? getReservaUrl(ocupado.reservaId) : null"
+            target="_blank"
+            rel="noopener noreferrer"
+            [pTooltip]="tooltipTextoFor(ocupado)"
+            tooltipPosition="top"
+            (click)="onDiaOcupadoClick($event)"
+          >
+            {{ date.day }}
+          </a>
+        } @else {
+          {{ date.day }}
+        }
+      </ng-template>
+    </p-datepicker>
 
-@if (rangoLabel(); as label) {
-  <p class="occupancy-calendar__rango">
-    <span class="occupancy-calendar__rango-label">
-      {{ esFechaUnica() ? 'Fecha seleccionada:' : 'Período seleccionado:' }}
-    </span>
-    {{ label }}
-  </p>
-}
+    @if (rangoLabel(); as label) {
+      <p class="occupancy-calendar__rango">
+        <span class="occupancy-calendar__rango-label">
+          {{ esFechaUnica() ? 'Fecha seleccionada:' : 'Período seleccionado:' }}
+        </span>
+        {{ label }}
+      </p>
+    }
+  </div>
+
+  @if (estadosEnLeyenda().length) {
+    <div class="occupancy-calendar__leyenda-panel">
+      <p class="occupancy-calendar__leyenda-titulo">Referencias de estado de reservas</p>
+      <ul class="occupancy-calendar__leyenda">
+        @for (estado of estadosEnLeyenda(); track estado) {
+          <li>
+            <span class="occupancy-calendar__leyenda-swatch" [class]="tagClassFor(estado)"></span>
+            <span>{{ estadoLabelFor(estado) }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>
