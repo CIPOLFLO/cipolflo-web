@@ -50,13 +50,13 @@ export enum PlazoConfirmacion {
 }
 
 export const PLAZO_CONFIRMACION_LABEL: Record<PlazoConfirmacion, string> = {
-  [PlazoConfirmacion.VeinticuatroHoras]: '24 horas',
-  [PlazoConfirmacion.TresMeses]: '3 meses',
+  [PlazoConfirmacion.VeinticuatroHoras]: '24 horas antes de la fecha de inicio',
+  [PlazoConfirmacion.TresMeses]: '3 meses antes de la fecha de inicio',
 };
 
 export const PLAZO_CONFIRMACION_OPTIONS: FormFieldOption[] = [
-  { label: '24 horas', value: PlazoConfirmacion.VeinticuatroHoras },
-  { label: '3 meses', value: PlazoConfirmacion.TresMeses },
+  { label: '24 horas antes de la fecha de inicio', value: PlazoConfirmacion.VeinticuatroHoras },
+  { label: '3 meses antes de la fecha de inicio', value: PlazoConfirmacion.TresMeses },
 ];
 
 /**
