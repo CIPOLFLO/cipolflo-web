@@ -252,10 +252,10 @@ describe('DetalleReserva', () => {
       expect(field?.value).toBe('3 meses');
     });
 
-    it('muestra la fecha límite de confirmación cuando corresponde', async () => {
+    it('muestra la fecha límite de confirmación formateada cuando corresponde', async () => {
       const { component } = await setup();
       const field = component['reservaFields']().find((f) => f.key === 'fechaLimiteConfirmacion');
-      expect(field?.value).toBe('2026-05-10T00:00:00');
+      expect(field?.value).toBe('10/05/2026 00:00 hs');
     });
 
     it('muestra el plazo con label "24 horas" para PlazoConfirmacion.VeinticuatroHoras', async () => {

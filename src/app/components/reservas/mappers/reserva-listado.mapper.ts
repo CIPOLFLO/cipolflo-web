@@ -1,5 +1,7 @@
 import { PlazoConfirmacion, ReservaRow } from '../models/reserva.model';
-import { EstadoReserva } from '../../../shared';
+import { DateTimeFormatPipe, EstadoReserva } from '../../../shared';
+
+const dateTimeFormatPipe = new DateTimeFormatPipe();
 
 export interface ReservaListadoRow extends ReservaRow {
   requiereAtencion: boolean;
@@ -17,7 +19,8 @@ export function mapReservaListadoRow(reserva: ReservaRow): ReservaListadoRow {
 
 function requiereAtencion(row: ReservaRow): boolean {
   if (row.estadoReserva !== EstadoReserva.Pendiente) return false;
-  if (!row.fechaInicioAlerta || !row.fechaLimiteConfirmacion) return false;
+  if (!row.plazoConfirmacion || !row.fechaInicioAlerta || !row.fechaLimiteConfirmacion)
+    return false;
 
   const ahora = new Date();
   const dentroDeVentana =
@@ -41,16 +44,6 @@ const PLAZO_CONFIRMACION_TOOLTIP: Record<PlazoConfirmacion, (limite: string) => 
 
 function mensajeAtencion(row: ReservaRow): string {
   if (!row.plazoConfirmacion || !row.fechaLimiteConfirmacion) return '';
-  const limiteFormateado = formatFechaLimite(row.fechaLimiteConfirmacion);
+  const limiteFormateado = dateTimeFormatPipe.transform(row.fechaLimiteConfirmacion);
   return PLAZO_CONFIRMACION_TOOLTIP[row.plazoConfirmacion](limiteFormateado);
-}
-
-function formatFechaLimite(fecha: string): string {
-  return new Date(fecha).toLocaleString('es-UY', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }

@@ -59,6 +59,18 @@ export const PLAZO_CONFIRMACION_OPTIONS: FormFieldOption[] = [
   { label: '3 meses', value: PlazoConfirmacion.TresMeses },
 ];
 
+/**
+ * Regla única: la reserva requiere definir un plazo de confirmación cuando exige seña
+ * y/o documentación. La consumen `ReservaFormBase` (para mostrar/validar el select) y
+ * `DetalleReserva` (para mostrar los campos de plazo/fecha límite ya guardados).
+ */
+export function requierePlazoConfirmacion(
+  requiereSena: boolean,
+  requiereDocumentacion: boolean,
+): boolean {
+  return requiereSena || requiereDocumentacion;
+}
+
 export const FORMA_PAGO_RESERVA_LABEL: Partial<Record<FormaPago, string>> = {
   [FormaPago.Efectivo]: 'Efectivo',
   [FormaPago.Transferencia]: 'Transferencia',

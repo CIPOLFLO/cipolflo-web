@@ -5,6 +5,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, finalize, map, switchMap } from 'rxjs';
 import {
   AppButton,
+  DateTimeFormatPipe,
   DetailRegistroSection,
   DetailSection,
   ESTADO_RESERVA_LABEL,
@@ -21,10 +22,13 @@ import { ReservasService } from '../services/reservas.service';
 import {
   FORMA_PAGO_RESERVA_LABEL,
   PLAZO_CONFIRMACION_LABEL,
+  requierePlazoConfirmacion,
   TIPO_RESERVA_LABEL,
   TipoReserva,
 } from '../models/reserva.model';
 import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
+
+const dateTimeFormatPipe = new DateTimeFormatPipe();
 
 @Component({
   selector: 'app-detalle-reserva',
@@ -75,7 +79,7 @@ export class DetalleReserva {
   protected readonly reservaFields = computed<DetailFieldConfig[]>(() => {
     const e = this.reserva();
     if (!e) return [];
-    const requiereAlgunPlazo = e.requiereSena || e.requiereDocumentacion;
+    const requiereAlgunPlazo = requierePlazoConfirmacion(e.requiereSena, e.requiereDocumentacion);
     const fields: DetailFieldConfig[] = [
       { key: 'tipoReserva', label: 'Tipo de Reserva', value: TIPO_RESERVA_LABEL[e.tipoReserva] },
       {
@@ -163,7 +167,7 @@ export class DetalleReserva {
             {
               key: 'fechaLimiteConfirmacion',
               label: 'Fecha Límite de Confirmación',
-              value: e.fechaLimiteConfirmacion,
+              value: dateTimeFormatPipe.transform(e.fechaLimiteConfirmacion),
             },
           ]
         : []),

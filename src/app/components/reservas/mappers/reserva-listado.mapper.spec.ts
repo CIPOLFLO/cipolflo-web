@@ -53,6 +53,18 @@ describe('mapReservaListadoRow', () => {
     expect(mapReservaListadoRow(row).requiereAtencion).toBe(false);
   });
 
+  it('requiereAtencion es false si plazoConfirmacion es null aunque las fechas estén dentro de la ventana', () => {
+    const row: ReservaRow = {
+      ...baseRow,
+      plazoConfirmacion: null,
+      fechaInicioAlerta: '2026-07-11T00:00:00',
+      fechaLimiteConfirmacion: '2026-07-13T00:00:00',
+      requiereSena: true,
+      pago: false,
+    };
+    expect(mapReservaListadoRow(row).requiereAtencion).toBe(false);
+  });
+
   it('requiereAtencion es true dentro de la ventana de 24 horas con seña pendiente', () => {
     const row: ReservaRow = {
       ...baseRow,

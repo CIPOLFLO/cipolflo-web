@@ -40,6 +40,7 @@ import {
   ClienteBusquedaReservaDto,
   CostoReservaRequestDto,
   PlazoConfirmacion,
+  requierePlazoConfirmacion,
   TipoDocumento,
   TipoReserva,
 } from './models/reserva.model';
@@ -134,12 +135,15 @@ export abstract class ReservaFormBase {
 
   /**
    * El select de plazo de confirmación solo se muestra (y es obligatorio) mientras la reserva
-   * requiera seña y/o documentación. Fuente única de esta regla; la consumen nueva-reserva y
-   * detalle-reserva.
+   * requiera seña y/o documentación. La regla en sí vive en `requierePlazoConfirmacion`
+   * (reserva.model.ts), que también usa `DetalleReserva`.
    */
   protected readonly mostrarPlazoConfirmacion = computed<boolean>(() => {
     this.formEvents();
-    return this.controlChecked('requiereSena') || this.controlChecked('requiereDocumentacion');
+    return requierePlazoConfirmacion(
+      this.controlChecked('requiereSena'),
+      this.controlChecked('requiereDocumentacion'),
+    );
   });
 
   protected readonly reservaErrors = computed<Record<string, string>>(() => {
@@ -434,8 +438,10 @@ export abstract class ReservaFormBase {
 
   private aplicarValidadorPlazoConfirmacion(): void {
     const plazoConfirmacion = this.form.get('plazoConfirmacion');
-    const requiereAlguno =
-      this.controlChecked('requiereSena') || this.controlChecked('requiereDocumentacion');
+    const requiereAlguno = requierePlazoConfirmacion(
+      this.controlChecked('requiereSena'),
+      this.controlChecked('requiereDocumentacion'),
+    );
 
     if (requiereAlguno) {
       plazoConfirmacion?.setValidators(Validators.required);

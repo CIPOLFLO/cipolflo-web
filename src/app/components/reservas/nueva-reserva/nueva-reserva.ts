@@ -23,7 +23,6 @@ import {
   MobStepCard,
   MobStepFooter,
   StepConfig,
-  MobListLayout,
   DateFormatPipe,
 } from '../../../shared';
 import {
@@ -71,7 +70,6 @@ interface ReservaSummaryRow {
     MobStepper,
     MobStepCard,
     MobStepFooter,
-    MobListLayout,
     NgTemplateOutlet,
   ],
   providers: [ReservasService, ReservaClienteBusquedaService],
@@ -326,14 +324,15 @@ export class NuevaReserva extends ReservaFormBase {
 
   /**
    * Select condicional (ver `mostrarPlazoConfirmacion()` en ReservaFormBase). Es `required`
-   * mientras está visible, por eso -a diferencia del resto de los selects no obligatorios de
-   * este formulario- no lleva `placeholder` ni opción vacía.
+   * mientras está visible, por eso -como el resto de los selects obligatorios de este
+   * formulario- no lleva opción vacía.
    */
   protected readonly plazoConfirmacionField: FormFieldConfig = {
     key: 'plazoConfirmacion',
     label: 'Plazo para confirmar la reserva',
     type: 'select',
     required: true,
+    placeholder: 'Seleccione un plazo',
     options: PLAZO_CONFIRMACION_OPTIONS,
   };
 
