@@ -12,6 +12,7 @@ import {
   TipoCliente,
   EstadoSocio,
   MetodoCobro,
+  CategoriaSocio,
 } from '../models/cliente.model';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
@@ -33,6 +34,8 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   observaciones: 'Socio nuevo',
   estado: EstadoSocio.Activo,
   fechaNacimiento: '1999-06-29',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   createdAt: '15 mar 2026, 14:30',
   createdBy: 'Juan Pérez',
   updatedAt: '',
@@ -153,8 +156,18 @@ describe('ModificarCliente', () => {
     expect(keys).toContain('cedula');
     expect(keys).toContain('fechaNacimiento');
     expect(keys).toContain('metodoCobro');
+    expect(keys).toContain('categoriaSocio');
+    expect(keys).toContain('fechaIngreso');
     expect(keys.indexOf('numeroSocio')).toBe(0);
     expect(keys.indexOf('tipoCliente')).toBe(1);
+  });
+
+  it('infoFields precarga categoriaSocio y fechaIngreso con los valores actuales del socio', () => {
+    const fields = component['infoFields']();
+    expect(fields.find((f) => f.key === 'categoriaSocio')?.defaultValue).toBe(
+      CategoriaSocio.SocioComun,
+    );
+    expect(fields.find((f) => f.key === 'fechaIngreso')?.defaultValue).toBe('2020-01-01');
   });
 
   it('infoFields debe retornar campos de particular cuando el tipo es Particular', async () => {
@@ -174,6 +187,8 @@ describe('ModificarCliente', () => {
     expect(keys).not.toContain('fechaNacimiento');
     expect(keys).not.toContain('numeroSocio');
     expect(keys).not.toContain('metodoCobro');
+    expect(keys).not.toContain('categoriaSocio');
+    expect(keys).not.toContain('fechaIngreso');
   });
 
   it('infoFields y ubicacionFields cubren branches ?? con todos los campos opcionales nulos', async () => {
@@ -260,6 +275,8 @@ describe('ModificarCliente', () => {
       departamento: 'Flores',
       ciudad: 'Trinidad',
       direccion: 'Calle A 123',
+      categoriaSocio: 'SOCIO_COMUN',
+      fechaIngreso: '2020-01-01',
       metodoCobro: MetodoCobro.Cobradora,
     });
   });

@@ -6,9 +6,17 @@ import {
   FormLayout,
   FormSection,
   PageLayout,
+  startOfToday,
+  toIsoDate,
   type FormFieldConfig,
 } from '../../../shared';
-import { MetodoCobro, EstadoSocio, METODO_COBRO_OPTIONS } from '../models/cliente.model';
+import {
+  MetodoCobro,
+  EstadoSocio,
+  METODO_COBRO_OPTIONS,
+  CategoriaSocio,
+  CATEGORIA_SOCIO_OPTIONS,
+} from '../models/cliente.model';
 import { ClienteFormBase } from '../cliente-form-base';
 import { buildUbicacionFields, submitRegistroCliente } from '../helpers/cliente-form.helper';
 
@@ -42,12 +50,25 @@ export class NuevoCliente extends ClienteFormBase {
           MetodoCobro.Cobradora,
           Validators.required,
         ),
+        categoriaSocio: new FormControl<CategoriaSocio | null>(
+          CategoriaSocio.SocioComun,
+          Validators.required,
+        ),
+        fechaIngreso: new FormControl<string | null>(
+          toIsoDate(startOfToday()),
+          Validators.required,
+        ),
       }),
     );
     this.form
       .get('fechaNacimiento')
       ?.addValidators(this.validaciones.mayorDeEdad.bind(this.validaciones));
     this.form.get('fechaNacimiento')?.updateValueAndValidity({ emitEvent: false });
+    this.form
+      .get('fechaIngreso')
+      ?.addValidators(this.validaciones.fechaIngresoValida.bind(this.validaciones));
+
+    this.form.get('fechaIngreso')?.updateValueAndValidity({ emitEvent: false });
   }
 
   protected override readonly infoFields = computed<FormFieldConfig[]>(() => [
@@ -63,6 +84,22 @@ export class NuevoCliente extends ClienteFormBase {
       required: true,
       defaultValue: MetodoCobro.Cobradora,
       options: METODO_COBRO_OPTIONS,
+    },
+    {
+      key: 'categoriaSocio',
+      label: 'Categoría',
+      type: 'select',
+      required: true,
+      defaultValue: CategoriaSocio.SocioComun,
+      options: CATEGORIA_SOCIO_OPTIONS,
+    },
+    {
+      key: 'fechaIngreso',
+      label: 'Fecha de ingreso',
+      type: 'date',
+      required: true,
+      defaultValue: toIsoDate(startOfToday())!,
+      maxDate: toIsoDate(startOfToday())!,
     },
   ]);
 
@@ -93,6 +130,8 @@ export class NuevoCliente extends ClienteFormBase {
         ciudad: v['ciudad']!.trim(),
         direccion: v['direccion']?.trim() || null,
         observaciones: v['observaciones']?.trim() || null,
+        categoriaSocio: v['categoriaSocio']!,
+        fechaIngreso: v['fechaIngreso']!,
       }),
       {
         loading: this.loading,

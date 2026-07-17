@@ -16,6 +16,8 @@ import {
   FormLayout,
   FormSection,
   PageLayout,
+  startOfToday,
+  toIsoDate,
   type FormFieldConfig,
 } from '../../../shared';
 import {
@@ -23,6 +25,8 @@ import {
   MetodoCobro,
   METODO_COBRO_OPTIONS,
   TipoCliente,
+  CategoriaSocio,
+  CATEGORIA_SOCIO_OPTIONS,
 } from '../models/cliente.model';
 import { ClienteFormBase } from '../cliente-form-base';
 
@@ -59,10 +63,13 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         fechaNacimiento: new FormControl<string | null>(null),
         estado: new FormControl<string | null>(null),
         metodoCobro: new FormControl<MetodoCobro | null>(null),
+        categoriaSocio: new FormControl<CategoriaSocio | null>(null),
+        fechaIngreso: new FormControl<string | null>(null),
       }),
     );
 
     const mayorDeEdad = this.validaciones.mayorDeEdad.bind(this.validaciones);
+    const fechaIngresoValida = this.validaciones.fechaIngresoValida.bind(this.validaciones);
 
     effect(() => {
       if (!this.clienteTipo()) return;
@@ -73,12 +80,16 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         this.form.get('departamento')?.addValidators(Validators.required);
         this.form.get('ciudad')?.addValidators(Validators.required);
         this.form.get('direccion')?.addValidators(Validators.required);
+        this.form.get('categoriaSocio')?.addValidators(Validators.required);
+        this.form.get('fechaIngreso')?.addValidators([Validators.required, fechaIngresoValida]);
         this.form.get('fechaNacimiento')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('metodoCobro')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('pais')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('departamento')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('ciudad')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('direccion')?.updateValueAndValidity({ emitEvent: false });
+        this.form.get('categoriaSocio')?.updateValueAndValidity({ emitEvent: false });
+        this.form.get('fechaIngreso')?.updateValueAndValidity({ emitEvent: false });
       }
     });
   }
@@ -152,6 +163,22 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         defaultValue: c.metodoCobro ?? undefined,
         required: true,
         options: [{ label: '', value: '' }, ...METODO_COBRO_OPTIONS],
+      },
+      {
+        key: 'categoriaSocio',
+        label: 'Categoría',
+        type: 'select',
+        defaultValue: c.categoriaSocio ?? undefined,
+        required: true,
+        options: CATEGORIA_SOCIO_OPTIONS,
+      },
+      {
+        key: 'fechaIngreso',
+        label: 'Fecha de ingreso',
+        type: 'date',
+        defaultValue: c.fechaIngreso ?? undefined,
+        required: true,
+        maxDate: toIsoDate(startOfToday())!,
       },
       {
         key: 'estado',
@@ -229,6 +256,8 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
           ciudad: v['ciudad']!.trim(),
           direccion: v['direccion']!.trim(),
           metodoCobro: v['metodoCobro']!,
+          categoriaSocio: v['categoriaSocio']!,
+          fechaIngreso: v['fechaIngreso']!,
         })
       : this.clientesService.modificarParticular(id, base);
 

@@ -1,7 +1,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoCliente } from './nuevo-cliente';
-import { EstadoSocio, MetodoCobro, TipoCliente } from '../models/cliente.model';
+import { EstadoSocio, MetodoCobro, TipoCliente, CategoriaSocio } from '../models/cliente.model';
 import { NEVER, of, throwError } from 'rxjs';
 import { ClientesService } from '../services/cliente.service';
 import { ClienteValidacionesService } from '../services/cliente-validaciones.service';
@@ -9,6 +9,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
+import { startOfToday, toIsoDate } from '../../../shared';
 
 const clienteMock = {
   id: 1,
@@ -23,6 +24,8 @@ const clienteMock = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: null,
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,
@@ -104,6 +107,11 @@ describe('NuevoCliente', () => {
     expect(component['form'].get('pais')?.value).toBe('Uruguay');
   });
 
+  it('debería inicializar categoriaSocio y fechaIngreso con sus valores por defecto', () => {
+    expect(component['form'].get('categoriaSocio')?.value).toBe(CategoriaSocio.SocioComun);
+    expect(component['form'].get('fechaIngreso')?.value).toBe(toIsoDate(startOfToday()));
+  });
+
   it('confirmDisabled debería ser true cuando el form es inválido y sucio', () => {
     component['form'].get('nombre')?.setValue('');
     component['form'].markAsDirty();
@@ -169,6 +177,33 @@ describe('NuevoCliente', () => {
     component['submitted'].set(true);
     fixture.detectChanges();
     expect(component['ubicacionErrors']()['pais']).toBeTruthy();
+  });
+
+  it('infoErrors[categoriaSocio] debería mostrar error cuando submitted y campo vacío', () => {
+    component['form'].get('categoriaSocio')?.setValue(null);
+    component['submitted'].set(true);
+    fixture.detectChanges();
+    expect(component['infoErrors']()['categoriaSocio']).toBeTruthy();
+  });
+
+  it('infoErrors[fechaIngreso] debería mostrar error cuando submitted y campo vacío', () => {
+    component['form'].get('fechaIngreso')?.setValue(null);
+    component['submitted'].set(true);
+    fixture.detectChanges();
+    expect(component['infoErrors']()['fechaIngreso']).toBeTruthy();
+  });
+
+  it('infoErrors[fechaIngreso] debería mostrar error con fecha futura', () => {
+    const nextYear = new Date().getFullYear() + 1;
+    const fechaIngreso = component['form'].get('fechaIngreso');
+    fechaIngreso?.setValue(`${nextYear}-01-01`);
+    fechaIngreso?.markAsTouched();
+    fechaIngreso?.updateValueAndValidity();
+    component['submitted'].set(true);
+    fixture.detectChanges();
+    expect(component['infoErrors']()['fechaIngreso']).toBe(
+      'La fecha de ingreso no puede ser posterior a hoy.',
+    );
   });
 
   it('onInfoChange debería patchear los datos del cliente en el form', () => {
@@ -245,6 +280,31 @@ describe('NuevoCliente', () => {
     component['onConfirmar']();
 
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', clienteMock.id]);
+  });
+
+  it('onConfirmar envía categoriaSocio y fechaIngreso en el DTO a registrarSocio', () => {
+    const service = TestBed.inject(ClientesService);
+    const registrarSocioSpy = vi.spyOn(service, 'registrarSocio').mockReturnValue(of(clienteMock));
+
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+      categoriaSocio: CategoriaSocio.PoliciaActivo,
+      fechaIngreso: '2020-01-01',
+    });
+    fixture.detectChanges();
+    component['onConfirmar']();
+
+    expect(registrarSocioSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        categoriaSocio: CategoriaSocio.PoliciaActivo,
+        fechaIngreso: '2020-01-01',
+      }),
+    );
   });
 
   it('onConfirmar llama errorHandler.handle cuando el servicio retorna error', () => {

@@ -249,7 +249,7 @@ describe('DetalleReserva', () => {
     it('muestra el plazo de confirmación cuando requiere documentación y hay plazo', async () => {
       const { component } = await setup();
       const field = component['reservaFields']().find((f) => f.key === 'plazoConfirmacion');
-      expect(field?.value).toBe('3 meses');
+      expect(field?.value).toBe('3 meses antes de la fecha de inicio');
     });
 
     it('muestra la fecha límite de confirmación formateada cuando corresponde', async () => {
@@ -258,13 +258,13 @@ describe('DetalleReserva', () => {
       expect(field?.value).toBe('10/05/2026 00:00 hs');
     });
 
-    it('muestra el plazo con label "24 horas" para PlazoConfirmacion.VeinticuatroHoras', async () => {
+    it('muestra el plazo con label "24 horas antes de la fecha de inicio" para PlazoConfirmacion.VeinticuatroHoras', async () => {
       const { component } = await setup({
         ...mockReserva,
         plazoConfirmacion: PlazoConfirmacion.VeinticuatroHoras,
       });
       const field = component['reservaFields']().find((f) => f.key === 'plazoConfirmacion');
-      expect(field?.value).toBe('24 horas');
+      expect(field?.value).toBe('24 horas antes de la fecha de inicio');
     });
 
     it('oculta el plazo y la fecha límite cuando no requiere ni seña ni documentación', async () => {
@@ -301,7 +301,7 @@ describe('DetalleReserva', () => {
         fechaLimiteConfirmacion: '2026-08-09T00:00:00',
       });
       const field = component['reservaFields']().find((f) => f.key === 'plazoConfirmacion');
-      expect(field?.value).toBe('24 horas');
+      expect(field?.value).toBe('24 horas antes de la fecha de inicio');
     });
   });
 

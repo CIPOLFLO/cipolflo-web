@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import {
+  ClienteRespuestaDto,
+  EstadoSocio,
+  TipoCliente,
+  CategoriaSocio,
+} from '../models/cliente.model';
 import { mapClienteCardMobileRow, mapClienteListadoRow } from './cliente-listado.mapper';
 
 const baseCliente: ClienteRespuestaDto = {
@@ -12,6 +17,8 @@ const baseCliente: ClienteRespuestaDto = {
   numeroSocio: 5,
   estado: null,
   ultimaCuotaDto: null,
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
 };
 
 describe('mapClienteListadoRow', () => {

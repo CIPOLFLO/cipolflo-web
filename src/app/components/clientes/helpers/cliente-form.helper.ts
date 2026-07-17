@@ -25,6 +25,9 @@ export function patchClienteForm(form: FormGroup, cliente: ClienteDetalleRespues
     fechaNacimiento: cliente.fechaNacimiento ?? null,
     estado: cliente.estado ?? null,
     metodoCobro: cliente.metodoCobro ?? null,
+
+    categoriaSocio: cliente.categoriaSocio ?? null,
+    fechaIngreso: cliente.fechaIngreso ?? null,
   });
 }
 

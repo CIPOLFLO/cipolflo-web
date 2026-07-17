@@ -70,6 +70,8 @@ export interface ClienteRespuestaDto extends Record<string, unknown> {
   tipoCliente: TipoCliente;
   numeroSocio: number | null;
   estado: EstadoSocio | null;
+  categoriaSocio: CategoriaSocio | null;
+  fechaIngreso: string | null;
   ultimaCuotaDto: UltimaCuotaDto | null;
 }
 
@@ -89,6 +91,8 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   departamento: string | null;
   ciudad: string | null;
   direccion: string | null;
+  categoriaSocio: CategoriaSocio | null;
+  fechaIngreso: string | null;
   observaciones: string | null;
   ultimaCuotaDto: UltimaCuotaDto | null;
 }
@@ -111,6 +115,8 @@ export interface ModificacionSocioRequestDto {
   ciudad: string;
   direccion: string;
   metodoCobro: MetodoCobro;
+  categoriaSocio: CategoriaSocio;
+  fechaIngreso: string;
 }
 
 export interface ClienteCrearDto {
@@ -140,6 +146,8 @@ export interface RegistroSocioRequestDto {
   ciudad: string;
   direccion: string | null;
   observaciones: string | null;
+  categoriaSocio: CategoriaSocio;
+  fechaIngreso: string;
 }
 export interface RegistroEmpresaRequestDto {
   razonSocial: string;
@@ -165,3 +173,21 @@ export interface EstadoSocioDto {
   estado: EstadoSocio;
   numeroSocio: number | null;
 }
+
+export enum CategoriaSocio {
+  PoliciaActivo = 'POLICIA_ACTIVO',
+  PoliciaRetirado = 'POLICIA_RETIRADO',
+  SocioComun = 'SOCIO_COMUN',
+}
+
+export const CATEGORIA_SOCIO_OPTIONS: FormFieldOption[] = [
+  { label: 'Policía activo', value: CategoriaSocio.PoliciaActivo },
+  { label: 'Policía retirado', value: CategoriaSocio.PoliciaRetirado },
+  { label: 'Socio común', value: CategoriaSocio.SocioComun },
+];
+
+export const CATEGORIA_SOCIO_LABEL: Record<CategoriaSocio, string> = {
+  [CategoriaSocio.PoliciaActivo]: 'Policía activo',
+  [CategoriaSocio.PoliciaRetirado]: 'Policía retirado',
+  [CategoriaSocio.SocioComun]: 'Socio común',
+};

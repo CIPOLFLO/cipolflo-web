@@ -13,6 +13,7 @@ import {
   RegistroSocioRequestDto,
   RegistroEmpresaRequestDto,
   TipoCliente,
+  CategoriaSocio,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
 import { BusquedaRutResponseDto } from '../../reservas/models/reserva.model';
@@ -36,6 +37,8 @@ const mockDetalle: ClienteDetalleRespuestaDto = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Luis Alberto de Herrera 123',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: 'Socia nueva',
   createdAt: '2026-03-15T14:30:00Z',
   createdBy: 'Pedro Aguirre',
@@ -269,6 +272,8 @@ describe('ClientesService', () => {
       ciudad: 'Trinidad',
       direccion: 'Luis Alberto de Herrera 123',
       metodoCobro: MetodoCobro.Cobradora,
+      categoriaSocio: CategoriaSocio.SocioComun,
+      fechaIngreso: '2020-01-01',
     };
 
     it('realiza PUT a /clientes/socios/:id y retorna el detalle', () => {
@@ -318,6 +323,8 @@ describe('ClientesService', () => {
       departamento: 'Flores',
       ciudad: 'Trinidad',
       direccion: 'Luis Alberto de Herrera 123',
+      categoriaSocio: CategoriaSocio.SocioComun,
+      fechaIngreso: '2020-01-01',
       observaciones: null,
     };
 

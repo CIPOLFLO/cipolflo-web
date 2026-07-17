@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
-import { parseIsoDate } from '../../../shared';
+import { parseIsoDate, startOfToday } from '../../../shared';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteValidacionesService {
@@ -84,26 +84,46 @@ export class ClienteValidacionesService {
       'metodoCobro',
       'El método de pago es obligatorio.',
     );
+    this.addRequiredError(
+      errors,
+      form,
+      submitted,
+      'fechaIngreso',
+      'La fecha de ingreso es obligatoria.',
+    );
+    this.addRequiredError(
+      errors,
+      form,
+      submitted,
+      'categoriaSocio',
+      'La categoría es obligatoria.',
+    );
+
     const cedula = form.get('cedula');
     const fechaNacimiento = form.get('fechaNacimiento');
     const email = form.get('email');
+    const fechaIngreso = form.get('fechaIngreso');
 
     if (this.shouldShowError(cedula, submitted) && cedula?.hasError('cedulaInvalida')) {
       errors['cedula'] = 'La cédula no es válida.';
     }
-
     if (
       this.shouldShowError(fechaNacimiento, submitted) &&
       fechaNacimiento?.hasError('menorDeEdad')
     ) {
       errors['fechaNacimiento'] = 'El cliente debe ser mayor de 18 años.';
     }
-
     if (
       this.shouldShowError(email, submitted) &&
       (email?.hasError('emailInvalido') || email?.hasError('email'))
     ) {
       errors['email'] = 'El email no es válido.';
+    }
+    if (
+      this.shouldShowError(fechaIngreso, submitted) &&
+      fechaIngreso?.hasError('fechaIngresoFutura')
+    ) {
+      errors['fechaIngreso'] = 'La fecha de ingreso no puede ser posterior a hoy.';
     }
 
     return errors;
@@ -154,6 +174,16 @@ export class ClienteValidacionesService {
     this.addRequiredError(errors, form, submitted, 'direccion', 'La dirección es obligatoria.');
 
     return errors;
+  }
+
+  fechaIngresoValida(control: AbstractControl): ValidationErrors | null {
+    const value = control.value as string | null;
+    if (!value) return null;
+    const fechaIngreso = parseIsoDate(value);
+    if (!fechaIngreso) {
+      return { fechaInvalida: true };
+    }
+    return fechaIngreso <= startOfToday() ? null : { fechaIngresoFutura: true };
   }
 
   private addRequiredError(

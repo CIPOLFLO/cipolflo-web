@@ -12,6 +12,7 @@ import {
   EstadoSocio,
   MetodoCobro,
   TipoCliente,
+  CategoriaSocio,
 } from '../models/cliente.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
@@ -28,6 +29,8 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: 'Nota',
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,
@@ -54,6 +57,8 @@ function buildForm(): FormGroup {
     fechaNacimiento: new FormControl<string | null>(null),
     estado: new FormControl<string | null>(null),
     metodoCobro: new FormControl<string | null>(null),
+    categoriaSocio: new FormControl<CategoriaSocio | null>(null),
+    fechaIngreso: new FormControl<string | null>(null),
   });
 }
 
@@ -75,6 +80,8 @@ describe('patchClienteForm', () => {
     expect(form.get('estado')?.value).toBe(EstadoSocio.Activo);
     expect(form.get('metodoCobro')?.value).toBe(MetodoCobro.Cobradora);
     expect(form.get('numeroSocio')?.value).toBe('42');
+    expect(form.get('categoriaSocio')?.value).toBe(CategoriaSocio.SocioComun);
+    expect(form.get('fechaIngreso')?.value).toBe('2020-01-01');
   });
 
   it('parchea campos nulos con null (cubre branch ?? null)', () => {
@@ -91,6 +98,8 @@ describe('patchClienteForm', () => {
       fechaNacimiento: null,
       estado: null,
       metodoCobro: null,
+      categoriaSocio: null,
+      fechaIngreso: null,
     };
 
     patchClienteForm(form, clienteNulo);
@@ -105,6 +114,8 @@ describe('patchClienteForm', () => {
     expect(form.get('fechaNacimiento')?.value).toBeNull();
     expect(form.get('estado')?.value).toBeNull();
     expect(form.get('metodoCobro')?.value).toBeNull();
+    expect(form.get('categoriaSocio')?.value).toBeNull();
+    expect(form.get('fechaIngreso')?.value).toBeNull();
   });
 });
 

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { ClienteValidacionesService } from './cliente-validaciones.service';
+import { startOfToday, toIsoDate } from '../../../shared';
 
 describe('ClienteValidacionesService', () => {
   let service: ClienteValidacionesService;
@@ -24,6 +25,27 @@ describe('ClienteValidacionesService', () => {
       const nextYear = new Date().getFullYear() + 1;
       expect(service.mayorDeEdad(new FormControl(`${nextYear}-01-01`))).toEqual({
         menorDeEdad: true,
+      });
+    });
+  });
+
+  describe('fechaIngresoValida', () => {
+    it('retorna null si no hay valor', () => {
+      expect(service.fechaIngresoValida(new FormControl(null))).toBeNull();
+    });
+
+    it('retorna null si la fecha es hoy', () => {
+      expect(service.fechaIngresoValida(new FormControl(toIsoDate(startOfToday())))).toBeNull();
+    });
+
+    it('retorna null si la fecha es pasada', () => {
+      expect(service.fechaIngresoValida(new FormControl('2020-01-01'))).toBeNull();
+    });
+
+    it('retorna { fechaIngresoFutura: true } si la fecha es futura', () => {
+      const nextYear = new Date().getFullYear() + 1;
+      expect(service.fechaIngresoValida(new FormControl(`${nextYear}-01-01`))).toEqual({
+        fechaIngresoFutura: true,
       });
     });
   });

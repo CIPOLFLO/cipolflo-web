@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import {
+  CategoriaSocio,
   ClienteDetalleRespuestaDto,
   EstadoSocio,
   MetodoCobro,
@@ -29,6 +30,8 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   departamento: 'Flores',
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
+  categoriaSocio: CategoriaSocio.SocioComun,
+  fechaIngreso: '2020-01-01',
   observaciones: 'Socia Nueva',
   createdAt: '2026-03-15T14:30:00Z',
   createdBy: 'Juan Pérez',
@@ -112,6 +115,16 @@ describe('DetalleCliente', () => {
     expect(fixture.nativeElement.textContent).toContain('Socia Nueva');
   });
 
+  it('debería mostrar la categoría del socio con su label', () => {
+    const field = component['infoFields']().find((f) => f.key === 'categoriaSocio');
+    expect(field?.value).toBe('Socio común');
+  });
+
+  it('debería mostrar la fecha de ingreso del socio', () => {
+    const field = component['infoFields']().find((f) => f.key === 'fechaIngreso');
+    expect(field?.value).toBe('2020-01-01');
+  });
+
   it('debería manejar el error cuando falla la carga del detalle del cliente', () => {
     const error = new Error('Error al cargar cliente');
 
@@ -146,6 +159,8 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
     numeroSocio: null,
     estado: null,
     metodoCobro: null,
+    categoriaSocio: null,
+    fechaIngreso: null,
     ultimaCuotaDto: null,
   };
 
@@ -181,5 +196,15 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
 
   it('no debería mostrar sección de última cuota paga cuando no existe información', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Última cuota paga');
+  });
+
+  it('el campo categoriaSocio tiene value null', () => {
+    const field = component['infoFields']().find((f) => f.key === 'categoriaSocio');
+    expect(field?.value).toBeNull();
+  });
+
+  it('el campo fechaIngreso tiene value null', () => {
+    const field = component['infoFields']().find((f) => f.key === 'fechaIngreso');
+    expect(field?.value).toBeNull();
   });
 });

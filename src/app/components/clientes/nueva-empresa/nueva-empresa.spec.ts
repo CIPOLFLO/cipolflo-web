@@ -27,6 +27,8 @@ const empresaMock = {
   fechaNacimiento: null,
   estado: null as EstadoSocio | null,
   metodoCobro: null as MetodoCobro | null,
+  categoriaSocio: null,
+  fechaIngreso: null,
   createdAt: '2026-01-01',
   createdBy: 'admin',
   updatedAt: '2026-01-01',

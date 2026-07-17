@@ -14,5 +14,6 @@ export interface FormFieldConfig {
   disabled?: boolean;
   locked?: boolean;
   defaultValue?: string;
+  maxDate?: string;
   valueClass?: string;
 }

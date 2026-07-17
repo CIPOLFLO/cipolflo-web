@@ -15,7 +15,7 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesService } from '../services/cliente.service';
-import { METODO_COBRO_LABEL, TipoCliente } from '../models/cliente.model';
+import { METODO_COBRO_LABEL, TipoCliente, CATEGORIA_SOCIO_LABEL } from '../models/cliente.model';
 
 @Component({
   standalone: true,
@@ -89,6 +89,16 @@ export class DetalleCliente {
       { key: 'numeroSocio', label: 'Nro de socio', value: c.numeroSocio?.toString() ?? null },
       { key: 'tipoCliente', label: 'Tipo de cliente', value: c.tipoCliente },
       { key: 'estado', label: 'Estado', value: c.estado },
+      {
+        key: 'categoriaSocio',
+        label: 'Categoría',
+        value: c.categoriaSocio ? CATEGORIA_SOCIO_LABEL[c.categoriaSocio] : null,
+      },
+      {
+        key: 'fechaIngreso',
+        label: 'Fecha de ingreso',
+        value: c.fechaIngreso,
+      },
       {
         key: 'observaciones',
         label: 'Notas/Observaciones',
