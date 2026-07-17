@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it, beforeEach } from 'vitest';
-
 import { EstadoReserva } from '../../../shared';
 import { ReservaCardMobileRow } from '../mappers/reserva-card-mobile.mapper';
 import { TipoReserva } from '../models/reserva.model';
@@ -24,7 +23,9 @@ describe('MobReservaCard', () => {
     requiereSena: false,
     tipoReserva: TipoReserva.Comun,
     montoImpago: 1500,
-    fechaLimitePago: null,
+    plazoConfirmacion: null,
+    fechaLimiteConfirmacion: null,
+    fechaInicioAlerta: null,
     pago: false,
     pendienteDocumentacion: false,
     cliente: 'Juan Pérez',
@@ -53,7 +54,6 @@ describe('MobReservaCard', () => {
 
   it('debería mostrar cliente, servicio y fechas', () => {
     const text = fixture.nativeElement.textContent;
-
     expect(text).toContain('Juan Pérez');
     expect(text).toContain('Hospedaje en camping');
     expect(text).toContain('10/08/2026');
@@ -62,21 +62,18 @@ describe('MobReservaCard', () => {
 
   it('debería mostrar el estado con AppTag', () => {
     const tag = fixture.debugElement.query(By.css('app-tag'));
-
     expect(tag).toBeTruthy();
     expect(tag.nativeElement.textContent).toContain('Confirmada');
   });
 
   it('debería mostrar el monto impago', () => {
     const text = fixture.nativeElement.textContent;
-
     expect(text).toContain('Saldo pendiente');
     expect(text).toContain('1.500');
   });
 
   it('no debería mostrar el menú de acciones cuando no se pasan acciones', () => {
     const menuButton = fixture.debugElement.query(By.css('app-mob-list-card .mob-list-card__menu'));
-
     expect(menuButton).toBeNull();
   });
 });

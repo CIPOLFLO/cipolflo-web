@@ -37,9 +37,11 @@ const mockRow: ReservaRespuestaDto = {
   requiereSena: true,
   tipoReserva: TipoReserva.Comun,
   montoImpago: 5000,
-  fechaLimitePago: null,
   pago: false,
   pendienteDocumentacion: false,
+  plazoConfirmacion: null,
+  fechaLimiteConfirmacion: null,
+  fechaInicioAlerta: null,
 };
 
 const mockPage: PageResponse<ReservaRespuestaDto> = {

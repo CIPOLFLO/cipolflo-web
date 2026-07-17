@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { By } from '@angular/platform-browser';
+import { Tooltip } from 'primeng/tooltip';
 import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
 import { DateFormatPipe } from './pipes/date-format.pipe';
 import { TableStateService } from './table-state.service';
@@ -220,6 +222,91 @@ describe('AppTable', () => {
     const tag: HTMLElement = fixture.nativeElement.querySelector('.tag--green');
     expect(tag).not.toBeNull();
     expect(tag.textContent?.trim()).toBe('Activo');
+  });
+
+  describe('celda warning', () => {
+    it('usa row[tooltipKey] cuando la columna define tooltipKey', async () => {
+      const service = TestBed.inject(TableStateService);
+      fixture.componentRef.setInput('columns', [
+        {
+          key: 'requiereAtencion',
+          label: '',
+          cellType: 'warning',
+          tooltip: 'Mensaje genérico de fallback.',
+          tooltipKey: 'mensajeAtencion',
+        },
+      ] satisfies ColumnConfig[]);
+      fixture.componentRef.setInput(
+        'loadDataFn',
+        vi.fn().mockReturnValue(
+          of({
+            ...mockPageResponse,
+            content: [
+              {
+                requiereAtencion: true,
+                mensajeAtencion: 'Se cancelará automáticamente el 13/07/2026.',
+              },
+            ],
+          }),
+        ),
+      );
+      service.updateFilters({});
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const icon = fixture.debugElement.query(By.css('.table-warning-icon'));
+      expect(icon).not.toBeNull();
+      const tooltipDirective = icon.injector.get(Tooltip);
+      expect(tooltipDirective.content).toBe('Se cancelará automáticamente el 13/07/2026.');
+    });
+
+    it('usa el tooltip fijo de la columna cuando no define tooltipKey (retrocompatibilidad)', async () => {
+      const service = TestBed.inject(TableStateService);
+      fixture.componentRef.setInput('columns', [
+        {
+          key: 'requiereAtencion',
+          label: '',
+          cellType: 'warning',
+          tooltip: 'Mensaje genérico de fallback.',
+        },
+      ] satisfies ColumnConfig[]);
+      fixture.componentRef.setInput(
+        'loadDataFn',
+        vi.fn().mockReturnValue(of({ ...mockPageResponse, content: [{ requiereAtencion: true }] })),
+      );
+      service.updateFilters({});
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const icon = fixture.debugElement.query(By.css('.table-warning-icon'));
+      expect(icon).not.toBeNull();
+      const tooltipDirective = icon.injector.get(Tooltip);
+      expect(tooltipDirective.content).toBe('Mensaje genérico de fallback.');
+    });
+
+    it('no renderiza el ícono cuando row[col.key] es false', async () => {
+      const service = TestBed.inject(TableStateService);
+      fixture.componentRef.setInput('columns', [
+        {
+          key: 'requiereAtencion',
+          label: '',
+          cellType: 'warning',
+          tooltip: 'Mensaje genérico de fallback.',
+        },
+      ] satisfies ColumnConfig[]);
+      fixture.componentRef.setInput(
+        'loadDataFn',
+        vi
+          .fn()
+          .mockReturnValue(of({ ...mockPageResponse, content: [{ requiereAtencion: false }] })),
+      );
+      service.updateFilters({});
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const icon = fixture.debugElement.query(By.css('.table-warning-icon'));
+      expect(icon).toBeNull();
+    });
   });
 
   it('onSort debe actualizar el campo y orden en tableState', async () => {

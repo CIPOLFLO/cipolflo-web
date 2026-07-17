@@ -36,6 +36,13 @@ export class ReservaValidacionesService {
       'La hora de inicio es obligatoria.',
     );
     this.addRequiredError(errors, form, submitted, 'horaFin', 'La hora de fin es obligatoria.');
+    this.addRequiredError(
+      errors,
+      form,
+      submitted,
+      'plazoConfirmacion',
+      'El plazo para confirmar la reserva es obligatorio.',
+    );
 
     // El error de cantidad negativa se muestra de inmediato, sin esperar blur/submit.
     for (const key of ['cantidadTotal', 'cantidadMenores', 'cantidad']) {

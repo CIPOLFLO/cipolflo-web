@@ -65,7 +65,7 @@
                 @if (row[col.key]) {
                   <i
                     class="pi pi-exclamation-triangle table-warning-icon"
-                    [pTooltip]="col.tooltip"
+                    [pTooltip]="col.tooltipKey ? getString(row[col.tooltipKey]) : col.tooltip"
                     tooltipPosition="top"
                   >
                   </i>
