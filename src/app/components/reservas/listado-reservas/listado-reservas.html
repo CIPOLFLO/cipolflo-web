@@ -41,13 +41,6 @@
       [loading]="tableExport.exportando()"
       (clicked)="onExportar()"
     />
-
-    <app-pago-reserva
-      [reserva]="reservaPagoSeleccionada()"
-      (closed)="onCerrarPagoReserva()"
-      (pagoRegistrado)="onPagoReservaRegistrado()"
-    />
-
     <app-verification-dialog
       [visible]="verificandoFinalizacionVisible()"
       title="Verificando finalización"
@@ -91,3 +84,10 @@
   (cancelar)="onCerrarCancelacionConPagos()"
   (confirmar)="onConfirmarCancelacionConPagos($event)"
 />
+
+ <app-pago-reserva
+      [reserva]="reservaPagoSeleccionada()"
+      (closed)="onCerrarPagoReserva()"
+      (pagoRegistrado)="onPagoReservaRegistrado()"
+    />
+

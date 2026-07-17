@@ -642,8 +642,9 @@ describe('ListadoReservas', () => {
 
       const actions = component['mobileRowActions'](row);
 
-      expect(actions).toHaveLength(1);
-      expect(actions[0].label).toBe('Cancelar');
+      expect(actions).toHaveLength(2);
+      expect(actions[0].label).toBe('Registrar pago');
+       expect(actions[1].label).toBe('Cancelar');
     });
 
     it('en mobile no debería mostrar acciones para una reserva no cancelable', () => {
@@ -694,7 +695,7 @@ describe('ListadoReservas', () => {
         }),
       );
 
-      component['mobileRowActions'](row)[0].command?.(row);
+      component['mobileRowActions'](row)[1].command?.(row);
 
       expect(verificarSpy).toHaveBeenCalledWith(row.id);
     });
