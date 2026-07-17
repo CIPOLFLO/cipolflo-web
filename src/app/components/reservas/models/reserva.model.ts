@@ -21,7 +21,9 @@ export interface ReservaRow extends Record<string, unknown> {
   requiereSena: boolean;
   tipoReserva: TipoReserva;
   montoImpago: number;
-  fechaLimitePago: string | null;
+  plazoConfirmacion: PlazoConfirmacion | null;
+  fechaLimiteConfirmacion: string | null;
+  fechaInicioAlerta: string | null;
   pago: boolean;
   pendienteDocumentacion: boolean;
 }
@@ -36,6 +38,39 @@ export const TIPO_RESERVA_LABEL: Record<TipoReserva, string> = {
   [TipoReserva.ColaboracionSinFines]: 'Colaboración sin fines de lucro',
 };
 
+export const TIPO_RESERVA_OPTIONS: FormFieldOption[] = [
+  { label: 'Común', value: TipoReserva.Comun },
+  { label: 'Colaboración sin fines de lucro', value: TipoReserva.ColaboracionSinFines },
+];
+
+/** Plazo límite para confirmar una reserva antes de su cancelación automática. */
+export enum PlazoConfirmacion {
+  VeinticuatroHoras = 'VEINTICUATRO_HORAS',
+  TresMeses = 'TRES_MESES',
+}
+
+export const PLAZO_CONFIRMACION_LABEL: Record<PlazoConfirmacion, string> = {
+  [PlazoConfirmacion.VeinticuatroHoras]: '24 horas',
+  [PlazoConfirmacion.TresMeses]: '3 meses',
+};
+
+export const PLAZO_CONFIRMACION_OPTIONS: FormFieldOption[] = [
+  { label: '24 horas', value: PlazoConfirmacion.VeinticuatroHoras },
+  { label: '3 meses', value: PlazoConfirmacion.TresMeses },
+];
+
+/**
+ * Regla única: la reserva requiere definir un plazo de confirmación cuando exige seña
+ * y/o documentación. La consumen `ReservaFormBase` (para mostrar/validar el select) y
+ * `DetalleReserva` (para mostrar los campos de plazo/fecha límite ya guardados).
+ */
+export function requierePlazoConfirmacion(
+  requiereSena: boolean,
+  requiereDocumentacion: boolean,
+): boolean {
+  return requiereSena || requiereDocumentacion;
+}
+
 export const FORMA_PAGO_RESERVA_LABEL: Partial<Record<FormaPago, string>> = {
   [FormaPago.Efectivo]: 'Efectivo',
   [FormaPago.Transferencia]: 'Transferencia',
@@ -46,11 +81,6 @@ export const TIPO_CLIENTE_LABEL: Record<TipoCliente, string> = {
   [TipoCliente.Particular]: 'Particular',
   [TipoCliente.Empresa]: 'Empresa',
 };
-
-export const TIPO_RESERVA_OPTIONS: FormFieldOption[] = [
-  { label: 'Común', value: TipoReserva.Comun },
-  { label: 'Colaboración sin fines de lucro', value: TipoReserva.ColaboracionSinFines },
-];
 
 /**
  * Estado inicial de la reserva según su tipo y sus requisitos previos:
@@ -138,6 +168,7 @@ export interface ReservaCreacionRequestDto {
   notas: string | null;
   requiereDocumentacion: boolean;
   requiereSena: boolean;
+  plazoConfirmacion: PlazoConfirmacion | null;
 }
 
 export interface ReservaCreacionRespuestaDto {
@@ -208,6 +239,8 @@ export interface ReservaDetalleRespuestaDto extends AuditInfoDto {
   requiereDocumentacion: boolean;
   tieneDocumentacion: boolean;
   requiereSena: boolean;
+  plazoConfirmacion: PlazoConfirmacion | null;
+  fechaLimiteConfirmacion: string | null;
   notas: string | null;
   cliente: ClienteDetalleReservaDto | null;
   servicio: ServicioDetalleReservaDto;

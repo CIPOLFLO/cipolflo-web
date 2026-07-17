@@ -33,6 +33,8 @@ import {
 import { ClientesService } from '../../clientes/services/cliente.service';
 import { ReservaFormBase } from '../reserva-form-base';
 import {
+  PLAZO_CONFIRMACION_OPTIONS,
+  PlazoConfirmacion,
   TIPO_RESERVA_OPTIONS,
   TipoDocumento,
   TipoReserva,
@@ -320,6 +322,20 @@ export class NuevaReserva extends ReservaFormBase {
     required: true,
   };
 
+  /**
+   * Select condicional (ver `mostrarPlazoConfirmacion()` en ReservaFormBase). Es `required`
+   * mientras está visible, por eso -como el resto de los selects obligatorios de este
+   * formulario- no lleva opción vacía.
+   */
+  protected readonly plazoConfirmacionField: FormFieldConfig = {
+    key: 'plazoConfirmacion',
+    label: 'Plazo para confirmar la reserva',
+    type: 'select',
+    required: true,
+    placeholder: 'Seleccione un plazo',
+    options: PLAZO_CONFIRMACION_OPTIONS,
+  };
+
   // --- Sección de cliente ---
 
   /** Campo de sólo lectura que muestra el tipo del cliente encontrado (no se elige). */
@@ -575,6 +591,7 @@ export class NuevaReserva extends ReservaFormBase {
       notas: this.controlValue('notas'),
       requiereDocumentacion: this.controlChecked('requiereDocumentacion'),
       requiereSena: this.controlChecked('requiereSena'),
+      plazoConfirmacion: this.controlValue('plazoConfirmacion') as PlazoConfirmacion | null,
     };
   }
 }

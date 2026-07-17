@@ -39,6 +39,8 @@ import { ReservaValidacionesService } from './services/reserva-validaciones.serv
 import {
   ClienteBusquedaReservaDto,
   CostoReservaRequestDto,
+  PlazoConfirmacion,
+  requierePlazoConfirmacion,
   TipoDocumento,
   TipoReserva,
 } from './models/reserva.model';
@@ -131,6 +133,19 @@ export abstract class ReservaFormBase {
     () => this.busquedaRealizada() && !this.clienteCamposReadonly(),
   );
 
+  /**
+   * El select de plazo de confirmación solo se muestra (y es obligatorio) mientras la reserva
+   * requiera seña y/o documentación. La regla en sí vive en `requierePlazoConfirmacion`
+   * (reserva.model.ts), que también usa `DetalleReserva`.
+   */
+  protected readonly mostrarPlazoConfirmacion = computed<boolean>(() => {
+    this.formEvents();
+    return requierePlazoConfirmacion(
+      this.controlChecked('requiereSena'),
+      this.controlChecked('requiereDocumentacion'),
+    );
+  });
+
   protected readonly reservaErrors = computed<Record<string, string>>(() => {
     this.formEvents();
     this.blurCount();
@@ -167,6 +182,7 @@ export abstract class ReservaFormBase {
       notas: new FormControl<string | null>(null),
       requiereDocumentacion: new FormControl<boolean>(false),
       requiereSena: new FormControl<boolean>(false),
+      plazoConfirmacion: new FormControl<PlazoConfirmacion | null>(null),
     });
   }
 
@@ -187,6 +203,7 @@ export abstract class ReservaFormBase {
     this.escucharCambios();
     this.aplicarValidadoresMonto();
     this.aplicarValidadoresCliente();
+    this.aplicarValidadorPlazoConfirmacion();
     this.escucharCostoReserva();
   }
 
@@ -251,6 +268,16 @@ export abstract class ReservaFormBase {
       .get('tipoCliente')
       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((tipo: TipoCliente | null) => this.tipoClienteValue.set(tipo));
+
+    this.form
+      .get('requiereSena')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.aplicarValidadorPlazoConfirmacion());
+
+    this.form
+      .get('requiereDocumentacion')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.aplicarValidadorPlazoConfirmacion());
   }
 
   /**
@@ -407,6 +434,22 @@ export abstract class ReservaFormBase {
 
     documento?.setValidators([Validators.required, validadorFormato]);
     documento?.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private aplicarValidadorPlazoConfirmacion(): void {
+    const plazoConfirmacion = this.form.get('plazoConfirmacion');
+    const requiereAlguno = requierePlazoConfirmacion(
+      this.controlChecked('requiereSena'),
+      this.controlChecked('requiereDocumentacion'),
+    );
+
+    if (requiereAlguno) {
+      plazoConfirmacion?.setValidators(Validators.required);
+    } else {
+      plazoConfirmacion?.setValue(null, { emitEvent: false });
+      plazoConfirmacion?.clearValidators();
+    }
+    plazoConfirmacion?.updateValueAndValidity({ emitEvent: false });
   }
 
   /** Carga los datos de un cliente (búsqueda o precarga) y deja los campos en sólo lectura. */

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { EstadoReserva } from '../../../shared';
 import { ReservaRow, TipoReserva } from '../models/reserva.model';
 import { mapReservaCardMobileRow } from './reserva-card-mobile.mapper';
@@ -20,7 +19,9 @@ describe('mapReservaCardMobileRow', () => {
       requiereSena: false,
       tipoReserva: TipoReserva.Comun,
       montoImpago: 1500,
-      fechaLimitePago: null,
+      plazoConfirmacion: null,
+      fechaLimiteConfirmacion: null,
+      fechaInicioAlerta: null,
       pago: false,
       pendienteDocumentacion: false,
     };
@@ -32,9 +33,9 @@ describe('mapReservaCardMobileRow', () => {
     [EstadoReserva.Finalizada, 'Finalizada', 'tag--purple'],
     [EstadoReserva.Cancelada, 'Cancelada', 'tag--gray'],
     [EstadoReserva.Pendiente, 'Pendiente', 'tag--yellow'],
+    [EstadoReserva.VencidaSinPago, 'Vencida sin pago', 'tag--red'],
   ])('debería mapear %s con su etiqueta y color', (estadoReserva, label, colorClass) => {
     const resultado = mapReservaCardMobileRow(crearReserva(estadoReserva));
-
     expect(resultado.estadoTag).toEqual({
       label,
       colorClass,
@@ -43,7 +44,6 @@ describe('mapReservaCardMobileRow', () => {
 
   it('debería preparar los campos que muestra la card', () => {
     const resultado = mapReservaCardMobileRow(crearReserva(EstadoReserva.Confirmada));
-
     expect(resultado.cliente).toBe('Juan Pérez');
     expect(resultado.servicio).toBe('Hospedaje en camping');
     expect(resultado.fechaEntradaFormateada).toBe('10/08/2026');
@@ -53,9 +53,7 @@ describe('mapReservaCardMobileRow', () => {
 
   it('debería conservar los datos originales de la reserva', () => {
     const reserva = crearReserva(EstadoReserva.Pendiente);
-
     const resultado = mapReservaCardMobileRow(reserva);
-
     expect(resultado).toMatchObject(reserva);
   });
 });

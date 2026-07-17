@@ -5,6 +5,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, finalize, map, switchMap } from 'rxjs';
 import {
   AppButton,
+  DateTimeFormatPipe,
   DetailRegistroSection,
   DetailSection,
   ESTADO_RESERVA_LABEL,
@@ -18,8 +19,16 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ReservasService } from '../services/reservas.service';
-import { FORMA_PAGO_RESERVA_LABEL, TIPO_RESERVA_LABEL, TipoReserva } from '../models/reserva.model';
+import {
+  FORMA_PAGO_RESERVA_LABEL,
+  PLAZO_CONFIRMACION_LABEL,
+  requierePlazoConfirmacion,
+  TIPO_RESERVA_LABEL,
+  TipoReserva,
+} from '../models/reserva.model';
 import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
+
+const dateTimeFormatPipe = new DateTimeFormatPipe();
 
 @Component({
   selector: 'app-detalle-reserva',
@@ -70,6 +79,7 @@ export class DetalleReserva {
   protected readonly reservaFields = computed<DetailFieldConfig[]>(() => {
     const e = this.reserva();
     if (!e) return [];
+    const requiereAlgunPlazo = requierePlazoConfirmacion(e.requiereSena, e.requiereDocumentacion);
     const fields: DetailFieldConfig[] = [
       { key: 'tipoReserva', label: 'Tipo de Reserva', value: TIPO_RESERVA_LABEL[e.tipoReserva] },
       {
@@ -140,6 +150,24 @@ export class DetalleReserva {
               label: 'Tiene Documentación',
               value: e.tieneDocumentacion ? 'Sí' : 'No',
               valueClass: e.tieneDocumentacion ? ('success' as const) : ('danger' as const),
+            },
+          ]
+        : []),
+      ...(requiereAlgunPlazo && e.plazoConfirmacion !== null
+        ? [
+            {
+              key: 'plazoConfirmacion',
+              label: 'Plazo para Confirmar la Reserva',
+              value: PLAZO_CONFIRMACION_LABEL[e.plazoConfirmacion],
+            },
+          ]
+        : []),
+      ...(requiereAlgunPlazo && e.fechaLimiteConfirmacion !== null
+        ? [
+            {
+              key: 'fechaLimiteConfirmacion',
+              label: 'Fecha Límite de Confirmación',
+              value: dateTimeFormatPipe.transform(e.fechaLimiteConfirmacion),
             },
           ]
         : []),
