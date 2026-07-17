@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
-import { parseIsoDate } from '../../../shared';
+import { parseIsoDate, startOfToday } from '../../../shared';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteValidacionesService {
@@ -91,6 +91,13 @@ export class ClienteValidacionesService {
       'fechaIngreso',
       'La fecha de ingreso es obligatoria.',
     );
+    this.addRequiredError(
+      errors,
+      form,
+      submitted,
+      'categoriaSocio',
+      'La categoría es obligatoria.',
+    );
 
     const cedula = form.get('cedula');
     const fechaNacimiento = form.get('fechaNacimiento');
@@ -176,11 +183,7 @@ export class ClienteValidacionesService {
     if (!fechaIngreso) {
       return { fechaInvalida: true };
     }
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    fechaIngreso.setHours(0, 0, 0, 0);
-
-    return fechaIngreso <= hoy ? null : { fechaIngresoFutura: true };
+    return fechaIngreso <= startOfToday() ? null : { fechaIngresoFutura: true };
   }
 
   private addRequiredError(

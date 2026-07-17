@@ -82,6 +82,7 @@
         (blur)="blurred.emit()"
         [required]="config().required ?? false"
         [invalid]="!!error()"
+        [attr.max]="config().maxDate ?? null"
         [fluid]="true"
       />
     }

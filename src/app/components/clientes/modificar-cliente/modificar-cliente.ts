@@ -16,6 +16,8 @@ import {
   FormLayout,
   FormSection,
   PageLayout,
+  startOfToday,
+  toIsoDate,
   type FormFieldConfig,
 } from '../../../shared';
 import {
@@ -67,6 +69,7 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
     );
 
     const mayorDeEdad = this.validaciones.mayorDeEdad.bind(this.validaciones);
+    const fechaIngresoValida = this.validaciones.fechaIngresoValida.bind(this.validaciones);
 
     effect(() => {
       if (!this.clienteTipo()) return;
@@ -78,12 +81,7 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         this.form.get('ciudad')?.addValidators(Validators.required);
         this.form.get('direccion')?.addValidators(Validators.required);
         this.form.get('categoriaSocio')?.addValidators(Validators.required);
-        this.form
-          .get('fechaIngreso')
-          ?.addValidators([
-            Validators.required,
-            this.validaciones.fechaIngresoValida.bind(this.validaciones),
-          ]);
+        this.form.get('fechaIngreso')?.addValidators([Validators.required, fechaIngresoValida]);
         this.form.get('fechaNacimiento')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('metodoCobro')?.updateValueAndValidity({ emitEvent: false });
         this.form.get('pais')?.updateValueAndValidity({ emitEvent: false });
@@ -180,6 +178,7 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         type: 'date',
         defaultValue: c.fechaIngreso ?? undefined,
         required: true,
+        maxDate: toIsoDate(startOfToday())!,
       },
       {
         key: 'estado',

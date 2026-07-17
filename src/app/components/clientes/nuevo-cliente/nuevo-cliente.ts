@@ -6,6 +6,8 @@ import {
   FormLayout,
   FormSection,
   PageLayout,
+  startOfToday,
+  toIsoDate,
   type FormFieldConfig,
 } from '../../../shared';
 import {
@@ -53,7 +55,7 @@ export class NuevoCliente extends ClienteFormBase {
           Validators.required,
         ),
         fechaIngreso: new FormControl<string | null>(
-          new Date().toISOString().split('T')[0],
+          toIsoDate(startOfToday()),
           Validators.required,
         ),
       }),
@@ -96,7 +98,8 @@ export class NuevoCliente extends ClienteFormBase {
       label: 'Fecha de ingreso',
       type: 'date',
       required: true,
-      defaultValue: new Date().toISOString().split('T')[0],
+      defaultValue: toIsoDate(startOfToday())!,
+      maxDate: toIsoDate(startOfToday())!,
     },
   ]);
 

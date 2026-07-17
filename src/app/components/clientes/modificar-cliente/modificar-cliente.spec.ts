@@ -156,8 +156,18 @@ describe('ModificarCliente', () => {
     expect(keys).toContain('cedula');
     expect(keys).toContain('fechaNacimiento');
     expect(keys).toContain('metodoCobro');
+    expect(keys).toContain('categoriaSocio');
+    expect(keys).toContain('fechaIngreso');
     expect(keys.indexOf('numeroSocio')).toBe(0);
     expect(keys.indexOf('tipoCliente')).toBe(1);
+  });
+
+  it('infoFields precarga categoriaSocio y fechaIngreso con los valores actuales del socio', () => {
+    const fields = component['infoFields']();
+    expect(fields.find((f) => f.key === 'categoriaSocio')?.defaultValue).toBe(
+      CategoriaSocio.SocioComun,
+    );
+    expect(fields.find((f) => f.key === 'fechaIngreso')?.defaultValue).toBe('2020-01-01');
   });
 
   it('infoFields debe retornar campos de particular cuando el tipo es Particular', async () => {
@@ -177,6 +187,8 @@ describe('ModificarCliente', () => {
     expect(keys).not.toContain('fechaNacimiento');
     expect(keys).not.toContain('numeroSocio');
     expect(keys).not.toContain('metodoCobro');
+    expect(keys).not.toContain('categoriaSocio');
+    expect(keys).not.toContain('fechaIngreso');
   });
 
   it('infoFields y ubicacionFields cubren branches ?? con todos los campos opcionales nulos', async () => {
