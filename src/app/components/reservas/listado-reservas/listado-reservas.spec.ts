@@ -644,7 +644,7 @@ describe('ListadoReservas', () => {
 
       expect(actions).toHaveLength(2);
       expect(actions[0].label).toBe('Registrar pago');
-       expect(actions[1].label).toBe('Cancelar');
+      expect(actions[1].label).toBe('Cancelar');
     });
 
     it('en mobile no debería mostrar acciones para una reserva no cancelable', () => {

@@ -85,9 +85,8 @@
   (confirmar)="onConfirmarCancelacionConPagos($event)"
 />
 
- <app-pago-reserva
-      [reserva]="reservaPagoSeleccionada()"
-      (closed)="onCerrarPagoReserva()"
-      (pagoRegistrado)="onPagoReservaRegistrado()"
-    />
-
+<app-pago-reserva
+  [reserva]="reservaPagoSeleccionada()"
+  (closed)="onCerrarPagoReserva()"
+  (pagoRegistrado)="onPagoReservaRegistrado()"
+/>
