@@ -173,7 +173,7 @@ export class OccupancyCalendar {
   /** Evita que el click en el día burbujee al datepicker: en un día ocupado cancelaría la
    *  navegación del link (PrimeNG llama preventDefault() sobre días no seleccionables); en un
    *  día disponible en modo readOnly evita que dispare la selección de rango. */
-  protected onDiaClick(event: MouseEvent): void {
+  protected onDiaClick(event: Event): void {
     event.stopPropagation();
   }
 

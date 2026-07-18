@@ -13,7 +13,12 @@
     >
       @if (readOnly()) {
         <ng-template #date let-date>
-          <span class="occupancy-calendar__day-disponible" (click)="onDiaClick($event)">
+          <span
+            class="occupancy-calendar__day-disponible"
+            tabindex="0"
+            (click)="onDiaClick($event)"
+            (keydown)="onDiaClick($event)"
+          >
             {{ date.day }}
           </span>
         </ng-template>
