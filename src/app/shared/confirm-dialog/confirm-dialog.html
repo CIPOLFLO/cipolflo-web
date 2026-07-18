@@ -6,7 +6,9 @@
   [resizable]="false"
   [draggable]="false"
   [header]="config().title"
-  [style]="{ width: config().width ?? '420px' }"
+  [style]="{ width: config().width ?? '92vw',
+             maxWidth: config().width ?? '420px'
+           }"
 >
   <p class="confirm-dialog__message">{{ config().message }}</p>
 

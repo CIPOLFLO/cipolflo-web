@@ -118,13 +118,3 @@
   color: var(--color-danger);
   font-size: 0.8125rem;
 }
-
-@media (max-width: 768px) {
-  :host ::ng-deep .p-dialog {
-    width: 92vw !important;
-  }
-
-  :host ::ng-deep .p-dialog-content {
-    padding: 1rem;
-  }
-}
