@@ -636,16 +636,26 @@ describe('ListadoReservas', () => {
         search: 'Juan',
       });
     });
-    it('la card mobile no debería recibir acciones ni mostrar menú', async () => {
-      isMobile.set(true);
-      fixture.detectChanges();
-      await fixture.whenStable();
-      fixture.detectChanges();
+    it('en mobile debería mostrar solo la acción Cancelar para una reserva cancelable', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Pendiente,
+      } as ReservaRow;
 
-      const card = fixture.debugElement.query(By.css('app-mob-reserva-card'));
+      const actions = component['mobileRowActions'](row);
 
-      expect(card).toBeTruthy();
-      expect(card.componentInstance.actions()).toEqual([]);
+      expect(actions).toHaveLength(2);
+      expect(actions[0].label).toBe('Registrar pago');
+      expect(actions[1].label).toBe('Cancelar');
+    });
+
+    it('en mobile no debería mostrar acciones para una reserva no cancelable', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Finalizada,
+      } as ReservaRow;
+
+      expect(component['mobileRowActions'](row)).toEqual([]);
     });
     it('el FAB mobile debería navegar a Nueva Reserva', () => {
       isMobile.set(true);
@@ -672,6 +682,24 @@ describe('ListadoReservas', () => {
       emptyFixture.detectChanges();
 
       expect(emptyFixture.nativeElement.textContent).toContain('No se encontraron reservas.');
+    });
+    it('la acción Cancelar mobile debería iniciar la cancelación', () => {
+      const row = {
+        ...mockRow,
+        estadoReserva: EstadoReserva.Confirmada,
+      } as ReservaRow;
+
+      const verificarSpy = vi.spyOn(mockReservasService, 'verificarCancelacion').mockReturnValue(
+        of({
+          puedeCancelarseDirectamente: false,
+          pagosAsociados: [],
+          importeTotalPagos: 0,
+        }),
+      );
+
+      component['mobileRowActions'](row)[1].command?.(row);
+
+      expect(verificarSpy).toHaveBeenCalledWith(row.id);
     });
   });
 });

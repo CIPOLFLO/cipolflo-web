@@ -4,12 +4,13 @@
   [closable]="false"
   [resizable]="false"
   [draggable]="false"
-  [style]="{ width: '560px', minHeight: '520px' }"
+  [style]="{ width: '92vw', maxWidth: '560px' }"
+  [contentStyle]="{ maxHeight: '80vh', overflow: 'auto', padding: '1rem' }"
 >
   @if (reserva(); as reserva) {
     <div class="pago-reserva">
       <header class="pago-reserva__header">
-        <h2>Confirmar pago de reserva</h2>
+        <h2>Registrar pago de reserva</h2>
         <p>Registre el pago correspondiente a la reserva seleccionada</p>
       </header>
 

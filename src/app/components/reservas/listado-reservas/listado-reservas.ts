@@ -177,6 +177,27 @@ export class ListadoReservas {
       : []),
   ];
 
+  protected readonly mobileRowActions = (row: ReservaRow): RowAction<ReservaRow>[] => [
+    ...(this.puedeConfirmarPago(row)
+      ? [
+          {
+            label: 'Registrar pago',
+            icon: 'pi pi-dollar',
+            command: () => this.onConfirmarPago(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+    ...(this.puedeCancelar(row)
+      ? [
+          {
+            label: 'Cancelar',
+            icon: 'pi pi-ban',
+            command: () => this.iniciarCancelacion(row),
+          } satisfies RowAction<ReservaRow>,
+        ]
+      : []),
+  ];
+
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
   }

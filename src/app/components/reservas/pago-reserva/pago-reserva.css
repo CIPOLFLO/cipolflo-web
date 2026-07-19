@@ -118,3 +118,35 @@
   justify-content: flex-end;
   gap: 12px;
 }
+
+@media (max-width: 768px) {
+  .pago-reserva {
+    gap: 14px;
+    padding: 2px 0;
+  }
+
+  .pago-reserva__header h2 {
+    font-size: 17px;
+  }
+
+  .pago-reserva__header p {
+    font-size: 13px;
+  }
+
+  .pago-reserva__monto {
+    padding: 10px 12px;
+  }
+
+  .pago-reserva__monto strong {
+    font-size: 20px;
+  }
+
+  .pago-reserva__actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .pago-reserva__actions app-button {
+    width: 100%;
+  }
+}
