@@ -1,4 +1,4 @@
-import { of, throwError} from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { ofrecerComprobante } from './ofrecer-comprobante.helper';
 import { ConfirmDialogService } from './confirm-dialog.service';
