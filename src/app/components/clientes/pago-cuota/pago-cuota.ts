@@ -15,7 +15,13 @@ import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { AppButton, CurrencyFormatPipe, toIsoDate } from '../../../shared';
+import {
+  AppButton,
+  ConfirmDialogService,
+  CurrencyFormatPipe,
+  ofrecerComprobante,
+  toIsoDate,
+} from '../../../shared';
 import {
   ClienteRespuestaDto,
   MetodoCobro,
@@ -51,6 +57,7 @@ export class PagoCuota {
 
   private readonly clientesService = inject(ClientesService);
   private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
 
   protected readonly metodosCobro = METODO_COBRO_OPTIONS;
   protected readonly costoCuota = this.clientesService.getCostoCuota();
@@ -151,8 +158,35 @@ export class PagoCuota {
     return fechaPago > hoy;
   });
 
+  /**
+   * Al aceptar la pantalla "Pago registrado" se ofrece la descarga del comprobante
+   * (mismo patrón que NuevaReserva/NuevoCliente), usando los ids que ya vinieron en la
+   * respuesta de registrarPagoCuota, sin ninguna consulta adicional al backend. El
+   * diálogo se cierra en ambos casos (se confirme o no la descarga).
+   */
   protected cerrarConfirmacion(): void {
-    this.cerrar();
+    const cliente = this.cliente();
+    const pagos = this.pagoConfirmado();
+
+    if (!cliente || !pagos) {
+      this.cerrar();
+      return;
+    }
+
+    ofrecerComprobante(
+      this.confirmDialog,
+      this.errorHandler,
+      {
+        title: 'Pago registrado',
+        message: '¿Desea descargar el comprobante del pago?',
+      },
+      () =>
+        this.clientesService.descargarComprobantePago(
+          cliente.id,
+          pagos.map((p) => p.id),
+        ),
+      () => this.cerrar(),
+    );
   }
 
   private cerrar(): void {

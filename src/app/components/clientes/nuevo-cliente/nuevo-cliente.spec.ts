@@ -9,7 +9,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
-import { startOfToday, toIsoDate } from '../../../shared';
+import { ConfirmDialogService, startOfToday, toIsoDate } from '../../../shared';
 
 const clienteMock = {
   id: 1,
@@ -78,11 +78,16 @@ describe('NuevoCliente', () => {
           useValue: {
             getById: vi.fn().mockReturnValue(of(clienteMock)),
             registrarSocio: vi.fn().mockReturnValue(NEVER),
+            descargarComprobanteAltaSocio: vi.fn().mockReturnValue(of(undefined)),
           },
         },
         {
           provide: ErrorHandlerService,
           useValue: { handle: vi.fn() },
+        },
+        {
+          provide: ConfirmDialogService,
+          useValue: { open: vi.fn().mockReturnValue(of(false)) },
         },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
@@ -279,6 +284,52 @@ describe('NuevoCliente', () => {
     fixture.detectChanges();
     component['onConfirmar']();
 
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', clienteMock.id]);
+  });
+
+  it('onConfirmar ofrece el comprobante y navega igual si el usuario cancela la descarga', () => {
+    const service = TestBed.inject(ClientesService);
+    const confirmDialog = TestBed.inject(ConfirmDialogService);
+    vi.spyOn(service, 'registrarSocio').mockReturnValue(of(clienteMock));
+    vi.spyOn(confirmDialog, 'open').mockReturnValue(of(false));
+
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    fixture.detectChanges();
+    component['onConfirmar']();
+
+    expect(confirmDialog.open).toHaveBeenCalled();
+    expect(service.descargarComprobanteAltaSocio).not.toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/clientes', clienteMock.id]);
+  });
+
+  it('onConfirmar descarga el comprobante y navega cuando el usuario confirma', () => {
+    const service = TestBed.inject(ClientesService);
+    const confirmDialog = TestBed.inject(ConfirmDialogService);
+    vi.spyOn(service, 'registrarSocio').mockReturnValue(of(clienteMock));
+    vi.spyOn(confirmDialog, 'open').mockReturnValue(of(true));
+    const descargarSpy = vi
+      .spyOn(service, 'descargarComprobanteAltaSocio')
+      .mockReturnValue(of(undefined));
+
+    component['form'].patchValue({
+      nombre: 'Juan',
+      cedula: '5.191.926-8',
+      telefono: '099000000',
+      departamento: 'Flores',
+      ciudad: 'Trinidad',
+      fechaNacimiento: '1999-06-29',
+    });
+    fixture.detectChanges();
+    component['onConfirmar']();
+
+    expect(descargarSpy).toHaveBeenCalledWith(clienteMock.id);
     expect(navigateSpy).toHaveBeenCalledWith(['/clientes', clienteMock.id]);
   });
 

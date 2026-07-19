@@ -12,6 +12,8 @@ import {
 import { ClientesService } from '../services/cliente.service';
 import { MetodoCobro } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
+import { ConfirmDialogService } from '../../../shared';
+
 const mockCliente: ClienteRespuestaDto = {
   id: 1,
   nombreCompleto: 'Lucía Rodríguez',
@@ -59,7 +61,12 @@ describe('PagoCuota', () => {
           useValue: {
             getCostoCuota: () => 5000,
             registrarPagoCuota: vi.fn(),
+            descargarComprobantePago: vi.fn().mockReturnValue(of(undefined)),
           },
+        },
+        {
+          provide: ConfirmDialogService,
+          useValue: { open: vi.fn().mockReturnValue(of(false)) },
         },
       ],
     }).compileComponents();
@@ -130,6 +137,38 @@ describe('PagoCuota', () => {
         metodoCobro: MetodoCobro.Efectivo,
       },
     ]);
+
+    component['cerrarConfirmacion']();
+
+    expect(component['pagoConfirmado']()).toBeNull();
+    expect(cerradoSpy).toHaveBeenCalled();
+  });
+
+  it('cerrarConfirmacion ofrece el comprobante con los ids de las cuotas registradas', () => {
+    const clientesService = TestBed.inject(ClientesService);
+    const confirmDialog = TestBed.inject(ConfirmDialogService);
+    vi.spyOn(confirmDialog, 'open').mockReturnValue(of(true));
+    const descargarSpy = vi
+      .spyOn(clientesService, 'descargarComprobantePago')
+      .mockReturnValue(of(undefined));
+
+    component['pagoConfirmado'].set(mockPagoCuotaResponse);
+
+    component['cerrarConfirmacion']();
+
+    expect(confirmDialog.open).toHaveBeenCalled();
+    expect(descargarSpy).toHaveBeenCalledWith(
+      mockCliente.id,
+      mockPagoCuotaResponse.map((p) => p.id),
+    );
+  });
+
+  it('cerrarConfirmacion cierra el diálogo (pagoConfirmado null, cerrado emitido) tanto si se confirma como si se cancela la descarga', () => {
+    const confirmDialog = TestBed.inject(ConfirmDialogService);
+    vi.spyOn(confirmDialog, 'open').mockReturnValue(of(false));
+    const cerradoSpy = vi.spyOn(component.cerrado, 'emit');
+
+    component['pagoConfirmado'].set(mockPagoCuotaResponse);
 
     component['cerrarConfirmacion']();
 
