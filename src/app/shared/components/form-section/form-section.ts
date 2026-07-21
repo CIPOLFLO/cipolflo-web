@@ -14,6 +14,7 @@ export class FormSection {
   title = input.required<string>();
   fields = input<FormFieldConfig[]>([]);
   errors = input<Record<string, string | undefined>>({});
+  note = input<string>('');
 
   readonly valuesChange = output<Record<string, string | null>>();
   readonly fieldBlur = output<string>();

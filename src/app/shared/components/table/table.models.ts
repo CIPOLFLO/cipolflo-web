@@ -47,6 +47,26 @@ export interface RowAction<T = unknown> {
   disabled?: boolean | ((row: T) => boolean);
 }
 
+export interface InlineButtonAction<T = unknown> {
+  type: 'button';
+  icon: string;
+  ariaLabel: (row: T) => string;
+  command: (row: T) => void;
+  variant?: 'default' | 'danger';
+  disabled?: boolean | ((row: T) => boolean);
+}
+
+export interface InlineToggleAction<T = unknown> {
+  type: 'toggle';
+  ariaLabel: (row: T) => string;
+  checked: (row: T) => boolean;
+  onChange: (row: T, checked: boolean) => void;
+  disabled?: boolean | ((row: T) => boolean);
+}
+
+/** Acciones de fila siempre visibles (sin menú "⋮"), ej. lápiz + switch + tacho. */
+export type InlineAction<T = unknown> = InlineButtonAction<T> | InlineToggleAction<T>;
+
 export type LoadDataFn<T> = (params: TableQueryParams) => Observable<PageResponse<T>>;
 
 export const EMPTY_PAGE: PageResponse<never> = {
