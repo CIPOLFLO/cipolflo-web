@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -14,11 +14,33 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { ServicioValidacionesService } from '../services/servicio-validaciones.service';
+import {
+  TarifaServicioRequestDto,
+  TipoClienteTarifa,
+  TIPO_CLIENTE_TARIFA_OPTIONS,
+} from '../models/servicio.model';
+import { TarifasForm } from '../components/tarifas-form/tarifas-form';
+
+type TarifaFormGroup = FormGroup<{
+  tipoCliente: FormControl<TipoClienteTarifa | null>;
+  precio: FormControl<number | null>;
+  modalidadPrecio: FormControl<string | null>;
+  antiguedadMinima: FormControl<number | null>;
+  antiguedadMaxima: FormControl<number | null>;
+}>;
 
 @Component({
   standalone: true,
   selector: 'app-nuevo-servicio',
-  imports: [ReactiveFormsModule, PageLayout, FormLayout, FormSection, FormActions, AppButton],
+  imports: [
+    ReactiveFormsModule,
+    PageLayout,
+    FormLayout,
+    FormSection,
+    FormActions,
+    AppButton,
+    TarifasForm,
+  ],
   templateUrl: './nuevo-servicio.html',
   styleUrl: './nuevo-servicio.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +58,13 @@ export class NuevoServicio {
   protected readonly modalidades = toSignal(this.optionsService.getModalidades(), {
     initialValue: [],
   });
+  protected readonly tiposClienteTarifa = TIPO_CLIENTE_TARIFA_OPTIONS;
+
+  protected readonly tarifas = new FormArray<TarifaFormGroup>([], Validators.required);
+
+  constructor() {
+    this.tarifas.push(this.crearTarifaFormGroup());
+  }
 
   protected readonly form = new FormGroup(
     {
@@ -50,6 +79,7 @@ export class NuevoServicio {
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
+      tarifas: this.tarifas,
     },
     {
       validators: [
@@ -66,6 +96,40 @@ export class NuevoServicio {
   protected readonly loading = signal(false);
   private readonly touchCount = signal(0);
 
+  private crearTarifaFormGroup(): TarifaFormGroup {
+    return new FormGroup({
+      tipoCliente: new FormControl<TipoClienteTarifa | null>(null, Validators.required),
+      precio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
+      modalidadPrecio: new FormControl<string | null>(null, Validators.required),
+      antiguedadMinima: new FormControl<number | null>(null, Validators.min(0)),
+      antiguedadMaxima: new FormControl<number | null>(null, Validators.min(0)),
+    });
+  }
+
+  protected agregarTarifa(): void {
+    this.tarifas.push(this.crearTarifaFormGroup());
+    this.form.markAsDirty();
+  }
+
+  protected quitarTarifa(index: number): void {
+    this.tarifas.removeAt(index);
+    this.form.markAsDirty();
+  }
+
+  private obtenerTarifasDto(): TarifaServicioRequestDto[] {
+    return this.tarifas.controls.map((tarifa) => {
+      const { tipoCliente, precio, modalidadPrecio, antiguedadMinima, antiguedadMaxima } =
+        tarifa.getRawValue();
+
+      return {
+        tipoCliente: tipoCliente!,
+        precio: precio!,
+        modalidadPrecio: modalidadPrecio!,
+        antiguedadMinima,
+        antiguedadMaxima,
+      };
+    });
+  }
   protected readonly confirmDisabled = computed(() => {
     this.formEvents();
     return this.form.invalid || this.loading();
@@ -211,6 +275,7 @@ export class NuevoServicio {
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
         costoPersonaExtra,
+        tarifas: this.obtenerTarifasDto(),
       })
       .subscribe({
         next: () => {

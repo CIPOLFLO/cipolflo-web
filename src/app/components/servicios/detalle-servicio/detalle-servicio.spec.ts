@@ -24,6 +24,7 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
   updatedBy: 'Juan Pérez',
+  tarifas: [],
 };
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),

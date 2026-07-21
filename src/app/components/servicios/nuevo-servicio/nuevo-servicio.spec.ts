@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoServicio } from './nuevo-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
-import { EstadoServicio } from '../models/servicio.model';
+import { EstadoServicio, TipoClienteTarifa } from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
@@ -66,6 +66,13 @@ describe('NuevoServicio', () => {
       precioParticular: 100,
       precioSocio: 50,
       modalidadPrecio: 'POR_DIA',
+    });
+    component['tarifas'].at(0).patchValue({
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 100,
+      modalidadPrecio: 'POR_DIA',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
     });
   }
 
@@ -241,6 +248,15 @@ describe('NuevoServicio', () => {
         precioParticular: 100,
         precioSocio: 50,
         modalidadPrecio: 'POR_DIA',
+        tarifas: [
+          {
+            tipoCliente: TipoClienteTarifa.Particular,
+            precio: 100,
+            modalidadPrecio: 'POR_DIA',
+            antiguedadMinima: null,
+            antiguedadMaxima: null,
+          },
+        ],
       }),
     );
   });

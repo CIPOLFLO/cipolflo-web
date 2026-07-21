@@ -251,6 +251,7 @@ export class EditarServicio implements OnInit {
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
         costoPersonaExtra,
+        tarifas: [],
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

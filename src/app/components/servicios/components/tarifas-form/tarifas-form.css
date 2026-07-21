@@ -1,0 +1,161 @@
+:host {
+  display: block;
+  padding: 0 1.5rem;
+}
+
+.tarifas-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tarifas-form__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tarifas-form__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.tarifas-form__title {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tarifas-form__divider {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  height: 1px;
+  background-color: #d9e0e8;
+}
+
+.tarifas-form__actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tarifas-form__description {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.tarifas-form__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tarifa-card {
+  padding: 1rem;
+  border: 1px solid #d9e0e8;
+  border-radius: 10px;
+  background: var(--color-surface, #ffffff);
+}
+
+.tarifa-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.tarifa-card__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tarifa-card__delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-error, #ef4444);
+  cursor: pointer;
+}
+
+.tarifa-card__delete-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tarifa-card__fields {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tarifa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.tarifa-field__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.tarifa-field__label span {
+  color: var(--color-error, #ef4444);
+}
+
+.tarifa-field__control {
+  width: 100%;
+  min-height: 38px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--color-text-primary);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.tarifa-field__control:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.tarifa-field__error {
+  font-size: 12px;
+  color: var(--color-error, #ef4444);
+}
+
+.tarifas-form__add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 36px;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tarifas-form__add-button:hover {
+  background: #f8fafc;
+}

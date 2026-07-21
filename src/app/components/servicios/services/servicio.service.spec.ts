@@ -39,6 +39,7 @@ const mockDetalle: ServicioDetalleRespuestaDto = {
   updatedAt: '2026-01-15T10:30:00Z',
   createdBy: 'María González',
   updatedBy: 'María González',
+  tarifas: [],
 };
 
 describe('ServicioService', () => {
@@ -162,6 +163,7 @@ describe('ServicioService', () => {
       modalidadPrecio: 'POR_DIA',
       cantidad: null,
       capacidad: null,
+      tarifas: [],
     };
 
     const mockRespuesta = {
@@ -218,6 +220,7 @@ describe('ServicioService', () => {
       modalidadPrecio: 'POR_DIA',
       cantidad: null,
       capacidad: null,
+      tarifas: [],
     };
 
     const mockRespuesta = {
@@ -416,6 +419,50 @@ describe('ServicioService', () => {
           { status: 409, statusText: 'Conflict' },
         );
       expect(errorStatus).toBe(409);
+    });
+  });
+  describe('eliminarTarifa', () => {
+    it('hace DELETE a /servicios/{servicioId}/tarifas/{tarifaId}', () => {
+      service.eliminarTarifa(1, 2).subscribe();
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1/tarifas/2`);
+
+      expect(req.request.method).toBe('DELETE');
+
+      req.flush(null);
+    });
+
+    it('retorna éxito cuando la tarifa se elimina', () => {
+      let completado = false;
+
+      service.eliminarTarifa(1, 2).subscribe(() => {
+        completado = true;
+      });
+
+      httpMock.expectOne(`${environment.apiUrl}/servicios/1/tarifas/2`).flush(null);
+
+      expect(completado).toBe(true);
+    });
+
+    it('propaga error 404 cuando la tarifa no existe', () => {
+      let errorStatus = 0;
+
+      service.eliminarTarifa(1, 999).subscribe({
+        error: (e) => (errorStatus = e.status),
+      });
+
+      httpMock.expectOne(`${environment.apiUrl}/servicios/1/tarifas/999`).flush(
+        {
+          codigo: 'TARIFA_NO_ENCONTRADA',
+          descripcion: 'Tarifa no encontrada',
+        },
+        {
+          status: 404,
+          statusText: 'Not Found',
+        },
+      );
+
+      expect(errorStatus).toBe(404);
     });
   });
 });
