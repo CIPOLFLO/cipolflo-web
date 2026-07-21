@@ -42,7 +42,7 @@ describe('AntiguedadReservasCard', () => {
   });
 
   it('precarga la antigüedad vigente al iniciar', () => {
-    expect(component['form'].value.anios).toBe('5');
+    expect(component['form'].value.valor).toBe('5');
   });
 
   it('el defaultValue del campo refleja la antigüedad cargada (lo que FormField realmente muestra)', () => {
@@ -50,40 +50,40 @@ describe('AntiguedadReservasCard', () => {
   });
 
   it('marca error cuando el valor no es un entero positivo', () => {
-    component['onValuesChange']({ anios: '0' });
-    expect(component['errors']()['anios']).toBe(
+    component['onValuesChange']({ valor: '0' });
+    expect(component['errors']()['valor']).toBe(
       'La antigüedad debe ser un número entero mayor a 0.',
     );
   });
 
   it('marca error cuando el valor no es entero', () => {
-    component['onValuesChange']({ anios: '2.5' });
-    expect(component['errors']()['anios']).toBe(
+    component['onValuesChange']({ valor: '2.5' });
+    expect(component['errors']()['valor']).toBe(
       'La antigüedad debe ser un número entero mayor a 0.',
     );
   });
 
   it('onGuardar no llama al service si el form es inválido', () => {
-    component['onValuesChange']({ anios: '-1' });
+    component['onValuesChange']({ valor: '-1' });
     component['onGuardar']();
     expect(mockService.actualizar).not.toHaveBeenCalled();
   });
 
   it('onGuardar llama a actualizar con el valor ingresado', () => {
-    component['onValuesChange']({ anios: '10' });
+    component['onValuesChange']({ valor: '10' });
     component['onGuardar']();
     expect(mockService.actualizar).toHaveBeenCalledWith({ anios: 10 });
   });
 
   it('muestra confirmación de guardado tras un guardar exitoso', () => {
-    component['onValuesChange']({ anios: '10' });
+    component['onValuesChange']({ valor: '10' });
     component['onGuardar']();
     expect(component['guardadoOk']()).toBe(true);
   });
 
   it('delega errores del backend en ErrorHandlerService', () => {
     mockService.actualizar.mockReturnValue(throwError(() => new Error('falló')));
-    component['onValuesChange']({ anios: '10' });
+    component['onValuesChange']({ valor: '10' });
     component['onGuardar']();
     expect(mockErrorHandler.handle).toHaveBeenCalled();
   });
