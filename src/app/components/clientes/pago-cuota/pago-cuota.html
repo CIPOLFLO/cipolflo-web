@@ -132,7 +132,14 @@
         }
       </ul>
 
-      <app-button label="Aceptar" intent="primary" (clicked)="cerrarConfirmacion()" />
+      <footer class="pago-confirmado__actions">
+        <app-button label="Aceptar" intent="secondary" (clicked)="onAceptar()" />
+        <app-button
+          label="Descargar comprobante"
+          intent="success"
+          (clicked)="onDescargarComprobante()"
+        />
+      </footer>
     </div>
   }
 </p-dialog>

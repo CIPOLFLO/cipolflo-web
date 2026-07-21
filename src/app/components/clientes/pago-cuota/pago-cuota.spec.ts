@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { PagoCuota } from './pago-cuota';
 import {
   ClienteRespuestaDto,
@@ -12,7 +12,6 @@ import {
 import { ClientesService } from '../services/cliente.service';
 import { MetodoCobro } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
-import { ConfirmDialogService } from '../../../shared';
 
 const mockCliente: ClienteRespuestaDto = {
   id: 1,
@@ -63,10 +62,6 @@ describe('PagoCuota', () => {
             registrarPagoCuota: vi.fn(),
             descargarComprobantePago: vi.fn().mockReturnValue(of(undefined)),
           },
-        },
-        {
-          provide: ConfirmDialogService,
-          useValue: { open: vi.fn().mockReturnValue(of(false)) },
         },
       ],
     }).compileComponents();
@@ -121,57 +116,49 @@ describe('PagoCuota', () => {
     expect(component['pagoConfirmado']()).toEqual(mockPagoCuotaResponse);
   });
 
-  it('cerrarConfirmacion limpia el pago confirmado y emite cerrado', () => {
+  it('onAceptar limpia el pago confirmado y emite cerrado sin descargar comprobante', () => {
+    const clientesService = TestBed.inject(ClientesService);
+    const descargarSpy = vi.spyOn(clientesService, 'descargarComprobantePago');
     const cerradoSpy = vi.spyOn(component.cerrado, 'emit');
 
-    component['pagoConfirmado'].set([
-      {
-        id: 1,
-        socioId: mockCliente.id,
-        anio: 2026,
-        mes: 7,
-        nombreMes: 'julio',
-        descripcion: 'Julio 2026',
-        fechaPago: '2026-03-27T03:00:00Z',
-        importe: 5000,
-        metodoCobro: MetodoCobro.Efectivo,
-      },
-    ]);
+    component['pagoConfirmado'].set(mockPagoCuotaResponse);
 
-    component['cerrarConfirmacion']();
+    component['onAceptar']();
 
+    expect(descargarSpy).not.toHaveBeenCalled();
     expect(component['pagoConfirmado']()).toBeNull();
     expect(cerradoSpy).toHaveBeenCalled();
   });
 
-  it('cerrarConfirmacion ofrece el comprobante con los ids de las cuotas registradas', () => {
+  it('onDescargarComprobante descarga el comprobante con los ids de las cuotas registradas y cierra el diálogo', () => {
     const clientesService = TestBed.inject(ClientesService);
-    const confirmDialog = TestBed.inject(ConfirmDialogService);
-    vi.spyOn(confirmDialog, 'open').mockReturnValue(of(true));
     const descargarSpy = vi
       .spyOn(clientesService, 'descargarComprobantePago')
       .mockReturnValue(of(undefined));
-
-    component['pagoConfirmado'].set(mockPagoCuotaResponse);
-
-    component['cerrarConfirmacion']();
-
-    expect(confirmDialog.open).toHaveBeenCalled();
-    expect(descargarSpy).toHaveBeenCalledWith(
-      mockCliente.id,
-      mockPagoCuotaResponse.map((p) => p.id),
-    );
-  });
-
-  it('cerrarConfirmacion cierra el diálogo (pagoConfirmado null, cerrado emitido) tanto si se confirma como si se cancela la descarga', () => {
-    const confirmDialog = TestBed.inject(ConfirmDialogService);
-    vi.spyOn(confirmDialog, 'open').mockReturnValue(of(false));
     const cerradoSpy = vi.spyOn(component.cerrado, 'emit');
 
     component['pagoConfirmado'].set(mockPagoCuotaResponse);
 
-    component['cerrarConfirmacion']();
+    component['onDescargarComprobante']();
 
+    expect(descargarSpy).toHaveBeenCalledWith(
+      mockCliente.id,
+      mockPagoCuotaResponse.map((p) => p.id),
+    );
+    expect(component['pagoConfirmado']()).toBeNull();
+    expect(cerradoSpy).toHaveBeenCalled();
+  });
+
+  it('onDescargarComprobante delega el error de la descarga a ErrorHandlerService sin bloquear el cierre', () => {
+    const clientesService = TestBed.inject(ClientesService);
+    vi.spyOn(clientesService, 'descargarComprobantePago').mockReturnValue(
+      throwError(() => new Error('fallo de red')),
+    );
+    const cerradoSpy = vi.spyOn(component.cerrado, 'emit');
+
+    component['pagoConfirmado'].set(mockPagoCuotaResponse);
+
+    expect(() => component['onDescargarComprobante']()).not.toThrow();
     expect(component['pagoConfirmado']()).toBeNull();
     expect(cerradoSpy).toHaveBeenCalled();
   });

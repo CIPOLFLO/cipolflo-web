@@ -9,19 +9,14 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { DatePicker } from 'primeng/datepicker';
 
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import {
-  AppButton,
-  ConfirmDialogService,
-  CurrencyFormatPipe,
-  ofrecerComprobante,
-  toIsoDate,
-} from '../../../shared';
+import { AppButton, CurrencyFormatPipe, toIsoDate } from '../../../shared';
 import {
   ClienteRespuestaDto,
   MetodoCobro,
@@ -57,7 +52,6 @@ export class PagoCuota {
 
   private readonly clientesService = inject(ClientesService);
   private readonly errorHandler = inject(ErrorHandlerService);
-  private readonly confirmDialog = inject(ConfirmDialogService);
 
   protected readonly metodosCobro = METODO_COBRO_OPTIONS;
   protected readonly costoCuota = this.clientesService.getCostoCuota();
@@ -158,35 +152,36 @@ export class PagoCuota {
     return fechaPago > hoy;
   });
 
+  protected onAceptar(): void {
+    this.cerrar();
+  }
+
   /**
-   * Al aceptar la pantalla "Pago registrado" se ofrece la descarga del comprobante
-   * (mismo patrón que NuevaReserva/NuevoCliente), usando los ids que ya vinieron en la
-   * respuesta de registrarPagoCuota, sin ninguna consulta adicional al backend. El
-   * diálogo se cierra en ambos casos (se confirme o no la descarga).
+   * Descarga el comprobante desde la misma pantalla "Pago registrado", usando los ids que
+   * ya vinieron en la respuesta de registrarPagoCuota (sin consulta adicional al backend).
+   * Fire-and-forget: la descarga no bloquea el cierre del diálogo ni se ata al ciclo de
+   * vida del componente, que se destruye al cerrar.
    */
-  protected cerrarConfirmacion(): void {
+  protected onDescargarComprobante(): void {
     const cliente = this.cliente();
     const pagos = this.pagoConfirmado();
 
-    if (!cliente || !pagos) {
-      this.cerrar();
-      return;
-    }
-
-    ofrecerComprobante(
-      this.confirmDialog,
-      this.errorHandler,
-      {
-        title: 'Pago registrado',
-        message: '¿Desea descargar el comprobante del pago?',
-      },
-      () =>
-        this.clientesService.descargarComprobantePago(
+    if (cliente && pagos) {
+      this.clientesService
+        .descargarComprobantePago(
           cliente.id,
           pagos.map((p) => p.id),
-        ),
-      () => this.cerrar(),
-    );
+        )
+        .pipe(
+          catchError((err: unknown) => {
+            this.errorHandler.handle(err);
+            return EMPTY;
+          }),
+        )
+        .subscribe();
+    }
+
+    this.cerrar();
   }
 
   private cerrar(): void {
