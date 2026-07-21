@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
@@ -151,7 +152,35 @@ export class PagoCuota {
     return fechaPago > hoy;
   });
 
-  protected cerrarConfirmacion(): void {
+  protected onAceptar(): void {
+    this.cerrar();
+  }
+
+  /**
+   * Descarga el comprobante desde la misma pantalla "Pago registrado", usando los ids que
+   * ya vinieron en la respuesta de registrarPagoCuota (sin consulta adicional al backend).
+   * Fire-and-forget: la descarga no bloquea el cierre del diálogo ni se ata al ciclo de
+   * vida del componente, que se destruye al cerrar.
+   */
+  protected onDescargarComprobante(): void {
+    const cliente = this.cliente();
+    const pagos = this.pagoConfirmado();
+
+    if (cliente && pagos) {
+      this.clientesService
+        .descargarComprobantePago(
+          cliente.id,
+          pagos.map((p) => p.id),
+        )
+        .pipe(
+          catchError((err: unknown) => {
+            this.errorHandler.handle(err);
+            return EMPTY;
+          }),
+        )
+        .subscribe();
+    }
+
     this.cerrar();
   }
 

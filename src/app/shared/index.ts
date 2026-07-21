@@ -45,6 +45,7 @@ export type {
   ConfirmDialogData,
   ConfirmDialogVariant,
 } from './confirm-dialog/confirm-dialog.model';
+export { ofrecerComprobante } from './confirm-dialog/ofrecer-comprobante.helper';
 
 // error-dialog
 export { ErrorDialogComponent } from './error-dialog/error-dialog';
