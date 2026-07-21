@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { finalize, map } from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { catchError, EMPTY, finalize, map } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   AppButton,
+  ConfirmDialogService,
   CurrencyFormatPipe,
   DetailRegistroSection,
   DetailSection,
@@ -50,6 +51,8 @@ import { ReservasService } from '../services/reservas.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditarReserva extends ReservaFormBase {
+  private readonly confirmDialog = inject(ConfirmDialogService);
+
   protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
   });
@@ -160,13 +163,49 @@ export class EditarReserva extends ReservaFormBase {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: () => this.router.navigateByUrl(this.backLink()),
+        next: () => this.ofrecerComprobante(id),
         error: (err: unknown) => this.errorHandler.handle(err),
       });
   }
 
   override onCancelar(): void {
     this.router.navigateByUrl(this.backLink());
+  }
+
+  /**
+   * Tras modificar la reserva ofrece descargar el comprobante actualizado. En ambos casos
+   * se navega de vuelta con backLink(); si se pidió el comprobante, la descarga sigue en
+   * segundo plano.
+   */
+  private ofrecerComprobante(id: number): void {
+    this.confirmDialog
+      .open({
+        title: 'Reserva actualizada',
+        message: 'La reserva se actualizó correctamente. ¿Desea descargar el comprobante?',
+        confirmButtonLabel: 'Descargar comprobante',
+        cancelButtonLabel: 'No, gracias',
+        variant: 'success',
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((descargar) => {
+        if (descargar) this.descargarComprobante(id);
+        this.router.navigateByUrl(this.backLink());
+      });
+  }
+
+  private descargarComprobante(id: number): void {
+    // Fire-and-forget: la descarga NO se ata al destroyRef porque debe sobrevivir a la
+    // navegación de vuelta. La request corre en servicios root; se auto-completa al
+    // terminar el HTTP y los errores se muestran vía el diálogo global.
+    this.reservasService
+      .descargarComprobante(id)
+      .pipe(
+        catchError((err: unknown) => {
+          this.errorHandler.handle(err);
+          return EMPTY;
+        }),
+      )
+      .subscribe();
   }
 
   private construirDto(): ReservaActualizacionRequestDto {

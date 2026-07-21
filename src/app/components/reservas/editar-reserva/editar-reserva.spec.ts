@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@auth0/auth0-angular';
-import { EstadoReserva, Procedencia } from '../../../shared';
+import { ConfirmDialogService, EstadoReserva, Procedencia } from '../../../shared';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -35,6 +35,18 @@ const mockServicioCapacidad = {
   estado: 'HABILITADO',
   capacidad: 20,
   cantidad: null,
+};
+
+const mockServicioCantidad = {
+  id: 5,
+  nombre: 'Cancha',
+  procedencia: 'SEDE',
+  precioParticular: 500,
+  precioSocio: 300,
+  modalidadPrecio: 'POR_HORA',
+  estado: 'HABILITADO',
+  capacidad: null,
+  cantidad: 10,
 };
 
 const page = <T>(content: T[]) => ({
@@ -106,15 +118,50 @@ const mockColaboracion: ReservaDetalleRespuestaDto = {
   cantidadMenores: null,
 };
 
-async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42') {
-  const getByIdSpy = vi.fn().mockReturnValue(of(reserva));
-  const updateSpy = vi.fn().mockReturnValue(of(undefined));
-  const calcularCostoSpy = vi.fn().mockReturnValue(of({ costoTotal: 0 }));
+/**
+ * Helper base: monta el TestBed con mocks por defecto y permite overridear
+ * puntualmente route (id), ReservasService y ServicioService cuando un test
+ * necesita simular un caso especial (id inválido, error de backend, etc.).
+ */
+async function setupCustom(options: {
+  reserva?: ReservaDetalleRespuestaDto;
+  id?: string;
+  reservasServiceOverrides?: Partial<{
+    getById: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    calcularCosto: ReturnType<typeof vi.fn>;
+    descargarComprobante: ReturnType<typeof vi.fn>;
+  }>;
+  servicioServiceOverrides?: Partial<{
+    getAll: ReturnType<typeof vi.fn>;
+    getFechasOcupadas: ReturnType<typeof vi.fn>;
+  }>;
+  confirmDialogOpen?: ReturnType<typeof vi.fn>;
+}) {
+  const {
+    reserva = mockReserva,
+    id = '42',
+    reservasServiceOverrides = {},
+    servicioServiceOverrides = {},
+    confirmDialogOpen = vi.fn().mockReturnValue(of(false)),
+  } = options;
+
+  const getByIdSpy = reservasServiceOverrides.getById ?? vi.fn().mockReturnValue(of(reserva));
+  const updateSpy = reservasServiceOverrides.update ?? vi.fn().mockReturnValue(of(undefined));
+  const calcularCostoSpy =
+    reservasServiceOverrides.calcularCosto ?? vi.fn().mockReturnValue(of({ costoTotal: 0 }));
+  const descargarComprobanteSpy =
+    reservasServiceOverrides.descargarComprobante ?? vi.fn().mockReturnValue(of(undefined));
+
+  const getAllSpy =
+    servicioServiceOverrides.getAll ?? vi.fn().mockReturnValue(of(page([mockServicioCapacidad])));
+  const getFechasOcupadasSpy =
+    servicioServiceOverrides.getFechasOcupadas ?? vi.fn().mockReturnValue(of([]));
+
   const navigateSpy = vi.fn();
   const handleSpy = vi.fn();
-  const getAllSpy = vi.fn().mockReturnValue(of(page([mockServicioCapacidad])));
-  const getFechasOcupadasSpy = vi.fn().mockReturnValue(of([]));
 
+  await TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     imports: [EditarReserva],
     providers: [
@@ -132,6 +179,7 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
       },
       { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateSpy } },
       { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
+      { provide: ConfirmDialogService, useValue: { open: confirmDialogOpen } },
       {
         provide: ServicioService,
         useValue: { getAll: getAllSpy, getFechasOcupadas: getFechasOcupadasSpy },
@@ -145,7 +193,12 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
         providers: [
           {
             provide: ReservasService,
-            useValue: { getById: getByIdSpy, update: updateSpy, calcularCosto: calcularCostoSpy },
+            useValue: {
+              getById: getByIdSpy,
+              update: updateSpy,
+              calcularCosto: calcularCostoSpy,
+              descargarComprobante: descargarComprobanteSpy,
+            },
           },
         ],
       },
@@ -158,7 +211,22 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component, getByIdSpy, updateSpy, navigateSpy, handleSpy, getAllSpy };
+  return {
+    fixture,
+    component,
+    getByIdSpy,
+    updateSpy,
+    navigateSpy,
+    handleSpy,
+    getAllSpy,
+    descargarComprobanteSpy,
+    confirmDialogOpenSpy: confirmDialogOpen,
+  };
+}
+
+/** Setup por defecto: reserva y id válidos, todos los mocks en su comportamiento "feliz". */
+function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42') {
+  return setupCustom({ reserva, id });
 }
 
 describe('EditarReserva', () => {
@@ -208,6 +276,36 @@ describe('EditarReserva', () => {
     expect(component['clienteBusqueda']()?.tipoDocumento).toBe(TipoDocumento.Rut);
   });
 
+  it('reserva sin cliente asociado deja busquedaRealizada en true sin precargar datos de cliente', async () => {
+    const reservaSinCliente: ReservaDetalleRespuestaDto = { ...mockReserva, cliente: null };
+    const { component } = await setup(reservaSinCliente);
+    expect(component['busquedaRealizada']()).toBe(true);
+    expect(component['clienteBusqueda']()).toBeNull();
+  });
+
+  it('reserva con cantidad (modo cantidad, no capacidad) popula el campo cantidad', async () => {
+    const reservaConCantidad: ReservaDetalleRespuestaDto = {
+      ...mockReserva,
+      cantidadTotal: null,
+      cantidadMenores: null,
+      cantidad: 2,
+      procedencia: Procedencia.Sede,
+      servicio: {
+        id: 5,
+        nombre: 'Cancha',
+        procedencia: Procedencia.Sede,
+        modalidadPrecio: 'POR_HORA',
+      },
+    };
+    const { component } = await setupCustom({
+      reserva: reservaConCantidad,
+      servicioServiceOverrides: {
+        getAll: vi.fn().mockReturnValue(of(page([mockServicioCantidad]))),
+      },
+    });
+    expect(component['form'].get('cantidad')?.value).toBe('2');
+  });
+
   it('los validadores de cliente quedan limpios (cliente es de sólo lectura)', async () => {
     const { component } = await setup();
     component['form'].get('documento')?.setValue(null);
@@ -252,8 +350,15 @@ describe('EditarReserva', () => {
     expect(component['registroData']()?.registradoPor).toBe('Juan Pérez');
   });
 
-  it('onConfirmar llama a update con el DTO correcto y navega al detalle', async () => {
-    const { component, updateSpy, navigateSpy } = await setup();
+  it('onRangoSeleccionado actualiza fechaInicio y fechaFin', async () => {
+    const { component } = await setup();
+    component['onRangoSeleccionado']({ inicio: '2026-09-01', fin: '2026-09-05' });
+    expect(component['form'].get('fechaInicio')?.value).toBe('2026-09-01');
+    expect(component['form'].get('fechaFin')?.value).toBe('2026-09-05');
+  });
+
+  it('onConfirmar llama a update con el DTO correcto', async () => {
+    const { component, updateSpy } = await setup();
     component['onConfirmar']();
     expect(updateSpy).toHaveBeenCalledWith(
       42,
@@ -268,7 +373,21 @@ describe('EditarReserva', () => {
         notas: 'Llegan a las 14hs',
       }),
     );
-    expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
+  });
+
+  it('onConfirmar con formulario inválido no llama a update', async () => {
+    const { component, updateSpy } = await setup();
+    component['form'].get('procedencia')?.setValue(null);
+    component['onConfirmar']();
+    expect(updateSpy).not.toHaveBeenCalled();
+  });
+
+  it('onConfirmar con error del backend en update llama al errorHandler', async () => {
+    const { component, updateSpy, handleSpy } = await setup();
+    const error = new Error('Server error');
+    updateSpy.mockReturnValue(throwError(() => error));
+    component['onConfirmar']();
+    expect(handleSpy).toHaveBeenCalledWith(error);
   });
 
   it('onCancelar navega a /reservas/:id (detalle)', async () => {
@@ -277,60 +396,87 @@ describe('EditarReserva', () => {
     expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
   });
 
+  describe('ofrecerComprobante (tras confirmar la modificación)', () => {
+    it('ofrece el comprobante y, si se acepta, lo descarga con el id y navega al detalle', async () => {
+      const { component, confirmDialogOpenSpy, descargarComprobanteSpy, navigateSpy } =
+        await setupCustom({ confirmDialogOpen: vi.fn().mockReturnValue(of(true)) });
+
+      component['onConfirmar']();
+
+      expect(confirmDialogOpenSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Reserva actualizada',
+        }),
+      );
+      expect(descargarComprobanteSpy).toHaveBeenCalledWith(42);
+      expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
+    });
+
+    it('si se rechaza la descarga, navega al detalle sin descargar', async () => {
+      const { component, descargarComprobanteSpy, navigateSpy } = await setup();
+
+      component['onConfirmar']();
+
+      expect(descargarComprobanteSpy).not.toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
+    });
+
+    it('navega al detalle de inmediato sin esperar a que termine la descarga', async () => {
+      const descargaEnCurso = new Subject<void>(); // nunca completa dentro del test
+      const { component, descargarComprobanteSpy, navigateSpy } = await setupCustom({
+        confirmDialogOpen: vi.fn().mockReturnValue(of(true)),
+        reservasServiceOverrides: {
+          descargarComprobante: vi.fn().mockReturnValue(descargaEnCurso.asObservable()),
+        },
+      });
+
+      component['onConfirmar']();
+
+      // La descarga sigue pendiente y, aun así, ya se navegó al detalle.
+      expect(descargarComprobanteSpy).toHaveBeenCalledWith(42);
+      expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
+    });
+
+    it('si la descarga del comprobante falla, igualmente navega al detalle', async () => {
+      const error = new Error('download error');
+      const { component, navigateSpy, handleSpy } = await setupCustom({
+        confirmDialogOpen: vi.fn().mockReturnValue(of(true)),
+        reservasServiceOverrides: {
+          descargarComprobante: vi.fn().mockReturnValue(throwError(() => error)),
+        },
+      });
+
+      component['onConfirmar']();
+
+      expect(handleSpy).toHaveBeenCalledWith(error);
+      expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
+    });
+  });
+
+  it('idParam ausente o inválido no llama a getById', async () => {
+    const getByIdSpy = vi.fn().mockReturnValue(of(mockReserva));
+    const { getByIdSpy: spy } = await setupCustom({
+      id: 'abc',
+      reservasServiceOverrides: { getById: getByIdSpy },
+    });
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('error al cargar servicios: llama al errorHandler y la lista queda vacía', async () => {
+    const error = new Error('HTTP error');
+    const { component, handleSpy } = await setupCustom({
+      servicioServiceOverrides: { getAll: vi.fn().mockReturnValue(throwError(() => error)) },
+    });
+    expect(handleSpy).toHaveBeenCalledWith(error);
+    expect(component['servicios']().length).toBe(0);
+  });
+
   it('getById con error: llama al errorHandler y navega a /reservas', async () => {
     const error = new Error('Not found');
-    const navigateSpy = vi.fn();
-    const handleSpy = vi.fn();
-
-    await TestBed.resetTestingModule();
-    await TestBed.configureTestingModule({
-      imports: [EditarReserva],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            paramMap: of(convertToParamMap({ id: '99' })),
-            snapshot: {
-              paramMap: { get: (key: string) => (key === 'id' ? '99' : null) },
-              queryParamMap: { get: () => null },
-            },
-          },
-        },
-        { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateSpy } },
-        { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
-        {
-          provide: ServicioService,
-          useValue: {
-            getAll: vi.fn().mockReturnValue(of(page([]))),
-            getFechasOcupadas: vi.fn().mockReturnValue(of([])),
-          },
-        },
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: UserService, useValue: mockUserService },
-      ],
-    })
-      .overrideComponent(EditarReserva, {
-        set: {
-          providers: [
-            {
-              provide: ReservasService,
-              useValue: {
-                getById: vi.fn().mockReturnValue(throwError(() => error)),
-                update: vi.fn(),
-                calcularCosto: vi.fn().mockReturnValue(of({ costoTotal: 0 })),
-              },
-            },
-          ],
-        },
-      })
-      .compileComponents();
-
-    const fixture = TestBed.createComponent(EditarReserva);
-    fixture.componentRef.setInput('id', '99');
-    fixture.detectChanges();
-    await fixture.whenStable();
+    const { navigateSpy, handleSpy } = await setupCustom({
+      id: '99',
+      reservasServiceOverrides: { getById: vi.fn().mockReturnValue(throwError(() => error)) },
+    });
 
     expect(handleSpy).toHaveBeenCalledWith(error);
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
