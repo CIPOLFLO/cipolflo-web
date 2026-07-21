@@ -506,9 +506,6 @@ describe('ClientesService', () => {
 
       expect(errorStatus).toBe(500);
     });
-    it('getCostoCuota retorna 5000', () => {
-      expect(service.getCostoCuota()).toBe(5000);
-    });
   });
   describe('registrarEmpresa', () => {
     const dto: RegistroEmpresaRequestDto = {

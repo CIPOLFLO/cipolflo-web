@@ -24,6 +24,7 @@ import {
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 import { ClientesService } from '../services/cliente.service';
+import { CostoCuotaService } from '../../ajustes/services/costo-cuota.service';
 
 /** Límites de cuotas que se pueden pagar de una vez (única fuente de verdad). */
 const MIN_CUOTAS = 1;
@@ -50,12 +51,24 @@ export class PagoCuota {
   readonly cerrado = output<void>();
 
   private readonly clientesService = inject(ClientesService);
+  private readonly costoCuotaService = inject(CostoCuotaService);
   private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly metodosCobro = METODO_COBRO_OPTIONS;
-  protected readonly costoCuota = this.clientesService.getCostoCuota();
+  protected readonly costoCuota = signal<number>(0);
   protected readonly pagoConfirmado = signal<PagoCuotaResponseDto[] | null>(null);
   protected readonly hoy = new Date();
+
+  constructor() {
+    this.costoCuotaService.obtener().subscribe({
+      next: (response) => {
+        this.costoCuota.set(response.monto);
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+      },
+    });
+  }
 
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
@@ -139,7 +152,7 @@ export class PagoCuota {
     });
   }
 
-  protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota);
+  protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota());
 
   protected readonly fechaEsFutura = computed(() => {
     const fechaPago = new Date(this.fechaPago());

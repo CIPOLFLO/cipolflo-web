@@ -56,11 +56,6 @@ export class ClientesService extends BaseHttpService {
     return this.get<EstadoSocioDto>(`clientes/socios/${id}/estado`);
   }
 
-  // TODO: reemplazar cuando el backend esté disponible
-  getCostoCuota(): number {
-    return 5000;
-  }
-
   modificarParticular(
     id: number,
     dto: ModificacionParticularRequestDto,
