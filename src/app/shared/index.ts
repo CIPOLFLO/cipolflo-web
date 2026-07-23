@@ -61,6 +61,7 @@ export {
   EstadoReserva,
   ESTADO_RESERVA_LABEL,
   ESTADO_RESERVA_VALUE_CLASS,
+  ESTADO_RESERVA_TAG_CLASS,
 } from './models/estado-reserva.model';
 export { MESES_ABREVIADOS } from './models/fecha.constants';
 export type { NavItem } from './models/nav-item.model';
@@ -76,7 +77,13 @@ export { FilterConfigProvider } from './services/filter-config.provider';
 // Utils
 export { applySectionChange, markFieldAsTouched } from './utils/form-section.helper';
 export { parseNumberOrNull } from './utils/parse-number.helper';
-export { parseIsoDate, startOfToday, toDisplayDate, toIsoDate } from './utils/date.helper';
+export {
+  parseIsoDate,
+  rangoOcupacionAnual,
+  startOfToday,
+  toDisplayDate,
+  toIsoDate,
+} from './utils/date.helper';
 
 // Validators
 export { emailValido } from './validators/email.validator';
