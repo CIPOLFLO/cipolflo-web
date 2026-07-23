@@ -10,6 +10,7 @@ import {
   CategoriaSocio,
 } from '../models/cliente.model';
 import { ClientesService } from '../services/cliente.service';
+import { CostoCuotaService } from '../../ajustes/services/costo-cuota.service';
 import { MetodoCobro } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 
@@ -58,9 +59,14 @@ describe('PagoCuota', () => {
         {
           provide: ClientesService,
           useValue: {
-            getCostoCuota: () => 5000,
             registrarPagoCuota: vi.fn(),
             descargarComprobantePago: vi.fn().mockReturnValue(of(undefined)),
+          },
+        },
+        {
+          provide: CostoCuotaService,
+          useValue: {
+            obtener: () => of({ monto: 5000, updatedAt: '2026-01-01', updatedBy: 'admin' }),
           },
         },
       ],

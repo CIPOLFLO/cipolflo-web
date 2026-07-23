@@ -34,6 +34,9 @@ export type {
   PageResponse,
   TableQueryParams,
   RowAction,
+  InlineAction,
+  InlineButtonAction,
+  InlineToggleAction,
   LoadDataFn,
 } from './components/table/table.models';
 export { EMPTY_PAGE } from './components/table/table.models';

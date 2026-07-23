@@ -3,6 +3,9 @@
     <h3 class="form-section__title">{{ title() }}</h3>
     <div class="form-section__separator" aria-hidden="true"></div>
   </div>
+  @if (note()) {
+    <p class="form-section__note">{{ note() }}</p>
+  }
   <div class="form-section__fields">
     @for (field of fields(); track field.key) {
       <app-form-field

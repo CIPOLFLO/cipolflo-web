@@ -97,6 +97,32 @@ describe('FormSection', () => {
   });
 });
 
+describe('FormSection - input note', () => {
+  let fixture: ComponentFixture<FormSection>;
+  let el: HTMLElement;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FormSection],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(FormSection);
+    el = fixture.nativeElement;
+    fixture.componentRef.setInput('title', 'Sección');
+    fixture.detectChanges();
+  });
+
+  it('no renderiza la nota cuando no se provee', () => {
+    expect(el.querySelector('.form-section__note')).toBeNull();
+  });
+
+  it('renderiza la nota recibida por input', () => {
+    fixture.componentRef.setInput('note', 'Texto de ayuda');
+    fixture.detectChanges();
+    expect(el.querySelector('.form-section__note')?.textContent?.trim()).toBe('Texto de ayuda');
+  });
+});
+
 describe('FormSection - proyección de contenido', () => {
   let hostFixture: ComponentFixture<TestHostFormSection>;
   let hostEl: HTMLElement;

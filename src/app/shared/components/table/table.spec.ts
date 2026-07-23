@@ -13,6 +13,8 @@ import { AmountCellComponent } from './cells/amount-cell/amount-cell';
 import { PriceCellComponent } from './cells/price-cell/price-cell';
 import { TagCellComponent } from './cells/tag-cell/tag-cell';
 import { RowActionsComponent } from './cells/row-actions/row-actions';
+import { InlineRowActionsComponent } from './cells/inline-row-actions/inline-row-actions';
+import { InlineAction } from './table.models';
 import { TABLE_MIN_LOADING_MS } from '../../config/table.config';
 
 // --- DateFormatPipe ---
@@ -22,6 +24,10 @@ describe('DateFormatPipe', () => {
 
   it('debe convertir YYYY-MM-DD a DD/MM/YYYY', () => {
     expect(pipe.transform('2026-03-24')).toBe('24/03/2026');
+  });
+
+  it('debe convertir un timestamp ISO completo tomando solo la parte de fecha', () => {
+    expect(pipe.transform('2026-03-24T10:00:00Z')).toBe('24/03/2026');
   });
 
   it('debe retornar vacío si el valor es vacío', () => {
@@ -189,6 +195,32 @@ describe('AppTable', () => {
     const headers: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('th');
     const labels = Array.from(headers).map((h) => h.textContent?.trim());
     expect(labels).toContain('Acciones');
+  });
+
+  it('debe mostrar columna Acciones si se pasa getInlineActions', async () => {
+    fixture.componentRef.setInput('getInlineActions', () => []);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const headers: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('th');
+    const labels = Array.from(headers).map((h) => h.textContent?.trim());
+    expect(labels).toContain('Acciones');
+  });
+
+  it('debe renderizar app-inline-row-actions y no app-row-actions cuando se pasa getInlineActions', async () => {
+    fixture.componentRef.setInput('getRowActions', () => [{ label: 'Ver' }]);
+    fixture.componentRef.setInput('getInlineActions', () => []);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('app-inline-row-actions')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-row-actions')).toBeNull();
+  });
+
+  it('debe renderizar app-row-actions cuando solo se pasa getRowActions', async () => {
+    fixture.componentRef.setInput('getRowActions', () => [{ label: 'Ver' }]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('app-row-actions')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-inline-row-actions')).toBeNull();
   });
 
   it('debe mostrar el mensaje vacío cuando no hay registros', async () => {
@@ -446,6 +478,14 @@ describe('AppTable', () => {
 
   it('getRowActionsForRow debe retornar [] cuando getRowActions es null', () => {
     expect(component['getRowActionsForRow']({ id: 1 } as unknown as TestRow)).toEqual([]);
+  });
+
+  it('getInlineActionsForRow debe retornar [] cuando getInlineActions es null', () => {
+    expect(component['getInlineActionsForRow']({ id: 1 } as unknown as TestRow)).toEqual([]);
+  });
+
+  it('hasActionsColumn debe ser false cuando no hay ni getRowActions ni getInlineActions', () => {
+    expect(component['hasActionsColumn']).toBe(false);
   });
 
   it('debe llamar a updateSize en ngOnInit cuando pageSize difiere del estado inicial', async () => {
@@ -1017,5 +1057,126 @@ describe('RowActionsComponent', () => {
     window.dispatchEvent(new Event('resize'));
     fixture.detectChanges();
     expect(component['isOpen']()).toBe(false);
+  });
+});
+
+// --- InlineRowActionsComponent ---
+
+type TestRowInline = Record<string, unknown>;
+
+describe('InlineRowActionsComponent', () => {
+  let fixture: ComponentFixture<InlineRowActionsComponent<TestRowInline>>;
+  let component: InlineRowActionsComponent<TestRowInline>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [InlineRowActionsComponent],
+    }).compileComponents();
+    fixture = TestBed.createComponent(InlineRowActionsComponent<TestRowInline>);
+    component = fixture.componentInstance;
+  });
+
+  it('debe renderizar un botón por cada acción de tipo button', () => {
+    const actions: InlineAction<TestRowInline>[] = [
+      { type: 'button', icon: 'pi pi-pencil', ariaLabel: () => 'Editar', command: vi.fn() },
+      { type: 'button', icon: 'pi pi-trash', ariaLabel: () => 'Eliminar', command: vi.fn() },
+    ];
+    fixture.componentRef.setInput('actions', actions);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('button');
+    expect(buttons.length).toBe(2);
+  });
+
+  it('debe renderizar p-toggleswitch para una acción de tipo toggle', () => {
+    const actions: InlineAction<TestRowInline>[] = [
+      { type: 'toggle', ariaLabel: () => 'Activar', checked: () => true, onChange: vi.fn() },
+    ];
+    fixture.componentRef.setInput('actions', actions);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('p-toggleswitch')).not.toBeNull();
+  });
+
+  it('debe llamar command con la fila al hacer click en un botón', () => {
+    const command = vi.fn();
+    const row = { id: 7 };
+    fixture.componentRef.setInput('actions', [
+      { type: 'button', icon: 'pi pi-pencil', ariaLabel: () => 'Editar', command },
+    ] satisfies InlineAction<TestRowInline>[]);
+    fixture.componentRef.setInput('row', row);
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('button').click();
+    expect(command).toHaveBeenCalledWith(row);
+  });
+
+  it('debe llamar onChange con la fila y el nuevo valor al togglear', () => {
+    const onChange = vi.fn();
+    const row = { id: 3 };
+    fixture.componentRef.setInput('actions', [
+      { type: 'toggle', ariaLabel: () => 'Activar', checked: () => false, onChange },
+    ] satisfies InlineAction<TestRowInline>[]);
+    fixture.componentRef.setInput('row', row);
+    fixture.detectChanges();
+    component['onToggleChange'](component.actions()[0], true);
+    expect(onChange).toHaveBeenCalledWith(row, true);
+  });
+
+  it('isChecked debe retornar false para una acción de tipo button', () => {
+    const action: InlineAction<TestRowInline> = {
+      type: 'button',
+      icon: 'pi pi-pencil',
+      ariaLabel: () => 'Editar',
+      command: vi.fn(),
+    };
+    fixture.componentRef.setInput('actions', [action]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    expect(component['isChecked'](action)).toBe(false);
+  });
+
+  it('debe evaluar disabled como función con la fila actual', () => {
+    const action: InlineAction<TestRowInline> = {
+      type: 'button',
+      icon: 'pi pi-trash',
+      ariaLabel: () => 'Eliminar',
+      command: vi.fn(),
+      disabled: (r) => r['bloqueado'] === true,
+    };
+    fixture.componentRef.setInput('actions', [action]);
+    fixture.componentRef.setInput('row', { bloqueado: true });
+    fixture.detectChanges();
+    expect(component['isDisabled'](action)).toBe(true);
+  });
+
+  it('debe usar disabled booleano directamente', () => {
+    const action: InlineAction<TestRowInline> = {
+      type: 'button',
+      icon: 'pi pi-trash',
+      ariaLabel: () => 'Eliminar',
+      command: vi.fn(),
+      disabled: true,
+    };
+    fixture.componentRef.setInput('actions', [action]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    expect(component['isDisabled'](action)).toBe(true);
+    expect(fixture.nativeElement.querySelector('button').disabled).toBe(true);
+  });
+
+  it('debe aplicar la clase danger cuando variant es danger', () => {
+    fixture.componentRef.setInput('actions', [
+      {
+        type: 'button',
+        icon: 'pi pi-trash',
+        ariaLabel: () => 'Eliminar',
+        command: vi.fn(),
+        variant: 'danger',
+      },
+    ] satisfies InlineAction<TestRowInline>[]);
+    fixture.componentRef.setInput('row', {});
+    fixture.detectChanges();
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    expect(button.classList.contains('inline-row-actions__btn--danger')).toBe(true);
   });
 });
