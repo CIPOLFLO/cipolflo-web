@@ -102,7 +102,46 @@ describe('BlobExportService', () => {
     expect(fileDownloadService.download).toHaveBeenCalled();
     expect(fileDownloadService.parseBlobError).not.toHaveBeenCalled();
   });
+  it('hace GET con params serializados en la query string cuando se pasan', () => {
+    service
+      .download('clientes/socios/1/pago-cuota/comprobante', 'comprobante-pago-cuota-1.pdf', {
+        ids: '10,11,12',
+      })
+      .subscribe();
 
+    const req = httpMock.expectOne(
+      (request) =>
+        request.method === 'GET' &&
+        request.url.includes('clientes/socios/1/pago-cuota/comprobante') &&
+        request.params.get('ids') === '10,11,12',
+    );
+
+    req.flush(new Blob(['pdf']), {
+      headers: {
+        'Content-Disposition': 'attachment; filename="comprobante-pago-cuota-1.pdf"',
+      },
+    });
+
+    expect(fileDownloadService.download).toHaveBeenCalled();
+  });
+
+  it('sigue funcionando sin params (caso existente, comportamiento sin cambios)', () => {
+    service.download('reservas/42/comprobante', 'comprobante-reserva-42.pdf').subscribe();
+
+    const req = httpMock.expectOne(
+      (request) =>
+        request.method === 'GET' &&
+        request.url.includes('reservas/42/comprobante') &&
+        request.responseType === 'blob',
+    );
+    expect(req.request.params.keys().length).toBe(0);
+
+    req.flush(new Blob(['pdf']), {
+      headers: { 'Content-Disposition': 'attachment; filename="comprobante-reserva-42.pdf"' },
+    });
+
+    expect(fileDownloadService.download).toHaveBeenCalled();
+  });
   it('en GET llama parseBlobError y re-lanza el error cuando el backend falla', async () => {
     const parsedError = new HttpErrorResponse({ error: { codigo: 'RESERVA_NO_ENCONTRADA' } });
     fileDownloadService.parseBlobError.mockReturnValue(throwError(() => parsedError));

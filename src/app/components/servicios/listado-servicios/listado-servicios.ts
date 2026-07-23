@@ -9,8 +9,10 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  OccupiedRange,
   PageLayout,
   PROCEDENCIA_LABEL,
+  rangoOcupacionAnual,
   RowAction,
   TableStateService,
   VerificationDialog,
@@ -26,6 +28,7 @@ import {
   ServicioRow,
 } from '../models/servicio.model';
 import { ReservasActivasDialog } from '../habilitar-deshabilitar/reservas-activas-dialog/reservas-activas-dialog';
+import { OcupacionServicioDialog } from './ocupacion-servicio-dialog/ocupacion-servicio-dialog';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
@@ -39,6 +42,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
     AppTable,
     VerificationDialog,
     ReservasActivasDialog,
+    OcupacionServicioDialog,
   ],
   providers: [
     TableStateService,
@@ -62,6 +66,10 @@ export class ListadoServicios {
   protected readonly reservasActivasVisible = signal(false);
   protected readonly servicioSeleccionado = signal<ServicioRow | null>(null);
   protected readonly reservasProximas = signal<ReservaProximaDto[]>([]);
+
+  protected readonly ocupacionVisible = signal(false);
+  protected readonly servicioParaOcupacion = signal<ServicioRow | null>(null);
+  protected readonly fechasOcupadasServicio = signal<OccupiedRange[]>([]);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -104,6 +112,11 @@ export class ListadoServicios {
 
   protected readonly rowActions = (row: ServicioRow): RowAction<ServicioRow>[] => [
     {
+      label: 'Ver ocupación',
+      icon: 'pi pi-calendar',
+      command: () => this.verOcupacion(row),
+    },
+    {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/servicios', row.id]),
@@ -135,6 +148,26 @@ export class ListadoServicios {
 
   protected onFilterChange(filters: Record<string, string>): void {
     this.tableState.updateFilters(filters);
+  }
+
+  protected verOcupacion(row: ServicioRow): void {
+    const { desde, hasta } = rangoOcupacionAnual();
+    this.servicioService.getFechasOcupadas(row.id, desde, hasta).subscribe({
+      next: (fechas) => {
+        this.servicioParaOcupacion.set(row);
+        this.fechasOcupadasServicio.set(fechas);
+        this.ocupacionVisible.set(true);
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+      },
+    });
+  }
+
+  protected onCerrarOcupacion(): void {
+    this.ocupacionVisible.set(false);
+    this.servicioParaOcupacion.set(null);
+    this.fechasOcupadasServicio.set([]);
   }
 
   protected onCancelarDialog(): void {

@@ -1,14 +1,29 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { OccupancyCalendar } from './occupancy-calendar';
 import { DateRangeSelection } from './occupancy-calendar.models';
+import { toIsoDate } from '../../utils/date.helper';
+import { EstadoReserva } from '../../models/estado-reserva.model';
 
 describe('OccupancyCalendar', () => {
   let fixture: ComponentFixture<OccupancyCalendar>;
   let component: OccupancyCalendar;
+  let mockRouter: {
+    serializeUrl: ReturnType<typeof vi.fn>;
+    createUrlTree: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [OccupancyCalendar] }).compileComponents();
+    mockRouter = {
+      serializeUrl: vi.fn().mockReturnValue('/reservas/21'),
+      createUrlTree: vi.fn().mockReturnValue({}),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [OccupancyCalendar],
+      providers: [{ provide: Router, useValue: mockRouter }],
+    }).compileComponents();
     fixture = TestBed.createComponent(OccupancyCalendar);
     component = fixture.componentInstance;
   });
@@ -75,5 +90,254 @@ describe('OccupancyCalendar', () => {
   it('rangoLabel muestra "Desde…" cuando sólo hay fecha de inicio', () => {
     component['onSelectionChange']([new Date(2026, 6, 1)]);
     expect(component['rangoLabel']()).toBe('Desde 01/07/2026…');
+  });
+
+  describe('maxDate', () => {
+    it('es undefined sin fecha de inicio elegida', () => {
+      expect(component['maxDate']()).toBeUndefined();
+    });
+
+    it('es undefined con inicio elegido y sin bloqueos posteriores', () => {
+      component['onSelectionChange']([new Date(2026, 6, 5)]);
+      expect(component['maxDate']()).toBeUndefined();
+    });
+
+    it('capa al día anterior al próximo bloqueo posterior al inicio', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-07-10', fechaFin: '2026-07-12' },
+      ]);
+      fixture.detectChanges();
+      component['onSelectionChange']([new Date(2026, 6, 5)]);
+      const max = component['maxDate']();
+      expect(max).toBeDefined();
+      expect(toIsoDate(max!)).toBe('2026-07-09');
+    });
+
+    it('con rangos ocupados consecutivos, capa al primero de ellos', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-07-10', fechaFin: '2026-07-12' },
+        { fechaInicio: '2026-07-13', fechaFin: '2026-07-15' },
+      ]);
+      fixture.detectChanges();
+      component['onSelectionChange']([new Date(2026, 6, 5)]);
+      expect(toIsoDate(component['maxDate']()!)).toBe('2026-07-09');
+    });
+
+    it('con un gap entre rangos ocupados, permite seleccionar hasta el día previo al siguiente bloqueo', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-07-10', fechaFin: '2026-07-12' },
+        { fechaInicio: '2026-07-16', fechaFin: '2026-07-18' },
+      ]);
+      fixture.detectChanges();
+      component['onSelectionChange']([new Date(2026, 6, 13)]);
+      expect(toIsoDate(component['maxDate']()!)).toBe('2026-07-15');
+    });
+
+    it('es undefined cuando el rango ya está completo (inicio y fin elegidos)', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-07-10', fechaFin: '2026-07-12' },
+      ]);
+      fixture.detectChanges();
+      component['onSelectionChange']([new Date(2026, 6, 5), new Date(2026, 6, 8)]);
+      expect(component['maxDate']()).toBeUndefined();
+    });
+
+    it('ignora bloqueos que empiezan antes o el mismo día del inicio elegido', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-07-01', fechaFin: '2026-07-05' },
+      ]);
+      fixture.detectChanges();
+      component['onSelectionChange']([new Date(2026, 6, 5)]);
+      expect(component['maxDate']()).toBeUndefined();
+    });
+  });
+
+  describe('ocupacionPorFecha', () => {
+    it('expande cada rango a sus días individuales con reservaId y estado', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        {
+          fechaInicio: '2026-07-10',
+          fechaFin: '2026-07-12',
+          reservaId: 21,
+          estado: EstadoReserva.Confirmada,
+        },
+      ]);
+      fixture.detectChanges();
+      const mapa = component['ocupacionPorFecha']();
+      expect(mapa.size).toBe(3);
+      expect(mapa.get('2026-07-10')).toEqual({ reservaId: 21, estado: EstadoReserva.Confirmada });
+      expect(mapa.get('2026-07-12')).toEqual({ reservaId: 21, estado: EstadoReserva.Confirmada });
+    });
+
+    it('no incluye días fuera de ningún rango', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        {
+          fechaInicio: '2026-07-10',
+          fechaFin: '2026-07-10',
+          reservaId: 21,
+          estado: EstadoReserva.Confirmada,
+        },
+      ]);
+      fixture.detectChanges();
+      expect(component['ocupacionPorFecha']().has('2026-07-11')).toBe(false);
+    });
+
+    it('conviven varios rangos con distinto estado', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        {
+          fechaInicio: '2026-07-10',
+          fechaFin: '2026-07-10',
+          reservaId: 21,
+          estado: EstadoReserva.Confirmada,
+        },
+        {
+          fechaInicio: '2026-07-20',
+          fechaFin: '2026-07-20',
+          reservaId: 22,
+          estado: EstadoReserva.Cancelada,
+        },
+      ]);
+      fixture.detectChanges();
+      const mapa = component['ocupacionPorFecha']();
+      expect(mapa.get('2026-07-10')?.estado).toBe(EstadoReserva.Confirmada);
+      expect(mapa.get('2026-07-20')?.estado).toBe(EstadoReserva.Cancelada);
+    });
+  });
+
+  describe('estadosEnLeyenda', () => {
+    it('sólo incluye los estados presentes en occupiedRanges, sin duplicados', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        {
+          fechaInicio: '2026-07-10',
+          fechaFin: '2026-07-10',
+          reservaId: 21,
+          estado: EstadoReserva.Confirmada,
+        },
+        {
+          fechaInicio: '2026-07-15',
+          fechaFin: '2026-07-15',
+          reservaId: 22,
+          estado: EstadoReserva.Confirmada,
+        },
+        {
+          fechaInicio: '2026-07-20',
+          fechaFin: '2026-07-20',
+          reservaId: 23,
+          estado: EstadoReserva.Cancelada,
+        },
+      ]);
+      fixture.detectChanges();
+      expect(component['estadosEnLeyenda']()).toEqual([
+        EstadoReserva.Confirmada,
+        EstadoReserva.Cancelada,
+      ]);
+    });
+
+    it('es un array vacío sin rangos ocupados', () => {
+      expect(component['estadosEnLeyenda']()).toEqual([]);
+    });
+  });
+
+  describe('proximaReserva', () => {
+    it('es null sin rangos ocupados', () => {
+      expect(component['proximaReserva']()).toBeNull();
+    });
+
+    it('devuelve el rango con la fecha de inicio más temprana', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        { fechaInicio: '2026-08-10', fechaFin: '2026-08-12', reservaId: 22 },
+        { fechaInicio: '2026-07-10', fechaFin: '2026-07-11', reservaId: 21 },
+        { fechaInicio: '2026-09-01', fechaFin: '2026-09-02', reservaId: 23 },
+      ]);
+      fixture.detectChanges();
+      expect(component['proximaReserva']()?.reservaId).toBe(21);
+    });
+  });
+
+  describe('isoADisplay', () => {
+    it('formatea una fecha ISO a dd/mm/yyyy', () => {
+      expect(component['isoADisplay']('2026-08-10')).toBe('10/08/2026');
+    });
+  });
+
+  describe('diaOcupado', () => {
+    it('devuelve la reserva del día cuando cae dentro de un rango ocupado', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        {
+          fechaInicio: '2026-07-10',
+          fechaFin: '2026-07-12',
+          reservaId: 21,
+          estado: EstadoReserva.Confirmada,
+        },
+      ]);
+      fixture.detectChanges();
+      const ocupado = component['diaOcupado']({ day: 11, month: 6, year: 2026 });
+      expect(ocupado).toEqual({ reservaId: 21, estado: EstadoReserva.Confirmada });
+    });
+
+    it('devuelve undefined para un día que no está ocupado (pasado o capado por maxDate)', () => {
+      fixture.componentRef.setInput('occupiedRanges', [
+        {
+          fechaInicio: '2026-07-10',
+          fechaFin: '2026-07-12',
+          reservaId: 21,
+          estado: EstadoReserva.Confirmada,
+        },
+      ]);
+      fixture.detectChanges();
+      expect(component['diaOcupado']({ day: 5, month: 6, year: 2026 })).toBeUndefined();
+    });
+  });
+
+  describe('fechaIsoDeMeta', () => {
+    it('formatea con padding meses y días de un dígito', () => {
+      expect(component['fechaIsoDeMeta']({ day: 5, month: 0, year: 2026 })).toBe('2026-01-05');
+    });
+  });
+
+  describe('tagClassFor / estadoLabelFor', () => {
+    it('devuelve la clase de color correcta para cada estado', () => {
+      expect(component['tagClassFor'](EstadoReserva.Pendiente)).toBe('tag--yellow');
+      expect(component['tagClassFor'](EstadoReserva.Confirmada)).toBe('tag--green');
+      expect(component['tagClassFor'](EstadoReserva.EnCurso)).toBe('tag--blue');
+      expect(component['tagClassFor'](EstadoReserva.Finalizada)).toBe('tag--purple');
+      expect(component['tagClassFor'](EstadoReserva.Cancelada)).toBe('tag--gray');
+      expect(component['tagClassFor'](EstadoReserva.VencidaSinPago)).toBe('tag--red');
+    });
+
+    it('devuelve string vacío cuando el estado es undefined', () => {
+      expect(component['tagClassFor'](undefined)).toBe('');
+      expect(component['estadoLabelFor'](undefined)).toBe('');
+    });
+
+    it('devuelve la etiqueta legible del estado', () => {
+      expect(component['estadoLabelFor'](EstadoReserva.EnCurso)).toBe('En curso');
+    });
+  });
+
+  describe('tooltipTextoFor', () => {
+    it('arma el texto del tooltip con el id de la reserva, sin mencionar el estado', () => {
+      const texto = component['tooltipTextoFor']({
+        reservaId: 21,
+        estado: EstadoReserva.Confirmada,
+      });
+      expect(texto).toBe('Ver reserva #21');
+    });
+  });
+
+  describe('onDiaClick', () => {
+    it('detiene la propagación del evento para no cancelar la navegación del link ni la selección', () => {
+      const event = { stopPropagation: vi.fn() } as unknown as MouseEvent;
+      component['onDiaClick'](event);
+      expect(event.stopPropagation).toHaveBeenCalled();
+    });
+  });
+
+  describe('getReservaUrl', () => {
+    it('delega en Router.createUrlTree/serializeUrl con la ruta de detalle', () => {
+      const url = component['getReservaUrl'](21);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/reservas', 21]);
+      expect(url).toBe('/reservas/21');
+    });
   });
 });
