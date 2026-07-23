@@ -363,6 +363,88 @@ describe('NuevaReserva', () => {
     expect(component['form'].get('nombre')?.value).toBeNull();
   });
 
+  it('calcula el costo como Particular cuando todavía no hay cliente encontrado', () => {
+    vi.useFakeTimers();
+
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({
+        inicio: '2026-08-01',
+        fin: '2026-08-03',
+      });
+      component['form'].get('cantidadTotal')?.setValue('4');
+
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(mockReservasService.calcularCosto).toHaveBeenCalledWith(
+      expect.objectContaining({
+        servicioId: 2,
+        clienteId: null,
+      }),
+    );
+  });
+
+  it('recalcula el costo enviando el clienteId del cliente encontrado', () => {
+    vi.useFakeTimers();
+
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({
+        inicio: '2026-08-01',
+        fin: '2026-08-03',
+      });
+      component['form'].get('cantidadTotal')?.setValue('4');
+
+      component['form'].get('documento')?.setValue('12345672');
+      component['buscarCliente']();
+
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(mockReservasService.calcularCosto).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        servicioId: 2,
+        clienteId: 1,
+      }),
+    );
+  });
+
+  it('al crear un cliente inline recalcula el costo con clienteId null', () => {
+    vi.useFakeTimers();
+
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({
+        inicio: '2026-08-01',
+        fin: '2026-08-03',
+      });
+      component['form'].get('cantidadTotal')?.setValue('4');
+
+      component['form'].get('documento')?.setValue('00000000');
+      component['buscarCliente']();
+
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(component['clienteBusqueda']()).toBeNull();
+
+    expect(mockReservasService.calcularCosto).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        clienteId: null,
+      }),
+    );
+  });
+
   // --- RUT / Empresa ---
 
   it('RUT inválido no dispara la búsqueda al backend', () => {

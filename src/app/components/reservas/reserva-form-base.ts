@@ -343,7 +343,7 @@ export abstract class ReservaFormBase {
         ? parseNumberOrNull(this.controlValue('cantidadMenores'))
         : null,
       cantidad: this.modoCantidad() ? parseNumberOrNull(this.controlValue('cantidad')) : null,
-      tipoCliente: this.tipoClienteValue(),
+      clienteId: this.clienteBusqueda()?.id ?? null,
     };
 
     this.costoCargando.set(true);

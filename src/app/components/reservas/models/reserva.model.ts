@@ -160,7 +160,6 @@ export interface ReservaCreacionRequestDto {
   cantidad: number | null;
   clienteId: number | null;
   crearCliente: boolean;
-  tipoCliente: TipoCliente | null;
   cedula: string | null;
   nombre: string | null;
   celular: string | null;
@@ -196,7 +195,7 @@ export interface CostoReservaRequestDto {
   cantidadTotal: number | null;
   cantidadMenores: number | null;
   cantidad: number | null;
-  tipoCliente: TipoCliente | null;
+  clienteId: number | null;
 }
 
 export interface CostoReservaRespuestaDto {
