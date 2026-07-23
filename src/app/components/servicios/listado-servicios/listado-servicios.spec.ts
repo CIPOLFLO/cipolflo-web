@@ -550,20 +550,16 @@ describe('ListadoServicios', () => {
 
       expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
       expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
-    }); 
-    it(
-      'debe renderizar la vista mobile cuando isMobile=true',
-      async () => {
-        isMobileSignal.set(true);
-        fixture.detectChanges();
-        await fixture.whenStable();
-        fixture.detectChanges();
+    });
+    it('debe renderizar la vista mobile cuando isMobile=true', async () => {
+      isMobileSignal.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
-        expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
-      },
-      15000,
-    );
+      expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
+    }, 15000);
 
     it('el header mobile debe abrir el sidebar al emitir menuToggled', async () => {
       isMobileSignal.set(true);
