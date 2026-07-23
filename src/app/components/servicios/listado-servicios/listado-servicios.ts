@@ -155,15 +155,7 @@ export class ListadoServicios {
           queryParams: { from: 'listado' },
         }),
     },
-    ...(row.estado === EstadoServicio.Deshabilitado
-      ? [{ label: 'Habilitar', icon: 'pi pi-check-circle', command: () => this.habilitar(row) }]
-      : [
-          {
-            label: 'Deshabilitar',
-            icon: 'pi pi-ban',
-            command: () => this.iniciarDeshabilitacion(row),
-          },
-        ]),
+    ...this.accionHabilitacion(row),
     // { separator: true },
     // { label: 'Eliminar', icon: 'pi pi-trash', command: () => ... },
   ];
@@ -184,7 +176,15 @@ export class ListadoServicios {
           queryParams: { from: 'listado' },
         }),
     },
-    ...(row.estado === EstadoServicio.Deshabilitado
+    ...this.accionHabilitacion(row),
+  ];
+
+  /**
+   * Acción condicional de Habilitar/Deshabilitar, compartida entre las acciones de
+   * escritorio y mobile (única diferencia entre ambos listados de acciones).
+   */
+  private accionHabilitacion<T extends ServicioAccionable>(row: T): RowAction<T>[] {
+    return row.estado === EstadoServicio.Deshabilitado
       ? [{ label: 'Habilitar', icon: 'pi pi-check-circle', command: () => this.habilitar(row) }]
       : [
           {
@@ -192,8 +192,8 @@ export class ListadoServicios {
             icon: 'pi pi-ban',
             command: () => this.iniciarDeshabilitacion(row),
           },
-        ]),
-  ];
+        ];
+  }
 
   protected onNuevoServicio(): void {
     this.router.navigate(['/servicios/nuevo']);
