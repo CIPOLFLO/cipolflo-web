@@ -12,6 +12,7 @@ import {
   EstadoReserva,
   FilterConfigProvider,
   FormFieldConfig,
+  MobileListLoader,
   PageResponse,
   TableStateService,
 } from '../../../shared';
@@ -19,6 +20,9 @@ import { EstadoServicio, ReservaProximaDto, ServicioRow } from '../models/servic
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+import { ServicioCardMobileRow } from '../mappers/servicio-card-mobile.mapper';
 
 interface ServicioRespuestaDtoMock {
   id: number;
@@ -99,6 +103,31 @@ const rowDeshabilitado: ServicioRow = {
   unidad: 'p/hora',
   estado: EstadoServicio.Deshabilitado,
 };
+
+const mobileRowHabilitado: ServicioCardMobileRow = {
+  id: 1,
+  nombre: 'Cabaña 1',
+  procedencia: 'CAMPING',
+  precioSocio: 800,
+  precioParticular: 1200,
+  modalidadPrecio: 'POR_DIA',
+  estado: EstadoServicio.Habilitado,
+  capacidad: null,
+  cantidad: null,
+  costoPersonaExtra: null,
+  procedenciaLabel: 'Camping',
+  unidadLabel: 'p/día',
+  estadoTag: { label: 'Habilitado', colorClass: 'tag--green' },
+};
+
+const mobileRowDeshabilitado: ServicioCardMobileRow = {
+  ...mobileRowHabilitado,
+  id: 2,
+  nombre: 'Salón',
+  estado: EstadoServicio.Deshabilitado,
+  estadoTag: { label: 'Deshabilitado', colorClass: 'tag--gray' },
+};
+
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
   logout: vi.fn(),
@@ -122,6 +151,8 @@ describe('ListadoServicios', () => {
   let mockErrorHandler: {
     handle: ReturnType<typeof vi.fn>;
   };
+  let isMobileSignal: ReturnType<typeof signal<boolean>>;
+  let mockSidebar: { open: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockServicioService = {
@@ -132,6 +163,8 @@ describe('ListadoServicios', () => {
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
     mockErrorHandler = { handle: vi.fn() };
+    isMobileSignal = signal(false);
+    mockSidebar = { open: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [ListadoServicios],
@@ -149,6 +182,8 @@ describe('ListadoServicios', () => {
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
+        { provide: BreakpointService, useValue: { isMobile: isMobileSignal } },
+        { provide: SidebarService, useValue: mockSidebar },
       ],
     }).compileComponents();
 
@@ -500,6 +535,135 @@ describe('ListadoServicios', () => {
       expect(component['reservasProximas']()).toEqual([]);
     });
   });
+
+  describe('vista mobile', () => {
+    it('debe renderizar la vista desktop por defecto (isMobile=false)', () => {
+      expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeTruthy();
+    });
+
+    it('debe renderizar la vista mobile cuando isMobile=true', async () => {
+      isMobileSignal.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
+    }); 
+    it(
+      'debe renderizar la vista mobile cuando isMobile=true',
+      async () => {
+        isMobileSignal.set(true);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.query(By.css('app-mob-page-header'))).toBeTruthy();
+        expect(fixture.debugElement.query(By.css('app-page-layout'))).toBeNull();
+      },
+      15000,
+    );
+
+    it('el header mobile debe abrir el sidebar al emitir menuToggled', async () => {
+      isMobileSignal.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const header = fixture.debugElement.query(By.css('app-mob-page-header'));
+      header.triggerEventHandler('menuToggled', undefined);
+
+      expect(mockSidebar.open).toHaveBeenCalled();
+    });
+
+    it('el FAB debe navegar a /servicios/nuevo', async () => {
+      isMobileSignal.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const fab = fixture.debugElement.query(By.css('app-mob-fab'));
+      fab.triggerEventHandler('clicked', undefined);
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/servicios/nuevo']);
+    });
+
+    it('debe mostrar el mensaje vacío cuando no hay servicios', async () => {
+      mockServicioService.getAll.mockReturnValue(
+        of({ ...mockPageResponse, content: [], totalElements: 0 }),
+      );
+      isMobileSignal.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('No se encontraron servicios.');
+    });
+  });
+
+  describe('mobileList', () => {
+    it('debe cargar y mapear los servicios con mapServicioCardMobileRow', async () => {
+      isMobileSignal.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const rows = component['mobileList'].rows();
+      expect(rows.length).toBe(2);
+      expect(rows[0].procedenciaLabel).toBe('Camping');
+      expect(rows[0].unidadLabel).toBe('p/día');
+      expect(rows[0].estadoTag).toEqual({ label: 'Habilitado', colorClass: 'tag--green' });
+    });
+  });
+
+  describe('mobileRowActions', () => {
+    it('debe retornar 3 acciones para un servicio habilitado', () => {
+      expect(component['mobileRowActions'](mobileRowHabilitado)).toHaveLength(3);
+    });
+
+    it('debe retornar 3 acciones para un servicio deshabilitado', () => {
+      expect(component['mobileRowActions'](mobileRowDeshabilitado)).toHaveLength(3);
+    });
+
+    it('"Ver detalle" navega a /servicios/{id}', () => {
+      component['mobileRowActions'](mobileRowHabilitado)[0].command?.(mobileRowHabilitado);
+      expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1]);
+    });
+
+    it('"Editar" navega a /servicios/{id}/editar con from=listado', () => {
+      component['mobileRowActions'](mobileRowHabilitado)[1].command?.(mobileRowHabilitado);
+      expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1, 'editar'], {
+        queryParams: { from: 'listado' },
+      });
+    });
+
+    it('muestra "Deshabilitar" cuando el servicio está habilitado', () => {
+      const actions = component['mobileRowActions'](mobileRowHabilitado);
+      expect(actions[2].label).toBe('Deshabilitar');
+    });
+
+    it('el comando "Deshabilitar" dispara iniciarDeshabilitacion', () => {
+      const spy = vi.spyOn(
+        component as ListadoServicios & { iniciarDeshabilitacion(r: ServicioRow): void },
+        'iniciarDeshabilitacion',
+      );
+      component['mobileRowActions'](mobileRowHabilitado)[2].command?.(mobileRowHabilitado);
+      expect(spy).toHaveBeenCalledWith(mobileRowHabilitado);
+    });
+
+    it('muestra "Habilitar" cuando el servicio está deshabilitado', () => {
+      const actions = component['mobileRowActions'](mobileRowDeshabilitado);
+      expect(actions[2].label).toBe('Habilitar');
+    });
+
+    it('el comando "Habilitar" llama a actualizarHabilitacion con habilitado=true', () => {
+      component['mobileRowActions'](mobileRowDeshabilitado)[2].command?.(mobileRowDeshabilitado);
+      expect(mockServicioService.actualizarHabilitacion).toHaveBeenCalledWith(2, {
+        habilitado: true,
+      });
+    });
+  });
 });
 
 describe('ListadoServicios sin filtros por defecto', () => {
@@ -531,6 +695,8 @@ describe('ListadoServicios sin filtros por defecto', () => {
         },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
+        { provide: BreakpointService, useValue: { isMobile: signal(false) } },
+        { provide: SidebarService, useValue: { open: vi.fn() } },
       ],
     })
       .overrideComponent(ListadoServicios, {
@@ -538,6 +704,7 @@ describe('ListadoServicios sin filtros por defecto', () => {
           providers: [
             TableStateService,
             ServiciosColumnsService,
+            MobileListLoader,
             { provide: FilterConfigProvider, useClass: SinDefaultsFilterService },
           ],
         },

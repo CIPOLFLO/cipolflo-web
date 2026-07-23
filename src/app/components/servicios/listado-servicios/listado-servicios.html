@@ -1,16 +1,39 @@
-<app-page-layout pageTitle="Servicios" pageDescription="Gestiona los servicios disponibles">
-  <app-button
-    actions
-    label="Nuevo Servicio"
-    intent="primary"
-    icon="pi-plus"
-    (clicked)="onNuevoServicio()"
-  />
+@if (breakpoint.isMobile()) {
+  <app-mob-list-layout>
+    <app-mob-page-header header title="Servicios" (menuToggled)="sidebar.open()" />
 
-  <app-filter-panel (filterChange)="onFilterChange($event)" />
+    <app-mob-filter-panel
+      filters
+      (filtersApply)="onFilterChange($event)"
+      (filtersClear)="onFilterChange({})"
+    />
 
-  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
-</app-page-layout>
+    @for (servicio of mobileList.rows(); track servicio.id) {
+      <app-mob-servicio-card [servicio]="servicio" [actions]="mobileRowActions(servicio)" />
+    } @empty {
+      <div class="servicios-mobile__empty">No se encontraron servicios.</div>
+    }
+
+    @if (mobileList.hasMore()) {
+      <div appMobInfiniteScroll (scrolled)="mobileList.loadMore()" aria-hidden="true"></div>
+    }
+  </app-mob-list-layout>
+  <app-mob-fab (clicked)="onNuevoServicio()" />
+} @else {
+  <app-page-layout pageTitle="Servicios" pageDescription="Gestiona los servicios disponibles">
+    <app-button
+      actions
+      label="Nuevo Servicio"
+      intent="primary"
+      icon="pi-plus"
+      (clicked)="onNuevoServicio()"
+    />
+
+    <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+    <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getRowActions]="rowActions" />
+  </app-page-layout>
+}
 
 <app-verification-dialog
   [visible]="verificandoVisible()"

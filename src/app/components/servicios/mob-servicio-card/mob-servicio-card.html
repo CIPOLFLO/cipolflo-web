@@ -1,0 +1,39 @@
+<app-mob-list-card [row]="servicio()" [actions]="actions()">
+  <div class="servicio-card__header">
+    <span class="servicio-card__nombre">
+      {{ servicio().nombre }}
+    </span>
+
+    <app-tag [colorClass]="servicio().estadoTag.colorClass" size="sm">
+      {{ servicio().estadoTag.label }}
+    </app-tag>
+  </div>
+
+  <span class="servicio-card__procedencia">
+    {{ servicio().procedenciaLabel }}
+  </span>
+
+  <div class="servicio-card__precio servicio-card__precio--socio">
+    <div class="servicio-card__precio-label">
+      <i class="pi pi-user servicio-card__precio-icon"></i>
+      SOCIO
+    </div>
+
+    <div class="servicio-card__precio-valor">
+      <strong>{{ servicio().precioSocio | currencyFormat }}</strong>
+      <span class="servicio-card__precio-unidad">{{ servicio().unidadLabel }}</span>
+    </div>
+  </div>
+
+  <div class="servicio-card__precio servicio-card__precio--particular">
+    <div class="servicio-card__precio-label">
+      <i class="pi pi-user servicio-card__precio-icon"></i>
+      PARTICULAR
+    </div>
+
+    <div class="servicio-card__precio-valor">
+      <strong>{{ servicio().precioParticular | currencyFormat }}</strong>
+      <span class="servicio-card__precio-unidad">{{ servicio().unidadLabel }}</span>
+    </div>
+  </div>
+</app-mob-list-card>

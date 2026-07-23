@@ -9,6 +9,12 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  MobFab,
+  MobFilterPanel,
+  MobInfiniteScroll,
+  MobileListLoader,
+  MobListLayout,
+  MobPageHeader,
   PageLayout,
   PROCEDENCIA_LABEL,
   RowAction,
@@ -27,6 +33,20 @@ import {
 } from '../models/servicio.model';
 import { ReservasActivasDialog } from '../habilitar-deshabilitar/reservas-activas-dialog/reservas-activas-dialog';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BreakpointService } from '../../../core/services/breakpoint.service';
+import { SidebarService } from '../../../core/services/sidebar.service';
+import { MobServicioCard } from '../mob-servicio-card/mob-servicio-card';
+import {
+  mapServicioCardMobileRow,
+  ServicioCardMobileRow,
+} from '../mappers/servicio-card-mobile.mapper';
+
+/** Shape mínimo que necesitan las acciones de habilitar/deshabilitar, compatible con ServicioRow y ServicioCardMobileRow. */
+interface ServicioAccionable {
+  id: number;
+  nombre: string;
+  estado: EstadoServicio;
+}
 
 @Component({
   standalone: true,
@@ -39,10 +59,17 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
     AppTable,
     VerificationDialog,
     ReservasActivasDialog,
+    MobPageHeader,
+    MobListLayout,
+    MobFilterPanel,
+    MobServicioCard,
+    MobInfiniteScroll,
+    MobFab,
   ],
   providers: [
     TableStateService,
     ServiciosColumnsService,
+    MobileListLoader,
     { provide: FilterConfigProvider, useClass: ServiciosFilterService },
   ],
   templateUrl: './listado-servicios.html',
@@ -63,6 +90,13 @@ export class ListadoServicios {
   protected readonly servicioSeleccionado = signal<ServicioRow | null>(null);
   protected readonly reservasProximas = signal<ReservaProximaDto[]>([]);
 
+  protected readonly breakpoint = inject(BreakpointService);
+  protected readonly sidebar = inject(SidebarService);
+
+  protected readonly mobileList = inject(
+    MobileListLoader,
+  ) as MobileListLoader<ServicioCardMobileRow>;
+
   constructor() {
     const defaults = Object.fromEntries(
       this.filterConfigProvider
@@ -73,6 +107,11 @@ export class ListadoServicios {
     if (Object.keys(defaults).length) {
       this.tableState.updateFilters(defaults);
     }
+
+    this.mobileList.connect(
+      (params) => this.servicioService.getAll(params),
+      mapServicioCardMobileRow,
+    );
   }
 
   protected readonly columns = this.columnsService.columns;
@@ -129,6 +168,33 @@ export class ListadoServicios {
     // { label: 'Eliminar', icon: 'pi pi-trash', command: () => ... },
   ];
 
+  protected readonly mobileRowActions = (
+    row: ServicioCardMobileRow,
+  ): RowAction<ServicioCardMobileRow>[] => [
+    {
+      label: 'Ver detalle',
+      icon: 'pi pi-eye',
+      command: () => this.router.navigate(['/servicios', row.id]),
+    },
+    {
+      label: 'Editar',
+      icon: 'pi pi-pencil',
+      command: () =>
+        this.router.navigate(['/servicios', row.id, 'editar'], {
+          queryParams: { from: 'listado' },
+        }),
+    },
+    ...(row.estado === EstadoServicio.Deshabilitado
+      ? [{ label: 'Habilitar', icon: 'pi pi-check-circle', command: () => this.habilitar(row) }]
+      : [
+          {
+            label: 'Deshabilitar',
+            icon: 'pi pi-ban',
+            command: () => this.iniciarDeshabilitacion(row),
+          },
+        ]),
+  ];
+
   protected onNuevoServicio(): void {
     this.router.navigate(['/servicios/nuevo']);
   }
@@ -153,7 +219,7 @@ export class ListadoServicios {
     this.deshabilitar({ habilitado: false, reservasACancelar: ids });
   }
 
-  private habilitar(row: ServicioRow): void {
+  private habilitar(row: ServicioAccionable): void {
     this.servicioService.actualizarHabilitacion(row.id, { habilitado: true }).subscribe({
       next: () => this.recargarTabla(),
       error: (err) => {
@@ -162,8 +228,8 @@ export class ListadoServicios {
     });
   }
 
-  private iniciarDeshabilitacion(row: ServicioRow): void {
-    this.servicioSeleccionado.set(row);
+  private iniciarDeshabilitacion(row: ServicioAccionable): void {
+    this.servicioSeleccionado.set(row as ServicioRow);
     this.verificandoVisible.set(true);
 
     this.servicioService.getReservasProximas(row.id).subscribe({
@@ -213,7 +279,6 @@ export class ListadoServicios {
   private recargarTabla(): void {
     this.servicioSeleccionado.set(null);
     this.reservasProximas.set([]);
-    // El spread crea una nueva referencia para que el signal detecte el cambio y recargue la tabla
     this.tableState.updateFilters({ ...this.tableState.queryParams().filters });
   }
 }
