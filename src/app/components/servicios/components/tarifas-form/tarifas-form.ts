@@ -66,10 +66,6 @@ export function crearTarifaFormGroup(id: number | null = null, fija = false): Ta
       antiguedadMaxima.enable();
     }
   });
-  if (grupo.controls.tipoCliente.value === TipoClienteTarifa.Particular) {
-    grupo.controls.antiguedadMinima.disable();
-    grupo.controls.antiguedadMaxima.disable();
-  }
 
   return grupo;
 }

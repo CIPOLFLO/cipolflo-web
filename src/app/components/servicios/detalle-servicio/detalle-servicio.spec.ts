@@ -5,7 +5,11 @@ import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DetalleServicio } from './detalle-servicio';
 import { ServicioService } from '../services/servicio.service';
-import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import {
+  EstadoServicio,
+  ServicioDetalleRespuestaDto,
+  TipoClienteTarifa,
+} from '../models/servicio.model';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
 
@@ -24,7 +28,24 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
   updatedBy: 'Juan Pérez',
-  tarifas: [],
+  tarifas: [
+    {
+      id: 1,
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 150,
+      modalidadPrecio: 'POR_UNIDAD',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
+    },
+    {
+      id: 2,
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 100,
+      modalidadPrecio: 'POR_UNIDAD',
+      antiguedadMinima: 0,
+      antiguedadMaxima: 5,
+    },
+  ],
 };
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
@@ -157,6 +178,32 @@ describe('DetalleServicio', () => {
   it('debería mostrar el tipo de cobro en formato descriptivo (Por día)', () => {
     const { el } = setup();
     expect(el.textContent).toContain('Por día');
+  });
+
+  it('debería renderizar una fila por cada tarifa del servicio', () => {
+    const { el } = setup();
+    const filas = el.querySelectorAll('.tarifas-detalle__table tbody tr');
+    expect(filas.length).toBe(2);
+  });
+
+  it('debería mostrar el tipo de cliente, precio y "---" de antigüedad para la fila Particular', () => {
+    const { el } = setup();
+    const filas = el.querySelectorAll('.tarifas-detalle__table tbody tr');
+    expect(filas[0].textContent).toContain('Particular');
+    expect(filas[0].textContent).toContain('$ 150');
+    expect(filas[0].textContent).toContain('---');
+  });
+
+  it('debería mostrar el rango de antigüedad para la fila Socio Común', () => {
+    const { el } = setup();
+    const filas = el.querySelectorAll('.tarifas-detalle__table tbody tr');
+    expect(filas[1].textContent).toContain('Socio Común');
+    expect(filas[1].textContent).toContain('0 - 5 años');
+  });
+
+  it('no debería renderizar la sección de tarifas mientras el servicio no cargó', () => {
+    const { el } = setup({ getById: vi.fn().mockReturnValue(throwError(() => ({ status: 404 }))) });
+    expect(el.querySelector('.tarifas-detalle__table')).toBeNull();
   });
 
   it('debería mostrar el ID del servicio formateado como SRV-001 en la sección de registro', () => {

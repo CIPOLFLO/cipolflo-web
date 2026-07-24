@@ -268,6 +268,131 @@ describe('TarifasForm - fila fija se mantiene bloqueada aunque se repita su tipo
   });
 });
 
+describe('TarifasForm - mensajes de error por campo', () => {
+  let fixture: ComponentFixture<TarifasForm>;
+  let tarifas: FormArray<TarifaFormGroup>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [TarifasForm] }).compileComponents();
+
+    fixture = TestBed.createComponent(TarifasForm);
+    tarifas = new FormArray<TarifaFormGroup>([crearTarifaFormGroup()]);
+    fixture.componentRef.setInput('tarifas', tarifas);
+    fixture.componentRef.setInput('tiposCliente', TIPO_CLIENTE_TARIFA_OPTIONS);
+    fixture.componentRef.setInput('modalidades', [{ label: 'Por día', value: 'POR_DIA' }]);
+    fixture.componentRef.setInput('submitted', true);
+    fixture.detectChanges();
+  });
+
+  it('muestra el error de tipoCliente obligatorio tras submit', () => {
+    const error = fixture.nativeElement.querySelector('.tarifa-field__error');
+    expect(error?.textContent).toContain('El tipo de cliente es obligatorio.');
+  });
+
+  it('muestra el error de precio mayor a 0 cuando el precio es 0', () => {
+    tarifas.at(0).controls.precio.setValue(0);
+    fixture.detectChanges();
+
+    const errores = Array.from(
+      fixture.nativeElement.querySelectorAll('.tarifa-field__error'),
+    ) as HTMLElement[];
+    expect(errores.some((e) => e.textContent?.includes('El precio debe ser mayor que 0.'))).toBe(
+      true,
+    );
+  });
+
+  it('muestra el error de antigüedad mínima negativa', () => {
+    tarifas.at(0).controls.tipoCliente.setValue(TipoClienteTarifa.SocioComun);
+    tarifas.at(0).controls.antiguedadMinima.setValue(-1);
+    fixture.detectChanges();
+
+    const errores = Array.from(
+      fixture.nativeElement.querySelectorAll('.tarifa-field__error'),
+    ) as HTMLElement[];
+    expect(
+      errores.some((e) => e.textContent?.includes('La antigüedad mínima no puede ser negativa.')),
+    ).toBe(true);
+  });
+
+  it('muestra el error de antigüedad máxima negativa', () => {
+    tarifas.at(0).controls.tipoCliente.setValue(TipoClienteTarifa.SocioComun);
+    tarifas.at(0).controls.antiguedadMaxima.setValue(-1);
+    fixture.detectChanges();
+
+    const errores = Array.from(
+      fixture.nativeElement.querySelectorAll('.tarifa-field__error'),
+    ) as HTMLElement[];
+    expect(
+      errores.some((e) => e.textContent?.includes('La antigüedad máxima no puede ser negativa.')),
+    ).toBe(true);
+  });
+
+  it('muestra el error de rango de antigüedad inválido', () => {
+    tarifas.at(0).controls.tipoCliente.setValue(TipoClienteTarifa.SocioComun);
+    tarifas.at(0).controls.antiguedadMinima.setValue(10);
+    tarifas.at(0).controls.antiguedadMaxima.setValue(5);
+    fixture.detectChanges();
+
+    const filaError = fixture.nativeElement.querySelector('.tarifas-table__error-row');
+    expect(filaError?.textContent).toContain(
+      'La antigüedad mínima no puede ser mayor que la máxima.',
+    );
+  });
+
+  it('muestra el error de antigüedad no aplicable a Particular', () => {
+    tarifas.at(0).controls.tipoCliente.setValue(TipoClienteTarifa.Particular);
+    // El tipoCliente=Particular limpia y deshabilita antigüedad; forzamos el caso igual para
+    // cubrir el mensaje de error de la fila, que sigue leyendo el valor del control aunque
+    // esté deshabilitado.
+    tarifas.at(0).controls.antiguedadMinima.setValue(5);
+    fixture.detectChanges();
+
+    const filasError = fixture.nativeElement.querySelectorAll('.tarifas-table__error-row');
+    const textos = Array.from(filasError as NodeListOf<HTMLElement>).map((f) => f.textContent);
+    expect(textos.some((t) => t?.includes('Un cliente Particular no admite antigüedad'))).toBe(
+      true,
+    );
+  });
+
+  it('muestra el error de obligatoriedad de conjunto tras submit', () => {
+    const arrayConValidador = new FormArray<TarifaFormGroup>([crearTarifaFormGroup()], () => ({
+      tarifasObligatoriasFaltantes: true,
+    }));
+    fixture.componentRef.setInput('tarifas', arrayConValidador);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Debe haber al menos una tarifa Particular y una Socio Común.',
+    );
+  });
+});
+
+describe('TarifasForm - eliminar una fila desde un click real en el DOM', () => {
+  it('emite eliminar al hacer click en el botón de la fila habilitada', async () => {
+    await TestBed.configureTestingModule({ imports: [TarifasForm] }).compileComponents();
+
+    const fixture = TestBed.createComponent(TarifasForm);
+    const tarifas = new FormArray<TarifaFormGroup>([
+      crearTarifaFormGroup(),
+      crearTarifaFormGroup(),
+    ]);
+    fixture.componentRef.setInput('tarifas', tarifas);
+    fixture.componentRef.setInput('tiposCliente', TIPO_CLIENTE_TARIFA_OPTIONS);
+    fixture.componentRef.setInput('modalidades', [{ label: 'Por día', value: 'POR_DIA' }]);
+    fixture.detectChanges();
+
+    let indiceEmitido: number | undefined;
+    fixture.componentInstance.eliminar.subscribe((i) => (indiceEmitido = i));
+
+    const boton: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.tarifas-table__delete-button',
+    );
+    boton.click();
+
+    expect(indiceEmitido).toBe(0);
+  });
+});
+
 @Component({
   template: `
     <app-tarifas-form

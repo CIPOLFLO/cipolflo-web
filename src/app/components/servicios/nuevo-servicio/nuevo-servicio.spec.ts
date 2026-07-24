@@ -106,6 +106,35 @@ describe('NuevoServicio', () => {
     expect(component['preciosErrors']()).toEqual({});
   });
 
+  // ── Tarifas ──────────────────────────────────────────────────────────────
+
+  it('precarga dos filas fijas: Particular y Socio Común', () => {
+    expect(component['tarifas'].length).toBe(2);
+    expect(component['tarifas'].at(0).controls.tipoCliente.value).toBe(
+      TipoClienteTarifa.Particular,
+    );
+    expect(component['tarifas'].at(0).controls.fija.value).toBe(true);
+    expect(component['tarifas'].at(1).controls.tipoCliente.value).toBe(
+      TipoClienteTarifa.SocioComun,
+    );
+    expect(component['tarifas'].at(1).controls.fija.value).toBe(true);
+  });
+
+  it('agregarTarifa debería agregar una fila nueva (no fija) al final', () => {
+    component['agregarTarifa']();
+    expect(component['tarifas'].length).toBe(3);
+    expect(component['tarifas'].at(2).controls.fija.value).toBe(false);
+  });
+
+  it('quitarTarifa debería quitar la fila en el índice indicado', () => {
+    component['agregarTarifa']();
+    component['tarifas'].at(2).controls.tipoCliente.setValue(TipoClienteTarifa.SocioPolicia);
+
+    component['quitarTarifa'](2);
+
+    expect(component['tarifas'].length).toBe(2);
+  });
+
   // ── Errores tras submit ──────────────────────────────────────────────────
 
   it('infoErrors[procedencia] debería mostrar error cuando submitted y campo vacío', () => {
