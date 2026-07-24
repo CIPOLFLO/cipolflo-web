@@ -118,7 +118,7 @@ export abstract class ReservaFormBase {
 
   protected readonly observacionesCliente = computed(() => {
     const obs = this.clienteBusqueda()?.observaciones?.trim();
-    return obs ? obs : null;
+    return obs || null;
   });
 
   protected readonly mostrarObservaciones = computed(() => this.observacionesCliente() !== null);

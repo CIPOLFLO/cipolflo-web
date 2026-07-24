@@ -240,7 +240,7 @@ describe('NuevaReserva', () => {
         filters: expect.objectContaining({ procedencia: Procedencia.Sede }),
       }),
     );
-    expect(component['servicios']().length).toBe(2);
+    expect(component['servicios']()).toHaveLength(2);
     expect(component['form'].get('servicioId')?.value).toBeNull();
   });
 
@@ -624,7 +624,7 @@ describe('NuevaReserva', () => {
     const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     expect(handleSpy).toHaveBeenCalledWith(error);
-    expect(component['servicios']().length).toBe(0);
+    expect(component['servicios']()).toHaveLength(0);
   });
 
   it('guardar con error del backend llama al errorHandler', () => {
