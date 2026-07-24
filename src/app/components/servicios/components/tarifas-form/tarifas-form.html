@@ -142,7 +142,9 @@
                 type="button"
                 class="tarifas-table__delete-button"
                 aria-label="Eliminar tarifa"
-                [disabled]="tarifas().length === 1 || tarifa.controls.fija.value || esUltimaObligatoria(index)"
+                [disabled]="
+                  tarifas().length === 1 || tarifa.controls.fija.value || esUltimaObligatoria(index)
+                "
                 (click)="onEliminar(index)"
               >
                 <i class="pi pi-trash"></i>
