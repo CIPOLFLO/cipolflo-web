@@ -240,7 +240,7 @@ describe('NuevaReserva', () => {
         filters: expect.objectContaining({ procedencia: Procedencia.Sede }),
       }),
     );
-    expect(component['servicios']().length).toBe(2);
+    expect(component['servicios']()).toHaveLength(2);
     expect(component['form'].get('servicioId')?.value).toBeNull();
   });
 
@@ -361,6 +361,88 @@ describe('NuevaReserva', () => {
     expect(component['busquedaRealizada']()).toBe(false);
     expect(component['clienteBusqueda']()).toBeNull();
     expect(component['form'].get('nombre')?.value).toBeNull();
+  });
+
+  it('calcula el costo como Particular cuando todavía no hay cliente encontrado', () => {
+    vi.useFakeTimers();
+
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({
+        inicio: '2026-08-01',
+        fin: '2026-08-03',
+      });
+      component['form'].get('cantidadTotal')?.setValue('4');
+
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(mockReservasService.calcularCosto).toHaveBeenCalledWith(
+      expect.objectContaining({
+        servicioId: 2,
+        clienteId: null,
+      }),
+    );
+  });
+
+  it('recalcula el costo enviando el clienteId del cliente encontrado', () => {
+    vi.useFakeTimers();
+
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({
+        inicio: '2026-08-01',
+        fin: '2026-08-03',
+      });
+      component['form'].get('cantidadTotal')?.setValue('4');
+
+      component['form'].get('documento')?.setValue('12345672');
+      component['buscarCliente']();
+
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(mockReservasService.calcularCosto).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        servicioId: 2,
+        clienteId: 1,
+      }),
+    );
+  });
+
+  it('al crear un cliente inline recalcula el costo con clienteId null', () => {
+    vi.useFakeTimers();
+
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({
+        inicio: '2026-08-01',
+        fin: '2026-08-03',
+      });
+      component['form'].get('cantidadTotal')?.setValue('4');
+
+      component['form'].get('documento')?.setValue('00000000');
+      component['buscarCliente']();
+
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(component['clienteBusqueda']()).toBeNull();
+
+    expect(mockReservasService.calcularCosto).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        clienteId: null,
+      }),
+    );
   });
 
   // --- RUT / Empresa ---
@@ -542,7 +624,7 @@ describe('NuevaReserva', () => {
     const handleSpy = vi.spyOn(component['errorHandler'], 'handle');
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     expect(handleSpy).toHaveBeenCalledWith(error);
-    expect(component['servicios']().length).toBe(0);
+    expect(component['servicios']()).toHaveLength(0);
   });
 
   it('guardar con error del backend llama al errorHandler', () => {

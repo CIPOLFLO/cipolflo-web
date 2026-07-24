@@ -566,7 +566,6 @@ export class NuevaReserva extends ReservaFormBase {
       horaFin: this.modoHora() ? this.controlValue('horaFin') : null,
       clienteId: cliente?.id ?? null,
       crearCliente,
-      tipoCliente: this.controlValue('tipoCliente') as TipoCliente | null,
       cedula: crearCliente ? this.controlValue('documento') : null,
       nombre: this.controlValue('nombre'),
       celular: this.controlValue('celular'),

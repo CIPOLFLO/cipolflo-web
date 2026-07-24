@@ -75,7 +75,6 @@ const dto: ReservaCreacionRequestDto = {
   cantidad: null,
   clienteId: 1,
   crearCliente: false,
-  tipoCliente: null,
   cedula: '12345672', // dígito verificador correcto: 2
   nombre: 'Juan',
   celular: '099111111',
@@ -245,7 +244,7 @@ describe('ReservasService', () => {
       cantidadTotal: 4,
       cantidadMenores: 1,
       cantidad: null,
-      tipoCliente: TipoCliente.Socio,
+      clienteId: 42,
     };
 
     it('realiza POST a reservas/calcular-costo con el DTO completo', () => {
