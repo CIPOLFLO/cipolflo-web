@@ -10,14 +10,14 @@
     <a routerLink="/clientes" routerLinkActive="active" class="header__nav-item">
       <i class="pi pi-users"></i> Clientes
     </a>
-    <a routerLink="/estadisticas" routerLinkActive="active" class="header__nav-item">
-      <i class="pi pi-chart-bar"></i> Estadísticas
-    </a>
     <a routerLink="/finanzas" routerLinkActive="active" class="header__nav-item">
       <i class="pi pi-wallet"></i> Finanzas
     </a>
     <a routerLink="/servicios" routerLinkActive="active" class="header__nav-item">
       <i class="pi pi-building"></i> Servicios
+    </a>
+    <a routerLink="/ajustes" routerLinkActive="active" class="header__nav-item">
+      <i class="pi pi-cog"></i> Ajustes
     </a>
   </nav>
   @if (auth.user$ | async; as user) {

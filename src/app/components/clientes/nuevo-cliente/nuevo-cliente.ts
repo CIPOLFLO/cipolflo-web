@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, Signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AppButton,
+  ConfirmDialogService,
   FormActions,
   FormLayout,
   FormSection,
+  ofrecerComprobante,
   PageLayout,
   startOfToday,
   toIsoDate,
@@ -29,6 +31,8 @@ import { buildUbicacionFields, submitRegistroCliente } from '../helpers/cliente-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NuevoCliente extends ClienteFormBase {
+  private readonly confirmDialog = inject(ConfirmDialogService);
+
   protected override readonly confirmSiempreVerificaValido = true;
   protected override readonly backLink = computed<string>(() => '/clientes');
 
@@ -138,7 +142,16 @@ export class NuevoCliente extends ClienteFormBase {
         destroyRef: this.destroyRef,
         errorHandler: this.errorHandler,
         onSuccess: (cliente) => {
-          this.router.navigate(['/clientes', cliente.id]);
+          ofrecerComprobante(
+            this.confirmDialog,
+            this.errorHandler,
+            {
+              title: 'Socio registrado',
+              message: 'El socio se registró correctamente. ¿Desea descargar el comprobante?',
+            },
+            () => this.clientesService.descargarComprobanteAltaSocio(cliente.id),
+            () => this.router.navigate(['/clientes', cliente.id]),
+          );
         },
       },
     );

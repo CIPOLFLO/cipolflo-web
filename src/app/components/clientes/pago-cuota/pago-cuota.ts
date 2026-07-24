@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY } from 'rxjs';
 import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
@@ -24,6 +25,7 @@ import {
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto } from '../models/pago-cuota.model';
 import { ClientesService } from '../services/cliente.service';
+import { CostoCuotaService } from '../../ajustes/services/costo-cuota.service';
 
 /** Límites de cuotas que se pueden pagar de una vez (única fuente de verdad). */
 const MIN_CUOTAS = 1;
@@ -50,12 +52,24 @@ export class PagoCuota {
   readonly cerrado = output<void>();
 
   private readonly clientesService = inject(ClientesService);
+  private readonly costoCuotaService = inject(CostoCuotaService);
   private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly metodosCobro = METODO_COBRO_OPTIONS;
-  protected readonly costoCuota = this.clientesService.getCostoCuota();
+  protected readonly costoCuota = signal<number>(0);
   protected readonly pagoConfirmado = signal<PagoCuotaResponseDto[] | null>(null);
   protected readonly hoy = new Date();
+
+  constructor() {
+    this.costoCuotaService.obtener().subscribe({
+      next: (response) => {
+        this.costoCuota.set(response.monto);
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+      },
+    });
+  }
 
   protected readonly form = new FormGroup({
     cantidadCuotas: new FormControl<number>(1, {
@@ -139,7 +153,7 @@ export class PagoCuota {
     });
   }
 
-  protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota);
+  protected readonly total = computed(() => this.cantidadCuotas() * this.costoCuota());
 
   protected readonly fechaEsFutura = computed(() => {
     const fechaPago = new Date(this.fechaPago());
@@ -151,7 +165,35 @@ export class PagoCuota {
     return fechaPago > hoy;
   });
 
-  protected cerrarConfirmacion(): void {
+  protected onAceptar(): void {
+    this.cerrar();
+  }
+
+  /**
+   * Descarga el comprobante desde la misma pantalla "Pago registrado", usando los ids que
+   * ya vinieron en la respuesta de registrarPagoCuota (sin consulta adicional al backend).
+   * Fire-and-forget: la descarga no bloquea el cierre del diálogo ni se ata al ciclo de
+   * vida del componente, que se destruye al cerrar.
+   */
+  protected onDescargarComprobante(): void {
+    const cliente = this.cliente();
+    const pagos = this.pagoConfirmado();
+
+    if (cliente && pagos) {
+      this.clientesService
+        .descargarComprobantePago(
+          cliente.id,
+          pagos.map((p) => p.id),
+        )
+        .pipe(
+          catchError((err: unknown) => {
+            this.errorHandler.handle(err);
+            return EMPTY;
+          }),
+        )
+        .subscribe();
+    }
+
     this.cerrar();
   }
 

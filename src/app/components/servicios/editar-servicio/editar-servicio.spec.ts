@@ -4,7 +4,11 @@ import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EditarServicio } from './editar-servicio';
 import { ServicioService } from '../services/servicio.service';
-import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import {
+  EstadoServicio,
+  ServicioDetalleRespuestaDto,
+  TipoClienteTarifa,
+} from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
@@ -24,7 +28,24 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
   updatedBy: 'Juan Pérez',
-  tarifas: [],
+  tarifas: [
+    {
+      id: 10,
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 1200,
+      modalidadPrecio: 'POR_DIA',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
+    },
+    {
+      id: 11,
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 800,
+      modalidadPrecio: 'POR_DIA',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
+    },
+  ],
 };
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
@@ -40,6 +61,7 @@ function setup(
   overrides: {
     getById?: ReturnType<typeof vi.fn>;
     update?: ReturnType<typeof vi.fn>;
+    eliminarTarifa?: ReturnType<typeof vi.fn>;
     navigate?: ReturnType<typeof vi.fn>;
     navigateByUrl?: ReturnType<typeof vi.fn>;
     id?: string;
@@ -50,16 +72,18 @@ function setup(
   component: EditarServicio;
   getByIdSpy: ReturnType<typeof vi.fn>;
   updateSpy: ReturnType<typeof vi.fn>;
+  eliminarTarifaSpy: ReturnType<typeof vi.fn>;
   navigateSpy: ReturnType<typeof vi.fn>;
   navigateByUrlSpy: ReturnType<typeof vi.fn>;
 } {
   const getByIdSpy = overrides.getById ?? vi.fn().mockReturnValue(of(mockServicio));
   const updateSpy = overrides.update ?? vi.fn().mockReturnValue(of({}));
+  const eliminarTarifaSpy = overrides.eliminarTarifa ?? vi.fn().mockReturnValue(of(undefined));
   const navigateSpy = overrides.navigate ?? vi.fn();
   const navigateByUrlSpy = overrides.navigateByUrl ?? vi.fn();
 
   TestBed.overrideProvider(ServicioService, {
-    useValue: { getById: getByIdSpy, update: updateSpy },
+    useValue: { getById: getByIdSpy, update: updateSpy, eliminarTarifa: eliminarTarifaSpy },
   });
   TestBed.overrideProvider(Router, {
     useValue: { navigate: navigateSpy, navigateByUrl: navigateByUrlSpy },
@@ -75,6 +99,7 @@ function setup(
     component: fixture.componentInstance,
     getByIdSpy,
     updateSpy,
+    eliminarTarifaSpy,
     navigateSpy,
     navigateByUrlSpy,
   };
@@ -124,6 +149,68 @@ describe('EditarServicio', () => {
     expect(component['form'].get('precioSocio')?.value).toBe(800);
     expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_DIA');
     expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
+  });
+
+  it('debería precargar las tarifas del servicio en el FormArray', () => {
+    const { component } = setup();
+    expect(component['tarifas'].length).toBe(2);
+    expect(component['tarifas'].at(0).getRawValue()).toMatchObject({
+      id: 10,
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 1200,
+    });
+    expect(component['tarifas'].at(1).getRawValue()).toMatchObject({
+      id: 11,
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 800,
+    });
+  });
+
+  it('debería renderizar en el DOM las filas de tarifas precargadas', () => {
+    const { fixture } = setup();
+    const filas = fixture.nativeElement.querySelectorAll(
+      '.tarifas-table tbody tr:not(.tarifas-table__error-row)',
+    );
+    expect(filas.length).toBe(2);
+  });
+
+  it('agregarTarifa debería agregar una fila nueva (sin id) al final', () => {
+    const { component } = setup();
+    component['agregarTarifa']();
+    expect(component['tarifas'].length).toBe(3);
+    expect(component['tarifas'].at(2).controls.id.value).toBeNull();
+  });
+
+  it('quitarTarifa con una fila sin id la quita del FormArray sin llamar al servicio', () => {
+    const { component, eliminarTarifaSpy } = setup();
+    component['agregarTarifa']();
+
+    component['quitarTarifa'](2);
+
+    expect(component['tarifas'].length).toBe(2);
+    expect(eliminarTarifaSpy).not.toHaveBeenCalled();
+  });
+
+  it('quitarTarifa con una fila con id llama a eliminarTarifa y la quita si tiene éxito', () => {
+    const eliminarTarifaSpy = vi.fn().mockReturnValue(of(undefined));
+    const { component } = setup({ eliminarTarifa: eliminarTarifaSpy });
+
+    component['quitarTarifa'](0);
+
+    expect(eliminarTarifaSpy).toHaveBeenCalledWith(1, 10);
+    expect(component['tarifas'].length).toBe(1);
+    expect(component['tarifas'].at(0).controls.id.value).toBe(11);
+  });
+
+  it('quitarTarifa con una fila con id no la quita si el servicio falla, y delega el error', () => {
+    const error = new Error('TARIFA_OBLIGATORIA_NO_ELIMINABLE');
+    const eliminarTarifaSpy = vi.fn().mockReturnValue(throwError(() => error));
+    const { component } = setup({ eliminarTarifa: eliminarTarifaSpy });
+
+    component['quitarTarifa'](0);
+
+    expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    expect(component['tarifas'].length).toBe(2);
   });
 
   it('pageDescription debería mostrar el nombre del servicio', () => {

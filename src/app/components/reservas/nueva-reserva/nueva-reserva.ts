@@ -13,6 +13,7 @@ import {
   FormField,
   FormLayout,
   FormSection,
+  ofrecerComprobante as ofrecerDescargaComprobante,
   OccupancyCalendar,
   PageLayout,
   Procedencia,
@@ -537,34 +538,16 @@ export class NuevaReserva extends ReservaFormBase {
    * listado de inmediato; si se pidió el comprobante, la descarga sigue en segundo plano.
    */
   private ofrecerComprobante(id: number): void {
-    this.confirmDialog
-      .open({
+    ofrecerDescargaComprobante(
+      this.confirmDialog,
+      this.errorHandler,
+      {
         title: 'Reserva creada',
         message: 'La reserva se creó correctamente. ¿Desea descargar el comprobante?',
-        confirmButtonLabel: 'Descargar comprobante',
-        cancelButtonLabel: 'No, gracias',
-        variant: 'success',
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((descargar) => {
-        if (descargar) this.descargarComprobante(id);
-        this.router.navigate(['/reservas']);
-      });
-  }
-
-  private descargarComprobante(id: number): void {
-    // Fire-and-forget: la descarga NO se ata al destroyRef porque debe sobrevivir a la
-    // navegación al listado. La request corre en servicios root; se auto-completa al
-    // terminar el HTTP y los errores se muestran vía el diálogo global.
-    this.reservasService
-      .descargarComprobante(id)
-      .pipe(
-        catchError((err: unknown) => {
-          this.errorHandler.handle(err);
-          return EMPTY;
-        }),
-      )
-      .subscribe();
+      },
+      () => this.reservasService.descargarComprobante(id),
+      () => this.router.navigate(['/reservas']),
+    );
   }
 
   private construirDto(): ReservaCreacionRequestDto {

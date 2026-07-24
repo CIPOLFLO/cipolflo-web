@@ -19,6 +19,15 @@
       (valuesChange)="onPreciosChange($event)"
     />
 
+    <app-tarifas-form
+      [tarifas]="tarifas"
+      [tiposCliente]="tiposClienteTarifa"
+      [modalidades]="modalidades()"
+      [submitted]="submitted()"
+      (agregar)="agregarTarifa()"
+      (eliminar)="quitarTarifa($event)"
+    />
+
     @if (registroData()) {
       <app-detail-registro-section [data]="registroData()!" />
     }

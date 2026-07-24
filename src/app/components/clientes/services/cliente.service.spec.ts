@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { firstValueFrom } from 'rxjs';
 import { ClientesService } from './cliente.service';
 import { environment } from '@env/environment';
 import {
@@ -506,10 +507,74 @@ describe('ClientesService', () => {
 
       expect(errorStatus).toBe(500);
     });
-    it('getCostoCuota retorna 5000', () => {
-      expect(service.getCostoCuota()).toBe(5000);
+  });
+
+  describe('descargarComprobanteAltaSocio', () => {
+    it('realiza GET a /clientes/socios/:id/comprobante y llama a fileDownloadService.download', () => {
+      const fileDownloadService = TestBed.inject(FileDownloadService);
+      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockReturnValue(undefined);
+
+      service.descargarComprobanteAltaSocio(1).subscribe();
+
+      const req = httpMock.expectOne(`${BASE}/socios/1/comprobante`);
+      expect(req.request.method).toBe('GET');
+      req.flush(new Blob(['pdf'], { type: 'application/pdf' }));
+
+      expect(downloadSpy).toHaveBeenCalledWith(expect.any(Object), 'comprobante-alta-socio-1.pdf');
+    });
+
+    it('propaga error 404 cuando el socio no existe', async () => {
+      const promise = firstValueFrom(service.descargarComprobanteAltaSocio(9999));
+
+      const req = httpMock.expectOne(`${BASE}/socios/9999/comprobante`);
+      req.flush(
+        new Blob([
+          JSON.stringify({
+            codigo: 'SOCIO_NO_ENCONTRADO',
+            descripcion: 'No existe un socio con ese id',
+          }),
+        ]),
+        { status: 404, statusText: 'Not Found' },
+      );
+
+      await expect(promise).rejects.toMatchObject({ status: 404 });
     });
   });
+
+  describe('descargarComprobantePago', () => {
+    it('realiza GET a /clientes/socios/:id/pago-cuota/comprobante con ids como query param', () => {
+      const fileDownloadService = TestBed.inject(FileDownloadService);
+      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockReturnValue(undefined);
+
+      service.descargarComprobantePago(1, [10, 11, 12]).subscribe();
+
+      const req = httpMock.expectOne(
+        (r) => r.url === `${BASE}/socios/1/pago-cuota/comprobante` && r.method === 'GET',
+      );
+      expect(req.request.params.get('ids')).toBe('10,11,12');
+      req.flush(new Blob(['pdf'], { type: 'application/pdf' }));
+
+      expect(downloadSpy).toHaveBeenCalledWith(expect.any(Object), 'comprobante-pago-cuota-1.pdf');
+    });
+
+    it('propaga error 404 cuando algún id no existe o pertenece a otro socio', async () => {
+      const promise = firstValueFrom(service.descargarComprobantePago(1, [99]));
+
+      const req = httpMock.expectOne(`${BASE}/socios/1/pago-cuota/comprobante?ids=99`);
+      req.flush(
+        new Blob([
+          JSON.stringify({
+            codigo: 'PAGO_CUOTA_NO_ENCONTRADO',
+            descripcion: 'No existe el pago de cuota',
+          }),
+        ]),
+        { status: 404, statusText: 'Not Found' },
+      );
+
+      await expect(promise).rejects.toMatchObject({ status: 404 });
+    });
+  });
+
   describe('registrarEmpresa', () => {
     const dto: RegistroEmpresaRequestDto = {
       razonSocial: 'Antel S.A.',

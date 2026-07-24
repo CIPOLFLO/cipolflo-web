@@ -1,0 +1,30 @@
+.inline-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inline-row-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+}
+
+.inline-row-actions__btn:hover:not(:disabled) {
+  color: var(--color-primary);
+}
+
+.inline-row-actions__btn--danger:hover:not(:disabled) {
+  color: var(--color-danger);
+}
+
+.inline-row-actions__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

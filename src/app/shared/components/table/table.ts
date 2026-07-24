@@ -8,6 +8,7 @@ import { SortEvent } from 'primeng/api';
 import {
   ColumnConfig,
   EMPTY_PAGE,
+  InlineAction,
   LoadDataFn,
   PageResponse,
   RowAction,
@@ -19,6 +20,7 @@ import { TagCellComponent } from './cells/tag-cell/tag-cell';
 import { AmountCellComponent } from './cells/amount-cell/amount-cell';
 import { PriceCellComponent } from './cells/price-cell/price-cell';
 import { RowActionsComponent } from './cells/row-actions/row-actions';
+import { InlineRowActionsComponent } from './cells/inline-row-actions/inline-row-actions';
 import { PaginationComponent } from './pagination/pagination';
 import { DateFormatPipe } from './pipes/date-format.pipe';
 import { Tooltip } from 'primeng/tooltip';
@@ -32,6 +34,7 @@ import { Tooltip } from 'primeng/tooltip';
     AmountCellComponent,
     PriceCellComponent,
     RowActionsComponent,
+    InlineRowActionsComponent,
     PaginationComponent,
     DateFormatPipe,
     Tooltip,
@@ -44,6 +47,7 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
   columns = input.required<ColumnConfig[]>();
   loadDataFn = input.required<LoadDataFn<T>>();
   getRowActions = input<((row: T) => RowAction<T>[]) | null>(null);
+  getInlineActions = input<((row: T) => InlineAction<T>[]) | null>(null);
   pageSize = input<number>(10);
   pageSizeOptions = input<number[]>([10, 25, 50, 100]);
 
@@ -121,5 +125,13 @@ export class AppTable<T extends Record<string, unknown>> implements OnInit {
 
   protected getRowActionsForRow(row: T): RowAction<T>[] {
     return this.getRowActions()?.(row) ?? [];
+  }
+
+  protected getInlineActionsForRow(row: T): InlineAction<T>[] {
+    return this.getInlineActions()?.(row) ?? [];
+  }
+
+  protected get hasActionsColumn(): boolean {
+    return !!this.getRowActions() || !!this.getInlineActions();
   }
 }

@@ -31,3 +31,10 @@ export function toDisplayDate(date: Date | null | undefined): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   return `${d}/${m}/${date.getFullYear()}`;
 }
+
+/** Ventana de un año desde hoy ('yyyy-MM-dd'), usada para consultar ocupación de un servicio. */
+export function rangoOcupacionAnual(): { desde: string; hasta: string } {
+  const hoy = startOfToday();
+  const hasta = new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate());
+  return { desde: toIsoDate(hoy)!, hasta: toIsoDate(hasta)! };
+}

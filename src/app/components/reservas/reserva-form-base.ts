@@ -20,8 +20,7 @@ import {
   parseNumberOrNull,
   Procedencia,
   PROCEDENCIA_OPTIONS,
-  startOfToday,
-  toIsoDate,
+  rangoOcupacionAnual,
   type FormFieldConfig,
   type FormFieldOption,
 } from '../../shared';
@@ -248,18 +247,17 @@ export abstract class ReservaFormBase {
           this.servicioIdValue.set(id);
           this.aplicarValidadoresMonto();
         }),
-        switchMap((id) =>
-          id
-            ? this.servicioService
-                .getFechasOcupadas(id, this.ventanaDesde(), this.ventanaHasta())
-                .pipe(
-                  catchError((err: unknown) => {
-                    this.errorHandler.handle(err);
-                    return of(null);
-                  }),
-                )
-            : of(null),
-        ),
+        switchMap((id) => {
+          const { desde, hasta } = rangoOcupacionAnual();
+          return id
+            ? this.servicioService.getFechasOcupadas(id, desde, hasta).pipe(
+                catchError((err: unknown) => {
+                  this.errorHandler.handle(err);
+                  return of(null);
+                }),
+              )
+            : of(null);
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((fechas) => this.fechasOcupadas.set(fechas ?? []));
@@ -355,15 +353,6 @@ export abstract class ReservaFormBase {
       }),
       finalize(() => this.costoCargando.set(false)),
     );
-  }
-
-  private ventanaDesde(): string {
-    return toIsoDate(startOfToday())!;
-  }
-
-  private ventanaHasta(): string {
-    const hoy = startOfToday();
-    return toIsoDate(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()))!;
   }
 
   /** Activa el validador de cantidad según el modo del servicio (capacidad vs cantidad). */

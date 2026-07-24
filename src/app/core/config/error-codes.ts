@@ -12,6 +12,8 @@ export const ERROR_CODES: Record<string, string> = {
     'Los egresos asociados a una reserva no pueden eliminarse. Si se cargó por error, registrá un ingreso que lo anule.',
   CONFIRMACION_ELIMINACION_REQUERIDA:
     'El movimiento corresponde a una reserva ya finalizada o cancelada.',
+  CHAT_ID_DUPLICADO: 'Ya existe un cliente autorizado de Telegram con ese Chat ID.',
+  CHAT_NO_ENCONTRADO: 'El cliente autorizado de Telegram no fue encontrado.',
 };
 
 /**

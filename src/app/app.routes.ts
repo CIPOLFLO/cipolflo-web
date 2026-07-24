@@ -31,6 +31,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./components/reservas/reservas.routes').then((m) => m.RESERVAS_ROUTES),
       },
+      {
+        path: 'ajustes',
+        loadChildren: () =>
+          import('./components/ajustes/ajustes.routes').then((m) => m.AJUSTES_ROUTES),
+      },
     ],
   },
   {

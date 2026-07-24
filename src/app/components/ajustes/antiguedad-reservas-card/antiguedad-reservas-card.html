@@ -1,0 +1,21 @@
+<app-form-section
+  title="Antigüedad de Reservas"
+  [fields]="fields()"
+  [errors]="errors()"
+  note="Las reservas más antiguas que este valor son eliminadas automáticamente por el proceso de limpieza."
+  (valuesChange)="onValuesChange($event)"
+  (fieldBlur)="onBlur($event)"
+>
+  <div class="antiguedad-reservas-card__actions">
+    <app-button
+      label="Guardar"
+      intent="primary"
+      [loading]="guardando()"
+      [disabled]="guardarDisabled()"
+      (clicked)="onGuardar()"
+    />
+    @if (guardadoOk()) {
+      <span class="antiguedad-reservas-card__success"><i class="pi pi-check"></i> Guardado</span>
+    }
+  </div>
+</app-form-section>

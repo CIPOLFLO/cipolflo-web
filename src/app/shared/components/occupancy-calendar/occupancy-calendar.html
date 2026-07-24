@@ -1,19 +1,89 @@
-<p-datepicker
-  [ngModel]="selection()"
-  (ngModelChange)="onSelectionChange($event)"
-  selectionMode="range"
-  [inline]="true"
-  [readonlyInput]="true"
-  [disabledDates]="disabledDates()"
-  [minDate]="minDate()"
-  dateFormat="dd/mm/yy"
-/>
+<div class="occupancy-calendar__layout">
+  <div class="occupancy-calendar__calendario">
+    <p-datepicker
+      [ngModel]="selection()"
+      (ngModelChange)="onSelectionChange($event)"
+      selectionMode="range"
+      [inline]="true"
+      [readonlyInput]="true"
+      [disabledDates]="disabledDates()"
+      [minDate]="minDate()"
+      [maxDate]="maxDate()"
+      dateFormat="dd/mm/yy"
+    >
+      @if (readOnly()) {
+        <ng-template #date let-date>
+          <span
+            class="occupancy-calendar__day-disponible"
+            tabindex="0"
+            (click)="onDiaClick($event)"
+            (keydown)="onDiaClick($event)"
+          >
+            {{ date.day }}
+          </span>
+        </ng-template>
+      }
 
-@if (rangoLabel(); as label) {
-  <p class="occupancy-calendar__rango">
-    <span class="occupancy-calendar__rango-label">
-      {{ esFechaUnica() ? 'Fecha seleccionada:' : 'Período seleccionado:' }}
-    </span>
-    {{ label }}
-  </p>
-}
+      <ng-template #disabledDate let-date>
+        @if (diaOcupado(date); as ocupado) {
+          <a
+            class="occupancy-calendar__day occupancy-calendar__day--ocupado"
+            [class]="tagClassFor(ocupado.estado)"
+            [href]="ocupado.reservaId ? getReservaUrl(ocupado.reservaId) : null"
+            target="_blank"
+            rel="noopener noreferrer"
+            [pTooltip]="tooltipTextoFor(ocupado)"
+            tooltipPosition="top"
+            (click)="onDiaClick($event)"
+          >
+            {{ date.day }}
+          </a>
+        } @else {
+          {{ date.day }}
+        }
+      </ng-template>
+    </p-datepicker>
+
+    @if (rangoLabel(); as label) {
+      <p class="occupancy-calendar__rango">
+        <span class="occupancy-calendar__rango-label">
+          {{ esFechaUnica() ? 'Fecha seleccionada:' : 'Período seleccionado:' }}
+        </span>
+        {{ label }}
+      </p>
+    }
+  </div>
+
+  <div class="occupancy-calendar__leyenda-panel">
+    @if (estadosEnLeyenda().length) {
+      <p class="occupancy-calendar__leyenda-titulo">Referencias de estado de reservas</p>
+      <ul class="occupancy-calendar__leyenda">
+        @for (estado of estadosEnLeyenda(); track estado) {
+          <li>
+            <span class="occupancy-calendar__leyenda-swatch" [class]="tagClassFor(estado)"></span>
+            <span>{{ estadoLabelFor(estado) }}</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="occupancy-calendar__leyenda-vacio">
+        El servicio no tiene reservas registradas en el próximo año.
+      </p>
+    }
+
+    @if (readOnly() && proximaReserva(); as proxima) {
+      <div class="occupancy-calendar__proxima">
+        <p class="occupancy-calendar__proxima-titulo">Próxima reserva</p>
+        <a
+          class="occupancy-calendar__proxima-link"
+          [href]="proxima.reservaId ? getReservaUrl(proxima.reservaId) : null"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ isoADisplay(proxima.fechaInicio) }} — {{ isoADisplay(proxima.fechaFin) }}
+          <i class="pi pi-external-link"></i>
+        </a>
+      </div>
+    }
+  </div>
+</div>
