@@ -4,7 +4,11 @@ import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EditarServicio } from './editar-servicio';
 import { ServicioService } from '../services/servicio.service';
-import { EstadoServicio, ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import {
+  EstadoServicio,
+  ServicioDetalleRespuestaDto,
+  TipoClienteTarifa,
+} from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
@@ -24,7 +28,24 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   updatedAt: '2026-03-20T08:00:00Z',
   createdBy: 'María González',
   updatedBy: 'Juan Pérez',
-  tarifas: [],
+  tarifas: [
+    {
+      id: 10,
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 1200,
+      modalidadPrecio: 'POR_DIA',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
+    },
+    {
+      id: 11,
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 800,
+      modalidadPrecio: 'POR_DIA',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
+    },
+  ],
 };
 const mockAuthService = {
   user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
@@ -124,6 +145,29 @@ describe('EditarServicio', () => {
     expect(component['form'].get('precioSocio')?.value).toBe(800);
     expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_DIA');
     expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
+  });
+
+  it('debería precargar las tarifas del servicio en el FormArray', () => {
+    const { component } = setup();
+    expect(component['tarifas'].length).toBe(2);
+    expect(component['tarifas'].at(0).getRawValue()).toMatchObject({
+      id: 10,
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 1200,
+    });
+    expect(component['tarifas'].at(1).getRawValue()).toMatchObject({
+      id: 11,
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 800,
+    });
+  });
+
+  it('debería renderizar en el DOM las filas de tarifas precargadas', () => {
+    const { fixture } = setup();
+    const filas = fixture.nativeElement.querySelectorAll(
+      '.tarifas-table tbody tr:not(.tarifas-table__error-row)',
+    );
+    expect(filas.length).toBe(2);
   });
 
   it('pageDescription debería mostrar el nombre del servicio', () => {

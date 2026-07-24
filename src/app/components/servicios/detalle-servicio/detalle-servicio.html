@@ -9,6 +9,36 @@
 
     <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()" />
 
+    @if (servicio()) {
+      <section class="tarifas-detalle">
+        <div class="tarifas-detalle__header">
+          <h3 class="tarifas-detalle__title">Tarifas</h3>
+          <div class="tarifas-detalle__separator" aria-hidden="true"></div>
+        </div>
+
+        <table class="tarifas-detalle__table">
+          <thead>
+            <tr>
+              <th>Tipo de Cliente</th>
+              <th>Modalidad de Cobro</th>
+              <th>Precio</th>
+              <th>Antigüedad</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of tarifasRows(); track fila.id) {
+              <tr>
+                <td>{{ fila.tipoCliente }}</td>
+                <td>{{ fila.modalidad }}</td>
+                <td>$ {{ fila.precio }}</td>
+                <td>{{ fila.antiguedad }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
     @if (registroData()) {
       <app-detail-registro-section [data]="registroData()!" />
     }

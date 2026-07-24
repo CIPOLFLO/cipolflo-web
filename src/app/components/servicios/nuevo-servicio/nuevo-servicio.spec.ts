@@ -67,12 +67,18 @@ describe('NuevoServicio', () => {
       precioSocio: 50,
       modalidadPrecio: 'POR_DIA',
     });
+    // El constructor ya precarga una fila Particular (índice 0) y una Socio Común (índice 1).
     component['tarifas'].at(0).patchValue({
       tipoCliente: TipoClienteTarifa.Particular,
       precio: 100,
       modalidadPrecio: 'POR_DIA',
       antiguedadMinima: null,
       antiguedadMaxima: null,
+    });
+    component['tarifas'].at(1).patchValue({
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 80,
+      modalidadPrecio: 'POR_DIA',
     });
   }
 
@@ -252,6 +258,13 @@ describe('NuevoServicio', () => {
           {
             tipoCliente: TipoClienteTarifa.Particular,
             precio: 100,
+            modalidadPrecio: 'POR_DIA',
+            antiguedadMinima: null,
+            antiguedadMaxima: null,
+          },
+          {
+            tipoCliente: TipoClienteTarifa.SocioComun,
+            precio: 80,
             modalidadPrecio: 'POR_DIA',
             antiguedadMinima: null,
             antiguedadMaxima: null,

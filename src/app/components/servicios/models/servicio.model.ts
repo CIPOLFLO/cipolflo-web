@@ -51,6 +51,13 @@ export const TIPO_CLIENTE_TARIFA_OPTIONS: FormFieldOption[] = [
   },
 ];
 
+export const TIPO_CLIENTE_TARIFA_LABEL: Record<string, string> = {
+  [TipoClienteTarifa.Particular]: 'Particular',
+  [TipoClienteTarifa.SocioComun]: 'Socio Común',
+  [TipoClienteTarifa.SocioPolicia]: 'Socio Policía',
+  [TipoClienteTarifa.SocioPoliciaRetirado]: 'Socio Policía Retirado',
+};
+
 export interface TarifaServicioRequestDto {
   tipoCliente: TipoClienteTarifa;
   precio: number;
@@ -94,7 +101,7 @@ export interface ServicioActualizarDto {
   cantidad?: number | null;
   capacidad?: number | null;
   costoPersonaExtra?: number | null;
-  tarifas: TarifaServicioRequestDto[];
+  tarifas: TarifaServicioItemDto[];
 }
 
 export interface ServicioRespuestaDto {
@@ -108,7 +115,7 @@ export interface ServicioRespuestaDto {
   capacidad: number | null;
   cantidad: number | null;
   costoPersonaExtra: number | null;
-  tarifas: TarifaServicioRequestDto[];
+  tarifas: TarifaServicioResponseDto[];
 }
 
 export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
@@ -122,7 +129,7 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
   costoPersonaExtra: number | null;
   estado: EstadoServicio;
   modalidadPrecio: string;
-  tarifas: TarifaServicioRequestDto[];
+  tarifas: TarifaServicioResponseDto[];
 }
 
 export interface ReservaProximaDto {
@@ -157,4 +164,12 @@ export interface ServicioRow extends Record<string, unknown> {
   precioSocio: number;
   unidad: string;
   estado: EstadoServicio;
+}
+
+export interface TarifaServicioRow {
+  id: number;
+  tipoCliente: string;
+  precio: number;
+  modalidad: string;
+  antiguedad: string;
 }

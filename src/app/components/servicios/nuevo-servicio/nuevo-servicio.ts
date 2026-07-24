@@ -14,20 +14,17 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { ServicioValidacionesService } from '../services/servicio-validaciones.service';
+import { TarifaValidacionesService } from '../services/tarifa-validaciones.service';
 import {
   TarifaServicioRequestDto,
-  TipoClienteTarifa,
   TIPO_CLIENTE_TARIFA_OPTIONS,
+  TipoClienteTarifa,
 } from '../models/servicio.model';
-import { TarifasForm } from '../components/tarifas-form/tarifas-form';
-
-type TarifaFormGroup = FormGroup<{
-  tipoCliente: FormControl<TipoClienteTarifa | null>;
-  precio: FormControl<number | null>;
-  modalidadPrecio: FormControl<string | null>;
-  antiguedadMinima: FormControl<number | null>;
-  antiguedadMaxima: FormControl<number | null>;
-}>;
+import {
+  TarifasForm,
+  crearTarifaFormGroup,
+  type TarifaFormGroup,
+} from '../components/tarifas-form/tarifas-form';
 
 @Component({
   standalone: true,
@@ -50,6 +47,7 @@ export class NuevoServicio {
   private readonly servicioService = inject(ServicioService);
   private readonly optionsService = inject(ServicioOptionsService);
   private readonly validaciones = inject(ServicioValidacionesService);
+  private readonly tarifaValidaciones = inject(TarifaValidacionesService);
   private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly procedencias = toSignal(this.optionsService.getProcedencias(), {
@@ -60,10 +58,20 @@ export class NuevoServicio {
   });
   protected readonly tiposClienteTarifa = TIPO_CLIENTE_TARIFA_OPTIONS;
 
-  protected readonly tarifas = new FormArray<TarifaFormGroup>([], Validators.required);
+  protected readonly tarifas = new FormArray<TarifaFormGroup>(
+    [],
+    [Validators.required, (a) => this.tarifaValidaciones.obligatoriasFaltantes(a)],
+  );
 
   constructor() {
-    this.tarifas.push(this.crearTarifaFormGroup());
+    // Particular y Socio Común son obligatorios: se precargan fijas de entrada (tipo bloqueado,
+    // sin poder eliminarse), sin importar cuántas otras filas se agreguen después.
+    const particular = crearTarifaFormGroup(null, true);
+    particular.controls.tipoCliente.setValue(TipoClienteTarifa.Particular);
+    const socioComun = crearTarifaFormGroup(null, true);
+    socioComun.controls.tipoCliente.setValue(TipoClienteTarifa.SocioComun);
+    this.tarifas.push(particular);
+    this.tarifas.push(socioComun);
   }
 
   protected readonly form = new FormGroup(
@@ -96,18 +104,8 @@ export class NuevoServicio {
   protected readonly loading = signal(false);
   private readonly touchCount = signal(0);
 
-  private crearTarifaFormGroup(): TarifaFormGroup {
-    return new FormGroup({
-      tipoCliente: new FormControl<TipoClienteTarifa | null>(null, Validators.required),
-      precio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
-      modalidadPrecio: new FormControl<string | null>(null, Validators.required),
-      antiguedadMinima: new FormControl<number | null>(null, Validators.min(0)),
-      antiguedadMaxima: new FormControl<number | null>(null, Validators.min(0)),
-    });
-  }
-
   protected agregarTarifa(): void {
-    this.tarifas.push(this.crearTarifaFormGroup());
+    this.tarifas.push(crearTarifaFormGroup());
     this.form.markAsDirty();
   }
 

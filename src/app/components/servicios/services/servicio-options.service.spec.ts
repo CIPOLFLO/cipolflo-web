@@ -32,6 +32,12 @@ describe('ServicioOptionsService', () => {
       service.getProcedencias().subscribe((options) => (result = options));
       expect(result.some((o) => o.value === 'CAMPING')).toBe(true);
     });
+
+    it('no incluye la opción AMBOS: un servicio pertenece a una sola sede', () => {
+      let result: { label: string; value: string }[] = [];
+      service.getProcedencias().subscribe((options) => (result = options));
+      expect(result.some((o) => o.value === 'AMBOS')).toBe(false);
+    });
   });
 
   describe('getModalidades', () => {
