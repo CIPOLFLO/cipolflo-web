@@ -21,13 +21,24 @@
       (fieldBlur)="onFieldBlur($event)"
     />
 
+    <app-tarifas-form
+      [tarifas]="tarifas"
+      [tiposCliente]="tiposClienteTarifa"
+      [modalidades]="modalidades()"
+      [submitted]="submitted()"
+      (agregar)="agregarTarifa()"
+      (eliminar)="quitarTarifa($event)"
+    />
+
     <app-form-actions actions>
       <p class="nuevo-servicio__info">
         El servicio se creará en estado
-        <strong class="nuevo-servicio__info-estado">Habilitado</strong> y estará disponible
-        inmediatamente.
+        <strong class="nuevo-servicio__info-estado">Habilitado</strong>
+        y estará disponible inmediatamente.
       </p>
+
       <app-button label="Cancelar" intent="secondary" icon="pi-times" (clicked)="onCancelar()" />
+
       <app-button
         label="Confirmar"
         intent="primary"

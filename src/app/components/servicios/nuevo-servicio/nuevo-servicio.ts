@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -14,11 +14,30 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { ServicioValidacionesService } from '../services/servicio-validaciones.service';
+import { TarifaValidacionesService } from '../services/tarifa-validaciones.service';
+import {
+  TarifaServicioRequestDto,
+  TIPO_CLIENTE_TARIFA_OPTIONS,
+  TipoClienteTarifa,
+} from '../models/servicio.model';
+import {
+  TarifasForm,
+  crearTarifaFormGroup,
+  type TarifaFormGroup,
+} from '../components/tarifas-form/tarifas-form';
 
 @Component({
   standalone: true,
   selector: 'app-nuevo-servicio',
-  imports: [ReactiveFormsModule, PageLayout, FormLayout, FormSection, FormActions, AppButton],
+  imports: [
+    ReactiveFormsModule,
+    PageLayout,
+    FormLayout,
+    FormSection,
+    FormActions,
+    AppButton,
+    TarifasForm,
+  ],
   templateUrl: './nuevo-servicio.html',
   styleUrl: './nuevo-servicio.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +47,7 @@ export class NuevoServicio {
   private readonly servicioService = inject(ServicioService);
   private readonly optionsService = inject(ServicioOptionsService);
   private readonly validaciones = inject(ServicioValidacionesService);
+  private readonly tarifaValidaciones = inject(TarifaValidacionesService);
   private readonly errorHandler = inject(ErrorHandlerService);
 
   protected readonly procedencias = toSignal(this.optionsService.getProcedencias(), {
@@ -36,6 +56,23 @@ export class NuevoServicio {
   protected readonly modalidades = toSignal(this.optionsService.getModalidades(), {
     initialValue: [],
   });
+  protected readonly tiposClienteTarifa = TIPO_CLIENTE_TARIFA_OPTIONS;
+
+  protected readonly tarifas = new FormArray<TarifaFormGroup>(
+    [],
+    [Validators.required, (a) => this.tarifaValidaciones.obligatoriasFaltantes(a)],
+  );
+
+  constructor() {
+    // Particular y Socio Común son obligatorios: se precargan fijas de entrada (tipo bloqueado,
+    // sin poder eliminarse), sin importar cuántas otras filas se agreguen después.
+    const particular = crearTarifaFormGroup(null, true);
+    particular.controls.tipoCliente.setValue(TipoClienteTarifa.Particular);
+    const socioComun = crearTarifaFormGroup(null, true);
+    socioComun.controls.tipoCliente.setValue(TipoClienteTarifa.SocioComun);
+    this.tarifas.push(particular);
+    this.tarifas.push(socioComun);
+  }
 
   protected readonly form = new FormGroup(
     {
@@ -50,6 +87,7 @@ export class NuevoServicio {
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
+      tarifas: this.tarifas,
     },
     {
       validators: [
@@ -66,6 +104,30 @@ export class NuevoServicio {
   protected readonly loading = signal(false);
   private readonly touchCount = signal(0);
 
+  protected agregarTarifa(): void {
+    this.tarifas.push(crearTarifaFormGroup());
+    this.form.markAsDirty();
+  }
+
+  protected quitarTarifa(index: number): void {
+    this.tarifas.removeAt(index);
+    this.form.markAsDirty();
+  }
+
+  private obtenerTarifasDto(): TarifaServicioRequestDto[] {
+    return this.tarifas.controls.map((tarifa) => {
+      const { tipoCliente, precio, modalidadPrecio, antiguedadMinima, antiguedadMaxima } =
+        tarifa.getRawValue();
+
+      return {
+        tipoCliente: tipoCliente!,
+        precio: precio!,
+        modalidadPrecio: modalidadPrecio!,
+        antiguedadMinima,
+        antiguedadMaxima,
+      };
+    });
+  }
   protected readonly confirmDisabled = computed(() => {
     this.formEvents();
     return this.form.invalid || this.loading();
@@ -211,6 +273,7 @@ export class NuevoServicio {
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
         costoPersonaExtra,
+        tarifas: this.obtenerTarifasDto(),
       })
       .subscribe({
         next: () => {

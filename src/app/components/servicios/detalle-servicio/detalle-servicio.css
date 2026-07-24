@@ -3,3 +3,52 @@
   flex-direction: column;
   flex: 1;
 }
+
+.tarifas-detalle {
+  padding: 24px 24px 28px;
+  border-bottom: 1px solid var(--color-border-separator);
+}
+
+.tarifas-detalle__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.tarifas-detalle__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.tarifas-detalle__separator {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border-separator);
+}
+
+.tarifas-detalle__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tarifas-detalle__table th {
+  padding: 0 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--color-border-separator);
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.tarifas-detalle__table td {
+  padding: 0.75rem;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.tarifas-detalle__table tbody tr:nth-child(odd) {
+  background-color: var(--color-bg-subtle);
+}

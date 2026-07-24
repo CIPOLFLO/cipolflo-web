@@ -61,4 +61,8 @@ export class ServicioService extends BaseHttpService {
   ): Observable<ServicioDetalleRespuestaDto> {
     return this.patch<ServicioDetalleRespuestaDto>(`servicios/${id}/habilitacion`, dto);
   }
+
+  eliminarTarifa(servicioId: number, tarifaId: number): Observable<void> {
+    return this.delete<void>(`servicios/${servicioId}/tarifas/${tarifaId}`);
+  }
 }

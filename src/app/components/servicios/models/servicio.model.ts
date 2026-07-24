@@ -29,10 +29,55 @@ export enum EstadoServicio {
   Deshabilitado = 'DESHABILITADO',
 }
 
+export enum TipoClienteTarifa {
+  Particular = 'PARTICULAR',
+  SocioComun = 'SOCIO_COMUN',
+  SocioPolicia = 'SOCIO_POLICIA',
+  SocioPoliciaRetirado = 'SOCIO_POLICIA_RETIRADO',
+}
+
 export const ESTADO_SERVICIO_OPTIONS = [
   { label: 'Habilitado', value: EstadoServicio.Habilitado },
   { label: 'Deshabilitado', value: EstadoServicio.Deshabilitado },
 ];
+
+export const TIPO_CLIENTE_TARIFA_OPTIONS: FormFieldOption[] = [
+  { label: 'Particular', value: TipoClienteTarifa.Particular },
+  { label: 'Socio Común', value: TipoClienteTarifa.SocioComun },
+  { label: 'Socio Policía', value: TipoClienteTarifa.SocioPolicia },
+  {
+    label: 'Socio Policía Retirado',
+    value: TipoClienteTarifa.SocioPoliciaRetirado,
+  },
+];
+
+export const TIPO_CLIENTE_TARIFA_LABEL: Record<string, string> = {
+  [TipoClienteTarifa.Particular]: 'Particular',
+  [TipoClienteTarifa.SocioComun]: 'Socio Común',
+  [TipoClienteTarifa.SocioPolicia]: 'Socio Policía',
+  [TipoClienteTarifa.SocioPoliciaRetirado]: 'Socio Policía Retirado',
+};
+
+export interface TarifaServicioRequestDto {
+  tipoCliente: TipoClienteTarifa;
+  precio: number;
+  modalidadPrecio: string;
+  antiguedadMinima?: number | null;
+  antiguedadMaxima?: number | null;
+}
+
+export interface TarifaServicioItemDto extends TarifaServicioRequestDto {
+  id?: number;
+}
+
+export interface TarifaServicioResponseDto {
+  id: number;
+  tipoCliente: TipoClienteTarifa;
+  precio: number;
+  modalidadPrecio: string;
+  antiguedadMinima: number | null;
+  antiguedadMaxima: number | null;
+}
 
 export interface ServicioCrearDto {
   nombre: string;
@@ -43,6 +88,7 @@ export interface ServicioCrearDto {
   cantidad?: number | null;
   capacidad?: number | null;
   costoPersonaExtra?: number | null;
+  tarifas: TarifaServicioRequestDto[];
 }
 
 export interface ServicioActualizarDto {
@@ -55,6 +101,7 @@ export interface ServicioActualizarDto {
   cantidad?: number | null;
   capacidad?: number | null;
   costoPersonaExtra?: number | null;
+  tarifas: TarifaServicioItemDto[];
 }
 
 export interface ServicioRespuestaDto {
@@ -68,6 +115,7 @@ export interface ServicioRespuestaDto {
   capacidad: number | null;
   cantidad: number | null;
   costoPersonaExtra: number | null;
+  tarifas: TarifaServicioResponseDto[];
 }
 
 export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
@@ -81,6 +129,7 @@ export interface ServicioDetalleRespuestaDto extends AuditInfoDto {
   costoPersonaExtra: number | null;
   estado: EstadoServicio;
   modalidadPrecio: string;
+  tarifas: TarifaServicioResponseDto[];
 }
 
 export interface ReservaProximaDto {
@@ -115,4 +164,12 @@ export interface ServicioRow extends Record<string, unknown> {
   precioSocio: number;
   unidad: string;
   estado: EstadoServicio;
+}
+
+export interface TarifaServicioRow {
+  id: number;
+  tipoCliente: string;
+  precio: number;
+  modalidad: string;
+  antiguedad: string;
 }

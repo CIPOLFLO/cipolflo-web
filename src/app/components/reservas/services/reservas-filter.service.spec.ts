@@ -18,6 +18,7 @@ const mockServicio: ServicioRespuestaDto = {
   capacidad: null,
   cantidad: null,
   costoPersonaExtra: null,
+  tarifas: [],
 };
 
 const mockPage: PageResponse<ServicioRespuestaDto> = {

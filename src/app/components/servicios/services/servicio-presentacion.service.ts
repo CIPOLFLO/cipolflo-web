@@ -10,7 +10,10 @@ import {
   ESTADO_SERVICIO_OPTIONS,
   EstadoServicio,
   MODALIDAD_PRECIO_DETALLE_LABEL,
+  TIPO_CLIENTE_TARIFA_LABEL,
   type ServicioDetalleRespuestaDto,
+  type TarifaServicioResponseDto,
+  type TarifaServicioRow,
 } from '../models/servicio.model';
 
 @Injectable({ providedIn: 'root' })
@@ -62,6 +65,19 @@ export class ServicioPresentacionService {
         value: s.costoPersonaExtra != null ? `$ ${s.costoPersonaExtra}` : '---',
       },
     ];
+  }
+
+  getTarifasFieldsDetalle(tarifas: TarifaServicioResponseDto[]): TarifaServicioRow[] {
+    return tarifas.map((t) => ({
+      id: t.id,
+      tipoCliente: TIPO_CLIENTE_TARIFA_LABEL[t.tipoCliente] ?? t.tipoCliente,
+      precio: t.precio,
+      modalidad: MODALIDAD_PRECIO_DETALLE_LABEL[t.modalidadPrecio] ?? t.modalidadPrecio,
+      antiguedad:
+        t.antiguedadMinima != null || t.antiguedadMaxima != null
+          ? `${t.antiguedadMinima ?? 0} - ${t.antiguedadMaxima ?? '∞'} años`
+          : '---',
+    }));
   }
 
   getInfoFieldsEditar(
