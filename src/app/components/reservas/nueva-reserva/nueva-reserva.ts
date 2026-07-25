@@ -537,6 +537,7 @@ export class NuevaReserva extends ReservaFormBase {
    * listado de inmediato; si se pidió el comprobante, la descarga sigue en segundo plano.
    */
   private ofrecerComprobante(id: number): void {
+    let respondido = false;
     this.confirmDialog
       .open({
         title: 'Reserva creada',
@@ -545,8 +546,16 @@ export class NuevaReserva extends ReservaFormBase {
         cancelButtonLabel: 'No, gracias',
         variant: 'success',
       })
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        // Si el componente se destruye (navegación) antes de que el usuario responda, el
+        // diálogo global queda huérfano: se cierra explícitamente en vez de dejarlo visible.
+        finalize(() => {
+          if (!respondido) this.confirmDialog.close();
+        }),
+      )
       .subscribe((descargar) => {
+        respondido = true;
         if (descargar) this.descargarComprobante(id);
         this.router.navigate(['/reservas']);
       });

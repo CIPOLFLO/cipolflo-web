@@ -145,6 +145,7 @@ async function setupCustom(options: {
     servicioServiceOverrides = {},
     confirmDialogOpen = vi.fn().mockReturnValue(of(false)),
   } = options;
+  const confirmDialogClose = vi.fn();
 
   const getByIdSpy = reservasServiceOverrides.getById ?? vi.fn().mockReturnValue(of(reserva));
   const updateSpy = reservasServiceOverrides.update ?? vi.fn().mockReturnValue(of(undefined));
@@ -179,7 +180,10 @@ async function setupCustom(options: {
       },
       { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateSpy } },
       { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
-      { provide: ConfirmDialogService, useValue: { open: confirmDialogOpen } },
+      {
+        provide: ConfirmDialogService,
+        useValue: { open: confirmDialogOpen, close: confirmDialogClose },
+      },
       {
         provide: ServicioService,
         useValue: { getAll: getAllSpy, getFechasOcupadas: getFechasOcupadasSpy },
@@ -221,6 +225,7 @@ async function setupCustom(options: {
     getAllSpy,
     descargarComprobanteSpy,
     confirmDialogOpenSpy: confirmDialogOpen,
+    confirmDialogCloseSpy: confirmDialogClose,
   };
 }
 
@@ -450,6 +455,30 @@ describe('EditarReserva', () => {
 
       expect(handleSpy).toHaveBeenCalledWith(error);
       expect(navigateSpy).toHaveBeenCalledWith('/reservas/42');
+    });
+
+    it('si el componente se destruye antes de que el usuario responda, cierra el diálogo huérfano', async () => {
+      const dialogSinResponder = new Subject<boolean>(); // nunca responde dentro del test
+      const { fixture, component, confirmDialogCloseSpy, navigateSpy } = await setupCustom({
+        confirmDialogOpen: vi.fn().mockReturnValue(dialogSinResponder.asObservable()),
+      });
+
+      component['onConfirmar']();
+      fixture.destroy();
+
+      expect(confirmDialogCloseSpy).toHaveBeenCalledTimes(1);
+      expect(navigateSpy).not.toHaveBeenCalledWith('/reservas/42');
+    });
+
+    it('si el usuario ya respondió, destruir el componente después no vuelve a cerrar el diálogo', async () => {
+      const { fixture, component, confirmDialogCloseSpy } = await setupCustom({
+        confirmDialogOpen: vi.fn().mockReturnValue(of(false)),
+      });
+
+      component['onConfirmar']();
+      fixture.destroy();
+
+      expect(confirmDialogCloseSpy).not.toHaveBeenCalled();
     });
   });
 

@@ -53,6 +53,31 @@ describe('ConfirmDialogService', () => {
     });
   });
 
+  describe('close', () => {
+    it('should complete the pending observable without emitting a value', async () => {
+      const result$ = service.open(baseConfig);
+      const values: boolean[] = [];
+      let completed = false;
+      result$.subscribe({ next: (v) => values.push(v), complete: () => (completed = true) });
+
+      service.close();
+
+      expect(values).toEqual([]);
+      expect(completed).toBe(true);
+    });
+
+    it('should emit on close$', async () => {
+      const emitted = firstValueFrom(service.close$);
+      service.open(baseConfig);
+      service.close();
+      await expect(emitted).resolves.toBeUndefined();
+    });
+
+    it('should be a no-op when called without a pending dialog', () => {
+      expect(() => service.close()).not.toThrow();
+    });
+  });
+
   describe('multiple calls', () => {
     it('should handle sequential open() calls', async () => {
       const promise1 = firstValueFrom(service.open(baseConfig));

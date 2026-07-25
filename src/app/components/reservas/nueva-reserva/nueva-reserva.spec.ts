@@ -588,6 +588,28 @@ describe('NuevaReserva', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
   });
 
+  it('si el componente se destruye antes de que el usuario responda, cierra el diálogo huérfano', () => {
+    const dialogSinResponder = new Subject<boolean>(); // nunca responde dentro del test
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(dialogSinResponder.asObservable());
+    const closeSpy = vi.spyOn(component['confirmDialog'], 'close');
+
+    component['guardar']();
+    fixture.destroy();
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).not.toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('si el usuario ya respondió, destruir el componente después no vuelve a cerrar el diálogo', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
+    const closeSpy = vi.spyOn(component['confirmDialog'], 'close');
+
+    component['guardar']();
+    fixture.destroy();
+
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
+
   it('verificarSocioYGuardar con error en getEstadoSocio llama al errorHandler', () => {
     const error = new Error('Network error');
     mockClientesService.getEstadoSocio.mockReturnValue(throwError(() => error));
