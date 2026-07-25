@@ -18,6 +18,7 @@ const baseCliente: ClienteRespuestaDto = {
   estado: null,
   ultimaCuotaDto: null,
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
 };
 
@@ -69,7 +70,7 @@ describe('mapClienteCardMobileRow', () => {
     [EstadoSocio.Baja, { label: 'De baja', colorClass: 'tag--gray' }],
   ])('agrega la tag de estado (color reutilizado del desktop) para %s', (estado, expected) => {
     const { tags } = mapClienteCardMobileRow({ ...baseCliente, estado });
-    expect(tags).toHaveLength(2);
+    expect(tags).toHaveLength(3);
     expect(tags[1]).toEqual(expected);
   });
 

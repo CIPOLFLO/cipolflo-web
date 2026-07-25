@@ -1,4 +1,10 @@
-import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import {
+  CategoriaSocio,
+  CATEGORIA_SOCIO_LABEL,
+  ClienteRespuestaDto,
+  EstadoSocio,
+  TipoCliente,
+} from '../models/cliente.model';
 
 /** Fila del listado con el documento a mostrar resuelto (RUT para Empresas, cédula para el resto). */
 export interface ClienteListadoRow extends ClienteRespuestaDto {
@@ -43,14 +49,37 @@ const ESTADO_TAG: Record<EstadoSocio, TagView> = {
   [EstadoSocio.Inactivo]: { label: 'Inactivo', colorClass: 'tag--yellow' },
   [EstadoSocio.Baja]: { label: 'De baja', colorClass: 'tag--gray' },
 };
+const CATEGORIA_TAG: Record<CategoriaSocio, TagView> = {
+  [CategoriaSocio.PoliciaActivo]: {
+    label: CATEGORIA_SOCIO_LABEL[CategoriaSocio.PoliciaActivo],
+    colorClass: 'tag--blue',
+  },
+  [CategoriaSocio.PoliciaRetirado]: {
+    label: CATEGORIA_SOCIO_LABEL[CategoriaSocio.PoliciaRetirado],
+    colorClass: 'tag--purple',
+  },
+  [CategoriaSocio.SocioComun]: {
+    label: CATEGORIA_SOCIO_LABEL[CategoriaSocio.SocioComun],
+    colorClass: 'tag--gray',
+  },
+};
 
 export function mapClienteCardMobileRow(cliente: ClienteRespuestaDto): ClienteCardMobileRow {
   const { documento } = mapClienteListadoRow(cliente);
   const estadoTag = cliente.estado !== null ? ESTADO_TAG[cliente.estado] : null;
+  const categoriaTag =
+    cliente.tipoCliente === TipoCliente.Socio &&
+      cliente.categoriaSocio !== null
+      ? CATEGORIA_TAG[cliente.categoriaSocio]
+      : null;
 
   return {
     ...cliente,
     documento,
-    tags: [TIPO_TAG[cliente.tipoCliente], ...(estadoTag ? [estadoTag] : [])],
+    tags: [
+      TIPO_TAG[cliente.tipoCliente],
+      ...(estadoTag ? [estadoTag] : []),
+      ...(categoriaTag ? [categoriaTag] : []),
+    ],
   };
 }

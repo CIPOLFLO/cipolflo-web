@@ -26,6 +26,7 @@ const clienteMock = {
   direccion: 'Calle A 123',
   categoriaSocio: CategoriaSocio.SocioComun,
   fechaIngreso: '2020-01-01',
+  antiguedad: 5,
   observaciones: null,
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,

@@ -31,6 +31,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
   observaciones: 'Socia Nueva',
   createdAt: '2026-03-15T14:30:00Z',

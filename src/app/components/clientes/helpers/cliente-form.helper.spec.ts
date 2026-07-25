@@ -30,6 +30,7 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   ciudad: 'Trinidad',
   direccion: 'Calle A',
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
   observaciones: 'Nota',
   fechaNacimiento: '1999-06-29',
