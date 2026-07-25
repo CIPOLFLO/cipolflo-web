@@ -1,0 +1,4 @@
+.ocupacion-servicio-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+}

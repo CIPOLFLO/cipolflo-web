@@ -1,4 +1,4 @@
-import { EstadoReserva } from '../../../shared';
+import { EstadoReserva, ESTADO_RESERVA_LABEL, ESTADO_RESERVA_TAG_CLASS } from '../../../shared';
 import { ReservaRow } from '../models/reserva.model';
 import { DateFormatPipe } from '../../../shared/components/table/pipes/date-format.pipe';
 
@@ -15,32 +15,12 @@ export interface ReservaCardMobileRow extends ReservaRow {
   estadoTag: TagView;
 }
 
-const ESTADO_TAG: Record<EstadoReserva, TagView> = {
-  [EstadoReserva.Confirmada]: {
-    label: 'Confirmada',
-    colorClass: 'tag--green',
-  },
-  [EstadoReserva.EnCurso]: {
-    label: 'En curso',
-    colorClass: 'tag--blue',
-  },
-  [EstadoReserva.Finalizada]: {
-    label: 'Finalizada',
-    colorClass: 'tag--purple',
-  },
-  [EstadoReserva.Cancelada]: {
-    label: 'Cancelada',
-    colorClass: 'tag--gray',
-  },
-  [EstadoReserva.Pendiente]: {
-    label: 'Pendiente',
-    colorClass: 'tag--yellow',
-  },
-  [EstadoReserva.VencidaSinPago]: {
-    label: 'Vencida sin pago',
-    colorClass: 'tag--red',
-  },
-};
+const ESTADO_TAG: Record<EstadoReserva, TagView> = Object.fromEntries(
+  Object.values(EstadoReserva).map((estado) => [
+    estado,
+    { label: ESTADO_RESERVA_LABEL[estado], colorClass: ESTADO_RESERVA_TAG_CLASS[estado] },
+  ]),
+) as Record<EstadoReserva, TagView>;
 
 const dateFormatPipe = new DateFormatPipe();
 

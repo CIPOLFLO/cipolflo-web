@@ -40,9 +40,9 @@ export class App {
   protected readonly navItems: NavItem[] = [
     { label: 'Reservas', route: '/reservas', icon: 'pi pi-calendar' },
     { label: 'Clientes', route: '/clientes', icon: 'pi pi-users' },
-    { label: 'Estadísticas', route: '/estadisticas', icon: 'pi pi-chart-bar' },
     { label: 'Finanzas', route: '/finanzas', icon: 'pi pi-wallet' },
     { label: 'Servicios', route: '/servicios', icon: 'pi pi-building' },
+    { label: 'Ajustes', route: '/ajustes', icon: 'pi pi-cog' },
   ];
 
   protected onLogout(): void {

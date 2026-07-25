@@ -17,7 +17,7 @@
         <p>Socio: {{ cliente.nombreCompleto }}</p>
         <p>N° de Socio: {{ cliente.numeroSocio }}</p>
         <p>Última cuota paga: {{ ultimaCuotaDescripcion() }}</p>
-        <p>Costo por cuota: {{ costoCuota | currencyFormat }}</p>
+        <p>Costo por cuota: {{ costoCuota() | currencyFormat }}</p>
       </section>
 
       <form [formGroup]="form" class="pago-cuota__form">
@@ -83,7 +83,7 @@
 
         <div>
           <span>Costo por cuota:</span>
-          <strong>{{ costoCuota | currencyFormat }}</strong>
+          <strong>{{ costoCuota() | currencyFormat }}</strong>
         </div>
 
         <div class="pago-cuota__total">
@@ -132,7 +132,14 @@
         }
       </ul>
 
-      <app-button label="Aceptar" intent="primary" (clicked)="cerrarConfirmacion()" />
+      <footer class="pago-confirmado__actions">
+        <app-button label="Aceptar" intent="secondary" (clicked)="onAceptar()" />
+        <app-button
+          label="Descargar comprobante"
+          intent="success"
+          (clicked)="onDescargarComprobante()"
+        />
+      </footer>
     </div>
   }
 </p-dialog>

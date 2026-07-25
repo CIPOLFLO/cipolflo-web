@@ -93,7 +93,6 @@ describe('ListadoClientes', () => {
   let component: ListadoClientes;
   let mockClientesService: {
     getAll: ReturnType<typeof vi.fn>;
-    getCostoCuota: ReturnType<typeof vi.fn>;
     darDeBaja: ReturnType<typeof vi.fn>;
     exportar: ReturnType<typeof vi.fn>;
   };
@@ -104,7 +103,6 @@ describe('ListadoClientes', () => {
     mockErrorHandler = { handle: vi.fn() };
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
-      getCostoCuota: vi.fn().mockReturnValue(5000),
       darDeBaja: vi.fn().mockReturnValue(of(void 0)),
       exportar: vi.fn().mockReturnValue(of(undefined)),
     };
@@ -470,7 +468,6 @@ describe('ListadoClientes sin filtros por defecto', () => {
           provide: ClientesService,
           useValue: {
             getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
-            getCostoCuota: vi.fn().mockReturnValue(5000),
           },
         },
         { provide: BreakpointObserver, useValue: { observe: () => of({ matches: false }) } },
@@ -489,7 +486,6 @@ describe('ListadoClientes sin filtros por defecto', () => {
               provide: ClientesService,
               useValue: {
                 getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
-                getCostoCuota: vi.fn().mockReturnValue(5000),
               },
             },
             { provide: FilterConfigProvider, useClass: SinDefaultsFilterService },
@@ -512,7 +508,6 @@ describe('ListadoClientes en vista móvil', () => {
 
   let mockClientesService: {
     getAll: ReturnType<typeof vi.fn>;
-    getCostoCuota: ReturnType<typeof vi.fn>;
     darDeBaja: ReturnType<typeof vi.fn>;
     exportar: ReturnType<typeof vi.fn>;
   };
@@ -520,7 +515,6 @@ describe('ListadoClientes en vista móvil', () => {
   beforeEach(async () => {
     mockClientesService = {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
-      getCostoCuota: vi.fn().mockReturnValue(5000),
       darDeBaja: vi.fn().mockReturnValue(of(void 0)),
       exportar: vi.fn().mockReturnValue(of(undefined)),
     };

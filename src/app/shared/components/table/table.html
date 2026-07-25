@@ -21,7 +21,7 @@
           }
         </th>
       }
-      @if (getRowActions()) {
+      @if (hasActionsColumn) {
         <th scope="col">Acciones</th>
       }
     </tr>
@@ -33,7 +33,7 @@
         @for (col of columns(); track col.key) {
           <td><p-skeleton height="1.5rem" /></td>
         }
-        @if (getRowActions()) {
+        @if (hasActionsColumn) {
           <td><p-skeleton height="1.5rem" /></td>
         }
       </tr>
@@ -77,7 +77,11 @@
             }
           </td>
         }
-        @if (getRowActions()) {
+        @if (getInlineActions()) {
+          <td>
+            <app-inline-row-actions [actions]="getInlineActionsForRow(row)" [row]="row" />
+          </td>
+        } @else if (getRowActions()) {
           <td>
             <app-row-actions [actions]="getRowActionsForRow(row)" [row]="row" />
           </td>
@@ -88,7 +92,7 @@
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td [attr.colspan]="columns().length + (getRowActions() ? 1 : 0)" class="table__empty">
+      <td [attr.colspan]="columns().length + (hasActionsColumn ? 1 : 0)" class="table__empty">
         No hay registros para mostrar.
       </td>
     </tr>

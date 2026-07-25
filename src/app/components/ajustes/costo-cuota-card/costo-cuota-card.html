@@ -1,0 +1,21 @@
+<app-form-section
+  title="Costo de Cuota Social"
+  [fields]="fields()"
+  [errors]="errors()"
+  note="Valor actual de la cuota social."
+  (valuesChange)="onValuesChange($event)"
+  (fieldBlur)="onBlur($event)"
+>
+  <div class="costo-cuota-card__actions">
+    <app-button
+      label="Guardar"
+      intent="primary"
+      [loading]="guardando()"
+      [disabled]="guardarDisabled()"
+      (clicked)="onGuardar()"
+    />
+    @if (guardadoOk()) {
+      <span class="costo-cuota-card__success"><i class="pi pi-check"></i> Guardado</span>
+    }
+  </div>
+</app-form-section>

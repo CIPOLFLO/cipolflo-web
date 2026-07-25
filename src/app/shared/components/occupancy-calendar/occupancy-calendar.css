@@ -2,6 +2,13 @@
   display: block;
 }
 
+.occupancy-calendar__layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
 .occupancy-calendar__rango {
   margin: 0.5rem 0 0;
   font-size: 0.875rem;
@@ -9,4 +16,132 @@
 
 .occupancy-calendar__rango-label {
   font-weight: 500;
+}
+
+.occupancy-calendar__leyenda-panel {
+  min-width: 10rem;
+}
+
+.occupancy-calendar__leyenda-titulo {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.occupancy-calendar__leyenda-vacio {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.occupancy-calendar__proxima {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.occupancy-calendar__proxima-titulo {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.occupancy-calendar__proxima-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.occupancy-calendar__proxima-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.occupancy-calendar__leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.occupancy-calendar__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.occupancy-calendar__leyenda-swatch {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.occupancy-calendar__day-disponible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+/* Día ocupado: PrimeNG lo marca .p-disabled, que por defecto deshabilita pointer-events y el
+   cursor; los reactivamos acá porque el link sigue siendo navegable. */
+.occupancy-calendar__day--ocupado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.occupancy-calendar__day--ocupado.tag--green,
+.occupancy-calendar__leyenda-swatch.tag--green {
+  background-color: var(--tag-green-bg);
+  color: var(--tag-green-color);
+}
+
+.occupancy-calendar__day--ocupado.tag--blue,
+.occupancy-calendar__leyenda-swatch.tag--blue {
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-color);
+}
+
+.occupancy-calendar__day--ocupado.tag--purple,
+.occupancy-calendar__leyenda-swatch.tag--purple {
+  background-color: var(--tag-purple-bg);
+  color: var(--tag-purple-color);
+}
+
+.occupancy-calendar__day--ocupado.tag--gray,
+.occupancy-calendar__leyenda-swatch.tag--gray {
+  background-color: var(--tag-gray-bg);
+  color: var(--tag-gray-color);
+}
+
+.occupancy-calendar__day--ocupado.tag--yellow,
+.occupancy-calendar__leyenda-swatch.tag--yellow {
+  background-color: var(--tag-yellow-bg);
+  color: var(--tag-yellow-color);
+}
+
+.occupancy-calendar__day--ocupado.tag--red,
+.occupancy-calendar__leyenda-swatch.tag--red {
+  background-color: var(--tag-red-bg);
+  color: var(--tag-red-color);
 }

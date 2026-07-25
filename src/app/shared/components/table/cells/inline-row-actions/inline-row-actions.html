@@ -1,0 +1,26 @@
+<div class="inline-row-actions">
+  @for (action of actions(); track $index) {
+    @switch (action.type) {
+      @case ('toggle') {
+        <p-toggleswitch
+          [ngModel]="isChecked(action)"
+          (onChange)="onToggleChange(action, $event.checked)"
+          [disabled]="isDisabled(action)"
+          [attr.aria-label]="action.ariaLabel(row())"
+        />
+      }
+      @case ('button') {
+        <button
+          type="button"
+          class="inline-row-actions__btn"
+          [class.inline-row-actions__btn--danger]="action.variant === 'danger'"
+          [disabled]="isDisabled(action)"
+          [attr.aria-label]="action.ariaLabel(row())"
+          (click)="action.command(row())"
+        >
+          <i [class]="action.icon"></i>
+        </button>
+      }
+    }
+  }
+</div>

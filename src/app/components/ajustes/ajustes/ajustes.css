@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ajustes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

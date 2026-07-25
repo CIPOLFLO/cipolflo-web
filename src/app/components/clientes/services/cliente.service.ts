@@ -56,11 +56,6 @@ export class ClientesService extends BaseHttpService {
     return this.get<EstadoSocioDto>(`clientes/socios/${id}/estado`);
   }
 
-  // TODO: reemplazar cuando el backend esté disponible
-  getCostoCuota(): number {
-    return 5000;
-  }
-
   modificarParticular(
     id: number,
     dto: ModificacionParticularRequestDto,
@@ -93,5 +88,20 @@ export class ClientesService extends BaseHttpService {
   }
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('clientes/exportar', filters, 'clientes.xlsx');
+  }
+
+  descargarComprobanteAltaSocio(id: number): Observable<void> {
+    return this.blobExport.download(
+      `clientes/socios/${id}/comprobante`,
+      `comprobante-alta-socio-${id}.pdf`,
+    );
+  }
+
+  descargarComprobantePago(socioId: number, ids: number[]): Observable<void> {
+    return this.blobExport.download(
+      `clientes/socios/${socioId}/pago-cuota/comprobante`,
+      `comprobante-pago-cuota-${socioId}.pdf`,
+      { ids: ids.join(',') },
+    );
   }
 }

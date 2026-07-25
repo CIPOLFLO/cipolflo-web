@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NuevoServicio } from './nuevo-servicio';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
-import { EstadoServicio } from '../models/servicio.model';
+import { EstadoServicio, TipoClienteTarifa } from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
@@ -67,6 +67,19 @@ describe('NuevoServicio', () => {
       precioSocio: 50,
       modalidadPrecio: 'POR_DIA',
     });
+    // El constructor ya precarga una fila Particular (índice 0) y una Socio Común (índice 1).
+    component['tarifas'].at(0).patchValue({
+      tipoCliente: TipoClienteTarifa.Particular,
+      precio: 100,
+      modalidadPrecio: 'POR_DIA',
+      antiguedadMinima: null,
+      antiguedadMaxima: null,
+    });
+    component['tarifas'].at(1).patchValue({
+      tipoCliente: TipoClienteTarifa.SocioComun,
+      precio: 80,
+      modalidadPrecio: 'POR_DIA',
+    });
   }
 
   // ── Creación y estado inicial ────────────────────────────────────────────
@@ -91,6 +104,35 @@ describe('NuevoServicio', () => {
 
   it('preciosErrors debería estar vacío cuando submitted es false', () => {
     expect(component['preciosErrors']()).toEqual({});
+  });
+
+  // ── Tarifas ──────────────────────────────────────────────────────────────
+
+  it('precarga dos filas fijas: Particular y Socio Común', () => {
+    expect(component['tarifas'].length).toBe(2);
+    expect(component['tarifas'].at(0).controls.tipoCliente.value).toBe(
+      TipoClienteTarifa.Particular,
+    );
+    expect(component['tarifas'].at(0).controls.fija.value).toBe(true);
+    expect(component['tarifas'].at(1).controls.tipoCliente.value).toBe(
+      TipoClienteTarifa.SocioComun,
+    );
+    expect(component['tarifas'].at(1).controls.fija.value).toBe(true);
+  });
+
+  it('agregarTarifa debería agregar una fila nueva (no fija) al final', () => {
+    component['agregarTarifa']();
+    expect(component['tarifas'].length).toBe(3);
+    expect(component['tarifas'].at(2).controls.fija.value).toBe(false);
+  });
+
+  it('quitarTarifa debería quitar la fila en el índice indicado', () => {
+    component['agregarTarifa']();
+    component['tarifas'].at(2).controls.tipoCliente.setValue(TipoClienteTarifa.SocioPolicia);
+
+    component['quitarTarifa'](2);
+
+    expect(component['tarifas'].length).toBe(2);
   });
 
   // ── Errores tras submit ──────────────────────────────────────────────────
@@ -241,6 +283,22 @@ describe('NuevoServicio', () => {
         precioParticular: 100,
         precioSocio: 50,
         modalidadPrecio: 'POR_DIA',
+        tarifas: [
+          {
+            tipoCliente: TipoClienteTarifa.Particular,
+            precio: 100,
+            modalidadPrecio: 'POR_DIA',
+            antiguedadMinima: null,
+            antiguedadMaxima: null,
+          },
+          {
+            tipoCliente: TipoClienteTarifa.SocioComun,
+            precio: 80,
+            modalidadPrecio: 'POR_DIA',
+            antiguedadMinima: null,
+            antiguedadMaxima: null,
+          },
+        ],
       }),
     );
   });

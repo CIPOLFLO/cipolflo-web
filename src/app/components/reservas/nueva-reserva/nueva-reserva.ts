@@ -13,6 +13,7 @@ import {
   FormField,
   FormLayout,
   FormSection,
+  ofrecerComprobante as ofrecerDescargaComprobante,
   OccupancyCalendar,
   PageLayout,
   Procedencia,

@@ -1,0 +1,58 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="titulo()"
+  [style]="{ width: '480px' }"
+>
+  <form [formGroup]="form" class="cliente-telegram-form-dialog__form">
+    <label for="chatId" class="cliente-telegram-form-dialog__label">
+      Chat ID <span class="cliente-telegram-form-dialog__required">*</span>
+    </label>
+    <input
+      pInputText
+      id="chatId"
+      formControlName="chatId"
+      placeholder="Ej: 123456789"
+      [invalid]="!!chatIdError()"
+      [fluid]="true"
+    />
+    @if (chatIdError()) {
+      <small class="cliente-telegram-form-dialog__error">{{ chatIdError() }}</small>
+    }
+
+    <label for="alias" class="cliente-telegram-form-dialog__label">
+      Alias <span class="cliente-telegram-form-dialog__required">*</span>
+    </label>
+    <input
+      pInputText
+      id="alias"
+      formControlName="alias"
+      placeholder="Ej: Juan Pérez"
+      [invalid]="!!aliasError()"
+      [fluid]="true"
+    />
+    @if (aliasError()) {
+      <small class="cliente-telegram-form-dialog__error">{{ aliasError() }}</small>
+    }
+
+    <div class="cliente-telegram-form-dialog__toggle-row">
+      <label for="recibeNotificaciones">Recibe notificaciones</label>
+      <p-toggleswitch inputId="recibeNotificaciones" formControlName="recibeNotificaciones" />
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <div class="cliente-telegram-form-dialog__actions">
+      <app-button intent="secondary" label="Cancelar" (clicked)="onCancelar()" />
+      <app-button
+        intent="primary"
+        [label]="esEdicion() ? 'Guardar' : 'Crear'"
+        (clicked)="onConfirmar()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

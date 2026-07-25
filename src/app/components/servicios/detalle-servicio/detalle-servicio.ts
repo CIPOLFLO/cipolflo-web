@@ -22,7 +22,7 @@ import {
   type DetailFieldConfig,
   type DetailRegistroData,
 } from '../../../shared';
-import { type ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import { type ServicioDetalleRespuestaDto, type TarifaServicioRow } from '../models/servicio.model';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioPresentacionService } from '../services/servicio-presentacion.service';
 
@@ -80,6 +80,12 @@ export class DetalleServicio implements OnInit {
     const s = this.servicio();
     if (!s) return null;
     return this.presentacion.getRegistroData(s);
+  });
+
+  protected readonly tarifasRows = computed<TarifaServicioRow[]>(() => {
+    const s = this.servicio();
+    if (!s) return [];
+    return this.presentacion.getTarifasFieldsDetalle(s.tarifas);
   });
 
   protected onEditar(): void {

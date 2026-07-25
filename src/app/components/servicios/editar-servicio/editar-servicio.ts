@@ -9,7 +9,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY } from 'rxjs';
@@ -24,11 +24,22 @@ import {
   type FormFieldConfig,
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { EstadoServicio, type ServicioDetalleRespuestaDto } from '../models/servicio.model';
+import {
+  EstadoServicio,
+  TIPO_CLIENTE_TARIFA_OPTIONS,
+  type ServicioDetalleRespuestaDto,
+  type TarifaServicioItemDto,
+} from '../models/servicio.model';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioOptionsService } from '../services/servicio-options.service';
 import { ServicioValidacionesService } from '../services/servicio-validaciones.service';
+import { TarifaValidacionesService } from '../services/tarifa-validaciones.service';
 import { ServicioPresentacionService } from '../services/servicio-presentacion.service';
+import {
+  TarifasForm,
+  crearTarifaFormGroup,
+  type TarifaFormGroup,
+} from '../components/tarifas-form/tarifas-form';
 
 @Component({
   standalone: true,
@@ -41,6 +52,7 @@ import { ServicioPresentacionService } from '../services/servicio-presentacion.s
     FormActions,
     AppButton,
     DetailRegistroSection,
+    TarifasForm,
   ],
   templateUrl: './editar-servicio.html',
   styleUrl: './editar-servicio.css',
@@ -51,6 +63,7 @@ export class EditarServicio implements OnInit {
   private readonly servicioService = inject(ServicioService);
   private readonly optionsService = inject(ServicioOptionsService);
   private readonly validaciones = inject(ServicioValidacionesService);
+  private readonly tarifaValidaciones = inject(TarifaValidacionesService);
   private readonly presentacion = inject(ServicioPresentacionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandlerService);
@@ -64,8 +77,14 @@ export class EditarServicio implements OnInit {
   protected readonly modalidades = toSignal(this.optionsService.getModalidades(), {
     initialValue: [],
   });
+  protected readonly tiposClienteTarifa = TIPO_CLIENTE_TARIFA_OPTIONS;
 
   protected readonly servicio = signal<ServicioDetalleRespuestaDto | null>(null);
+
+  protected readonly tarifas = new FormArray<TarifaFormGroup>(
+    [],
+    [Validators.required, (a) => this.tarifaValidaciones.obligatoriasFaltantes(a)],
+  );
 
   protected readonly form = new FormGroup(
     {
@@ -81,6 +100,7 @@ export class EditarServicio implements OnInit {
       precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
       modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
+      tarifas: this.tarifas,
     },
     {
       validators: [
@@ -122,11 +142,69 @@ export class EditarServicio implements OnInit {
         modalidadPrecio: s.modalidadPrecio,
         costoPersonaExtra: s.costoPersonaExtra,
       });
+
+      if (this.tarifas.length === 0) {
+        for (const t of s.tarifas) {
+          const grupo = crearTarifaFormGroup(t.id);
+          grupo.patchValue({
+            tipoCliente: t.tipoCliente,
+            precio: t.precio,
+            modalidadPrecio: t.modalidadPrecio,
+            antiguedadMinima: t.antiguedadMinima,
+            antiguedadMaxima: t.antiguedadMaxima,
+          });
+          this.tarifas.push(grupo);
+        }
+      }
     });
 
     effect(() => {
       this.formEvents();
       this.confirmDisabled.set((this.form.dirty && this.form.invalid) || this.loading());
+    });
+  }
+
+  protected agregarTarifa(): void {
+    this.tarifas.push(crearTarifaFormGroup());
+    this.form.markAsDirty();
+  }
+
+  // Fila persistida (con id): se elimina de inmediato contra el backend y solo
+  // se quita de la tabla si esa llamada tiene éxito. Fila local (sin id): se
+  // quita directamente del FormArray, sin llamar al servicio.
+  protected quitarTarifa(index: number): void {
+    const tarifaId = this.tarifas.at(index).controls.id.value;
+    if (tarifaId === null) {
+      this.tarifas.removeAt(index);
+      this.form.markAsDirty();
+      return;
+    }
+
+    this.servicioService
+      .eliminarTarifa(Number(this.id()), tarifaId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.tarifas.removeAt(index);
+          this.form.markAsDirty();
+        },
+        error: (err) => this.errorHandler.handle(err),
+      });
+  }
+
+  private obtenerTarifasDto(): TarifaServicioItemDto[] {
+    return this.tarifas.controls.map((tarifa) => {
+      const { id, tipoCliente, precio, modalidadPrecio, antiguedadMinima, antiguedadMaxima } =
+        tarifa.getRawValue();
+
+      return {
+        ...(id !== null ? { id } : {}),
+        tipoCliente: tipoCliente!,
+        precio: precio!,
+        modalidadPrecio: modalidadPrecio!,
+        antiguedadMinima,
+        antiguedadMaxima,
+      };
     });
   }
 
@@ -251,6 +329,7 @@ export class EditarServicio implements OnInit {
         precioSocio: precioSocio!,
         modalidadPrecio: modalidadPrecio!,
         costoPersonaExtra,
+        tarifas: this.obtenerTarifasDto(),
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

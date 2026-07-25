@@ -1,0 +1,191 @@
+<section class="tarifas-form">
+  <div class="tarifas-form__header">
+    <h2 class="tarifas-form__title">Tarifas</h2>
+    <span class="tarifas-form__divider"></span>
+  </div>
+
+  <p class="tarifas-form__description">
+    Debe existir al menos una fila de tipo Particular y una de tipo Socio Común. Si completa
+    antigüedad mínima y máxima, la mínima debe ser menor o igual a la máxima. El tipo Particular no
+    admite antigüedad.
+  </p>
+
+  <div class="tarifas-table-wrapper">
+    <table class="tarifas-table">
+      <thead>
+        <tr>
+          <th>Tipo de Cliente <span class="tarifas-table__required">*</span></th>
+          <th>Modalidad de Cobro <span class="tarifas-table__required">*</span></th>
+          <th>Precio <span class="tarifas-table__required">*</span></th>
+          <th>Antigüedad mín.</th>
+          <th>Antigüedad máx.</th>
+          <th class="tarifas-table__actions-col" aria-hidden="true"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tarifa of tarifas().controls; track tarifa; let index = $index) {
+          <tr [formGroup]="tarifa">
+            <td>
+              @if (tarifa.controls.fija.value) {
+                <span class="tarifas-table__fixed-value">
+                  {{ tipoClienteLabel(tarifa.controls.tipoCliente.value) }}
+                </span>
+              } @else {
+                <p-select
+                  aria-label="Tipo de cliente"
+                  formControlName="tipoCliente"
+                  [options]="opcionesDisponibles(index)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccionar"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              }
+
+              @if (
+                (submitted() || tarifa.controls.tipoCliente.touched) &&
+                tarifa.controls.tipoCliente.hasError('required')
+              ) {
+                <small class="tarifa-field__error"> El tipo de cliente es obligatorio. </small>
+              }
+            </td>
+
+            <td>
+              <p-select
+                aria-label="Modalidad de cobro"
+                formControlName="modalidadPrecio"
+                [options]="modalidades()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Seleccionar"
+                appendTo="body"
+                [fluid]="true"
+              />
+
+              @if (
+                (submitted() || tarifa.controls.modalidadPrecio.touched) &&
+                tarifa.controls.modalidadPrecio.hasError('required')
+              ) {
+                <small class="tarifa-field__error"> El tipo de cobro es obligatorio. </small>
+              }
+            </td>
+
+            <td>
+              <div class="tarifas-table__currency">
+                <span class="tarifas-table__currency-prefix">$</span>
+                <p-inputnumber
+                  aria-label="Precio"
+                  formControlName="precio"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  [min]="1"
+                  [fluid]="true"
+                />
+              </div>
+
+              @if (
+                (submitted() || tarifa.controls.precio.touched) &&
+                tarifa.controls.precio.hasError('required')
+              ) {
+                <small class="tarifa-field__error"> El precio es obligatorio. </small>
+              } @else if (
+                (submitted() || tarifa.controls.precio.touched) &&
+                tarifa.controls.precio.hasError('min')
+              ) {
+                <small class="tarifa-field__error"> El precio debe ser mayor que 0. </small>
+              }
+            </td>
+
+            <td>
+              <p-inputnumber
+                aria-label="Antigüedad mínima"
+                formControlName="antiguedadMinima"
+                placeholder="—"
+                [min]="0"
+                [useGrouping]="false"
+                [fluid]="true"
+              />
+
+              @if (
+                (submitted() || tarifa.controls.antiguedadMinima.touched) &&
+                tarifa.controls.antiguedadMinima.hasError('min')
+              ) {
+                <small class="tarifa-field__error">
+                  La antigüedad mínima no puede ser negativa.
+                </small>
+              }
+            </td>
+
+            <td>
+              <p-inputnumber
+                aria-label="Antigüedad máxima"
+                formControlName="antiguedadMaxima"
+                placeholder="—"
+                [min]="0"
+                [useGrouping]="false"
+                [fluid]="true"
+              />
+
+              @if (
+                (submitted() || tarifa.controls.antiguedadMaxima.touched) &&
+                tarifa.controls.antiguedadMaxima.hasError('min')
+              ) {
+                <small class="tarifa-field__error">
+                  La antigüedad máxima no puede ser negativa.
+                </small>
+              }
+            </td>
+
+            <td class="tarifas-table__actions-col">
+              <button
+                type="button"
+                class="tarifas-table__delete-button"
+                aria-label="Eliminar tarifa"
+                [disabled]="
+                  tarifas().length === 1 || tarifa.controls.fija.value || esUltimaObligatoria(index)
+                "
+                (click)="onEliminar(index)"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+            </td>
+          </tr>
+
+          @if ((submitted() || tarifa.touched) && tarifa.hasError('rangoAntiguedadInvalido')) {
+            <tr class="tarifas-table__error-row">
+              <td colspan="6">
+                <small class="tarifa-field__error">
+                  La antigüedad mínima no puede ser mayor que la máxima.
+                </small>
+              </td>
+            </tr>
+          }
+
+          @if (
+            (submitted() || tarifa.touched) && tarifa.hasError('antiguedadNoAplicaAParticular')
+          ) {
+            <tr class="tarifas-table__error-row">
+              <td colspan="6">
+                <small class="tarifa-field__error">
+                  Un cliente Particular no admite antigüedad mínima ni máxima.
+                </small>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <button type="button" class="tarifas-form__add-button" (click)="onAgregar()">
+    <i class="pi pi-plus"></i>
+    Agregar fila
+  </button>
+
+  @if (submitted() && tarifas().hasError('tarifasObligatoriasFaltantes')) {
+    <small class="tarifa-field__error">
+      Debe haber al menos una tarifa Particular y una Socio Común.
+    </small>
+  }
+</section>

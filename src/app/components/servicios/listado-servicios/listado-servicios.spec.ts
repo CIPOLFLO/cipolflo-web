@@ -116,6 +116,7 @@ describe('ListadoServicios', () => {
     getAll: ReturnType<typeof vi.fn>;
     getReservasProximas: ReturnType<typeof vi.fn>;
     actualizarHabilitacion: ReturnType<typeof vi.fn>;
+    getFechasOcupadas: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let navigateSpy: ReturnType<typeof vi.fn>;
@@ -128,6 +129,7 @@ describe('ListadoServicios', () => {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
       getReservasProximas: vi.fn().mockReturnValue(of([])),
       actualizarHabilitacion: vi.fn().mockReturnValue(of({})),
+      getFechasOcupadas: vi.fn().mockReturnValue(of([])),
     };
     mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     navigateSpy = vi.fn();
@@ -247,42 +249,57 @@ describe('ListadoServicios', () => {
   });
 
   describe('rowActions', () => {
-    it('debe retornar 3 acciones para un servicio habilitado', () => {
-      expect(component['rowActions'](rowHabilitado)).toHaveLength(3);
+    it('debe retornar 4 acciones para un servicio habilitado', () => {
+      expect(component['rowActions'](rowHabilitado)).toHaveLength(4);
     });
 
-    it('debe retornar 3 acciones para un servicio deshabilitado', () => {
-      expect(component['rowActions'](rowDeshabilitado)).toHaveLength(3);
+    it('debe retornar 4 acciones para un servicio deshabilitado', () => {
+      expect(component['rowActions'](rowDeshabilitado)).toHaveLength(4);
     });
 
-    it('la primera acción es "Ver detalle" con icono pi-eye', () => {
+    it('la primera acción es "Ver ocupación" con icono pi-calendar', () => {
       const actions = component['rowActions'](rowHabilitado);
-      expect(actions[0].label).toBe('Ver detalle');
-      expect(actions[0].icon).toBe('pi pi-eye');
+      expect(actions[0].label).toBe('Ver ocupación');
+      expect(actions[0].icon).toBe('pi pi-calendar');
+    });
+
+    it('"Ver ocupación" desencadena verOcupacion', () => {
+      const spy = vi.spyOn(
+        component as ListadoServicios & { verOcupacion(r: ServicioRow): void },
+        'verOcupacion',
+      );
+      component['rowActions'](rowHabilitado)[0].command?.(rowHabilitado);
+      expect(spy).toHaveBeenCalledWith(rowHabilitado);
+    });
+
+    it('la segunda acción es "Ver detalle" con icono pi-eye', () => {
+      const actions = component['rowActions'](rowHabilitado);
+      expect(actions[1].label).toBe('Ver detalle');
+      expect(actions[1].icon).toBe('pi pi-eye');
     });
 
     it('"Ver detalle" navega a /servicios/{id}', () => {
-      component['rowActions'](rowHabilitado)[0].command?.(rowHabilitado);
+      component['rowActions'](rowHabilitado)[1].command?.(rowHabilitado);
       expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1]);
     });
 
-    it('la segunda acción es "Editar" con icono pi-pencil', () => {
+    it('la tercera acción es "Editar" con icono pi-pencil', () => {
       const actions = component['rowActions'](rowHabilitado);
-      expect(actions[1].label).toBe('Editar');
-      expect(actions[1].icon).toBe('pi pi-pencil');
+      expect(actions[2].label).toBe('Editar');
+      expect(actions[2].icon).toBe('pi pi-pencil');
     });
 
     it('"Editar" navega a /servicios/{id}/editar con from=listado', () => {
-      component['rowActions'](rowHabilitado)[1].command?.(rowHabilitado);
+      component['rowActions'](rowHabilitado)[2].command?.(rowHabilitado);
       expect(navigateSpy).toHaveBeenCalledWith(['/servicios', 1, 'editar'], {
         queryParams: { from: 'listado' },
       });
     });
 
-    it('la tercera acción es "Deshabilitar" cuando el servicio está habilitado', () => {
+    it('la cuarta acción es "Deshabilitar" cuando el servicio está habilitado', () => {
       const actions = component['rowActions'](rowHabilitado);
-      expect(actions[2].label).toBe('Deshabilitar');
-      expect(actions[2].icon).toBe('pi pi-ban');
+      expect(actions[3].label).toBe('Deshabilitar');
+      expect(actions[3].icon).toBe('pi pi-ban');
     });
 
     it('el comando "Deshabilitar" en rowActions desencadena iniciarDeshabilitacion (línea 110)', () => {
@@ -290,14 +307,14 @@ describe('ListadoServicios', () => {
         component as ListadoServicios & { iniciarDeshabilitacion(r: ServicioRow): void },
         'iniciarDeshabilitacion',
       );
-      component['rowActions'](rowHabilitado)[2].command?.(rowHabilitado);
+      component['rowActions'](rowHabilitado)[3].command?.(rowHabilitado);
       expect(spy).toHaveBeenCalledWith(rowHabilitado);
     });
 
-    it('la tercera acción es "Habilitar" cuando el servicio está deshabilitado', () => {
+    it('la cuarta acción es "Habilitar" cuando el servicio está deshabilitado', () => {
       const actions = component['rowActions'](rowDeshabilitado);
-      expect(actions[2].label).toBe('Habilitar');
-      expect(actions[2].icon).toBe('pi pi-check-circle');
+      expect(actions[3].label).toBe('Habilitar');
+      expect(actions[3].icon).toBe('pi pi-check-circle');
     });
 
     it('debe renderizar los encabezados de columna en la tabla', async () => {
@@ -313,7 +330,7 @@ describe('ListadoServicios', () => {
 
   describe('habilitar', () => {
     it('llama a actualizarHabilitacion con habilitado=true', () => {
-      component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
+      component['rowActions'](rowDeshabilitado)[3].command?.(rowDeshabilitado);
       expect(mockServicioService.actualizarHabilitacion).toHaveBeenCalledWith(2, {
         habilitado: true,
       });
@@ -321,7 +338,7 @@ describe('ListadoServicios', () => {
 
     it('llama a updateFilters para recargar la tabla tras habilitar', () => {
       const spy = vi.spyOn(component['tableState'], 'updateFilters');
-      component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
+      component['rowActions'](rowDeshabilitado)[3].command?.(rowDeshabilitado);
       expect(spy).toHaveBeenCalled();
     });
 
@@ -330,9 +347,55 @@ describe('ListadoServicios', () => {
 
       mockServicioService.actualizarHabilitacion.mockReturnValue(throwError(() => error));
 
-      component['rowActions'](rowDeshabilitado)[2].command?.(rowDeshabilitado);
+      component['rowActions'](rowDeshabilitado)[3].command?.(rowDeshabilitado);
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('verOcupacion', () => {
+    const fechasOcupadas = [
+      { fechaInicio: '2026-08-10', fechaFin: '2026-08-12', reservaId: 21, estado: undefined },
+    ];
+
+    it('llama a getFechasOcupadas con el id del servicio y una ventana de un año', () => {
+      component['verOcupacion'](rowHabilitado);
+      expect(mockServicioService.getFechasOcupadas).toHaveBeenCalledWith(
+        1,
+        expect.any(String),
+        expect.any(String),
+      );
+    });
+
+    it('abre el diálogo y carga las fechas ocupadas tras la respuesta', () => {
+      mockServicioService.getFechasOcupadas.mockReturnValue(of(fechasOcupadas));
+      component['verOcupacion'](rowHabilitado);
+      expect(component['ocupacionVisible']()).toBe(true);
+      expect(component['servicioParaOcupacion']()).toEqual(rowHabilitado);
+      expect(component['fechasOcupadasServicio']()).toEqual(fechasOcupadas);
+    });
+
+    it('llama a errorHandler.handle y no abre el diálogo si falla la consulta', () => {
+      const error = new Error('Error de red');
+      mockServicioService.getFechasOcupadas.mockReturnValue(throwError(() => error));
+      component['verOcupacion'](rowHabilitado);
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+      expect(component['ocupacionVisible']()).toBe(false);
+    });
+  });
+
+  describe('onCerrarOcupacion', () => {
+    it('oculta el diálogo y limpia el servicio y las fechas ocupadas', () => {
+      mockServicioService.getFechasOcupadas.mockReturnValue(
+        of([{ fechaInicio: '2026-08-10', fechaFin: '2026-08-12', reservaId: 21 }]),
+      );
+      component['verOcupacion'](rowHabilitado);
+
+      component['onCerrarOcupacion']();
+
+      expect(component['ocupacionVisible']()).toBe(false);
+      expect(component['servicioParaOcupacion']()).toBeNull();
+      expect(component['fechasOcupadasServicio']()).toEqual([]);
     });
   });
 
