@@ -270,6 +270,7 @@ describe('NuevaReserva', () => {
     }
     expect(mockReservasService.calcularCosto).toHaveBeenCalled();
     expect(component['costo']()).toBe(5000);
+    expect(component['costoEsParaParticular']()).toBe(true);
   });
 
   it('cambiar la cantidad vuelve a pedir el costo al backend', () => {
@@ -512,6 +513,42 @@ describe('NuevaReserva', () => {
     f.detectChanges();
     await f.whenStable();
     expect(f.componentInstance['lupitaVisible']()).toBe(false);
+  });
+
+  it('en Colaboración el costo es 0 y nunca se consulta al backend', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      vi.advanceTimersByTime(300);
+      expect(mockReservasService.calcularCosto).toHaveBeenCalled();
+      mockReservasService.calcularCosto.mockClear();
+
+      component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(component['costo']()).toBe(0);
+    expect(mockReservasService.calcularCosto).not.toHaveBeenCalled();
+    expect(component['costoEsParaParticular']()).toBe(false);
+  });
+
+  it('en Colaboración, cambiar cantidad/fechas tampoco consulta el costo al backend', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      component['onControlChange']('cantidadTotal', '4');
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(component['costo']()).toBe(0);
+    expect(mockReservasService.calcularCosto).not.toHaveBeenCalled();
   });
 
   it('cambiar cantidadMenores vuelve a pedir el costo al backend', () => {
