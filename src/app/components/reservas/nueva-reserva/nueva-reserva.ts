@@ -13,7 +13,7 @@ import {
   FormField,
   FormLayout,
   FormSection,
-  ofrecerComprobante as ofrecerDescargaComprobante,
+  ofrecerComprobante,
   OccupancyCalendar,
   PageLayout,
   Procedencia,
@@ -528,53 +528,20 @@ export class NuevaReserva extends ReservaFormBase {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: (respuesta) => this.ofrecerComprobante(respuesta.id),
+        next: (respuesta) =>
+          ofrecerComprobante(
+            this.confirmDialog,
+            this.errorHandler,
+            this.destroyRef,
+            {
+              title: 'Reserva creada',
+              message: 'La reserva se creó correctamente. ¿Desea descargar el comprobante?',
+            },
+            () => this.reservasService.descargarComprobante(respuesta.id),
+            () => this.router.navigate(['/reservas']),
+          ),
         error: (err: unknown) => this.errorHandler.handle(err),
       });
-  }
-
-  /**
-   * Tras crear la reserva ofrece descargar el comprobante. En ambos casos se navega al
-   * listado de inmediato; si se pidió el comprobante, la descarga sigue en segundo plano.
-   */
-  private ofrecerComprobante(id: number): void {
-    let respondido = false;
-    this.confirmDialog
-      .open({
-        title: 'Reserva creada',
-        message: 'La reserva se creó correctamente. ¿Desea descargar el comprobante?',
-        confirmButtonLabel: 'Descargar comprobante',
-        cancelButtonLabel: 'No, gracias',
-        variant: 'success',
-      })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        // Si el componente se destruye (navegación) antes de que el usuario responda, el
-        // diálogo global queda huérfano: se cierra explícitamente en vez de dejarlo visible.
-        finalize(() => {
-          if (!respondido) this.confirmDialog.close();
-        }),
-      )
-      .subscribe((descargar) => {
-        respondido = true;
-        if (descargar) this.descargarComprobante(id);
-        this.router.navigate(['/reservas']);
-      });
-  }
-
-  private descargarComprobante(id: number): void {
-    // Fire-and-forget: la descarga NO se ata al destroyRef porque debe sobrevivir a la
-    // navegación al listado. La request corre en servicios root; se auto-completa al
-    // terminar el HTTP y los errores se muestran vía el diálogo global.
-    this.reservasService
-      .descargarComprobante(id)
-      .pipe(
-        catchError((err: unknown) => {
-          this.errorHandler.handle(err);
-          return EMPTY;
-        }),
-      )
-      .subscribe();
   }
 
   private construirDto(): ReservaCreacionRequestDto {

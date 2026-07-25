@@ -145,6 +145,7 @@ export class NuevoCliente extends ClienteFormBase {
           ofrecerComprobante(
             this.confirmDialog,
             this.errorHandler,
+            this.destroyRef,
             {
               title: 'Socio registrado',
               message: 'El socio se registró correctamente. ¿Desea descargar el comprobante?',
