@@ -3,7 +3,7 @@
 
   <div class="cliente-card__tags">
     @for (tag of cliente().tags; track tag.label) {
-    <app-tag [colorClass]="tag.colorClass" [icon]="tag.icon" size="sm">{{ tag.label }}</app-tag>
+      <app-tag [colorClass]="tag.colorClass" [icon]="tag.icon" size="sm">{{ tag.label }}</app-tag>
     }
   </div>
 
@@ -19,26 +19,24 @@
     </div>
 
     @if (cliente().numeroSocio !== null) {
-    <div class="cliente-card__field">
-      <i class="pi pi-hashtag cliente-card__field-icon"></i>
-      <div class="cliente-card__field-body">
-        <span class="cliente-card__field-label">N° socio</span>
-        <span class="cliente-card__field-value cliente-card__field-value--accent">
-          {{ cliente().numeroSocio }}
-        </span>
+      <div class="cliente-card__field">
+        <i class="pi pi-hashtag cliente-card__field-icon"></i>
+        <div class="cliente-card__field-body">
+          <span class="cliente-card__field-label">N° socio</span>
+          <span class="cliente-card__field-value cliente-card__field-value--accent">
+            {{ cliente().numeroSocio }}
+          </span>
+        </div>
       </div>
-    </div>
     }
     @if (cliente().antiguedad !== null) {
-    <div class="cliente-card__field">
-      <i class="pi pi-calendar cliente-card__field-icon"></i>
-      <div class="cliente-card__field-body">
-        <span class="cliente-card__field-label">Antigüedad</span>
-        <span class="cliente-card__field-value">
-          {{ cliente().antiguedad }} años
-        </span>
+      <div class="cliente-card__field">
+        <i class="pi pi-calendar cliente-card__field-icon"></i>
+        <div class="cliente-card__field-body">
+          <span class="cliente-card__field-label">Antigüedad</span>
+          <span class="cliente-card__field-value"> {{ cliente().antiguedad }} años </span>
+        </div>
       </div>
-    </div>
     }
   </div>
 </app-mob-list-card>

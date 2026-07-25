@@ -68,8 +68,7 @@ export function mapClienteCardMobileRow(cliente: ClienteRespuestaDto): ClienteCa
   const { documento } = mapClienteListadoRow(cliente);
   const estadoTag = cliente.estado !== null ? ESTADO_TAG[cliente.estado] : null;
   const categoriaTag =
-    cliente.tipoCliente === TipoCliente.Socio &&
-      cliente.categoriaSocio !== null
+    cliente.tipoCliente === TipoCliente.Socio && cliente.categoriaSocio !== null
       ? CATEGORIA_TAG[cliente.categoriaSocio]
       : null;
 

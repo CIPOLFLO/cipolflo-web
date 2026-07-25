@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ColumnConfig } from '../../../shared';
-import { EstadoSocio, CATEGORIA_SOCIO_LABEL, CategoriaSocio, } from '../models/cliente.model';
+import { EstadoSocio, CATEGORIA_SOCIO_LABEL, CategoriaSocio } from '../models/cliente.model';
 import { CedulaFormatPipe } from '../pipes/cedula-format.pipe';
 
 @Injectable()
