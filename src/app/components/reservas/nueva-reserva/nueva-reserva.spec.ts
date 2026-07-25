@@ -270,6 +270,7 @@ describe('NuevaReserva', () => {
     }
     expect(mockReservasService.calcularCosto).toHaveBeenCalled();
     expect(component['costo']()).toBe(5000);
+    expect(component['costoEsParaParticular']()).toBe(true);
   });
 
   it('cambiar la cantidad vuelve a pedir el costo al backend', () => {
@@ -596,6 +597,42 @@ describe('NuevaReserva', () => {
     expect(f.componentInstance['lupitaVisible']()).toBe(false);
   });
 
+  it('en Colaboración el costo es 0 y nunca se consulta al backend', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      vi.advanceTimersByTime(300);
+      expect(mockReservasService.calcularCosto).toHaveBeenCalled();
+      mockReservasService.calcularCosto.mockClear();
+
+      component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(component['costo']()).toBe(0);
+    expect(mockReservasService.calcularCosto).not.toHaveBeenCalled();
+    expect(component['costoEsParaParticular']()).toBe(false);
+  });
+
+  it('en Colaboración, cambiar cantidad/fechas tampoco consulta el costo al backend', () => {
+    vi.useFakeTimers();
+    try {
+      component['form'].get('tipoReserva')?.setValue(TipoReserva.ColaboracionSinFines);
+      component['form'].get('procedencia')?.setValue(Procedencia.Sede);
+      component['form'].get('servicioId')?.setValue('2');
+      component['onRangoSeleccionado']({ inicio: '2026-07-01', fin: '2026-07-03' });
+      component['onControlChange']('cantidadTotal', '4');
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(component['costo']()).toBe(0);
+    expect(mockReservasService.calcularCosto).not.toHaveBeenCalled();
+  });
+
   it('cambiar cantidadMenores vuelve a pedir el costo al backend', () => {
     vi.useFakeTimers();
     try {
@@ -668,6 +705,28 @@ describe('NuevaReserva', () => {
     component['guardar']();
     expect(handleSpy).toHaveBeenCalledWith(error);
     expect(navigateSpy).toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('si el componente se destruye antes de que el usuario responda, cierra el diálogo huérfano', () => {
+    const dialogSinResponder = new Subject<boolean>(); // nunca responde dentro del test
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(dialogSinResponder.asObservable());
+    const closeSpy = vi.spyOn(component['confirmDialog'], 'close');
+
+    component['guardar']();
+    fixture.destroy();
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).not.toHaveBeenCalledWith(['/reservas']);
+  });
+
+  it('si el usuario ya respondió, destruir el componente después no vuelve a cerrar el diálogo', () => {
+    vi.spyOn(component['confirmDialog'], 'open').mockReturnValue(of(false));
+    const closeSpy = vi.spyOn(component['confirmDialog'], 'close');
+
+    component['guardar']();
+    fixture.destroy();
+
+    expect(closeSpy).not.toHaveBeenCalled();
   });
 
   it('verificarSocioYGuardar con error en getEstadoSocio llama al errorHandler', () => {

@@ -14,13 +14,18 @@ const mockConfig: ConfirmDialogData = {
 
 class MockConfirmDialogService {
   private dialogStateSubject = new Subject<ConfirmDialogData>();
+  private closeSubject = new Subject<void>();
   dialogState$ = this.dialogStateSubject.asObservable();
+  close$ = this.closeSubject.asObservable();
 
   open(config: ConfirmDialogData) {
     this.dialogStateSubject.next(config);
   }
   confirm = vi.fn();
   cancel = vi.fn();
+  closeExterno() {
+    this.closeSubject.next();
+  }
 }
 
 describe('ConfirmDialogComponent', () => {
@@ -91,6 +96,17 @@ describe('ConfirmDialogComponent', () => {
     it('should call service.cancel()', () => {
       component.onCancel();
       expect(service.cancel).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('close$ (cierre no iniciado por el usuario)', () => {
+    it('oculta el diálogo cuando el servicio emite un cierre externo', () => {
+      service.open(mockConfig);
+      expect(component.visible()).toBe(true);
+
+      service.closeExterno();
+
+      expect(component.visible()).toBe(false);
     });
   });
 

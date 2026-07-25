@@ -111,9 +111,12 @@ export abstract class ReservaFormBase {
 
   protected readonly esSocio = computed(() => this.tipoClienteValue() === TipoCliente.Socio);
 
-  /** Verdadero mientras aún no se buscó/confirmó el cliente y hay un costo estimado visible. */
+  /**
+   * Verdadero mientras aún no se buscó/confirmó el cliente y hay un costo estimado visible.
+   * No aplica en Colaboración: ahí el costo es siempre 0 sin importar el tipo de cliente.
+   */
   protected readonly costoEsParaParticular = computed(
-    () => this.costo() !== null && !this.busquedaRealizada(),
+    () => this.costo() !== null && !this.busquedaRealizada() && !this.esColaboracion(),
   );
 
   protected readonly observacionesCliente = computed(() => {
@@ -300,6 +303,7 @@ export abstract class ReservaFormBase {
 
   private escucharCostoReserva(): void {
     merge(
+      this.form.get('tipoReserva')!.valueChanges,
       this.form.get('servicioId')!.valueChanges,
       this.form.get('fechaInicio')!.valueChanges,
       this.form.get('fechaFin')!.valueChanges,
@@ -320,6 +324,10 @@ export abstract class ReservaFormBase {
   }
 
   private calcularCosto(): Observable<number | null> {
+    // Colaboración sin fines de lucro es siempre sin costo: no corresponde consultar el
+    // backend para calcularlo.
+    if (this.esColaboracion()) return of(0);
+
     const servicioId = this.servicioIdValue();
     const fechaInicio = this.controlValue('fechaInicio');
     const fechaFin = this.controlValue('fechaFin');

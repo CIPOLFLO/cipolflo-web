@@ -13,7 +13,7 @@ import {
   FormField,
   FormLayout,
   FormSection,
-  ofrecerComprobante as ofrecerDescargaComprobante,
+  ofrecerComprobante,
   OccupancyCalendar,
   PageLayout,
   Procedencia,
@@ -528,26 +528,20 @@ export class NuevaReserva extends ReservaFormBase {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: (respuesta) => this.ofrecerComprobante(respuesta.id),
+        next: (respuesta) =>
+          ofrecerComprobante(
+            this.confirmDialog,
+            this.errorHandler,
+            this.destroyRef,
+            {
+              title: 'Reserva creada',
+              message: 'La reserva se creó correctamente. ¿Desea descargar el comprobante?',
+            },
+            () => this.reservasService.descargarComprobante(respuesta.id),
+            () => this.router.navigate(['/reservas']),
+          ),
         error: (err: unknown) => this.errorHandler.handle(err),
       });
-  }
-
-  /**
-   * Tras crear la reserva ofrece descargar el comprobante. En ambos casos se navega al
-   * listado de inmediato; si se pidió el comprobante, la descarga sigue en segundo plano.
-   */
-  private ofrecerComprobante(id: number): void {
-    ofrecerDescargaComprobante(
-      this.confirmDialog,
-      this.errorHandler,
-      {
-        title: 'Reserva creada',
-        message: 'La reserva se creó correctamente. ¿Desea descargar el comprobante?',
-      },
-      () => this.reservasService.descargarComprobante(id),
-      () => this.router.navigate(['/reservas']),
-    );
   }
 
   private construirDto(): ReservaCreacionRequestDto {

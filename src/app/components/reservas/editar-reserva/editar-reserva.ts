@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { finalize, map } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   AppButton,
+  ConfirmDialogService,
   CurrencyFormatPipe,
   DetailRegistroSection,
   DetailSection,
@@ -11,6 +12,7 @@ import {
   FormField,
   FormLayout,
   FormSection,
+  ofrecerComprobante,
   OccupancyCalendar,
   PageLayout,
   Procedencia,
@@ -50,6 +52,8 @@ import { ReservasService } from '../services/reservas.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditarReserva extends ReservaFormBase {
+  private readonly confirmDialog = inject(ConfirmDialogService);
+
   protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
   });
@@ -160,7 +164,18 @@ export class EditarReserva extends ReservaFormBase {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: () => this.router.navigateByUrl(this.backLink()),
+        next: () =>
+          ofrecerComprobante(
+            this.confirmDialog,
+            this.errorHandler,
+            this.destroyRef,
+            {
+              title: 'Reserva actualizada',
+              message: 'La reserva se actualizó correctamente. ¿Desea descargar el comprobante?',
+            },
+            () => this.reservasService.descargarComprobante(id),
+            () => this.router.navigateByUrl(this.backLink()),
+          ),
         error: (err: unknown) => this.errorHandler.handle(err),
       });
   }

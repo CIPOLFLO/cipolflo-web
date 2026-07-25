@@ -31,10 +31,15 @@ export class ConfirmDialogComponent implements OnInit, OnDestroy {
   private readonly confirmDialogService = inject(ConfirmDialogService);
 
   ngOnInit(): void {
-    this.subscription = this.confirmDialogService.dialogState$.subscribe((config) => {
-      this.config.set(config);
-      this.visible.set(true);
-    });
+    this.subscription.add(
+      this.confirmDialogService.dialogState$.subscribe((config) => {
+        this.config.set(config);
+        this.visible.set(true);
+      }),
+    );
+    this.subscription.add(
+      this.confirmDialogService.close$.subscribe(() => this.visible.set(false)),
+    );
   }
 
   ngOnDestroy(): void {
