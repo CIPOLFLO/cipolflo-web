@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EMPTY, catchError, filter, finalize, map,of, switchMap } from 'rxjs';
+import { EMPTY, catchError, filter, finalize, map, of, switchMap } from 'rxjs';
 import {
   AppButton,
   DateTimeFormatPipe,
@@ -104,15 +104,15 @@ export class DetalleReserva {
       ...(e.horaFin !== null ? [{ key: 'horaFin', label: 'Hora de Fin', value: e.horaFin }] : []),
       ...(e.cantidadTotal !== null
         ? [
-          {
-            key: 'cantidadTotal',
-            label: 'Cantidad de Personas',
-            value: e.cantidadTotal.toString(),
-          },
-          ...(e.cantidadMenores !== null
-            ? [{ key: 'cantidadMenores', label: 'Menores', value: e.cantidadMenores.toString() }]
-            : []),
-        ]
+            {
+              key: 'cantidadTotal',
+              label: 'Cantidad de Personas',
+              value: e.cantidadTotal.toString(),
+            },
+            ...(e.cantidadMenores !== null
+              ? [{ key: 'cantidadMenores', label: 'Menores', value: e.cantidadMenores.toString() }]
+              : []),
+          ]
         : []),
       ...(e.cantidad !== null
         ? [{ key: 'cantidad', label: 'Cantidad', value: e.cantidad.toString() }]
@@ -122,12 +122,12 @@ export class DetalleReserva {
         : []),
       ...(e.formaPago !== null
         ? [
-          {
-            key: 'formaPago',
-            label: 'Forma de Pago',
-            value: FORMA_PAGO_RESERVA_LABEL[e.formaPago] ?? e.formaPago,
-          },
-        ]
+            {
+              key: 'formaPago',
+              label: 'Forma de Pago',
+              value: FORMA_PAGO_RESERVA_LABEL[e.formaPago] ?? e.formaPago,
+            },
+          ]
         : []),
       {
         key: 'pago',
@@ -147,31 +147,31 @@ export class DetalleReserva {
       },
       ...(e.requiereDocumentacion
         ? [
-          {
-            key: 'tieneDocumentacion',
-            label: 'Tiene Documentación',
-            value: e.tieneDocumentacion ? 'Sí' : 'No',
-            valueClass: e.tieneDocumentacion ? ('success' as const) : ('danger' as const),
-          },
-        ]
+            {
+              key: 'tieneDocumentacion',
+              label: 'Tiene Documentación',
+              value: e.tieneDocumentacion ? 'Sí' : 'No',
+              valueClass: e.tieneDocumentacion ? ('success' as const) : ('danger' as const),
+            },
+          ]
         : []),
       ...(requiereAlgunPlazo && e.plazoConfirmacion !== null
         ? [
-          {
-            key: 'plazoConfirmacion',
-            label: 'Plazo para Confirmar la Reserva',
-            value: PLAZO_CONFIRMACION_LABEL[e.plazoConfirmacion],
-          },
-        ]
+            {
+              key: 'plazoConfirmacion',
+              label: 'Plazo para Confirmar la Reserva',
+              value: PLAZO_CONFIRMACION_LABEL[e.plazoConfirmacion],
+            },
+          ]
         : []),
       ...(requiereAlgunPlazo && e.fechaLimiteConfirmacion !== null
         ? [
-          {
-            key: 'fechaLimiteConfirmacion',
-            label: 'Fecha Límite de Confirmación',
-            value: dateTimeFormatPipe.transform(e.fechaLimiteConfirmacion),
-          },
-        ]
+            {
+              key: 'fechaLimiteConfirmacion',
+              label: 'Fecha Límite de Confirmación',
+              value: dateTimeFormatPipe.transform(e.fechaLimiteConfirmacion),
+            },
+          ]
         : []),
     ];
 

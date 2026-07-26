@@ -1,10 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { CurrencyFormatPipe, DateShortFormatPipe } from '../../../shared';
-import {
-  FORMA_PAGO_RESERVA_LABEL,
-  PagoAsociadoReservaDto,
-} from '../models/reserva.model';
+import { FORMA_PAGO_RESERVA_LABEL, PagoAsociadoReservaDto } from '../models/reserva.model';
 
 @Component({
   selector: 'app-historial-pagos-section',

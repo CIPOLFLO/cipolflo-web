@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {FormaPago } from '../../../shared/models/forma-pago.model'
+import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { HistorialPagosSection } from './historial-pagos-section';
 
 describe('HistorialPagosSection', () => {
@@ -21,9 +21,7 @@ describe('HistorialPagosSection', () => {
     fixture.componentRef.setInput('pagos', []);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain(
-      'No hay pagos registrados',
-    );
+    expect(fixture.nativeElement.textContent).toContain('No hay pagos registrados');
   });
 
   it('debería renderizar una fila por cada pago', () => {

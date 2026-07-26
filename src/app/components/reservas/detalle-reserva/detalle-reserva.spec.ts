@@ -105,7 +105,11 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
         providers: [
           {
             provide: ReservasService,
-            useValue: { getById: getByIdSpy, getHistorialPagos: getHistorialPagosSpy, descargarComprobante: descargarComprobanteSpy },
+            useValue: {
+              getById: getByIdSpy,
+              getHistorialPagos: getHistorialPagosSpy,
+              descargarComprobante: descargarComprobanteSpy,
+            },
           },
         ],
       },
@@ -117,7 +121,15 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component, getByIdSpy, descargarComprobanteSpy, navigateSpy, getHistorialPagosSpy, handleSpy };
+  return {
+    fixture,
+    component,
+    getByIdSpy,
+    descargarComprobanteSpy,
+    navigateSpy,
+    getHistorialPagosSpy,
+    handleSpy,
+  };
 }
 
 describe('DetalleReserva', () => {
@@ -453,13 +465,16 @@ describe('DetalleReserva', () => {
     })
       .overrideComponent(DetalleReserva, {
         set: {
-          providers: [{
-            provide: ReservasService, useValue: {
-              getById: getByIdSpy,
-              getHistorialPagos: vi.fn().mockReturnValue(of([])),
-              descargarComprobante: vi.fn(),
+          providers: [
+            {
+              provide: ReservasService,
+              useValue: {
+                getById: getByIdSpy,
+                getHistorialPagos: vi.fn().mockReturnValue(of([])),
+                descargarComprobante: vi.fn(),
+              },
             },
-          }]
+          ],
         },
       })
       .compileComponents();

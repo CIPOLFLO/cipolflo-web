@@ -17,7 +17,7 @@ import {
   type ReservaRespuestaDto,
   ReservaFinalizacionCheckResponseDto,
   ReservaFinalizacionRequestDto,
-  PagoAsociadoReservaDto
+  PagoAsociadoReservaDto,
 } from '../models/reserva.model';
 
 const mockDetalle: ReservaDetalleRespuestaDto = {
@@ -409,46 +409,46 @@ describe('ReservasService', () => {
     });
   });
   describe('getHistorialPagos', () => {
-  const mockPagos: PagoAsociadoReservaDto[] = [
-    {
-      id: 2,
-      fecha: '2026-08-02',
-      importe: 2500,
-      formaPago: FormaPago.Transferencia,
-    },
-    {
-      id: 1,
-      fecha: '2026-07-30',
-      importe: 2000,
-      formaPago: FormaPago.Efectivo,
-    },
-  ];
+    const mockPagos: PagoAsociadoReservaDto[] = [
+      {
+        id: 2,
+        fecha: '2026-08-02',
+        importe: 2500,
+        formaPago: FormaPago.Transferencia,
+      },
+      {
+        id: 1,
+        fecha: '2026-07-30',
+        importe: 2000,
+        formaPago: FormaPago.Efectivo,
+      },
+    ];
 
-  it('llama a GET /reservas/:id/pagos', () => {
-    service.getHistorialPagos(42).subscribe();
+    it('llama a GET /reservas/:id/pagos', () => {
+      service.getHistorialPagos(42).subscribe();
 
-    const req = httpTesting.expectOne(
-      (r) => r.url.includes('reservas/42/pagos') && r.method === 'GET',
-    );
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/pagos') && r.method === 'GET',
+      );
 
-    expect(req.request.method).toBe('GET');
-    req.flush(mockPagos);
-  });
-
-  it('devuelve la lista de pagos recibida del backend', () => {
-    let resultado: PagoAsociadoReservaDto[] | undefined;
-
-    service.getHistorialPagos(42).subscribe((r) => {
-      resultado = r;
+      expect(req.request.method).toBe('GET');
+      req.flush(mockPagos);
     });
 
-    const req = httpTesting.expectOne(
-      (r) => r.url.includes('reservas/42/pagos') && r.method === 'GET',
-    );
+    it('devuelve la lista de pagos recibida del backend', () => {
+      let resultado: PagoAsociadoReservaDto[] | undefined;
 
-    req.flush(mockPagos);
+      service.getHistorialPagos(42).subscribe((r) => {
+        resultado = r;
+      });
 
-    expect(resultado).toEqual(mockPagos);
+      const req = httpTesting.expectOne(
+        (r) => r.url.includes('reservas/42/pagos') && r.method === 'GET',
+      );
+
+      req.flush(mockPagos);
+
+      expect(resultado).toEqual(mockPagos);
+    });
   });
-});
 });

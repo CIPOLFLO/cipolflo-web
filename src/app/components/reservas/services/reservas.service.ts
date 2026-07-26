@@ -15,7 +15,7 @@ import {
   ReservaCancelacionRequestDto,
   ReservaFinalizacionCheckResponseDto,
   ReservaFinalizacionRequestDto,
-  PagoAsociadoReservaDto
+  PagoAsociadoReservaDto,
 } from '../models/reserva.model';
 
 @Injectable()
@@ -83,6 +83,6 @@ export class ReservasService extends BaseHttpService {
   }
 
   getHistorialPagos(id: number): Observable<PagoAsociadoReservaDto[]> {
-  return this.get<PagoAsociadoReservaDto[]>(`reservas/${id}/pagos`);
-}
+    return this.get<PagoAsociadoReservaDto[]>(`reservas/${id}/pagos`);
+  }
 }
