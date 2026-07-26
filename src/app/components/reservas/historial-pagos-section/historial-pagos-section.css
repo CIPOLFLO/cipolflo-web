@@ -1,0 +1,56 @@
+.historial-pagos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.historial-pagos__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.historial-pagos__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pago-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+}
+
+.pago-row__fecha,
+.pago-row__forma {
+  font-size: 0.875rem;
+}
+
+.pago-row__importe {
+  text-align: right;
+}
+
+.historial-pagos__empty {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+  border: 1px dashed var(--surface-border);
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .pago-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .pago-row__importe {
+    text-align: left;
+  }
+}

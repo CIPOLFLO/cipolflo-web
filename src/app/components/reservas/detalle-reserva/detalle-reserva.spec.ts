@@ -73,6 +73,22 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
   const descargarComprobanteSpy = vi.fn().mockReturnValue(of(undefined));
   const navigateSpy = vi.fn();
   const handleSpy = vi.fn();
+  const getHistorialPagosSpy = vi.fn().mockReturnValue(
+    of([
+      {
+        id: 1,
+        fecha: '2026-08-01',
+        importe: 2000,
+        formaPago: FormaPago.Efectivo,
+      },
+      {
+        id: 2,
+        fecha: '2026-08-03',
+        importe: 2500,
+        formaPago: FormaPago.Transferencia,
+      },
+    ]),
+  );
 
   await TestBed.configureTestingModule({
     imports: [DetalleReserva],
@@ -89,7 +105,7 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
         providers: [
           {
             provide: ReservasService,
-            useValue: { getById: getByIdSpy, descargarComprobante: descargarComprobanteSpy },
+            useValue: { getById: getByIdSpy, getHistorialPagos: getHistorialPagosSpy, descargarComprobante: descargarComprobanteSpy },
           },
         ],
       },
@@ -101,7 +117,7 @@ async function setup(reserva: ReservaDetalleRespuestaDto = mockReserva, id = '42
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component, getByIdSpy, descargarComprobanteSpy, navigateSpy, handleSpy };
+  return { fixture, component, getByIdSpy, descargarComprobanteSpy, navigateSpy, getHistorialPagosSpy, handleSpy };
 }
 
 describe('DetalleReserva', () => {
@@ -436,7 +452,15 @@ describe('DetalleReserva', () => {
       ],
     })
       .overrideComponent(DetalleReserva, {
-        set: { providers: [{ provide: ReservasService, useValue: { getById: getByIdSpy } }] },
+        set: {
+          providers: [{
+            provide: ReservasService, useValue: {
+              getById: getByIdSpy,
+              getHistorialPagos: vi.fn().mockReturnValue(of([])),
+              descargarComprobante: vi.fn(),
+            },
+          }]
+        },
       })
       .compileComponents();
 
