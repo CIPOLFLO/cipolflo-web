@@ -53,6 +53,13 @@
         [loading]="tableExport.exportando()"
         (clicked)="onExportar()"
       />
+
+      <app-button
+        label="Importar Excel"
+        intent="secondary"
+        icon="pi-upload"
+        (clicked)="onImportarExcelClick()"
+      />
     </ng-container>
 
     <app-filter-panel (filterChange)="onFilterChange($event)" />
@@ -63,4 +70,21 @@
 
 @if (clientePagoSeleccionado(); as clientePago) {
   <app-pago-cuota [cliente]="clientePago" (cerrado)="onCerrarPagoCuota()" />
+}
+
+<app-importar-clientes-dialog
+  [visible]="importarDialogVisible()"
+  [importando]="importando()"
+  (cancelar)="onCancelarImportar()"
+  (confirmar)="onConfirmarImportar($event)"
+  (descargarPlantilla)="onDescargarPlantillaImportacion()"
+/>
+
+@if (erroresImportacion(); as erroresResponse) {
+  <app-importar-clientes-error-dialog
+    [visible]="true"
+    [errores]="erroresResponse.detalleErrores"
+    (aceptar)="onAceptarErroresImportacion()"
+    (reintentar)="onReintentarImportar()"
+  />
 }
