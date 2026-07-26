@@ -19,6 +19,7 @@ import {
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
 import { BusquedaRutResponseDto } from '../../reservas/models/reserva.model';
 import { FileDownloadService } from 'src/app/core/services/file-download.service';
+import { ImportacionSociosResponseDto } from '../models/importacion-socios.model';
 
 const BASE = `${environment.apiUrl}/clientes`;
 
@@ -644,6 +645,72 @@ describe('ClientesService', () => {
           { status: 400, statusText: 'Bad Request' },
         );
       expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('importarSocios', () => {
+    const mockResponse: ImportacionSociosResponseDto = {
+      totalFilas: 3,
+      filasImportadas: 3,
+      filasConError: 0,
+      detalleErrores: [],
+    };
+
+    it('realiza POST a /clientes/socios/importar con el archivo en un FormData', () => {
+      const file = new File(['contenido'], 'socios.xlsx');
+      let resultado: ImportacionSociosResponseDto | undefined;
+
+      service.importarSocios(file).subscribe((result) => (resultado = result));
+
+      const req = httpMock.expectOne(`${BASE}/socios/importar`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toBeInstanceOf(FormData);
+      expect((req.request.body as FormData).get('file')).toBe(file);
+      req.flush(mockResponse);
+      expect(resultado).toEqual(mockResponse);
+    });
+
+    it('propaga error 400 cuando el archivo tiene un formato inválido', () => {
+      const file = new File(['contenido'], 'socios.txt');
+      let errorStatus = 0;
+      service.importarSocios(file).subscribe({ error: (e) => (errorStatus = e.status) });
+      httpMock
+        .expectOne(`${BASE}/socios/importar`)
+        .flush(
+          { codigo: 'FORMATO_INVALIDO', descripcion: 'El archivo debe ser XLSX o XLS' },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      expect(errorStatus).toBe(400);
+    });
+  });
+
+  describe('descargarPlantillaImportacionSocios', () => {
+    it('realiza GET a /clientes/socios/importar/plantilla y llama a fileDownloadService.download', () => {
+      const fileDownloadService = TestBed.inject(FileDownloadService);
+      const downloadSpy = vi.spyOn(fileDownloadService, 'download').mockReturnValue(undefined);
+
+      service.descargarPlantillaImportacionSocios().subscribe();
+
+      const req = httpMock.expectOne(`${BASE}/socios/importar/plantilla`);
+      expect(req.request.method).toBe('GET');
+      req.flush(new Blob(['test'], { type: 'application/vnd.ms-excel' }));
+
+      expect(downloadSpy).toHaveBeenCalledWith(
+        expect.any(Object),
+        'plantilla-importacion-socios.xlsx',
+      );
+    });
+
+    it('propaga error 500 cuando el servidor falla al descargar la plantilla', async () => {
+      const promise = firstValueFrom(service.descargarPlantillaImportacionSocios());
+
+      const req = httpMock.expectOne(`${BASE}/socios/importar/plantilla`);
+      req.flush(new Blob([JSON.stringify({ codigo: 'ERROR' })]), {
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(promise).rejects.toMatchObject({ status: 500 });
     });
   });
 });
