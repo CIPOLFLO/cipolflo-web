@@ -28,9 +28,6 @@ const mockDetalle: ServicioDetalleRespuestaDto = {
   id: 1,
   nombre: 'Cabaña 1',
   procedencia: 'CAMPING',
-  precioParticular: 1200,
-  precioSocio: 800,
-  modalidadPrecio: 'POR_DIA',
   estado: EstadoServicio.Habilitado,
   capacidad: null,
   cantidad: null,
@@ -92,9 +89,9 @@ describe('ServicioService', () => {
   });
 
   it('getAll envía sortField solo cuando sortOrder no se proporciona', () => {
-    service.getAll({ page: 0, size: 10, filters: {}, sortField: 'precioParticular' }).subscribe();
+    service.getAll({ page: 0, size: 10, filters: {}, sortField: 'estado' }).subscribe();
     const req = httpMock.expectOne((r) => r.url === `${environment.apiUrl}/servicios`);
-    expect(req.request.params.get('sortField')).toBe('precioParticular');
+    expect(req.request.params.get('sortField')).toBe('estado');
     expect(req.request.params.has('sortOrder')).toBe(false);
     req.flush(emptyPage);
   });
@@ -158,9 +155,6 @@ describe('ServicioService', () => {
     const mockDto: ServicioCrearDto = {
       nombre: 'Cabaña 1',
       procedencia: 'CAMPING',
-      precioParticular: 1200,
-      precioSocio: 800,
-      modalidadPrecio: 'POR_DIA',
       cantidad: null,
       capacidad: null,
       tarifas: [],
@@ -170,9 +164,6 @@ describe('ServicioService', () => {
       id: 1,
       nombre: 'Cabaña 1',
       procedencia: 'CAMPING',
-      precioParticular: 1200,
-      precioSocio: 800,
-      modalidadPrecio: 'POR_DIA',
       estado: EstadoServicio.Habilitado,
     };
 
@@ -215,9 +206,6 @@ describe('ServicioService', () => {
       nombre: 'Cabaña Actualizada',
       procedencia: 'CAMPING',
       estado: EstadoServicio.Habilitado,
-      precioParticular: 1500,
-      precioSocio: 1000,
-      modalidadPrecio: 'POR_DIA',
       cantidad: null,
       capacidad: null,
       tarifas: [],
@@ -227,9 +215,6 @@ describe('ServicioService', () => {
       id: 1,
       nombre: 'Cabaña Actualizada',
       procedencia: 'CAMPING',
-      precioParticular: 1500,
-      precioSocio: 1000,
-      modalidadPrecio: 'POR_DIA',
       estado: EstadoServicio.Habilitado,
     };
 

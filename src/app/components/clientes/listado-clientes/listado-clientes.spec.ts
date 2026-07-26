@@ -40,6 +40,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       email: 'juan@mail.com',
       estado: EstadoSocio.Activo,
       categoriaSocio: CategoriaSocio.SocioComun,
+      antiguedad: 5,
       fechaIngreso: '2020-01-01',
       ultimaCuotaDto: {
         anio: 2026,
@@ -58,6 +59,7 @@ const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
       email: null,
       estado: null,
       categoriaSocio: null,
+      antiguedad: null,
       fechaIngreso: null,
       ultimaCuotaDto: null,
     },
@@ -81,6 +83,7 @@ const empresaMock: ClienteRespuestaDto = {
   estado: null,
   categoriaSocio: null,
   fechaIngreso: null,
+  antiguedad: null,
   ultimaCuotaDto: null,
 };
 
@@ -133,8 +136,8 @@ describe('ListadoClientes', () => {
     expect(fixture.nativeElement.textContent).toContain('Clientes');
   });
 
-  it('debe tener 6 columnas definidas', () => {
-    expect(component['columns'].length).toBe(6);
+  it('debe tener 8 columnas definidas', () => {
+    expect(component['columns'].length).toBe(8);
   });
 
   it('debe definir columna nombreCompleto como sortable', () => {

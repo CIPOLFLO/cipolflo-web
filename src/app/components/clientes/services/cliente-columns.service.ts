@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ColumnConfig } from '../../../shared';
-import { EstadoSocio } from '../models/cliente.model';
+import { EstadoSocio, CATEGORIA_SOCIO_LABEL, CategoriaSocio } from '../models/cliente.model';
 import { CedulaFormatPipe } from '../pipes/cedula-format.pipe';
 
 @Injectable()
@@ -36,6 +36,32 @@ export class ClientesColumnsService {
         [EstadoSocio.Inactivo]: { styleClass: 'tag--yellow', label: 'Inactivo' },
         [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
       },
+    },
+    {
+      key: 'categoriaSocio',
+      label: 'Categoría',
+      cellType: 'tag',
+      nullFallback: '—',
+      tagMap: {
+        [CategoriaSocio.PoliciaActivo]: {
+          styleClass: 'tag--blue',
+          label: CATEGORIA_SOCIO_LABEL[CategoriaSocio.PoliciaActivo],
+        },
+        [CategoriaSocio.PoliciaRetirado]: {
+          styleClass: 'tag--purple',
+          label: CATEGORIA_SOCIO_LABEL[CategoriaSocio.PoliciaRetirado],
+        },
+        [CategoriaSocio.SocioComun]: {
+          styleClass: 'tag--gray',
+          label: CATEGORIA_SOCIO_LABEL[CategoriaSocio.SocioComun],
+        },
+      },
+    },
+    {
+      key: 'antiguedad',
+      label: 'Antigüedad',
+      nullFallback: '—',
+      transform: (v) => `${v as number} años`,
     },
   ];
 }

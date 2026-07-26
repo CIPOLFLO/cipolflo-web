@@ -12,15 +12,6 @@ export class ServicioValidacionesService {
     return null;
   }
 
-  precioSocioMenorQueParticular(group: AbstractControl): ValidationErrors | null {
-    const particular = group.get('precioParticular')?.value as number | null;
-    const socio = group.get('precioSocio')?.value as number | null;
-    if (particular != null && particular > 0 && socio != null && socio > 0 && socio >= particular) {
-      return { precioSocioMayor: true };
-    }
-    return null;
-  }
-
   getInfoErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errs: Record<string, string> = {};
     const procedencia = form.get('procedencia')!;
@@ -49,28 +40,6 @@ export class ServicioValidacionesService {
 
   getPreciosErrors(form: FormGroup, submitted: boolean): Record<string, string> {
     const errs: Record<string, string> = {};
-    const particular = form.get('precioParticular')!;
-    const socio = form.get('precioSocio')!;
-    const modalidad = form.get('modalidadPrecio')!;
-
-    if ((submitted || particular.touched) && particular.hasError('required')) {
-      errs['precioParticular'] = 'El precio para particulares es obligatorio.';
-    } else if ((submitted || particular.touched) && particular.hasError('min')) {
-      errs['precioParticular'] = 'El precio debe ser mayor que 0.';
-    }
-
-    if ((submitted || socio.touched) && socio.hasError('required')) {
-      errs['precioSocio'] = 'El precio para socios es obligatorio.';
-    } else if ((submitted || socio.touched) && socio.hasError('min')) {
-      errs['precioSocio'] = 'El precio debe ser mayor que 0.';
-    } else if ((submitted || socio.touched) && form.errors?.['precioSocioMayor']) {
-      errs['precioSocio'] = 'Debe ser menor al precio para particulares.';
-    }
-
-    if ((submitted || modalidad.touched) && modalidad.hasError('required')) {
-      errs['modalidadPrecio'] = 'El tipo de cobro es obligatorio.';
-    }
-
     const costoExtra = form.get('costoPersonaExtra');
     if (costoExtra && (submitted || costoExtra.touched) && costoExtra.hasError('min')) {
       errs['costoPersonaExtra'] = 'El costo por persona extra no puede ser negativo.';

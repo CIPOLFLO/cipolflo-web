@@ -29,6 +29,7 @@ const empresaMock = {
   metodoCobro: null as MetodoCobro | null,
   categoriaSocio: null,
   fechaIngreso: null,
+  antiguedad: null,
   createdAt: '2026-01-01',
   createdBy: 'admin',
   updatedAt: '2026-01-01',

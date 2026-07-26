@@ -17,9 +17,6 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   id: 1,
   nombre: 'Cabaña 1',
   procedencia: 'CAMPING',
-  precioParticular: 1200,
-  precioSocio: 800,
-  modalidadPrecio: 'POR_DIA',
   estado: EstadoServicio.Habilitado,
   capacidad: 4,
   cantidad: null,
@@ -145,9 +142,6 @@ describe('EditarServicio', () => {
     expect(component['form'].get('nombre')?.value).toBe('Cabaña 1');
     expect(component['form'].get('procedencia')?.value).toBe('CAMPING');
     expect(component['form'].get('estado')?.value).toBe(EstadoServicio.Habilitado);
-    expect(component['form'].get('precioParticular')?.value).toBe(1200);
-    expect(component['form'].get('precioSocio')?.value).toBe(800);
-    expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_DIA');
     expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
   });
 
@@ -320,42 +314,27 @@ describe('EditarServicio', () => {
 
   // ── onPreciosChange ─────────────────────────────────────────────────────────
 
-  it('onPreciosChange convierte string a número para precios', () => {
+  it('onPreciosChange convierte string a número para costoPersonaExtra', () => {
     const { component } = setup();
-    component['onPreciosChange']({
-      precioParticular: '200',
-      precioSocio: '150',
-      modalidadPrecio: 'POR_HORA',
-    });
-    expect(component['form'].get('precioParticular')?.value).toBe(200);
-    expect(component['form'].get('precioSocio')?.value).toBe(150);
-    expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_HORA');
+    component['onPreciosChange']({ costoPersonaExtra: '200' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBe(200);
   });
 
-  it('onPreciosChange establece null cuando el string es vacío', () => {
+  it('onPreciosChange establece null cuando el string de costoPersonaExtra es vacío', () => {
     const { component } = setup();
-    component['onPreciosChange']({ precioParticular: '', precioSocio: '', modalidadPrecio: null });
-    expect(component['form'].get('precioParticular')?.value).toBeNull();
-    expect(component['form'].get('precioSocio')?.value).toBeNull();
+    component['onPreciosChange']({ costoPersonaExtra: '' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
   });
 
-  it('onPreciosChange establece null cuando el string es no numérico', () => {
+  it('onPreciosChange establece null cuando costoPersonaExtra es no numérico', () => {
     const { component } = setup();
-    component['onPreciosChange']({
-      precioParticular: 'abc',
-      precioSocio: null,
-      modalidadPrecio: null,
-    });
-    expect(component['form'].get('precioParticular')?.value).toBeNull();
+    component['onPreciosChange']({ costoPersonaExtra: 'abc' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
   });
 
   it('onPreciosChange marca el form como dirty', () => {
     const { component } = setup();
-    component['onPreciosChange']({
-      precioParticular: '100',
-      precioSocio: '80',
-      modalidadPrecio: null,
-    });
+    component['onPreciosChange']({ costoPersonaExtra: '100' });
     expect(component['form'].dirty).toBe(true);
   });
 
@@ -383,17 +362,6 @@ describe('EditarServicio', () => {
     component['form'].get('cantidad')!.setValue(5);
     component['form'].get('capacidad')!.setValue(10);
     expect(component['infoErrors']()['capacidad']).toBeUndefined();
-  });
-
-  it('preciosErrors muestra error de precioSocio mayor tras submit', () => {
-    const { component } = setup();
-    component['onPreciosChange']({
-      precioParticular: '100',
-      precioSocio: '200',
-      modalidadPrecio: 'POR_DIA',
-    });
-    component['submitted'].set(true);
-    expect(component['preciosErrors']()['precioSocio']).toBeTruthy();
   });
 
   // ── Navegación ──────────────────────────────────────────────────────────────
@@ -428,9 +396,6 @@ describe('EditarServicio', () => {
         nombre: 'Cabaña 1',
         procedencia: 'CAMPING',
         estado: EstadoServicio.Habilitado,
-        precioParticular: 1200,
-        precioSocio: 800,
-        modalidadPrecio: 'POR_DIA',
       }),
     );
   });
@@ -489,9 +454,7 @@ describe('EditarServicio', () => {
 
   it('onPreciosChange solo modifica las claves presentes, dejando las demás sin cambio', () => {
     const { component } = setup();
-    component['onPreciosChange']({ precioParticular: '1500' });
-    expect(component['form'].get('precioParticular')?.value).toBe(1500);
-    expect(component['form'].get('precioSocio')?.value).toBe(800);
-    expect(component['form'].get('modalidadPrecio')?.value).toBe('POR_DIA');
+    component['onPreciosChange']({ costoPersonaExtra: '150' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBe(150);
   });
 });

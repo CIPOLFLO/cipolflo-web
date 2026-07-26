@@ -93,20 +93,11 @@ export class EditarServicio implements OnInit {
       estado: new FormControl<string | null>(null, Validators.required),
       cantidad: new FormControl<number | null>(null),
       capacidad: new FormControl<number | null>(null),
-      precioParticular: new FormControl<number | null>(null, [
-        Validators.required,
-        Validators.min(1),
-      ]),
-      precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
-      modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
       tarifas: this.tarifas,
     },
     {
-      validators: [
-        (g) => this.validaciones.cantidadOCapacidadExcluyentes(g),
-        (g) => this.validaciones.precioSocioMenorQueParticular(g),
-      ],
+      validators: [(g) => this.validaciones.cantidadOCapacidadExcluyentes(g)],
     },
   );
 
@@ -137,9 +128,6 @@ export class EditarServicio implements OnInit {
         estado: s.estado,
         cantidad: s.cantidad,
         capacidad: s.capacidad,
-        precioParticular: s.precioParticular,
-        precioSocio: s.precioSocio,
-        modalidadPrecio: s.modalidadPrecio,
         costoPersonaExtra: s.costoPersonaExtra,
       });
 
@@ -229,7 +217,7 @@ export class EditarServicio implements OnInit {
   );
 
   protected readonly preciosFields = computed<FormFieldConfig[]>(() =>
-    this.presentacion.getPreciosFieldsEditar(this.servicio(), this.modalidades()),
+    this.presentacion.getPreciosFieldsEditar(this.servicio()),
   );
 
   protected readonly infoErrors = computed<Record<string, string>>(() => {
@@ -280,14 +268,8 @@ export class EditarServicio implements OnInit {
       return Number.isNaN(n) ? null : n;
     };
     const patch: Partial<{
-      precioParticular: number | null;
-      precioSocio: number | null;
-      modalidadPrecio: string | null;
       costoPersonaExtra: number | null;
     }> = {};
-    if ('precioParticular' in values) patch.precioParticular = toNumber(values['precioParticular']);
-    if ('precioSocio' in values) patch.precioSocio = toNumber(values['precioSocio']);
-    if ('modalidadPrecio' in values) patch.modalidadPrecio = values['modalidadPrecio'] ?? null;
     if ('costoPersonaExtra' in values)
       patch.costoPersonaExtra = toNumber(values['costoPersonaExtra']);
     this.form.patchValue(patch);
@@ -305,17 +287,8 @@ export class EditarServicio implements OnInit {
     this.submitted.set(true);
     if (this.form.invalid) return;
 
-    const {
-      procedencia,
-      nombre,
-      estado,
-      cantidad,
-      capacidad,
-      precioParticular,
-      precioSocio,
-      modalidadPrecio,
-      costoPersonaExtra,
-    } = this.form.getRawValue();
+    const { procedencia, nombre, estado, cantidad, capacidad, costoPersonaExtra } =
+      this.form.getRawValue();
 
     this.loading.set(true);
     this.servicioService
@@ -325,9 +298,6 @@ export class EditarServicio implements OnInit {
         estado: estado as EstadoServicio,
         cantidad,
         capacidad,
-        precioParticular: precioParticular!,
-        precioSocio: precioSocio!,
-        modalidadPrecio: modalidadPrecio!,
         costoPersonaExtra,
         tarifas: this.obtenerTarifasDto(),
       })

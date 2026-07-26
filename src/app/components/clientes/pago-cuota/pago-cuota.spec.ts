@@ -24,6 +24,7 @@ const mockCliente: ClienteRespuestaDto = {
   email: 'lucia@example.com',
   estado: EstadoSocio.Activo,
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
   ultimaCuotaDto: {
     anio: 2026,

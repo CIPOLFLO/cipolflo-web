@@ -39,6 +39,7 @@ const mockDetalle: ClienteDetalleRespuestaDto = {
   ciudad: 'Trinidad',
   direccion: 'Luis Alberto de Herrera 123',
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
   observaciones: 'Socia nueva',
   createdAt: '2026-03-15T14:30:00Z',

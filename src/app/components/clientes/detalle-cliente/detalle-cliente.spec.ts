@@ -31,6 +31,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   ciudad: 'Trinidad',
   direccion: 'Calle A 123',
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
   observaciones: 'Socia Nueva',
   createdAt: '2026-03-15T14:30:00Z',
@@ -125,6 +126,11 @@ describe('DetalleCliente', () => {
     expect(field?.value).toBe('2020-01-01');
   });
 
+  it('debería mostrar la antigüedad del socio en años', () => {
+    const field = component['infoFields']().find((f) => f.key === 'antiguedad');
+    expect(field?.value).toBe('5 años');
+  });
+
   it('debería manejar el error cuando falla la carga del detalle del cliente', () => {
     const error = new Error('Error al cargar cliente');
 
@@ -161,6 +167,7 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
     metodoCobro: null,
     categoriaSocio: null,
     fechaIngreso: null,
+    antiguedad: null,
     ultimaCuotaDto: null,
   };
 
@@ -205,6 +212,11 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
 
   it('el campo fechaIngreso tiene value null', () => {
     const field = component['infoFields']().find((f) => f.key === 'fechaIngreso');
+    expect(field?.value).toBeNull();
+  });
+
+  it('el campo antiguedad tiene value null', () => {
+    const field = component['infoFields']().find((f) => f.key === 'antiguedad');
     expect(field?.value).toBeNull();
   });
 });
