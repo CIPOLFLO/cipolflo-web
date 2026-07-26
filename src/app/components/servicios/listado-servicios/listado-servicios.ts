@@ -23,7 +23,6 @@ import { ServicioService } from '../services/servicio.service';
 import {
   EstadoServicio,
   HabilitacionServicioDto,
-  MODALIDAD_PRECIO_LABEL,
   ReservaProximaDto,
   ServicioRow,
 } from '../models/servicio.model';
@@ -91,7 +90,6 @@ export class ListadoServicios {
         ...response,
         content: response.content.map((dto) => ({
           ...dto,
-          unidad: MODALIDAD_PRECIO_LABEL[dto.modalidadPrecio] ?? String(dto.modalidadPrecio),
           procedencia: PROCEDENCIA_LABEL[dto.procedencia] ?? dto.procedencia,
         })),
       })),

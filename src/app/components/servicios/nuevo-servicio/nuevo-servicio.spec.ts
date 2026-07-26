@@ -63,9 +63,6 @@ describe('NuevoServicio', () => {
     component['form'].patchValue({
       procedencia: 'CAMPING',
       nombre: 'Test servicio',
-      precioParticular: 100,
-      precioSocio: 50,
-      modalidadPrecio: 'POR_DIA',
     });
     // El constructor ya precarga una fila Particular (índice 0) y una Socio Común (índice 1).
     component['tarifas'].at(0).patchValue({
@@ -149,33 +146,6 @@ describe('NuevoServicio', () => {
     expect(component['infoErrors']()['nombre']).toBeTruthy();
   });
 
-  it('preciosErrors[precioParticular] debería mostrar error cuando submitted y campo vacío', () => {
-    component['submitted'].set(true);
-    fixture.detectChanges();
-    expect(component['preciosErrors']()['precioParticular']).toBeTruthy();
-  });
-
-  it('preciosErrors[precioSocio] debería mostrar error cuando submitted y campo vacío', () => {
-    component['submitted'].set(true);
-    fixture.detectChanges();
-    expect(component['preciosErrors']()['precioSocio']).toBeTruthy();
-  });
-
-  it('preciosErrors[modalidadPrecio] debería mostrar error cuando submitted y campo vacío', () => {
-    component['submitted'].set(true);
-    fixture.detectChanges();
-    expect(component['preciosErrors']()['modalidadPrecio']).toBeTruthy();
-  });
-
-  // ── Validación cruzada ───────────────────────────────────────────────────
-
-  it('preciosErrors[precioSocio] debería mostrar error cuando socio >= particular', () => {
-    component['form'].patchValue({ precioParticular: 50, precioSocio: 100 });
-    component['submitted'].set(true);
-    fixture.detectChanges();
-    expect(component['preciosErrors']()['precioSocio']).toBeTruthy();
-  });
-
   it('infoErrors[capacidad] debería mostrar error cuando cantidad y capacidad tienen valor', () => {
     component['onInfoChange']({ cantidad: '5', capacidad: '10', procedencia: null, nombre: null });
     component['onFieldBlur']('capacidad');
@@ -218,33 +188,19 @@ describe('NuevoServicio', () => {
 
   // ── onPreciosChange ──────────────────────────────────────────────────────
 
-  it('onPreciosChange debería convertir string a número para precios', () => {
-    component['onPreciosChange']({
-      precioParticular: '150',
-      precioSocio: '100',
-      modalidadPrecio: 'POR_DIA',
-    });
-    expect(component['form'].get('precioParticular')?.value).toBe(150);
-    expect(component['form'].get('precioSocio')?.value).toBe(100);
+  it('onPreciosChange debería convertir string a número para costoPersonaExtra', () => {
+    component['onPreciosChange']({ costoPersonaExtra: '150' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBe(150);
   });
 
-  it('onPreciosChange debería dejar null si el string es vacío', () => {
-    component['onPreciosChange']({
-      precioParticular: '',
-      precioSocio: '',
-      modalidadPrecio: null,
-    });
-    expect(component['form'].get('precioParticular')?.value).toBeNull();
-    expect(component['form'].get('precioSocio')?.value).toBeNull();
+  it('onPreciosChange debería dejar null si el string de costoPersonaExtra es vacío', () => {
+    component['onPreciosChange']({ costoPersonaExtra: '' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
   });
 
-  it('onPreciosChange debería establecer null si el string es no numérico', () => {
-    component['onPreciosChange']({
-      precioParticular: 'xyz',
-      precioSocio: null,
-      modalidadPrecio: null,
-    });
-    expect(component['form'].get('precioParticular')?.value).toBeNull();
+  it('onPreciosChange debería establecer null si costoPersonaExtra es no numérico', () => {
+    component['onPreciosChange']({ costoPersonaExtra: 'xyz' });
+    expect(component['form'].get('costoPersonaExtra')?.value).toBeNull();
   });
 
   // ── Navegación ───────────────────────────────────────────────────────────
@@ -269,9 +225,6 @@ describe('NuevoServicio', () => {
         id: 1,
         nombre: 'Test servicio',
         procedencia: 'CAMPING',
-        precioParticular: 100,
-        precioSocio: 50,
-        modalidadPrecio: 'POR_DIA',
         estado: EstadoServicio.Habilitado,
       }),
     );
@@ -280,9 +233,6 @@ describe('NuevoServicio', () => {
       expect.objectContaining({
         nombre: 'Test servicio',
         procedencia: 'CAMPING',
-        precioParticular: 100,
-        precioSocio: 50,
-        modalidadPrecio: 'POR_DIA',
         tarifas: [
           {
             tipoCliente: TipoClienteTarifa.Particular,
@@ -310,9 +260,6 @@ describe('NuevoServicio', () => {
         id: 1,
         nombre: 'Test servicio',
         procedencia: 'CAMPING',
-        precioParticular: 100,
-        precioSocio: 50,
-        modalidadPrecio: 'POR_DIA',
         estado: EstadoServicio.Habilitado,
       }),
     );

@@ -33,7 +33,7 @@ export interface ClienteCardMobileRow extends ClienteRespuestaDto {
   documento: string | null;
   /**
    * Tags a mostrar en la card, en orden: siempre la del tipo de cliente y, solo para
-   * los socios (con estado), la del estado.
+   * los socios, la del estado (si tiene) y la de categoría (si tiene).
    */
   tags: TagView[];
 }

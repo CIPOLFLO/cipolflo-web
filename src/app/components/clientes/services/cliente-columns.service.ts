@@ -61,6 +61,7 @@ export class ClientesColumnsService {
       key: 'antiguedad',
       label: 'Antigüedad',
       nullFallback: '—',
+      transform: (v) => `${v as number} años`,
     },
   ];
 }

@@ -102,7 +102,7 @@ export class DetalleCliente {
       {
         key: 'antiguedad',
         label: 'Antigüedad',
-        value: c.antiguedad?.toString() ?? null,
+        value: c.antiguedad !== null ? `${c.antiguedad} años` : null,
       },
       {
         key: 'observaciones',
