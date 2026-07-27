@@ -1,0 +1,28 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  header="Error de procesamiento"
+  [style]="{ width: '480px' }"
+>
+  <p class="import-errors__subtitle">Las siguientes filas del archivo presentaron errores</p>
+
+  <div class="import-errors__list">
+    @for (error of errores(); track error.numeroFila + error.motivo) {
+      <p class="import-errors__row">{{ error.numeroFila }} - {{ error.motivo }}</p>
+    }
+  </div>
+
+  <button type="button" class="import-errors__link" (click)="reintentar.emit()">
+    Corrija los errores y vuelva a importar el archivo
+  </button>
+
+  <ng-template #footer>
+    <div class="import-errors__footer">
+      <app-button intent="primary" label="Aceptar" (clicked)="aceptar.emit()" />
+    </div>
+  </ng-template>
+</p-dialog>

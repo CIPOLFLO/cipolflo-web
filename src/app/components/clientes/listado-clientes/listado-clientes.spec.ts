@@ -27,6 +27,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { BreakpointService } from '../../../core/services/breakpoint.service';
 import { MobileListLoader } from '../../../shared/mobile/list/mobile-list-loader';
 import { AuthService } from '@auth0/auth0-angular';
+import { ImportacionSociosResponseDto } from '../models/importacion-socios.model';
 
 const mockPageResponse: PageResponse<ClienteRespuestaDto> = {
   content: [
@@ -98,6 +99,8 @@ describe('ListadoClientes', () => {
     getAll: ReturnType<typeof vi.fn>;
     darDeBaja: ReturnType<typeof vi.fn>;
     exportar: ReturnType<typeof vi.fn>;
+    importarSocios: ReturnType<typeof vi.fn>;
+    descargarPlantillaImportacionSocios: ReturnType<typeof vi.fn>;
   };
   let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
   let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
@@ -108,6 +111,8 @@ describe('ListadoClientes', () => {
       getAll: vi.fn().mockReturnValue(of(mockPageResponse)),
       darDeBaja: vi.fn().mockReturnValue(of(void 0)),
       exportar: vi.fn().mockReturnValue(of(undefined)),
+      importarSocios: vi.fn(),
+      descargarPlantillaImportacionSocios: vi.fn().mockReturnValue(of(undefined)),
     };
     mockConfirmDialogService = {
       open: vi.fn().mockReturnValue(of(false)),
@@ -410,6 +415,119 @@ describe('ListadoClientes', () => {
     mockClientesService.darDeBaja.mockReturnValue(throwError(() => error));
     component['onDarDeBajaCliente'](row);
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+  });
+
+  describe('importación de socios', () => {
+    const respuestaSinErrores: ImportacionSociosResponseDto = {
+      totalFilas: 3,
+      filasImportadas: 3,
+      filasConError: 0,
+      detalleErrores: [],
+    };
+
+    const respuestaConErrores: ImportacionSociosResponseDto = {
+      totalFilas: 3,
+      filasImportadas: 2,
+      filasConError: 1,
+      detalleErrores: [
+        { numeroFila: 2, codigoError: 'CEDULA_INVALIDA', motivo: 'Cédula inválida' },
+      ],
+    };
+
+    it('onImportarExcelClick muestra el diálogo de importación', () => {
+      component['onImportarExcelClick']();
+      expect(component['importarDialogVisible']()).toBe(true);
+    });
+
+    it('onDescargarPlantillaImportacion llama al servicio de descarga', () => {
+      component['onDescargarPlantillaImportacion']();
+      expect(mockClientesService.descargarPlantillaImportacionSocios).toHaveBeenCalled();
+    });
+
+    it('onDescargarPlantillaImportacion llama a errorHandler.handle si falla la descarga', () => {
+      const error = new Error('Error de red');
+      mockClientesService.descargarPlantillaImportacionSocios.mockReturnValue(
+        throwError(() => error),
+      );
+      component['onDescargarPlantillaImportacion']();
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    });
+
+    it('onCancelarImportar oculta el diálogo de importación', () => {
+      component['importarDialogVisible'].set(true);
+      component['onCancelarImportar']();
+      expect(component['importarDialogVisible']()).toBe(false);
+    });
+
+    it('onConfirmarImportar marca importando en true mientras se procesa el archivo', () => {
+      mockClientesService.importarSocios.mockReturnValue(of(respuestaSinErrores));
+      const file = new File(['contenido'], 'socios.xlsx');
+      component['onConfirmarImportar'](file);
+      expect(mockClientesService.importarSocios).toHaveBeenCalledWith(file);
+    });
+
+    it('onConfirmarImportar cierra el diálogo y muestra confirmación de éxito sin errores', () => {
+      mockClientesService.importarSocios.mockReturnValue(of(respuestaSinErrores));
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onConfirmarImportar'](new File(['contenido'], 'socios.xlsx'));
+
+      expect(component['importando']()).toBe(false);
+      expect(component['importarDialogVisible']()).toBe(false);
+      expect(component['erroresImportacion']()).toBeNull();
+      expect(mockConfirmDialogService.open).toHaveBeenCalledWith({
+        title: 'Importación exitosa',
+        message: 'Se importaron 3 de 3 socios correctamente.',
+        confirmButtonLabel: 'Aceptar',
+        showCancelButton: false,
+        variant: 'success',
+      });
+      expect(updateFiltersSpy).toHaveBeenCalled();
+    });
+
+    it('onConfirmarImportar guarda los errores y no recarga la tabla si hay filas con error', () => {
+      mockClientesService.importarSocios.mockReturnValue(of(respuestaConErrores));
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onConfirmarImportar'](new File(['contenido'], 'socios.xlsx'));
+
+      expect(component['importando']()).toBe(false);
+      expect(component['importarDialogVisible']()).toBe(false);
+      expect(component['erroresImportacion']()).toEqual(respuestaConErrores);
+      expect(mockConfirmDialogService.open).not.toHaveBeenCalled();
+      expect(updateFiltersSpy).not.toHaveBeenCalled();
+    });
+
+    it('onConfirmarImportar llama a errorHandler.handle cuando la importación falla', () => {
+      const error = new Error('Error de red');
+      mockClientesService.importarSocios.mockReturnValue(throwError(() => error));
+
+      component['onConfirmarImportar'](new File(['contenido'], 'socios.xlsx'));
+
+      expect(component['importando']()).toBe(false);
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
+    });
+
+    it('onAceptarErroresImportacion limpia los errores y recarga la tabla', () => {
+      component['erroresImportacion'].set(respuestaConErrores);
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onAceptarErroresImportacion']();
+
+      expect(component['erroresImportacion']()).toBeNull();
+      expect(updateFiltersSpy).toHaveBeenCalled();
+    });
+
+    it('onReintentarImportar limpia los errores, recarga la tabla y reabre el diálogo', () => {
+      component['erroresImportacion'].set(respuestaConErrores);
+      const updateFiltersSpy = vi.spyOn(component['tableState'], 'updateFilters');
+
+      component['onReintentarImportar']();
+
+      expect(component['erroresImportacion']()).toBeNull();
+      expect(updateFiltersSpy).toHaveBeenCalled();
+      expect(component['importarDialogVisible']()).toBe(true);
+    });
   });
 });
 

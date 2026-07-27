@@ -1,0 +1,64 @@
+:host ::ng-deep .p-dialog {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+:host ::ng-deep .p-dialog-header {
+  padding: 20px 24px 12px;
+  border-bottom: none;
+  background-color: var(--color-bg-white);
+}
+
+:host ::ng-deep .p-dialog-content {
+  padding: 0 24px 8px;
+  background-color: var(--color-bg-white);
+}
+
+:host ::ng-deep .p-dialog-footer {
+  padding: 16px 24px 20px;
+  border-top: none;
+  background-color: var(--color-bg-white);
+}
+
+.import-errors__subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px;
+}
+
+.import-errors__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.import-errors__row {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.import-errors__link {
+  display: block;
+  background: none;
+  border: none;
+  padding: 16px 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
+}
+
+.import-errors__link:hover {
+  color: var(--color-primary-hover);
+}
+
+.import-errors__footer {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}

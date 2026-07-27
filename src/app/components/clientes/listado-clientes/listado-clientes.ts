@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { filter, map, switchMap } from 'rxjs';
 import {
@@ -31,6 +32,9 @@ import {
   mapClienteListadoRow,
 } from '../mappers/cliente-listado.mapper';
 import { ClienteRespuestaDto, EstadoSocio, TipoCliente } from '../models/cliente.model';
+import { ImportacionSociosResponseDto } from '../models/importacion-socios.model';
+import { ImportarClientesDialog } from '../importar-clientes-dialog/importar-clientes-dialog';
+import { ImportarClientesErrorDialog } from '../importar-clientes-error-dialog/importar-clientes-error-dialog';
 import { PagoCuota } from '../pago-cuota/pago-cuota';
 import { ClientesColumnsService } from '../services/cliente-columns.service';
 import { ClientesFilterService } from '../services/cliente-filter.service';
@@ -44,6 +48,8 @@ import { ClientesService } from '../services/cliente.service';
     FilterPanel,
     AppTable,
     PagoCuota,
+    ImportarClientesDialog,
+    ImportarClientesErrorDialog,
     MobPageHeader,
     MobListLayout,
     MobFilterPanel,
@@ -71,6 +77,7 @@ export class ListadoClientes {
   private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly router = inject(Router);
   private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly tableState = inject(TableStateService);
   protected readonly tableExport = inject(TableExportService);
@@ -87,6 +94,10 @@ export class ListadoClientes {
   ) as MobileListLoader<ClienteCardMobileRow>;
 
   protected readonly clientePagoSeleccionado = signal<ClienteRespuestaDto | null>(null);
+
+  protected readonly importarDialogVisible = signal(false);
+  protected readonly importando = signal(false);
+  protected readonly erroresImportacion = signal<ImportacionSociosResponseDto | null>(null);
 
   constructor() {
     const defaults = Object.fromEntries(
@@ -248,6 +259,68 @@ export class ListadoClientes {
           this.errorHandler.handle(error);
         },
       });
+  }
+
+  protected onImportarExcelClick(): void {
+    this.importarDialogVisible.set(true);
+  }
+
+  protected onDescargarPlantillaImportacion(): void {
+    this.clientesService
+      .descargarPlantillaImportacionSocios()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: (error) => this.errorHandler.handle(error),
+      });
+  }
+
+  protected onCancelarImportar(): void {
+    this.importarDialogVisible.set(false);
+  }
+
+  protected onConfirmarImportar(file: File): void {
+    this.importando.set(true);
+
+    this.clientesService
+      .importarSocios(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.importando.set(false);
+          this.importarDialogVisible.set(false);
+
+          if (response.filasConError > 0) {
+            this.erroresImportacion.set(response);
+            return;
+          }
+
+          this.confirmDialogService
+            .open({
+              title: 'Importación exitosa',
+              message: `Se importaron ${response.filasImportadas} de ${response.totalFilas} socios correctamente.`,
+              confirmButtonLabel: 'Aceptar',
+              showCancelButton: false,
+              variant: 'success',
+            })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.recargarTabla());
+        },
+        error: (error) => {
+          this.importando.set(false);
+          this.errorHandler.handle(error);
+        },
+      });
+  }
+
+  protected onAceptarErroresImportacion(): void {
+    this.erroresImportacion.set(null);
+    this.recargarTabla();
+  }
+
+  protected onReintentarImportar(): void {
+    this.erroresImportacion.set(null);
+    this.recargarTabla();
+    this.importarDialogVisible.set(true);
   }
 
   private recargarTabla(): void {
