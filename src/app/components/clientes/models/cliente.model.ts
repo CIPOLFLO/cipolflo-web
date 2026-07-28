@@ -12,14 +12,12 @@ export enum TipoCliente {
   Empresa = 'EMPRESA',
 }
 export enum MetodoCobro {
-  Cobradora = 'COBRADORA',
   DescuentoSalarial = 'DESCUENTO_SALARIAL',
   Transferencia = 'TRANSFERENCIA',
   EnSede = 'EN_SEDE',
   Efectivo = 'EFECTIVO',
 }
 export const METODO_COBRO_OPTIONS: FormFieldOption[] = [
-  { label: 'Cobradora', value: MetodoCobro.Cobradora },
   { label: 'Descuento salarial', value: MetodoCobro.DescuentoSalarial },
   { label: 'Transferencia', value: MetodoCobro.Transferencia },
   { label: 'En sede', value: MetodoCobro.EnSede },
@@ -27,7 +25,6 @@ export const METODO_COBRO_OPTIONS: FormFieldOption[] = [
 ];
 
 export const METODO_COBRO_LABEL: Record<MetodoCobro, string> = {
-  [MetodoCobro.Cobradora]: 'Cobradora',
   [MetodoCobro.DescuentoSalarial]: 'Descuento salarial',
   [MetodoCobro.Transferencia]: 'Transferencia',
   [MetodoCobro.EnSede]: 'En sede',
