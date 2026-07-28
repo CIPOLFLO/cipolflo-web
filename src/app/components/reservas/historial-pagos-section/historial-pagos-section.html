@@ -1,7 +1,5 @@
 @if (pagos().length === 0) {
-  <p class="historial-pagos__empty">
-    No hay pagos registrados
-  </p>
+  <p class="historial-pagos__empty">No hay pagos registrados</p>
 } @else {
   <div class="historial-pagos__list">
     <div class="historial-pagos__header">
@@ -17,7 +15,7 @@
         </span>
 
         <span class="pago-row__forma">
-          {{ formaPagoReservaLabel[pago.formaPago] }}
+          {{ formaPagoReservaLabel[pago.formaPago] ?? pago.formaPago }}
         </span>
 
         <strong

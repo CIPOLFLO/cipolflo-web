@@ -1,5 +1,9 @@
-<app-page-layout pageTitle="Detalle de Reserva" pageDescription="Información completa de la reserva"
-  [showBackButton]="true" backButtonLink="/reservas">
+<app-page-layout
+  pageTitle="Detalle de Reserva"
+  pageDescription="Información completa de la reserva"
+  [showBackButton]="true"
+  backButtonLink="/reservas"
+>
   <app-form-layout>
     <app-detail-section title="Información de la Reserva" [fields]="reservaFields()" />
 
@@ -11,13 +15,19 @@
     <app-detail-section title="Información Adicional" [fields]="adicionalFields()" />
 
     @if (registroData()) {
-    <app-detail-registro-section [data]="registroData()!" />
+      <app-detail-registro-section [data]="registroData()!" />
     }
 
     <app-form-actions actions>
       <app-button label="Modificar" icon="pi-pencil" (clicked)="onModificar()" />
-      <app-button label="Descargar comprobante" icon="pi-download" intent="secondary" [loading]="descargando()"
-        [disabled]="descargando()" (clicked)="onDescargarComprobante()" />
+      <app-button
+        label="Descargar comprobante"
+        icon="pi-download"
+        intent="secondary"
+        [loading]="descargando()"
+        [disabled]="descargando()"
+        (clicked)="onDescargarComprobante()"
+      />
     </app-form-actions>
   </app-form-layout>
 </app-page-layout>

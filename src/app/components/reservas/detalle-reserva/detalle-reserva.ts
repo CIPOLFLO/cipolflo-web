@@ -25,6 +25,7 @@ import {
   requierePlazoConfirmacion,
   TIPO_RESERVA_LABEL,
   TipoReserva,
+  type ReservaDetalleRespuestaDto,
 } from '../models/reserva.model';
 import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
 import { HistorialPagosSection } from '../historial-pagos-section/historial-pagos-section';
@@ -240,10 +241,10 @@ export class DetalleReserva {
   }
 
   protected readonly historialPagos = toSignal(
-    toObservable(this.reservaId).pipe(
-      filter((id) => /^\d+$/.test(id)),
-      switchMap((id) =>
-        this.reservasService.getHistorialPagos(Number(id)).pipe(
+    toObservable(this.reserva).pipe(
+      filter((reserva): reserva is ReservaDetalleRespuestaDto => reserva !== undefined),
+      switchMap((reserva) =>
+        this.reservasService.getHistorialPagos(reserva.id).pipe(
           catchError((err) => {
             this.errorHandler.handle(err);
             return of([]);
