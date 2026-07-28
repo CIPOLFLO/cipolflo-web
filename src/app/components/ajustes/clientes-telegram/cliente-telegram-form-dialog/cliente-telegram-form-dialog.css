@@ -20,13 +20,6 @@
   font-size: 12px;
 }
 
-.cliente-telegram-form-dialog__toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-
 .cliente-telegram-form-dialog__actions {
   display: flex;
   justify-content: flex-end;

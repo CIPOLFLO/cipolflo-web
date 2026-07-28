@@ -14,8 +14,8 @@ describe('ClienteTelegramColumnsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('debe definir 5 columnas', () => {
-    expect(service.columns.length).toBe(5);
+  it('debe definir 4 columnas', () => {
+    expect(service.columns.length).toBe(4);
   });
 
   it('debe definir columna chatId', () => {
@@ -26,12 +26,6 @@ describe('ClienteTelegramColumnsService', () => {
   it('debe definir columna alias', () => {
     const col = service.columns.find((c) => c.key === 'alias');
     expect(col).toMatchObject({ label: 'Alias' });
-  });
-
-  it('debe transformar recibeNotificaciones a Sí/No', () => {
-    const col = service.columns.find((c) => c.key === 'recibeNotificaciones');
-    expect(col?.transform?.(true)).toBe('Sí');
-    expect(col?.transform?.(false)).toBe('No');
   });
 
   it('debe definir columna activo con cellType tag y tagMap Activo/Inactivo', () => {

@@ -72,7 +72,7 @@ describe('ListadoClientesTelegram', () => {
 
   it('muestra la descripción de la sección', () => {
     expect(fixture.nativeElement.textContent).toContain(
-      'Son los clientes habilitados para realizar consultas al bot de Telegram.',
+      'Son los usuarios habilitados para realizar consultas al bot de Telegram.',
     );
   });
 
@@ -98,41 +98,29 @@ describe('ListadoClientesTelegram', () => {
   describe('onGuardarDialog', () => {
     it('en modo alta llama a create', () => {
       component['onNuevoCliente']();
-      component['onGuardarDialog']({
-        chatId: 111,
-        alias: 'Nuevo',
-        recibeNotificaciones: true,
-      });
-      expect(mockService.create).toHaveBeenCalledWith({
-        chatId: 111,
-        alias: 'Nuevo',
-        recibeNotificaciones: true,
-      });
+      component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo' });
+      expect(mockService.create).toHaveBeenCalledWith({ chatId: 111, alias: 'Nuevo' });
     });
 
     it('en modo edición llama a update con el id seleccionado, sin chatId', () => {
       component['onEditar'](clienteMock);
-      component['onGuardarDialog']({
-        chatId: clienteMock.chatId,
-        alias: 'Editado',
-        recibeNotificaciones: false,
-      });
+      component['onGuardarDialog']({ chatId: clienteMock.chatId, alias: 'Editado' });
       expect(mockService.update).toHaveBeenCalledWith(1, {
         alias: 'Editado',
-        recibeNotificaciones: false,
+        recibeNotificaciones: true,
       });
     });
 
     it('cierra el diálogo tras guardar exitosamente', () => {
       component['onNuevoCliente']();
-      component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo', recibeNotificaciones: true });
+      component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo' });
       expect(component['dialogVisible']()).toBe(false);
     });
 
     it('delega el error en ErrorHandlerService si falla', () => {
       mockService.create.mockReturnValue(throwError(() => new Error('falló')));
       component['onNuevoCliente']();
-      component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo', recibeNotificaciones: true });
+      component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo' });
       expect(mockErrorHandler.handle).toHaveBeenCalled();
     });
   });

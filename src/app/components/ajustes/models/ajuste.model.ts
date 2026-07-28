@@ -23,7 +23,7 @@ export interface AntiguedadReservasRequestDto {
 export interface RegistroClienteTelegramRequestDto {
   chatId: number;
   alias: string;
-  recibeNotificaciones: boolean;
+  recibeNotificaciones?: boolean;
 }
 
 export interface ModificacionClienteTelegramRequestDto {

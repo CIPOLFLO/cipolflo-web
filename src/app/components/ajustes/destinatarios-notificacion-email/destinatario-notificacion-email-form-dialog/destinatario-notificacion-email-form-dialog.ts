@@ -75,7 +75,10 @@ export class DestinatarioNotificacionEmailFormDialog {
 
   constructor() {
     effect(() => {
+      const visible = this.visible();
       const destinatario = this.destinatario();
+      if (!visible) return;
+
       this.submitted.set(false);
 
       if (destinatario) {

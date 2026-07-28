@@ -53,7 +53,7 @@ export class ListadoClientesTelegram {
     {
       type: 'button',
       icon: 'pi pi-pencil',
-      ariaLabel: () => `Editar cliente ${row.alias}`,
+      ariaLabel: () => `Editar usuario ${row.alias}`,
       command: () => this.onEditar(row),
     },
     {
@@ -66,7 +66,7 @@ export class ListadoClientesTelegram {
       type: 'button',
       icon: 'pi pi-trash',
       variant: 'danger',
-      ariaLabel: () => `Eliminar cliente ${row.alias}`,
+      ariaLabel: () => `Eliminar usuario ${row.alias}`,
       command: () => this.onEliminar(row),
     },
   ];
@@ -92,11 +92,10 @@ export class ListadoClientesTelegram {
 
   protected onGuardarDialog(value: ClienteTelegramFormValue): void {
     const seleccionado = this.clienteSeleccionado();
+    // recibeNotificaciones es obligatorio en el PUT del backend, pero las notificaciones por
+    // Telegram todavía no están implementadas: se fija en true para todos los clientes.
     const request$ = seleccionado
-      ? this.service.update(seleccionado.id, {
-          alias: value.alias,
-          recibeNotificaciones: value.recibeNotificaciones,
-        })
+      ? this.service.update(seleccionado.id, { alias: value.alias, recibeNotificaciones: true })
       : this.service.create(value);
 
     request$.subscribe({
@@ -119,7 +118,7 @@ export class ListadoClientesTelegram {
   private onEliminar(row: ClienteTelegramResponseDto): void {
     this.confirmDialogService
       .open({
-        title: 'Eliminar cliente autorizado',
+        title: 'Eliminar usuario autorizado',
         message: `¿Eliminar definitivamente a "${row.alias}"? Esta acción no se puede deshacer.`,
         confirmButtonLabel: 'Eliminar',
         variant: 'danger',

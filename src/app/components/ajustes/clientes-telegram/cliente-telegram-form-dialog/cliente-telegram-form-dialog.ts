@@ -18,7 +18,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { ToggleSwitch } from 'primeng/toggleswitch';
 import { AppButton } from '../../../../shared';
 import { ClienteTelegramResponseDto } from '../../models/ajuste.model';
 
@@ -32,13 +31,12 @@ function chatIdValido(control: AbstractControl): ValidationErrors | null {
 export interface ClienteTelegramFormValue {
   chatId: number;
   alias: string;
-  recibeNotificaciones: boolean;
 }
 
 @Component({
   standalone: true,
   selector: 'app-cliente-telegram-form-dialog',
-  imports: [ReactiveFormsModule, Dialog, InputText, ToggleSwitch, AppButton],
+  imports: [ReactiveFormsModule, Dialog, InputText, AppButton],
   templateUrl: './cliente-telegram-form-dialog.html',
   styleUrl: './cliente-telegram-form-dialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,13 +50,12 @@ export class ClienteTelegramFormDialog {
 
   protected readonly esEdicion = computed(() => this.cliente() !== null);
   protected readonly titulo = computed(() =>
-    this.esEdicion() ? 'Editar cliente' : 'Nuevo cliente',
+    this.esEdicion() ? 'Editar usuario' : 'Nuevo usuario',
   );
 
   protected readonly form = new FormGroup({
     chatId: new FormControl<string | null>(null, [Validators.required, chatIdValido]),
     alias: new FormControl<string | null>(null, [Validators.required, Validators.maxLength(100)]),
-    recibeNotificaciones: new FormControl<boolean>(true, { nonNullable: true }),
   });
 
   private readonly formStatus = toSignal(this.form.statusChanges, {
@@ -88,18 +85,20 @@ export class ClienteTelegramFormDialog {
 
   constructor() {
     effect(() => {
+      const visible = this.visible();
       const cliente = this.cliente();
+      if (!visible) return;
+
       this.submitted.set(false);
 
       if (cliente) {
         this.form.reset({
           chatId: String(cliente.chatId),
           alias: cliente.alias,
-          recibeNotificaciones: cliente.recibeNotificaciones,
         });
         this.form.controls.chatId.disable();
       } else {
-        this.form.reset({ chatId: null, alias: null, recibeNotificaciones: true });
+        this.form.reset({ chatId: null, alias: null });
         this.form.controls.chatId.enable();
       }
     });
@@ -117,7 +116,6 @@ export class ClienteTelegramFormDialog {
     this.guardado.emit({
       chatId: Number(v.chatId),
       alias: v.alias!.trim(),
-      recibeNotificaciones: v.recibeNotificaciones,
     });
   }
 }

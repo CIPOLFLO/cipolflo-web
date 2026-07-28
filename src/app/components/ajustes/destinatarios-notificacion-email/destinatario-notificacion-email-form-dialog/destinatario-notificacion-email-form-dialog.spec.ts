@@ -28,6 +28,7 @@ describe('DestinatarioNotificacionEmailFormDialog', () => {
   describe('modo alta (destinatario null)', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('destinatario', null);
+      fixture.componentRef.setInput('visible', true);
       fixture.detectChanges();
     });
 
@@ -72,11 +73,23 @@ describe('DestinatarioNotificacionEmailFormDialog', () => {
       component['onCancelar']();
       expect(emitido).toBe(true);
     });
+
+    it('vuelve a quedar vacío si se cierra y se reabre en modo alta tras haber cargado datos', () => {
+      component['form'].patchValue({ email: 'ana@cipolflo.com', alias: 'Ana' });
+
+      fixture.componentRef.setInput('visible', false);
+      fixture.detectChanges();
+      fixture.componentRef.setInput('visible', true);
+      fixture.detectChanges();
+
+      expect(component['form'].value).toEqual({ email: null, alias: null });
+    });
   });
 
   describe('modo edición (destinatario presente)', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('destinatario', destinatarioExistente);
+      fixture.componentRef.setInput('visible', true);
       fixture.detectChanges();
     });
 

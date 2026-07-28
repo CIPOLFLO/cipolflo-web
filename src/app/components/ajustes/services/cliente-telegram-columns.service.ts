@@ -7,11 +7,6 @@ export class ClienteTelegramColumnsService {
     { key: 'chatId', label: 'Chat ID' },
     { key: 'alias', label: 'Alias' },
     {
-      key: 'recibeNotificaciones',
-      label: 'Notificaciones',
-      transform: (v) => (v ? 'Sí' : 'No'),
-    },
-    {
       key: 'activo',
       label: 'Estado',
       cellType: 'tag',
