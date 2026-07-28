@@ -15,6 +15,7 @@ import {
   ReservaCancelacionRequestDto,
   ReservaFinalizacionCheckResponseDto,
   ReservaFinalizacionRequestDto,
+  PagoAsociadoReservaDto,
 } from '../models/reserva.model';
 
 @Injectable()
@@ -79,5 +80,9 @@ export class ReservasService extends BaseHttpService {
 
   finalizar(id: number, dto: ReservaFinalizacionRequestDto): Observable<void> {
     return this.patch<void>(`reservas/${id}/finalizacion`, dto);
+  }
+
+  getHistorialPagos(id: number): Observable<PagoAsociadoReservaDto[]> {
+    return this.get<PagoAsociadoReservaDto[]>(`reservas/${id}/pagos`);
   }
 }

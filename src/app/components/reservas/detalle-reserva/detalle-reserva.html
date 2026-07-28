@@ -9,6 +9,9 @@
 
     <app-detail-section title="Información del Cliente" [fields]="clienteFields()" />
 
+    <app-detail-section title="Historial de Pagos">
+      <app-historial-pagos-section [pagos]="historialPagos()" />
+    </app-detail-section>
     <app-detail-section title="Información Adicional" [fields]="adicionalFields()" />
 
     @if (registroData()) {

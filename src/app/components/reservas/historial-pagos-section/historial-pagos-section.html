@@ -1,0 +1,31 @@
+@if (pagos().length === 0) {
+  <p class="historial-pagos__empty">No hay pagos registrados</p>
+} @else {
+  <div class="historial-pagos__list">
+    <div class="historial-pagos__header">
+      <span>Fecha</span>
+      <span>Forma de pago</span>
+      <span class="historial-pagos__header-importe">Monto</span>
+    </div>
+
+    @for (pago of pagos(); track pago.id) {
+      <div class="pago-row">
+        <span class="pago-row__fecha">
+          {{ pago.fecha | dateShortFormat }}
+        </span>
+
+        <span class="pago-row__forma">
+          {{ formaPagoReservaLabel[pago.formaPago] ?? pago.formaPago }}
+        </span>
+
+        <strong
+          class="pago-row__importe"
+          [class.pago-row__importe--positivo]="pago.importe >= 0"
+          [class.pago-row__importe--negativo]="pago.importe < 0"
+        >
+          $ {{ pago.importe | currencyFormat }}
+        </strong>
+      </div>
+    }
+  </div>
+}

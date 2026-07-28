@@ -1550,6 +1550,43 @@ Finaliza una reserva `EN_CURSO` o `VENCIDA_SIN_PAGO`, opcionalmente completando 
 
 ---
 
+### `GET /api/v1/reservas/{id}/pagos`
+
+Retorna el historial de pagos (ingresos en finanzas) asociados a una reserva, ordenado como lo devuelva la consulta subyacente.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:**
+
+```json
+[
+  {
+    "id": 1,
+    "fecha": "2026-07-10",
+    "importe": 500.0,
+    "formaPago": "EFECTIVO"
+  },
+  {
+    "id": 2,
+    "fecha": "2026-07-12",
+    "importe": 1000.0,
+    "formaPago": "TRANSFERENCIA"
+  }
+]
+```
+
+Ver `PagoAsociadoReservaDto` en [Reservas — DTOs](#reservas--dtos). Si la reserva no tiene pagos registrados, retorna un array vacío.
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                      |
+| ----------- | ----------------------- | ---------------------------------- |
+| 400         | `ID_INVALIDO`           | `id` no es un entero positivo      |
+| 404         | `RESERVA_NO_ENCONTRADA` | No existe una reserva con ese `id` |
+| 401         | —                       | Token ausente, inválido o expirado |
+
+---
+
 ## Reservas — DTOs
 
 ### Request DTOs
@@ -1679,6 +1716,17 @@ Finaliza una reserva `EN_CURSO` o `VENCIDA_SIN_PAGO`, opcionalmente completando 
 {
   puedeFinalizarSinPago: boolean; // true si la reserva ya está paga (estaPaga())
   montoImpago: number; // saldo pendiente de pago
+}
+```
+
+#### `PagoAsociadoReservaDto` — ítem del historial de pagos, respuesta de `GET /api/v1/reservas/{id}/pagos`
+
+```typescript
+{
+  id: number;
+  fecha: string; // LocalDate yyyy-MM-dd
+  importe: number;
+  formaPago: FormaPago;
 }
 ```
 
