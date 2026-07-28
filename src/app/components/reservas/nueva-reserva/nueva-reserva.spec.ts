@@ -29,9 +29,6 @@ const serviciosSede = [
     id: 2,
     nombre: 'Salón',
     procedencia: 'SEDE',
-    precioParticular: 1,
-    precioSocio: 1,
-    modalidadPrecio: 'POR_DIA',
     estado: 'HABILITADO',
     capacidad: 80,
     cantidad: null,
@@ -40,9 +37,6 @@ const serviciosSede = [
     id: 3,
     nombre: 'Cancha',
     procedencia: 'SEDE',
-    precioParticular: 1,
-    precioSocio: 1,
-    modalidadPrecio: 'POR_HORA',
     estado: 'HABILITADO',
     capacidad: null,
     cantidad: 2,
@@ -795,38 +789,15 @@ describe('NuevaReserva', () => {
     expect(component['form'].get('documento')?.hasError('cedulaInvalida')).toBe(true);
   });
 
-  it('servicio con modalidadPrecio POR_HORA activa el modo hora', () => {
+  // El servicio ya no expone modalidadPrecio (reemplazado por tarifas), así que modoHora
+  // queda fijo en false — cobertura pendiente de limpieza cuando se sague horaInicio/horaFin.
+  it('modoHora nunca se activa, sin importar el servicio seleccionado', () => {
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
-    component['form'].get('servicioId')?.setValue('3'); // Cancha: POR_HORA
-    expect(component['modoHora']()).toBe(true);
-  });
-
-  it('servicio sin modalidad POR_HORA no activa el modo hora', () => {
-    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
-    component['form'].get('servicioId')?.setValue('2'); // Salón: POR_DIA
+    component['form'].get('servicioId')?.setValue('3');
     expect(component['modoHora']()).toBe(false);
   });
 
-  it('en modo hora, horaInicio y horaFin son requeridos', () => {
-    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
-    component['form'].get('servicioId')?.setValue('3');
-    component['submitted'].set(true);
-    fixture.detectChanges();
-    expect(component['reservaErrors']()['horaInicio']).toBe('La hora de inicio es obligatoria.');
-    expect(component['reservaErrors']()['horaFin']).toBe('La hora de fin es obligatoria.');
-  });
-
-  it('construirDto envía horaInicio y horaFin cuando la modalidad es POR_HORA', () => {
-    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
-    component['form'].get('servicioId')?.setValue('3');
-    component['onControlChange']('horaInicio', '09:00');
-    component['onControlChange']('horaFin', '11:00');
-    const dto = component['construirDto']();
-    expect(dto.horaInicio).toBe('09:00');
-    expect(dto.horaFin).toBe('11:00');
-  });
-
-  it('construirDto envía null para horaInicio y horaFin cuando la modalidad no es POR_HORA', () => {
+  it('construirDto siempre envía null para horaInicio y horaFin', () => {
     component['form'].get('procedencia')?.setValue(Procedencia.Sede);
     component['form'].get('servicioId')?.setValue('2'); // Salón: POR_DIA
     const dto = component['construirDto']();
@@ -1108,21 +1079,6 @@ describe('NuevaReserva', () => {
     component['currentStep'].set(0);
 
     expect(component['modoCantidad']()).toBe(true);
-    expect(component['nextDisabled']()).toBe(true);
-  });
-  it('debería deshabilitar Siguiente si faltan las horas en modo por hora', () => {
-    component['form'].get('procedencia')?.setValue(Procedencia.Sede);
-    component['form'].get('servicioId')?.setValue('3');
-    component['form'].patchValue({
-      fechaInicio: '2026-08-01',
-      fechaFin: '2026-08-03',
-      cantidad: '1',
-      horaInicio: null,
-      horaFin: null,
-    });
-    component['currentStep'].set(0);
-
-    expect(component['modoHora']()).toBe(true);
     expect(component['nextDisabled']()).toBe(true);
   });
   it('debería habilitar Siguiente cuando el modo por hora está completo', () => {

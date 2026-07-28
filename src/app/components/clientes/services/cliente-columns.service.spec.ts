@@ -15,8 +15,8 @@ describe('ClientesColumnsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('debe definir 6 columnas', () => {
-    expect(service.columns.length).toBe(6);
+  it('debe definir 8 columnas', () => {
+    expect(service.columns.length).toBe(8);
   });
 
   it('debe definir columna nombreCompleto como sortable', () => {
@@ -54,5 +54,17 @@ describe('ClientesColumnsService', () => {
         [EstadoSocio.Baja]: { styleClass: 'tag--gray', label: 'De baja' },
       },
     });
+  });
+  it('debe incluir las columnas categoría y antigüedad después de estado', () => {
+    expect(service.columns.map((column) => column.key)).toEqual([
+      'nombreCompleto',
+      'numeroSocio',
+      'ultimaCuotaDto',
+      'documento',
+      'email',
+      'estado',
+      'categoriaSocio',
+      'antiguedad',
+    ]);
   });
 });

@@ -35,6 +35,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   estado: EstadoSocio.Activo,
   fechaNacimiento: '1999-06-29',
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
   createdAt: '15 mar 2026, 14:30',
   createdBy: 'Juan Pérez',

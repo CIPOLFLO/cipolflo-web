@@ -51,18 +51,12 @@ export class ServicioPresentacionService {
   }
 
   getPreciosFieldsDetalle(s: ServicioDetalleRespuestaDto): DetailFieldConfig[] {
+    if (s.costoPersonaExtra == null) return [];
     return [
-      { key: 'precioParticular', label: 'Precio particular', value: `$ ${s.precioParticular}` },
-      { key: 'precioSocio', label: 'Precio socio', value: `$ ${s.precioSocio}` },
-      {
-        key: 'tipoCobro',
-        label: 'Tipo de Cobro',
-        value: MODALIDAD_PRECIO_DETALLE_LABEL[s.modalidadPrecio] ?? s.modalidadPrecio,
-      },
       {
         key: 'costoPersonaExtra',
         label: 'Costo por persona extra',
-        value: s.costoPersonaExtra != null ? `$ ${s.costoPersonaExtra}` : '---',
+        value: `$ ${s.costoPersonaExtra}`,
       },
     ];
   }
@@ -127,36 +121,8 @@ export class ServicioPresentacionService {
     ];
   }
 
-  getPreciosFieldsEditar(
-    s: ServicioDetalleRespuestaDto | null,
-    modalidades: FormFieldOption[],
-  ): FormFieldConfig[] {
+  getPreciosFieldsEditar(s: ServicioDetalleRespuestaDto | null): FormFieldConfig[] {
     return [
-      {
-        key: 'precioParticular',
-        label: 'Precio para Particulares',
-        type: 'currency',
-        required: true,
-        placeholder: '0.00',
-        defaultValue: s != null ? String(s.precioParticular) : undefined,
-      },
-      {
-        key: 'precioSocio',
-        label: 'Precio para Socios',
-        type: 'currency',
-        required: true,
-        placeholder: '0.00',
-        defaultValue: s != null ? String(s.precioSocio) : undefined,
-      },
-      {
-        key: 'modalidadPrecio',
-        label: 'Tipo de Cobro',
-        type: 'select',
-        required: true,
-        placeholder: 'Seleccionar tipo de cobro',
-        options: modalidades,
-        defaultValue: s?.modalidadPrecio,
-      },
       {
         key: 'costoPersonaExtra',
         label: 'Costo por persona extra',
