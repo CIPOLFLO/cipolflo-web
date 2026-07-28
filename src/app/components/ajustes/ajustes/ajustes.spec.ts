@@ -5,6 +5,7 @@ import { Ajustes } from './ajustes';
 import { CostoCuotaService } from '../services/costo-cuota.service';
 import { AntiguedadReservasService } from '../services/antiguedad-reservas.service';
 import { ClienteTelegramService } from '../services/cliente-telegram.service';
+import { DestinatarioNotificacionEmailService } from '../services/destinatario-notificacion-email.service';
 
 describe('Ajustes', () => {
   let fixture: ComponentFixture<Ajustes>;
@@ -43,6 +44,22 @@ describe('Ajustes', () => {
             ),
           },
         },
+        {
+          provide: DestinatarioNotificacionEmailService,
+          useValue: {
+            getAll: vi.fn().mockReturnValue(
+              of({
+                content: [],
+                page: 0,
+                size: 10,
+                totalElements: 0,
+                totalPages: 0,
+                first: true,
+                last: true,
+              }),
+            ),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -59,10 +76,11 @@ describe('Ajustes', () => {
     expect(fixture.nativeElement.textContent).toContain('Ajustes');
   });
 
-  it('debe componer las tres secciones de configuración', () => {
+  it('debe componer las cuatro secciones de configuración', () => {
     const html = fixture.nativeElement as HTMLElement;
     expect(html.querySelector('app-costo-cuota-card')).toBeTruthy();
     expect(html.querySelector('app-antiguedad-reservas-card')).toBeTruthy();
     expect(html.querySelector('app-listado-clientes-telegram')).toBeTruthy();
+    expect(html.querySelector('app-listado-destinatarios-notificacion-email')).toBeTruthy();
   });
 });

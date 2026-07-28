@@ -1,0 +1,29 @@
+<section class="listado-destinatarios-notificacion-email">
+  <div class="listado-destinatarios-notificacion-email__header">
+    <h3 class="listado-destinatarios-notificacion-email__title">
+      Destinatarios de Notificaciones por Email
+    </h3>
+    <app-button
+      label="Nuevo destinatario"
+      intent="primary"
+      icon="pi-plus"
+      (clicked)="crud.abrirAlta()"
+    />
+  </div>
+  <div class="listado-destinatarios-notificacion-email__separator" aria-hidden="true"></div>
+  <p class="listado-destinatarios-notificacion-email__note">
+    Reciben notificaciones administrativas por email, como el informe semanal de reservas y los
+    avisos de cancelación.
+  </p>
+
+  <app-filter-panel (filterChange)="onFilterChange($event)" />
+
+  <app-table [columns]="columns" [loadDataFn]="loadDataFn" [getInlineActions]="inlineActions" />
+</section>
+
+<app-destinatario-notificacion-email-form-dialog
+  [visible]="crud.dialogVisible()"
+  [destinatario]="crud.seleccionado()"
+  (cancelado)="crud.cerrarDialog()"
+  (guardado)="onGuardarDialog($event)"
+/>

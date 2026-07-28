@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach } from 'vitest';
-import { MetodoCobro } from '../models/cliente.model';
 import { ClienteOptionsService } from './cliente-options.service';
 
 describe('ClienteOptionsService', () => {
@@ -21,13 +20,5 @@ describe('ClienteOptionsService', () => {
       expect(option).toHaveProperty('label');
       expect(option).toHaveProperty('value');
     });
-  });
-
-  it('getMetodosPago incluye la opción COBRADORA', () => {
-    let result: { label: string; value: string }[] = [];
-
-    service.getMetodosPago().subscribe((options) => (result = options));
-
-    expect(result.some((option) => option.value === MetodoCobro.Cobradora)).toBe(true);
   });
 });

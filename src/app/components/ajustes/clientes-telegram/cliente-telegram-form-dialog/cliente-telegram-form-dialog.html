@@ -38,11 +38,6 @@
     @if (aliasError()) {
       <small class="cliente-telegram-form-dialog__error">{{ aliasError() }}</small>
     }
-
-    <div class="cliente-telegram-form-dialog__toggle-row">
-      <label for="recibeNotificaciones">Recibe notificaciones</label>
-      <p-toggleswitch inputId="recibeNotificaciones" formControlName="recibeNotificaciones" />
-    </div>
   </form>
 
   <ng-template #footer>

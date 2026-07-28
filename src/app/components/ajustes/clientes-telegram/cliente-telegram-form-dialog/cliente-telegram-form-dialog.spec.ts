@@ -29,19 +29,16 @@ describe('ClienteTelegramFormDialog', () => {
   describe('modo alta (cliente null)', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('cliente', null);
+      fixture.componentRef.setInput('visible', true);
       fixture.detectChanges();
     });
 
-    it('el título es "Nuevo cliente"', () => {
-      expect(component['titulo']()).toBe('Nuevo cliente');
+    it('el título es "Nuevo usuario"', () => {
+      expect(component['titulo']()).toBe('Nuevo usuario');
     });
 
     it('el campo chatId está habilitado', () => {
       expect(component['form'].controls.chatId.disabled).toBe(false);
-    });
-
-    it('recibeNotificaciones tiene valor por defecto true', () => {
-      expect(component['form'].value.recibeNotificaciones).toBe(true);
     });
 
     it('no emite guardado si el form es inválido', () => {
@@ -68,7 +65,7 @@ describe('ClienteTelegramFormDialog', () => {
       component.guardado.subscribe((v) => (emitido = v));
       component['form'].patchValue({ chatId: '123456', alias: '  Ana Díaz  ' });
       component['onConfirmar']();
-      expect(emitido).toEqual({ chatId: 123456, alias: 'Ana Díaz', recibeNotificaciones: true });
+      expect(emitido).toEqual({ chatId: 123456, alias: 'Ana Díaz' });
     });
 
     it('emite cancelado al cancelar', () => {
@@ -77,23 +74,34 @@ describe('ClienteTelegramFormDialog', () => {
       component['onCancelar']();
       expect(emitido).toBe(true);
     });
+
+    it('vuelve a quedar vacío si se cierra y se reabre en modo alta tras haber cargado datos', () => {
+      component['form'].patchValue({ chatId: '123456', alias: 'Ana Díaz' });
+
+      fixture.componentRef.setInput('visible', false);
+      fixture.detectChanges();
+      fixture.componentRef.setInput('visible', true);
+      fixture.detectChanges();
+
+      expect(component['form'].value).toEqual({ chatId: null, alias: null });
+    });
   });
 
   describe('modo edición (cliente presente)', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('cliente', clienteExistente);
+      fixture.componentRef.setInput('visible', true);
       fixture.detectChanges();
     });
 
-    it('el título es "Editar cliente"', () => {
-      expect(component['titulo']()).toBe('Editar cliente');
+    it('el título es "Editar usuario"', () => {
+      expect(component['titulo']()).toBe('Editar usuario');
     });
 
     it('precarga los valores del cliente', () => {
       expect(component['form'].getRawValue()).toEqual({
         chatId: String(clienteExistente.chatId),
         alias: clienteExistente.alias,
-        recibeNotificaciones: true,
       });
     });
 
@@ -109,7 +117,6 @@ describe('ClienteTelegramFormDialog', () => {
       expect(emitido).toEqual({
         chatId: clienteExistente.chatId,
         alias: 'Juan P. actualizado',
-        recibeNotificaciones: true,
       });
     });
   });

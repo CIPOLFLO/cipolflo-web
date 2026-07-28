@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ClienteTelegramColumnsService } from './cliente-telegram-columns.service';
+import { DestinatarioNotificacionEmailColumnsService } from './destinatario-notificacion-email-columns.service';
 
-describe('ClienteTelegramColumnsService', () => {
-  let service: ClienteTelegramColumnsService;
+describe('DestinatarioNotificacionEmailColumnsService', () => {
+  let service: DestinatarioNotificacionEmailColumnsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [ClienteTelegramColumnsService] });
-    service = TestBed.inject(ClienteTelegramColumnsService);
+    TestBed.configureTestingModule({ providers: [DestinatarioNotificacionEmailColumnsService] });
+    service = TestBed.inject(DestinatarioNotificacionEmailColumnsService);
   });
 
   it('debe crearse correctamente', () => {
@@ -18,9 +18,9 @@ describe('ClienteTelegramColumnsService', () => {
     expect(service.columns.length).toBe(4);
   });
 
-  it('debe definir columna chatId', () => {
-    const col = service.columns.find((c) => c.key === 'chatId');
-    expect(col).toMatchObject({ label: 'Chat ID' });
+  it('debe definir columna email', () => {
+    const col = service.columns.find((c) => c.key === 'email');
+    expect(col).toMatchObject({ label: 'Email' });
   });
 
   it('debe definir columna alias', () => {

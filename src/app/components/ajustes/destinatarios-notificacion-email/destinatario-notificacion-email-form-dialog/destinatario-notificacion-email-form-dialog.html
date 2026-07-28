@@ -1,0 +1,53 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  [header]="titulo()"
+  [style]="{ width: '480px' }"
+>
+  <form [formGroup]="form" class="destinatario-notificacion-email-form-dialog__form">
+    <label for="email" class="destinatario-notificacion-email-form-dialog__label">
+      Email <span class="destinatario-notificacion-email-form-dialog__required">*</span>
+    </label>
+    <input
+      pInputText
+      id="email"
+      formControlName="email"
+      placeholder="Ej: administracion@cipolflo.com"
+      [invalid]="!!emailError()"
+      [fluid]="true"
+    />
+    @if (emailError()) {
+      <small class="destinatario-notificacion-email-form-dialog__error">{{ emailError() }}</small>
+    }
+
+    <label for="alias" class="destinatario-notificacion-email-form-dialog__label">
+      Alias <span class="destinatario-notificacion-email-form-dialog__required">*</span>
+    </label>
+    <input
+      pInputText
+      id="alias"
+      formControlName="alias"
+      placeholder="Ej: Administración"
+      [invalid]="!!aliasError()"
+      [fluid]="true"
+    />
+    @if (aliasError()) {
+      <small class="destinatario-notificacion-email-form-dialog__error">{{ aliasError() }}</small>
+    }
+  </form>
+
+  <ng-template #footer>
+    <div class="destinatario-notificacion-email-form-dialog__actions">
+      <app-button intent="secondary" label="Cancelar" (clicked)="onCancelar()" />
+      <app-button
+        intent="primary"
+        [label]="esEdicion() ? 'Guardar' : 'Crear'"
+        (clicked)="onConfirmar()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

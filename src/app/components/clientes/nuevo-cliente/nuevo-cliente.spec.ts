@@ -30,7 +30,7 @@ const clienteMock = {
   observaciones: null,
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,
-  metodoCobro: MetodoCobro.Cobradora,
+  metodoCobro: MetodoCobro.Transferencia,
   createdAt: '2024-01-01',
   createdBy: 'admin',
   updatedAt: '2024-01-02',

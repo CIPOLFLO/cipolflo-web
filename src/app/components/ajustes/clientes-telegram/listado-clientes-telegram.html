@@ -1,16 +1,16 @@
 <section class="listado-clientes-telegram">
   <div class="listado-clientes-telegram__header">
-    <h3 class="listado-clientes-telegram__title">Clientes Autorizados de Telegram</h3>
+    <h3 class="listado-clientes-telegram__title">Usuarios Autorizados de Telegram</h3>
     <app-button
-      label="Nuevo cliente"
+      label="Nuevo usuario"
       intent="primary"
       icon="pi-plus"
-      (clicked)="onNuevoCliente()"
+      (clicked)="crud.abrirAlta()"
     />
   </div>
   <div class="listado-clientes-telegram__separator" aria-hidden="true"></div>
   <p class="listado-clientes-telegram__note">
-    Son los clientes habilitados para realizar consultas al bot de Telegram.
+    Son los usuarios habilitados para realizar consultas al bot de Telegram.
   </p>
 
   <app-filter-panel (filterChange)="onFilterChange($event)" />
@@ -19,8 +19,8 @@
 </section>
 
 <app-cliente-telegram-form-dialog
-  [visible]="dialogVisible()"
-  [cliente]="clienteSeleccionado()"
-  (cancelado)="onCancelarDialog()"
+  [visible]="crud.dialogVisible()"
+  [cliente]="crud.seleccionado()"
+  (cancelado)="crud.cerrarDialog()"
   (guardado)="onGuardarDialog($event)"
 />
