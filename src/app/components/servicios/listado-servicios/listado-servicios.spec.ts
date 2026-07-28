@@ -24,9 +24,6 @@ interface ServicioRespuestaDtoMock {
   id: number;
   nombre: string;
   procedencia: string;
-  precioSocio: number;
-  precioParticular: number;
-  modalidadPrecio: string;
   estado: EstadoServicio;
 }
 
@@ -36,18 +33,12 @@ const mockPageResponse: PageResponse<ServicioRespuestaDtoMock> = {
       id: 1,
       nombre: 'Cabaña 1',
       procedencia: 'CAMPING',
-      precioSocio: 800,
-      precioParticular: 1200,
-      modalidadPrecio: 'POR_DIA',
       estado: EstadoServicio.Habilitado,
     },
     {
       id: 2,
       nombre: 'Salón',
       procedencia: 'SEDE',
-      precioSocio: 100,
-      precioParticular: 180,
-      modalidadPrecio: 'POR_HORA',
       estado: EstadoServicio.Deshabilitado,
     },
   ],
@@ -84,9 +75,6 @@ const rowHabilitado: ServicioRow = {
   id: 1,
   nombre: 'Cabaña 1',
   procedencia: 'Camping',
-  precioSocio: 800,
-  precioParticular: 1200,
-  unidad: 'p/día',
   estado: EstadoServicio.Habilitado,
 };
 
@@ -94,9 +82,6 @@ const rowDeshabilitado: ServicioRow = {
   id: 2,
   nombre: 'Salón',
   procedencia: 'Sede',
-  precioSocio: 100,
-  precioParticular: 180,
-  unidad: 'p/hora',
   estado: EstadoServicio.Deshabilitado,
 };
 const mockAuthService = {
@@ -164,8 +149,8 @@ describe('ListadoServicios', () => {
     expect(fixture.nativeElement.textContent).toContain('Servicios');
   });
 
-  it('debe tener 5 columnas definidas', () => {
-    expect(component['columns'].length).toBe(5);
+  it('debe tener 3 columnas definidas', () => {
+    expect(component['columns'].length).toBe(3);
   });
 
   it('debe definir columna procedencia como texto', () => {
@@ -178,13 +163,6 @@ describe('ListadoServicios', () => {
     const col = component['columns'].find((c) => c.key === 'nombre');
     expect(col).toBeDefined();
     expect(col!.label).toBe('Nombre');
-  });
-
-  it('debe definir columnas de precio con cellType price y unitKey unidad', () => {
-    const precioSocio = component['columns'].find((c) => c.key === 'precioSocio');
-    const precioParticular = component['columns'].find((c) => c.key === 'precioParticular');
-    expect(precioSocio).toMatchObject({ cellType: 'price', unitKey: 'unidad' });
-    expect(precioParticular).toMatchObject({ cellType: 'price', unitKey: 'unidad' });
   });
 
   it('debe definir columna estado con cellType tag y tagMap HABILITADO/DESHABILITADO', () => {
@@ -229,14 +207,11 @@ describe('ListadoServicios', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/servicios/nuevo']);
   });
 
-  it('usa el valor original para modalidadPrecio y procedencia desconocidos', () => {
+  it('usa el valor original para procedencia desconocida', () => {
     const unknownDto = {
       id: 99,
       nombre: 'Servicio Desconocido',
       procedencia: 'DESCONOCIDA',
-      precioSocio: 0,
-      precioParticular: 0,
-      modalidadPrecio: 'DESCONOCIDA',
       estado: EstadoServicio.Habilitado,
     };
     mockServicioService.getAll.mockReturnValue(of({ ...mockPageResponse, content: [unknownDto] }));
@@ -244,7 +219,6 @@ describe('ListadoServicios', () => {
     let result!: PageResponse<ServicioRow>;
     component['loadDataFn']({ page: 0, size: 10, filters: {} }).subscribe((r) => (result = r));
 
-    expect(result.content[0].unidad).toBe('DESCONOCIDA');
     expect(result.content[0].procedencia).toBe('DESCONOCIDA');
   });
 
@@ -322,8 +296,6 @@ describe('ListadoServicios', () => {
       const labels = Array.from(headers).map((h) => h.textContent?.trim());
       expect(labels).toContain('Procedencia');
       expect(labels).toContain('Nombre');
-      expect(labels).toContain('Precio Socio');
-      expect(labels).toContain('Precio Particular');
       expect(labels).toContain('Estado');
     });
   });

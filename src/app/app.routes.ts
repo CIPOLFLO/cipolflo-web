@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuardFn } from '@auth0/auth0-angular';
+import { mobileNotImplementedGuard } from './core/guards/mobile-not-implemented.guard';
 
 export const routes: Routes = [
   {
@@ -23,6 +24,7 @@ export const routes: Routes = [
       },
       {
         path: 'finanzas',
+        canActivate: [mobileNotImplementedGuard],
         loadChildren: () =>
           import('./components/finanzas/finanzas.routes').then((m) => m.FINANZAS_ROUTES),
       },
@@ -33,6 +35,7 @@ export const routes: Routes = [
       },
       {
         path: 'ajustes',
+        canActivate: [mobileNotImplementedGuard],
         loadChildren: () =>
           import('./components/ajustes/ajustes.routes').then((m) => m.AJUSTES_ROUTES),
       },

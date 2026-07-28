@@ -13,6 +13,7 @@ import {
   RegistroSocioRequestDto,
 } from '../models/cliente.model';
 import { PagoCuotaResponseDto, RegistroPagoCuotaRequestDto } from '../models/pago-cuota.model';
+import { ImportacionSociosResponseDto } from '../models/importacion-socios.model';
 import { BusquedaRutResponseDto } from '../../reservas/models/reserva.model';
 
 @Injectable({ providedIn: 'root' })
@@ -88,6 +89,19 @@ export class ClientesService extends BaseHttpService {
   }
   exportar(filters: Record<string, string | null>): Observable<void> {
     return this.blobExport.export('clientes/exportar', filters, 'clientes.xlsx');
+  }
+
+  importarSocios(file: File): Observable<ImportacionSociosResponseDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.post<ImportacionSociosResponseDto>('clientes/socios/importar', formData);
+  }
+
+  descargarPlantillaImportacionSocios(): Observable<void> {
+    return this.blobExport.download(
+      'clientes/socios/importar/plantilla',
+      'plantilla-importacion-socios.xlsx',
+    );
   }
 
   descargarComprobanteAltaSocio(id: number): Observable<void> {

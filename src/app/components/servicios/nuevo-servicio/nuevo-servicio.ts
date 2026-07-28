@@ -80,20 +80,11 @@ export class NuevoServicio {
       nombre: new FormControl<string | null>(null, Validators.required),
       cantidad: new FormControl<number | null>(null),
       capacidad: new FormControl<number | null>(null),
-      precioParticular: new FormControl<number | null>(null, [
-        Validators.required,
-        Validators.min(1),
-      ]),
-      precioSocio: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
-      modalidadPrecio: new FormControl<string | null>(null, Validators.required),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
       tarifas: this.tarifas,
     },
     {
-      validators: [
-        (g) => this.validaciones.cantidadOCapacidadExcluyentes(g),
-        (g) => this.validaciones.precioSocioMenorQueParticular(g),
-      ],
+      validators: [(g) => this.validaciones.cantidadOCapacidadExcluyentes(g)],
     },
   );
 
@@ -166,28 +157,6 @@ export class NuevoServicio {
 
   protected readonly preciosFields = computed<FormFieldConfig[]>(() => [
     {
-      key: 'precioParticular',
-      label: 'Precio para Particulares',
-      type: 'currency',
-      required: true,
-      placeholder: '0.00',
-    },
-    {
-      key: 'precioSocio',
-      label: 'Precio para Socios',
-      type: 'currency',
-      required: true,
-      placeholder: '0.00',
-    },
-    {
-      key: 'modalidadPrecio',
-      label: 'Tipo de Cobro',
-      type: 'select',
-      required: true,
-      placeholder: 'Seleccionar tipo de cobro',
-      options: this.modalidades(),
-    },
-    {
       key: 'costoPersonaExtra',
       label: 'Costo por persona extra',
       type: 'currency',
@@ -230,9 +199,6 @@ export class NuevoServicio {
       return Number.isNaN(n) ? null : n;
     };
     this.form.patchValue({
-      precioParticular: toNumber(values['precioParticular']),
-      precioSocio: toNumber(values['precioSocio']),
-      modalidadPrecio: values['modalidadPrecio'] ?? null,
       costoPersonaExtra: toNumber(values['costoPersonaExtra']),
     });
     this.form.markAsDirty();
@@ -251,16 +217,7 @@ export class NuevoServicio {
     this.submitted.set(true);
     if (this.form.invalid) return;
 
-    const {
-      procedencia,
-      nombre,
-      cantidad,
-      capacidad,
-      precioParticular,
-      precioSocio,
-      modalidadPrecio,
-      costoPersonaExtra,
-    } = this.form.getRawValue();
+    const { procedencia, nombre, cantidad, capacidad, costoPersonaExtra } = this.form.getRawValue();
 
     this.loading.set(true);
     this.servicioService
@@ -269,9 +226,6 @@ export class NuevoServicio {
         nombre: nombre!.trim(),
         cantidad,
         capacidad,
-        precioParticular: precioParticular!,
-        precioSocio: precioSocio!,
-        modalidadPrecio: modalidadPrecio!,
         costoPersonaExtra,
         tarifas: this.obtenerTarifasDto(),
       })

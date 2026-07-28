@@ -7,7 +7,9 @@
   <app-form-layout>
     <app-detail-section title="Información del Servicio" [fields]="infoFields()" />
 
-    <app-detail-section title="Precios y Modalidad de Cobro" [fields]="preciosFields()" />
+    @if (preciosFields().length) {
+      <app-detail-section title="Costo por Persona Extra" [fields]="preciosFields()" />
+    }
 
     @if (servicio()) {
       <section class="tarifas-detalle">

@@ -17,9 +17,6 @@ const mockServicio: ServicioDetalleRespuestaDto = {
   id: 1,
   nombre: 'Cabaña 1',
   procedencia: 'CAMPING',
-  precioParticular: 1200,
-  precioSocio: 800,
-  modalidadPrecio: 'POR_DIA',
   estado: EstadoServicio.Habilitado,
   capacidad: 4,
   cantidad: null,
@@ -151,33 +148,16 @@ describe('DetalleServicio', () => {
     expect(el.textContent).toContain('---');
   });
 
-  it('debería mostrar "---" para costo por persona extra cuando es null', () => {
+  it('no debería mostrar la sección de costo por persona extra cuando es null', () => {
     const { el } = setup();
-    expect(el.textContent).toContain('Costo por persona extra');
-    expect(el.textContent).toContain('---');
+    expect(el.textContent).not.toContain('Costo por persona extra');
   });
 
   it('debería mostrar el costo por persona extra cuando tiene valor', () => {
     const conCostoExtra: ServicioDetalleRespuestaDto = { ...mockServicio, costoPersonaExtra: 500 };
     const { el } = setup({ getById: vi.fn().mockReturnValue(of(conCostoExtra)) });
+    expect(el.textContent).toContain('Costo por persona extra');
     expect(el.textContent).toContain('$ 500');
-  });
-
-  it('debería mostrar la sección "Precio particular" con su precio', () => {
-    const { el } = setup();
-    expect(el.textContent).toContain('Precio particular');
-    expect(el.textContent).toContain('$ 1200');
-  });
-
-  it('debería mostrar la sección "Precio socio" con su precio', () => {
-    const { el } = setup();
-    expect(el.textContent).toContain('Precio socio');
-    expect(el.textContent).toContain('$ 800');
-  });
-
-  it('debería mostrar el tipo de cobro en formato descriptivo (Por día)', () => {
-    const { el } = setup();
-    expect(el.textContent).toContain('Por día');
   });
 
   it('debería renderizar una fila por cada tarifa del servicio', () => {

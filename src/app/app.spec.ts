@@ -32,6 +32,7 @@ describe('App', () => {
 describe('App - sidebar mobile', () => {
   const mockAuthService = {
     user$: of({ name: 'Juan Perez', email: 'juan@example.com' }),
+    isAuthenticated$: of(true),
     logout: vi.fn(),
   };
 

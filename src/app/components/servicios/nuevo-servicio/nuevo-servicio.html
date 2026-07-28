@@ -13,6 +13,14 @@
       (fieldBlur)="onFieldBlur($event)"
     />
 
+    <app-form-section
+      title="Costo por Persona Extra"
+      [fields]="preciosFields()"
+      [errors]="preciosErrors()"
+      (valuesChange)="onPreciosChange($event)"
+      (fieldBlur)="onFieldBlur($event)"
+    />
+
     <app-tarifas-form
       [tarifas]="tarifas"
       [tiposCliente]="tiposClienteTarifa"

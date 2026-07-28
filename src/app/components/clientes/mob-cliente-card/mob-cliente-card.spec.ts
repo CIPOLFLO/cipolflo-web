@@ -21,6 +21,7 @@ const socio: ClienteRespuestaDto = {
   estado: EstadoSocio.Activo,
   ultimaCuotaDto: null,
   categoriaSocio: CategoriaSocio.SocioComun,
+  antiguedad: 5,
   fechaIngreso: '2020-01-01',
 };
 
@@ -35,6 +36,7 @@ const empresa: ClienteRespuestaDto = {
   estado: null,
   ultimaCuotaDto: null,
   categoriaSocio: null,
+  antiguedad: null,
   fechaIngreso: null,
 };
 
@@ -71,7 +73,7 @@ describe('MobClienteCard', () => {
   it('muestra la tag de estado con el color reutilizado del desktop (tipo + estado)', async () => {
     const fixture = await render(socio);
     const tags = fixture.nativeElement.querySelectorAll('app-tag');
-    expect(tags).toHaveLength(2);
+    expect(tags).toHaveLength(3);
     const estado = fixture.nativeElement.querySelector('.tag--green');
     expect(estado.textContent.trim()).toBe('Activo');
   });

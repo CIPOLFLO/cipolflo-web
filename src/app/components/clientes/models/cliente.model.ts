@@ -71,6 +71,7 @@ export interface ClienteRespuestaDto extends Record<string, unknown> {
   numeroSocio: number | null;
   estado: EstadoSocio | null;
   categoriaSocio: CategoriaSocio | null;
+  antiguedad: number | null;
   fechaIngreso: string | null;
   ultimaCuotaDto: UltimaCuotaDto | null;
 }
@@ -93,6 +94,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   direccion: string | null;
   categoriaSocio: CategoriaSocio | null;
   fechaIngreso: string | null;
+  antiguedad: number | null;
   observaciones: string | null;
   ultimaCuotaDto: UltimaCuotaDto | null;
 }

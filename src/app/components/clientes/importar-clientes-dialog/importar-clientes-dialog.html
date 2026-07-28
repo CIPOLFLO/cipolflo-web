@@ -1,0 +1,76 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [resizable]="false"
+  [draggable]="false"
+  header="Importar Archivo"
+  [style]="{ width: '480px' }"
+>
+  <p class="importar-clientes__subtitle">Seleccione el archivo que desea importar al sistema</p>
+
+  <input
+    #fileInput
+    type="file"
+    hidden
+    aria-label="Seleccionar archivo"
+    accept=".xlsx,.xls"
+    (change)="onFileInputChange($event)"
+  />
+
+  @if (archivo(); as file) {
+    <div class="file-preview">
+      <div class="file-preview__icon"><i class="pi pi-file"></i></div>
+      <div class="file-preview__info">
+        <span class="file-preview__name">{{ file.name }}</span>
+        <span class="file-preview__size">{{ formatSize(file.size) }}</span>
+      </div>
+      <button
+        type="button"
+        class="file-preview__remove"
+        aria-label="Quitar archivo"
+        (click)="onQuitarArchivo()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  } @else {
+    <div
+      class="dropzone"
+      [class.dropzone--active]="arrastrando()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <div class="dropzone__icon"><i class="pi pi-upload"></i></div>
+      <p class="dropzone__text">Arrastre el archivo que desea importar</p>
+      <p class="dropzone__hint">o selecciónelo desde Buscar Archivo</p>
+      <button type="button" class="dropzone__link" (click)="descargarPlantilla.emit()">
+        Descargar plantilla de ejemplo
+      </button>
+      <p class="dropzone__formats">Formatos aceptados: XLSX, XLS</p>
+    </div>
+  }
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <app-button intent="secondary" label="Cancelar" (clicked)="onCancelar()" />
+      <div class="dialog-footer__actions">
+        <app-button
+          intent="secondary"
+          label="Buscar Archivo"
+          icon="pi-upload"
+          (clicked)="fileInput.click()"
+        />
+        <app-button
+          intent="primary"
+          label="Confirmar"
+          [disabled]="!archivo()"
+          [loading]="importando()"
+          (clicked)="onConfirmar()"
+        />
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

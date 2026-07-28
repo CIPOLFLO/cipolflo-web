@@ -138,68 +138,13 @@ describe('ServicioValidacionesService', () => {
 
   describe('getPreciosErrors', () => {
     function makePreciosForm() {
-      return new FormGroup(
-        {
-          precioParticular: new FormControl<number | null>(null, [
-            Validators.required,
-            Validators.min(1),
-          ]),
-          precioSocio: new FormControl<number | null>(null, [
-            Validators.required,
-            Validators.min(1),
-          ]),
-          modalidadPrecio: new FormControl<string | null>(null, Validators.required),
-          costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
-        },
-        { validators: [(g) => service.precioSocioMenorQueParticular(g)] },
-      );
+      return new FormGroup({
+        costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
+      });
     }
 
     it('no muestra errores cuando el form es pristine y no se hizo submit', () => {
       expect(service.getPreciosErrors(makePreciosForm(), false)).toEqual({});
-    });
-
-    it('muestra error required de precioParticular cuando está touched y vacío', () => {
-      const form = makePreciosForm();
-      form.get('precioParticular')!.markAsTouched();
-      expect(service.getPreciosErrors(form, false)['precioParticular']).toBeDefined();
-    });
-
-    it('muestra error min de precioParticular cuando el valor es 0', () => {
-      const form = makePreciosForm();
-      form.get('precioParticular')!.setValue(0);
-      form.get('precioParticular')!.markAsTouched();
-      expect(service.getPreciosErrors(form, false)['precioParticular']).toMatch(/mayor que 0/);
-    });
-
-    it('muestra error de precioSocio mayor cuando socio >= particular y el campo fue tocado', () => {
-      const form = makePreciosForm();
-      form.get('precioParticular')!.setValue(100);
-      form.get('precioSocio')!.setValue(100);
-      form.get('precioSocio')!.markAsTouched();
-      expect(service.getPreciosErrors(form, false)['precioSocio']).toMatch(/menor/);
-    });
-
-    it('no muestra error de precioSocioMayor antes de tocar el campo o hacer submit', () => {
-      const form = makePreciosForm();
-      form.get('precioParticular')!.setValue(100);
-      form.get('precioSocio')!.setValue(100);
-      expect(service.getPreciosErrors(form, false)['precioSocio']).toBeUndefined();
-    });
-
-    it('muestra error min de precioSocio cuando el valor es 0', () => {
-      const form = makePreciosForm();
-      form.get('precioSocio')!.setValue(0);
-      form.get('precioSocio')!.markAsTouched();
-      expect(service.getPreciosErrors(form, false)['precioSocio']).toMatch(/mayor que 0/);
-    });
-
-    it('muestra todos los errores de precios al hacer submit con form vacío', () => {
-      const form = makePreciosForm();
-      const errs = service.getPreciosErrors(form, true);
-      expect(errs['precioParticular']).toBeDefined();
-      expect(errs['precioSocio']).toBeDefined();
-      expect(errs['modalidadPrecio']).toBeDefined();
     });
 
     it('no muestra error de costoPersonaExtra cuando el valor es null', () => {
@@ -220,64 +165,6 @@ describe('ServicioValidacionesService', () => {
       form.get('costoPersonaExtra')!.setValue(0);
       form.get('costoPersonaExtra')!.markAsTouched();
       expect(service.getPreciosErrors(form, false)['costoPersonaExtra']).toBeUndefined();
-    });
-  });
-
-  describe('precioSocioMenorQueParticular', () => {
-    it('retorna null cuando precioParticular es null', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(null),
-        precioSocio: new FormControl(50),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toBeNull();
-    });
-
-    it('retorna null cuando precioSocio es null', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(100),
-        precioSocio: new FormControl(null),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toBeNull();
-    });
-
-    it('retorna null cuando precioParticular es 0', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(0),
-        precioSocio: new FormControl(0),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toBeNull();
-    });
-
-    it('retorna null cuando precioSocio es 0', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(100),
-        precioSocio: new FormControl(0),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toBeNull();
-    });
-
-    it('retorna null cuando socio es menor que particular', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(100),
-        precioSocio: new FormControl(80),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toBeNull();
-    });
-
-    it('retorna { precioSocioMayor: true } cuando socio es igual a particular', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(100),
-        precioSocio: new FormControl(100),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toEqual({ precioSocioMayor: true });
-    });
-
-    it('retorna { precioSocioMayor: true } cuando socio es mayor que particular', () => {
-      const group = new FormGroup({
-        precioParticular: new FormControl(100),
-        precioSocio: new FormControl(150),
-      });
-      expect(service.precioSocioMenorQueParticular(group)).toEqual({ precioSocioMayor: true });
     });
   });
 });

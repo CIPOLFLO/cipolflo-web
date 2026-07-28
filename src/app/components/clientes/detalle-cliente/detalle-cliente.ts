@@ -100,6 +100,11 @@ export class DetalleCliente {
         value: c.fechaIngreso,
       },
       {
+        key: 'antiguedad',
+        label: 'Antigüedad',
+        value: c.antiguedad !== null ? `${c.antiguedad} años` : null,
+      },
+      {
         key: 'observaciones',
         label: 'Notas/Observaciones',
         value: c.observaciones,

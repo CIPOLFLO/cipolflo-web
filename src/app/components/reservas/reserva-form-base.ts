@@ -105,9 +105,10 @@ export abstract class ReservaFormBase {
   protected readonly modoCantidad = computed(
     () => (this.servicioSeleccionado()?.cantidad ?? null) !== null,
   );
-  protected readonly modoHora = computed(
-    () => this.servicioSeleccionado()?.modalidadPrecio === 'POR_HORA',
-  );
+  // Servicio ya no expone modalidadPrecio (reemplazado por tarifas): ningún servicio
+  // puede activar el modo por hora. Se deja en false a la espera de limpiar horaInicio/
+  // horaFin en un ticket aparte.
+  protected readonly modoHora = computed(() => false);
 
   protected readonly esSocio = computed(() => this.tipoClienteValue() === TipoCliente.Socio);
 
