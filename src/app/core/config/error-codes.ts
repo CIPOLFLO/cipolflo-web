@@ -14,6 +14,7 @@ export const ERROR_CODES: Record<string, string> = {
     'El movimiento corresponde a una reserva ya finalizada o cancelada.',
   CHAT_ID_DUPLICADO: 'Ya existe un cliente autorizado de Telegram con ese Chat ID.',
   CHAT_NO_ENCONTRADO: 'El cliente autorizado de Telegram no fue encontrado.',
+  DESTINATARIO_NO_ENCONTRADO: 'El destinatario de notificaciones no fue encontrado.',
 };
 
 /**

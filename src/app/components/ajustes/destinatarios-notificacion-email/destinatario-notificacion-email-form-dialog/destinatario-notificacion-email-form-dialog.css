@@ -1,0 +1,27 @@
+.destinatario-notificacion-email-form-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.destinatario-notificacion-email-form-dialog__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: 10px;
+}
+
+.destinatario-notificacion-email-form-dialog__required {
+  color: var(--color-danger);
+}
+
+.destinatario-notificacion-email-form-dialog__error {
+  color: var(--color-danger);
+  font-size: 12px;
+}
+
+.destinatario-notificacion-email-form-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
