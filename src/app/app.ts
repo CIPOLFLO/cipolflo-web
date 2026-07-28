@@ -39,12 +39,11 @@ export class App implements OnInit {
   protected readonly orgInitials = 'CP';
   protected readonly orgSubtitle = 'de Flores';
 
-  // Finanzas y Ajustes no tienen vista mobile implementada: se excluyen del menú
+  // Finanzas, Servicios y Ajustes no tienen vista mobile implementada: se excluyen del menú
   // mobile (el acceso directo por URL se bloquea con mobileNotImplementedGuard).
   protected readonly navItems: NavItem[] = [
     { label: 'Reservas', route: '/reservas', icon: 'pi pi-calendar' },
     { label: 'Clientes', route: '/clientes', icon: 'pi pi-users' },
-    { label: 'Servicios', route: '/servicios', icon: 'pi pi-building' },
   ];
 
   public ngOnInit(): void {

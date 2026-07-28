@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EMPTY, catchError, filter, finalize, map, switchMap } from 'rxjs';
+import { EMPTY, catchError, filter, finalize, map, of, switchMap } from 'rxjs';
 import {
   AppButton,
   DateTimeFormatPipe,
@@ -25,8 +25,10 @@ import {
   requierePlazoConfirmacion,
   TIPO_RESERVA_LABEL,
   TipoReserva,
+  type ReservaDetalleRespuestaDto,
 } from '../models/reserva.model';
 import { buildClienteReservaFields } from '../mappers/cliente-reserva-fields.mapper';
+import { HistorialPagosSection } from '../historial-pagos-section/historial-pagos-section';
 
 const dateTimeFormatPipe = new DateTimeFormatPipe();
 
@@ -40,6 +42,7 @@ const dateTimeFormatPipe = new DateTimeFormatPipe();
     AppButton,
     DetailSection,
     DetailRegistroSection,
+    HistorialPagosSection,
   ],
   providers: [ReservasService],
   templateUrl: './detalle-reserva.html',
@@ -236,4 +239,21 @@ export class DetalleReserva {
       )
       .subscribe();
   }
+
+  protected readonly historialPagos = toSignal(
+    toObservable(this.reserva).pipe(
+      filter((reserva): reserva is ReservaDetalleRespuestaDto => reserva !== undefined),
+      switchMap((reserva) =>
+        this.reservasService.getHistorialPagos(reserva.id).pipe(
+          catchError((err) => {
+            this.errorHandler.handle(err);
+            return of([]);
+          }),
+        ),
+      ),
+    ),
+    {
+      initialValue: [],
+    },
+  );
 }
