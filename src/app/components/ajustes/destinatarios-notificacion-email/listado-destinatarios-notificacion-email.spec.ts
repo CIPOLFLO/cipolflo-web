@@ -75,28 +75,28 @@ describe('ListadoDestinatariosNotificacionEmail', () => {
     );
   });
 
-  it('onNuevoDestinatario abre el diálogo en modo alta', () => {
-    component['onNuevoDestinatario']();
-    expect(component['dialogVisible']()).toBe(true);
-    expect(component['destinatarioSeleccionado']()).toBeNull();
+  it('crud.abrirAlta abre el diálogo en modo alta', () => {
+    component['crud'].abrirAlta();
+    expect(component['crud'].dialogVisible()).toBe(true);
+    expect(component['crud'].seleccionado()).toBeNull();
   });
 
-  it('onEditar abre el diálogo con el destinatario seleccionado', () => {
-    component['onEditar'](destinatarioMock);
-    expect(component['dialogVisible']()).toBe(true);
-    expect(component['destinatarioSeleccionado']()).toEqual(destinatarioMock);
+  it('crud.abrirEdicion abre el diálogo con el destinatario seleccionado', () => {
+    component['crud'].abrirEdicion(destinatarioMock);
+    expect(component['crud'].dialogVisible()).toBe(true);
+    expect(component['crud'].seleccionado()).toEqual(destinatarioMock);
   });
 
-  it('onCancelarDialog cierra el diálogo y limpia la selección', () => {
-    component['onEditar'](destinatarioMock);
-    component['onCancelarDialog']();
-    expect(component['dialogVisible']()).toBe(false);
-    expect(component['destinatarioSeleccionado']()).toBeNull();
+  it('crud.cerrarDialog cierra el diálogo y limpia la selección', () => {
+    component['crud'].abrirEdicion(destinatarioMock);
+    component['crud'].cerrarDialog();
+    expect(component['crud'].dialogVisible()).toBe(false);
+    expect(component['crud'].seleccionado()).toBeNull();
   });
 
   describe('onGuardarDialog', () => {
     it('en modo alta llama a create', () => {
-      component['onNuevoDestinatario']();
+      component['crud'].abrirAlta();
       component['onGuardarDialog']({ email: 'nuevo@cipolflo.com', alias: 'Nuevo' });
       expect(mockService.create).toHaveBeenCalledWith({
         email: 'nuevo@cipolflo.com',
@@ -105,20 +105,20 @@ describe('ListadoDestinatariosNotificacionEmail', () => {
     });
 
     it('en modo edición llama a update con el id seleccionado, sin email', () => {
-      component['onEditar'](destinatarioMock);
+      component['crud'].abrirEdicion(destinatarioMock);
       component['onGuardarDialog']({ email: destinatarioMock.email, alias: 'Editado' });
       expect(mockService.update).toHaveBeenCalledWith(1, { alias: 'Editado' });
     });
 
     it('cierra el diálogo tras guardar exitosamente', () => {
-      component['onNuevoDestinatario']();
+      component['crud'].abrirAlta();
       component['onGuardarDialog']({ email: 'nuevo@cipolflo.com', alias: 'Nuevo' });
-      expect(component['dialogVisible']()).toBe(false);
+      expect(component['crud'].dialogVisible()).toBe(false);
     });
 
     it('delega el error en ErrorHandlerService si falla', () => {
       mockService.create.mockReturnValue(throwError(() => new Error('falló')));
-      component['onNuevoDestinatario']();
+      component['crud'].abrirAlta();
       component['onGuardarDialog']({ email: 'nuevo@cipolflo.com', alias: 'Nuevo' });
       expect(mockErrorHandler.handle).toHaveBeenCalled();
     });
@@ -133,7 +133,7 @@ describe('ListadoDestinatariosNotificacionEmail', () => {
       const acciones = component['inlineActions'](destinatarioMock);
       const editar = acciones[0];
       if (editar.type === 'button') editar.command(destinatarioMock);
-      expect(component['destinatarioSeleccionado']()).toEqual(destinatarioMock);
+      expect(component['crud'].seleccionado()).toEqual(destinatarioMock);
     });
 
     it('la acción toggle llama a actualizarHabilitacion con el nuevo valor', () => {

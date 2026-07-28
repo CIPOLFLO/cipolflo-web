@@ -20,6 +20,8 @@ import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { AppButton } from '../../../../shared';
 import { ClienteTelegramResponseDto } from '../../models/ajuste.model';
+import { ALIAS_ERROR_MESSAGES, crearControlAlias } from '../../utils/alias-field.helper';
+import { mensajeErrorControl } from '../../utils/form-field-error.helper';
 
 function chatIdValido(control: AbstractControl): ValidationErrors | null {
   const value = control.value as string | null;
@@ -55,7 +57,7 @@ export class ClienteTelegramFormDialog {
 
   protected readonly form = new FormGroup({
     chatId: new FormControl<string | null>(null, [Validators.required, chatIdValido]),
-    alias: new FormControl<string | null>(null, [Validators.required, Validators.maxLength(100)]),
+    alias: crearControlAlias(),
   });
 
   private readonly formStatus = toSignal(this.form.statusChanges, {
@@ -67,20 +69,20 @@ export class ClienteTelegramFormDialog {
   protected readonly chatIdError = computed(() => {
     this.formStatus();
     const control = this.form.get('chatId');
-    if (!(this.submitted() || control?.touched)) return null;
-    if (control?.hasError('required')) return 'El Chat ID es obligatorio.';
-    if (control?.hasError('chatIdInvalido'))
-      return 'El Chat ID debe ser un número entero positivo.';
-    return null;
+    return mensajeErrorControl(control, this.submitted() || !!control?.touched, {
+      required: 'El Chat ID es obligatorio.',
+      chatIdInvalido: 'El Chat ID debe ser un número entero positivo.',
+    });
   });
 
   protected readonly aliasError = computed(() => {
     this.formStatus();
     const control = this.form.get('alias');
-    if (!(this.submitted() || control?.touched)) return null;
-    if (control?.hasError('required')) return 'El alias es obligatorio.';
-    if (control?.hasError('maxlength')) return 'El alias no puede superar los 100 caracteres.';
-    return null;
+    return mensajeErrorControl(
+      control,
+      this.submitted() || !!control?.touched,
+      ALIAS_ERROR_MESSAGES,
+    );
   });
 
   constructor() {

@@ -7,7 +7,7 @@
       label="Nuevo destinatario"
       intent="primary"
       icon="pi-plus"
-      (clicked)="onNuevoDestinatario()"
+      (clicked)="crud.abrirAlta()"
     />
   </div>
   <div class="listado-destinatarios-notificacion-email__separator" aria-hidden="true"></div>
@@ -22,8 +22,8 @@
 </section>
 
 <app-destinatario-notificacion-email-form-dialog
-  [visible]="dialogVisible()"
-  [destinatario]="destinatarioSeleccionado()"
-  (cancelado)="onCancelarDialog()"
+  [visible]="crud.dialogVisible()"
+  [destinatario]="crud.seleccionado()"
+  (cancelado)="crud.cerrarDialog()"
   (guardado)="onGuardarDialog($event)"
 />

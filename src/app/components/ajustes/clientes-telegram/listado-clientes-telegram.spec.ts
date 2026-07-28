@@ -76,34 +76,34 @@ describe('ListadoClientesTelegram', () => {
     );
   });
 
-  it('onNuevoCliente abre el diálogo en modo alta', () => {
-    component['onNuevoCliente']();
-    expect(component['dialogVisible']()).toBe(true);
-    expect(component['clienteSeleccionado']()).toBeNull();
+  it('crud.abrirAlta abre el diálogo en modo alta', () => {
+    component['crud'].abrirAlta();
+    expect(component['crud'].dialogVisible()).toBe(true);
+    expect(component['crud'].seleccionado()).toBeNull();
   });
 
-  it('onEditar abre el diálogo con el cliente seleccionado', () => {
-    component['onEditar'](clienteMock);
-    expect(component['dialogVisible']()).toBe(true);
-    expect(component['clienteSeleccionado']()).toEqual(clienteMock);
+  it('crud.abrirEdicion abre el diálogo con el cliente seleccionado', () => {
+    component['crud'].abrirEdicion(clienteMock);
+    expect(component['crud'].dialogVisible()).toBe(true);
+    expect(component['crud'].seleccionado()).toEqual(clienteMock);
   });
 
-  it('onCancelarDialog cierra el diálogo y limpia la selección', () => {
-    component['onEditar'](clienteMock);
-    component['onCancelarDialog']();
-    expect(component['dialogVisible']()).toBe(false);
-    expect(component['clienteSeleccionado']()).toBeNull();
+  it('crud.cerrarDialog cierra el diálogo y limpia la selección', () => {
+    component['crud'].abrirEdicion(clienteMock);
+    component['crud'].cerrarDialog();
+    expect(component['crud'].dialogVisible()).toBe(false);
+    expect(component['crud'].seleccionado()).toBeNull();
   });
 
   describe('onGuardarDialog', () => {
     it('en modo alta llama a create', () => {
-      component['onNuevoCliente']();
+      component['crud'].abrirAlta();
       component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo' });
       expect(mockService.create).toHaveBeenCalledWith({ chatId: 111, alias: 'Nuevo' });
     });
 
     it('en modo edición llama a update con el id seleccionado, sin chatId', () => {
-      component['onEditar'](clienteMock);
+      component['crud'].abrirEdicion(clienteMock);
       component['onGuardarDialog']({ chatId: clienteMock.chatId, alias: 'Editado' });
       expect(mockService.update).toHaveBeenCalledWith(1, {
         alias: 'Editado',
@@ -112,14 +112,14 @@ describe('ListadoClientesTelegram', () => {
     });
 
     it('cierra el diálogo tras guardar exitosamente', () => {
-      component['onNuevoCliente']();
+      component['crud'].abrirAlta();
       component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo' });
-      expect(component['dialogVisible']()).toBe(false);
+      expect(component['crud'].dialogVisible()).toBe(false);
     });
 
     it('delega el error en ErrorHandlerService si falla', () => {
       mockService.create.mockReturnValue(throwError(() => new Error('falló')));
-      component['onNuevoCliente']();
+      component['crud'].abrirAlta();
       component['onGuardarDialog']({ chatId: 111, alias: 'Nuevo' });
       expect(mockErrorHandler.handle).toHaveBeenCalled();
     });
@@ -134,7 +134,7 @@ describe('ListadoClientesTelegram', () => {
       const acciones = component['inlineActions'](clienteMock);
       const editar = acciones[0];
       if (editar.type === 'button') editar.command(clienteMock);
-      expect(component['clienteSeleccionado']()).toEqual(clienteMock);
+      expect(component['crud'].seleccionado()).toEqual(clienteMock);
     });
 
     it('la acción toggle llama a actualizarHabilitacion con el nuevo valor', () => {

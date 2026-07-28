@@ -13,6 +13,8 @@ import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { AppButton, emailValido } from '../../../../shared';
 import { DestinatarioNotificacionEmailResponseDto } from '../../models/ajuste.model';
+import { ALIAS_ERROR_MESSAGES, crearControlAlias } from '../../utils/alias-field.helper';
+import { mensajeErrorControl } from '../../utils/form-field-error.helper';
 
 export interface DestinatarioNotificacionEmailFormValue {
   email: string;
@@ -45,7 +47,7 @@ export class DestinatarioNotificacionEmailFormDialog {
       Validators.maxLength(255),
       emailValido,
     ]),
-    alias: new FormControl<string | null>(null, [Validators.required, Validators.maxLength(100)]),
+    alias: crearControlAlias(),
   });
 
   private readonly formStatus = toSignal(this.form.statusChanges, {
@@ -57,20 +59,21 @@ export class DestinatarioNotificacionEmailFormDialog {
   protected readonly emailError = computed(() => {
     this.formStatus();
     const control = this.form.get('email');
-    if (!(this.submitted() || control?.touched)) return null;
-    if (control?.hasError('required')) return 'El email es obligatorio.';
-    if (control?.hasError('emailInvalido')) return 'El email no tiene un formato válido.';
-    if (control?.hasError('maxlength')) return 'El email no puede superar los 255 caracteres.';
-    return null;
+    return mensajeErrorControl(control, this.submitted() || !!control?.touched, {
+      required: 'El email es obligatorio.',
+      emailInvalido: 'El email no tiene un formato válido.',
+      maxlength: 'El email no puede superar los 255 caracteres.',
+    });
   });
 
   protected readonly aliasError = computed(() => {
     this.formStatus();
     const control = this.form.get('alias');
-    if (!(this.submitted() || control?.touched)) return null;
-    if (control?.hasError('required')) return 'El alias es obligatorio.';
-    if (control?.hasError('maxlength')) return 'El alias no puede superar los 100 caracteres.';
-    return null;
+    return mensajeErrorControl(
+      control,
+      this.submitted() || !!control?.touched,
+      ALIAS_ERROR_MESSAGES,
+    );
   });
 
   constructor() {

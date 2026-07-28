@@ -5,7 +5,7 @@
       label="Nuevo usuario"
       intent="primary"
       icon="pi-plus"
-      (clicked)="onNuevoCliente()"
+      (clicked)="crud.abrirAlta()"
     />
   </div>
   <div class="listado-clientes-telegram__separator" aria-hidden="true"></div>
@@ -19,8 +19,8 @@
 </section>
 
 <app-cliente-telegram-form-dialog
-  [visible]="dialogVisible()"
-  [cliente]="clienteSeleccionado()"
-  (cancelado)="onCancelarDialog()"
+  [visible]="crud.dialogVisible()"
+  [cliente]="crud.seleccionado()"
+  (cancelado)="crud.cerrarDialog()"
   (guardado)="onGuardarDialog($event)"
 />
