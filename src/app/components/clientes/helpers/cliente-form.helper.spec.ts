@@ -35,7 +35,7 @@ const baseCliente: ClienteDetalleRespuestaDto = {
   observaciones: 'Nota',
   fechaNacimiento: '1999-06-29',
   estado: EstadoSocio.Activo,
-  metodoCobro: MetodoCobro.Cobradora,
+  metodoCobro: MetodoCobro.Transferencia,
   createdAt: '2026-01-01',
   createdBy: 'admin',
   updatedAt: '',
@@ -79,7 +79,7 @@ describe('patchClienteForm', () => {
     expect(form.get('observaciones')?.value).toBe('Nota');
     expect(form.get('fechaNacimiento')?.value).toBe('1999-06-29');
     expect(form.get('estado')?.value).toBe(EstadoSocio.Activo);
-    expect(form.get('metodoCobro')?.value).toBe(MetodoCobro.Cobradora);
+    expect(form.get('metodoCobro')?.value).toBe(MetodoCobro.Transferencia);
     expect(form.get('numeroSocio')?.value).toBe('42');
     expect(form.get('categoriaSocio')?.value).toBe(CategoriaSocio.SocioComun);
     expect(form.get('fechaIngreso')?.value).toBe('2020-01-01');

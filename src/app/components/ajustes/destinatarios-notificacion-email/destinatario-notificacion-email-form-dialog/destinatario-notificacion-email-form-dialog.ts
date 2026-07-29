@@ -7,56 +7,46 @@ import {
   output,
   signal,
 } from '@angular/core';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { AppButton } from '../../../../shared';
-import { ClienteTelegramResponseDto } from '../../models/ajuste.model';
+import { AppButton, emailValido } from '../../../../shared';
+import { DestinatarioNotificacionEmailResponseDto } from '../../models/ajuste.model';
 import { ALIAS_ERROR_MESSAGES, crearControlAlias } from '../../utils/alias-field.helper';
 import { mensajeErrorControl } from '../../utils/form-field-error.helper';
 
-function chatIdValido(control: AbstractControl): ValidationErrors | null {
-  const value = control.value as string | null;
-  if (value === null || value === '') return null;
-  const n = Number(value);
-  return Number.isInteger(n) && n > 0 ? null : { chatIdInvalido: true };
-}
-
-export interface ClienteTelegramFormValue {
-  chatId: number;
+export interface DestinatarioNotificacionEmailFormValue {
+  email: string;
   alias: string;
 }
 
 @Component({
   standalone: true,
-  selector: 'app-cliente-telegram-form-dialog',
+  selector: 'app-destinatario-notificacion-email-form-dialog',
   imports: [ReactiveFormsModule, Dialog, InputText, AppButton],
-  templateUrl: './cliente-telegram-form-dialog.html',
-  styleUrl: './cliente-telegram-form-dialog.css',
+  templateUrl: './destinatario-notificacion-email-form-dialog.html',
+  styleUrl: './destinatario-notificacion-email-form-dialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClienteTelegramFormDialog {
+export class DestinatarioNotificacionEmailFormDialog {
   visible = input<boolean>(false);
-  cliente = input<ClienteTelegramResponseDto | null>(null);
+  destinatario = input<DestinatarioNotificacionEmailResponseDto | null>(null);
 
   cancelado = output<void>();
-  guardado = output<ClienteTelegramFormValue>();
+  guardado = output<DestinatarioNotificacionEmailFormValue>();
 
-  protected readonly esEdicion = computed(() => this.cliente() !== null);
+  protected readonly esEdicion = computed(() => this.destinatario() !== null);
   protected readonly titulo = computed(() =>
-    this.esEdicion() ? 'Editar usuario' : 'Nuevo usuario',
+    this.esEdicion() ? 'Editar destinatario' : 'Nuevo destinatario',
   );
 
   protected readonly form = new FormGroup({
-    chatId: new FormControl<string | null>(null, [Validators.required, chatIdValido]),
+    email: new FormControl<string | null>(null, [
+      Validators.required,
+      Validators.maxLength(255),
+      emailValido,
+    ]),
     alias: crearControlAlias(),
   });
 
@@ -66,12 +56,13 @@ export class ClienteTelegramFormDialog {
 
   protected readonly submitted = signal(false);
 
-  protected readonly chatIdError = computed(() => {
+  protected readonly emailError = computed(() => {
     this.formStatus();
-    const control = this.form.get('chatId');
+    const control = this.form.get('email');
     return mensajeErrorControl(control, this.submitted() || !!control?.touched, {
-      required: 'El Chat ID es obligatorio.',
-      chatIdInvalido: 'El Chat ID debe ser un número entero positivo.',
+      required: 'El email es obligatorio.',
+      emailInvalido: 'El email no tiene un formato válido.',
+      maxlength: 'El email no puede superar los 255 caracteres.',
     });
   });
 
@@ -88,20 +79,20 @@ export class ClienteTelegramFormDialog {
   constructor() {
     effect(() => {
       const visible = this.visible();
-      const cliente = this.cliente();
+      const destinatario = this.destinatario();
       if (!visible) return;
 
       this.submitted.set(false);
 
-      if (cliente) {
+      if (destinatario) {
         this.form.reset({
-          chatId: String(cliente.chatId),
-          alias: cliente.alias,
+          email: destinatario.email,
+          alias: destinatario.alias,
         });
-        this.form.controls.chatId.disable();
+        this.form.controls.email.disable();
       } else {
-        this.form.reset({ chatId: null, alias: null });
-        this.form.controls.chatId.enable();
+        this.form.reset({ email: null, alias: null });
+        this.form.controls.email.enable();
       }
     });
   }
@@ -116,7 +107,7 @@ export class ClienteTelegramFormDialog {
 
     const v = this.form.getRawValue();
     this.guardado.emit({
-      chatId: Number(v.chatId),
+      email: v.email!.trim(),
       alias: v.alias!.trim(),
     });
   }

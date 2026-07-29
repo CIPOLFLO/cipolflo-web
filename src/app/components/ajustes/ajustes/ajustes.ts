@@ -3,11 +3,18 @@ import { PageLayout } from '../../../shared';
 import { CostoCuotaCard } from '../costo-cuota-card/costo-cuota-card';
 import { AntiguedadReservasCard } from '../antiguedad-reservas-card/antiguedad-reservas-card';
 import { ListadoClientesTelegram } from '../clientes-telegram/listado-clientes-telegram';
+import { ListadoDestinatariosNotificacionEmail } from '../destinatarios-notificacion-email/listado-destinatarios-notificacion-email';
 
 @Component({
   standalone: true,
   selector: 'app-ajustes',
-  imports: [PageLayout, CostoCuotaCard, AntiguedadReservasCard, ListadoClientesTelegram],
+  imports: [
+    PageLayout,
+    CostoCuotaCard,
+    AntiguedadReservasCard,
+    ListadoClientesTelegram,
+    ListadoDestinatariosNotificacionEmail,
+  ],
   templateUrl: './ajustes.html',
   styleUrl: './ajustes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { ColumnConfig } from '../../../shared';
 
 @Injectable()
-export class ClienteTelegramColumnsService {
+export class DestinatarioNotificacionEmailColumnsService {
   readonly columns: ColumnConfig[] = [
-    { key: 'chatId', label: 'Chat ID' },
+    { key: 'email', label: 'Email' },
     { key: 'alias', label: 'Alias' },
     {
       key: 'activo',

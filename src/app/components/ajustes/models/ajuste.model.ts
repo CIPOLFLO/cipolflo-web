@@ -23,7 +23,7 @@ export interface AntiguedadReservasRequestDto {
 export interface RegistroClienteTelegramRequestDto {
   chatId: number;
   alias: string;
-  recibeNotificaciones: boolean;
+  recibeNotificaciones?: boolean;
 }
 
 export interface ModificacionClienteTelegramRequestDto {
@@ -50,3 +50,25 @@ export const ACTIVO_OPTIONS: FormFieldOption[] = [
   { label: 'Activo', value: 'true' },
   { label: 'Inactivo', value: 'false' },
 ];
+
+export interface RegistroDestinatarioNotificacionEmailRequestDto {
+  email: string;
+  alias: string;
+}
+
+export interface ModificacionDestinatarioNotificacionEmailRequestDto {
+  alias: string;
+}
+
+export interface HabilitacionDestinatarioNotificacionEmailRequestDto {
+  activo: boolean;
+}
+
+export interface DestinatarioNotificacionEmailResponseDto extends Record<string, unknown> {
+  id: number;
+  email: string;
+  alias: string;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -50,10 +50,7 @@ export class NuevoCliente extends ClienteFormBase {
         observaciones: new FormControl<string | null>(null),
         fechaNacimiento: new FormControl<string | null>(null, Validators.required),
         estado: new FormControl<string | null>(EstadoSocio.Activo),
-        metodoCobro: new FormControl<MetodoCobro | null>(
-          MetodoCobro.Cobradora,
-          Validators.required,
-        ),
+        metodoCobro: new FormControl<MetodoCobro | null>(MetodoCobro.Efectivo, Validators.required),
         categoriaSocio: new FormControl<CategoriaSocio | null>(
           CategoriaSocio.SocioComun,
           Validators.required,
@@ -86,7 +83,7 @@ export class NuevoCliente extends ClienteFormBase {
       label: 'Método de cobro',
       type: 'select',
       required: true,
-      defaultValue: MetodoCobro.Cobradora,
+      defaultValue: MetodoCobro.Efectivo,
       options: METODO_COBRO_OPTIONS,
     },
     {

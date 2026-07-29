@@ -25,7 +25,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   estado: EstadoSocio.Activo,
   fechaNacimiento: '29/06/1999',
   telefono: '099985648',
-  metodoCobro: MetodoCobro.Cobradora,
+  metodoCobro: MetodoCobro.Transferencia,
   pais: 'Uruguay',
   departamento: 'Flores',
   ciudad: 'Trinidad',
@@ -105,7 +105,7 @@ describe('DetalleCliente', () => {
   });
 
   it('debería mostrar el método de pago', () => {
-    expect(fixture.nativeElement.textContent).toContain('Cobradora');
+    expect(fixture.nativeElement.textContent).toContain('Transferencia');
   });
 
   it('debería mostrar la dirección del cliente', () => {

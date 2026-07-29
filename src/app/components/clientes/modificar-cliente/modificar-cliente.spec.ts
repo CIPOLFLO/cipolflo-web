@@ -26,7 +26,7 @@ const mockCliente: ClienteDetalleRespuestaDto = {
   rut: null,
   email: 'juan@example.com',
   telefono: '099958654',
-  metodoCobro: MetodoCobro.Cobradora,
+  metodoCobro: MetodoCobro.Transferencia,
   pais: 'Uruguay',
   departamento: 'Flores',
   ciudad: 'Trinidad',
@@ -278,7 +278,7 @@ describe('ModificarCliente', () => {
       direccion: 'Calle A 123',
       categoriaSocio: 'SOCIO_COMUN',
       fechaIngreso: '2020-01-01',
-      metodoCobro: MetodoCobro.Cobradora,
+      metodoCobro: MetodoCobro.Transferencia,
     });
   });
 
