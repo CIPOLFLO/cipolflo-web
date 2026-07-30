@@ -113,11 +113,6 @@ export class ListadoFinanzas {
       command: () => this.router.navigate(['/finanzas', row.id]),
     },
     {
-      label: 'Modificar',
-      icon: 'pi pi-pencil',
-      command: () => this.router.navigate(['/finanzas', row.id, 'editar']),
-    },
-    {
       label: 'Eliminar',
       icon: 'pi pi-trash',
       command: () => this.onEliminarFinanza(row),

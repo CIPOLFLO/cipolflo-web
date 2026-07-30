@@ -119,12 +119,6 @@ describe('DetalleFinanza', () => {
     );
   });
 
-  it('debería navegar al hacer click en editar', () => {
-    component['onEditar']();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', '1']);
-  });
-
   it('debería manejar error y navegar a /finanzas si falla la carga', async () => {
     const error = new Error('Error al cargar finanza');
 

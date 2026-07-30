@@ -143,16 +143,10 @@ describe('ListadoFinanzas', () => {
       expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', mockRow.id]);
     });
 
-    it('debería navegar a editar al ejecutar Modificar', () => {
-      const navigateSpy = vi.spyOn(router, 'navigate');
+    it('no debería incluir la acción Modificar', () => {
+      const actions = component['rowActions'](mockRow);
 
-      const modificarAction = component['rowActions'](mockRow).find(
-        (action) => action.label === 'Modificar',
-      );
-
-      modificarAction?.command?.(mockRow);
-
-      expect(navigateSpy).toHaveBeenCalledWith(['/finanzas', mockRow.id, 'editar']);
+      expect(actions.some((action) => action.label === 'Modificar')).toBe(false);
     });
 
     it('debería incluir la acción Eliminar', () => {
