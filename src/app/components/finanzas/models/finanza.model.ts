@@ -82,6 +82,8 @@ export const CONCEPTOS_EGRESO = [
   Concepto.Antel,
   Concepto.Ose,
   Concepto.Barraca,
+  Concepto.Sueldos,
+  Concepto.DevolucionReserva,
   Concepto.Otro,
 ];
 

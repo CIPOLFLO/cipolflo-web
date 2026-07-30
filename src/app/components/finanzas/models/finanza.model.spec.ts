@@ -18,6 +18,8 @@ describe('finanza.model', () => {
       { label: 'ANTEL', value: Concepto.Antel },
       { label: 'OSE', value: Concepto.Ose },
       { label: 'Barraca', value: Concepto.Barraca },
+      { label: 'Sueldos', value: Concepto.Sueldos },
+      { label: 'Devolucion de reserva', value: Concepto.DevolucionReserva },
       { label: 'OTRO', value: Concepto.Otro },
     ]);
   });

@@ -8,6 +8,7 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  LoadingDialog,
   PageLayout,
   RowAction,
   TableStateService,
@@ -22,7 +23,6 @@ import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
 import { mapFacturaToFinanza } from '../mappers/factura-finanza.mapper';
 import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
-import { LoadingDialog } from '../../../shared';
 import { EliminarReservaCerradaDialog } from '../eliminar-reserva-cerrada-dialog/eliminar-reserva-cerrada-dialog';
 import { ErrorResponse } from '../../../core/models/error-response.model';
 import { resolveErrorMessage } from '../../../core/config/error-codes';
