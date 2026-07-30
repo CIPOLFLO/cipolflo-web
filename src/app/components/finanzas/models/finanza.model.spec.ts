@@ -6,7 +6,7 @@ describe('finanza.model', () => {
 
     expect(options).toEqual([
       { label: 'Pago de reserva', value: Concepto.PagoReserva },
-      { label: 'OTRO', value: Concepto.Otro },
+      { label: 'Otro', value: Concepto.Otro },
     ]);
   });
 
@@ -20,7 +20,7 @@ describe('finanza.model', () => {
       { label: 'Barraca', value: Concepto.Barraca },
       { label: 'Sueldos', value: Concepto.Sueldos },
       { label: 'Devolucion de reserva', value: Concepto.DevolucionReserva },
-      { label: 'OTRO', value: Concepto.Otro },
+      { label: 'Otro', value: Concepto.Otro },
     ]);
   });
 

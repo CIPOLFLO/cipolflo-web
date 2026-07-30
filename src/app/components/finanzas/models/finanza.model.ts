@@ -24,7 +24,7 @@ export enum Concepto {
   Antel = 'ANTEL',
   Sueldos = 'SUELDOS',
   Barraca = 'BARRACA',
-  Otro = 'Otro',
+  Otro = 'OTRO',
   DevolucionReserva = 'DEVOLUCION_RESERVA',
 }
 
@@ -33,7 +33,7 @@ export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.PagoCuota]: 'Pago de cuota',
   [Concepto.Ute]: 'UTE',
   [Concepto.Ose]: 'OSE',
-  [Concepto.Otro]: 'OTRO',
+  [Concepto.Otro]: 'Otro',
   [Concepto.Antel]: 'ANTEL',
   [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
