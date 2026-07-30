@@ -89,7 +89,7 @@ export class ListadoFinanzas {
           concepto: dto.concepto,
           fecha: dto.fecha,
           importeSignado: dto.tipoMovimiento === TipoMovimiento.Egreso ? -dto.importe : dto.importe,
-          descripcion: dto.descripcion,
+          notas: dto.notas,
         })),
       })),
       catchError((err) => {

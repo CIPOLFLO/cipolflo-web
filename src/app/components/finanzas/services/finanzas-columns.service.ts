@@ -12,6 +12,6 @@ export class FinanzasColumnsService {
       transform: (v) => CONCEPTO_LABEL[v as Concepto] ?? v,
     },
     { key: 'fecha', label: 'Fecha', sortable: true },
-    { key: 'descripcion', label: 'Descripción', nullFallback: '—' },
+    { key: 'notas', label: 'Notas', nullFallback: '—' },
   ];
 }

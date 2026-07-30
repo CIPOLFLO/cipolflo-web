@@ -21,7 +21,7 @@ describe('ListadoFinanzas', () => {
     concepto: Concepto.PagoReserva,
     fecha: '14/3/2026',
     importeSignado: 15000,
-    descripcion: 'Pago de alquiler',
+    notas: 'Pago de alquiler',
   };
 
   const mockAuthService = {
