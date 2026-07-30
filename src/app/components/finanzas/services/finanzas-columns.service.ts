@@ -5,7 +5,13 @@ import { CONCEPTO_LABEL, Concepto } from '../models/finanza.model';
 @Injectable()
 export class FinanzasColumnsService {
   readonly columns: ColumnConfig[] = [
-    { key: 'importeSignado', label: 'Importe', cellType: 'amount', sortable: true },
+    {
+      key: 'importeSignado',
+      label: 'Importe',
+      cellType: 'amount',
+      sortable: true,
+      sortField: 'importe',
+    },
     {
       key: 'concepto',
       label: 'Concepto',
