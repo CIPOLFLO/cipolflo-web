@@ -25,6 +25,7 @@ import {
 import { type ServicioDetalleRespuestaDto, type TarifaServicioRow } from '../models/servicio.model';
 import { ServicioService } from '../services/servicio.service';
 import { ServicioPresentacionService } from '../services/servicio-presentacion.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -47,6 +48,7 @@ export class DetalleServicio implements OnInit {
   private readonly servicioService = inject(ServicioService);
   private readonly presentacion = inject(ServicioPresentacionService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   readonly id = input<string>('');
 
@@ -58,7 +60,11 @@ export class DetalleServicio implements OnInit {
     this.servicioService
       .getById(Number(this.id()))
       .pipe(
-        catchError(() => EMPTY),
+        catchError((err) => {
+          this.errorHandler.handle(err);
+          this.router.navigate(['/servicios']);
+          return EMPTY;
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((s) => this.servicio.set(s));
