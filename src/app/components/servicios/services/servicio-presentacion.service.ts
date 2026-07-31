@@ -103,6 +103,8 @@ export class ServicioPresentacionService {
         required: true,
         options: ESTADO_SERVICIO_OPTIONS,
         defaultValue: s?.estado,
+        disabled: true,
+        locked: true,
       },
       {
         key: 'cantidad',
