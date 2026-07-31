@@ -15,6 +15,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY } from 'rxjs';
 import {
   AppButton,
+  ConfirmDialogService,
   DetailRegistroSection,
   FormActions,
   FormLayout,
@@ -67,6 +68,7 @@ export class EditarServicio implements OnInit {
   private readonly presentacion = inject(ServicioPresentacionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
 
   readonly id = input<string>('');
   readonly from = input<string>('');
@@ -168,15 +170,27 @@ export class EditarServicio implements OnInit {
       return;
     }
 
-    this.servicioService
-      .eliminarTarifa(Number(this.id()), tarifaId)
+    this.confirmDialog
+      .open({
+        title: 'Eliminar tarifa',
+        message:
+          'La tarifa se eliminará de inmediato y no se puede deshacer, ni siquiera cancelando la edición del servicio.',
+        confirmButtonLabel: 'Eliminar',
+        variant: 'danger',
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.tarifas.removeAt(index);
-          this.form.markAsDirty();
-        },
-        error: (err) => this.errorHandler.handle(err),
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.servicioService
+          .eliminarTarifa(Number(this.id()), tarifaId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.tarifas.removeAt(index);
+              this.form.markAsDirty();
+            },
+            error: (err) => this.errorHandler.handle(err),
+          });
       });
   }
 
