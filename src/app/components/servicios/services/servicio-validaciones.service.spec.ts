@@ -54,8 +54,8 @@ describe('ServicioValidacionesService', () => {
           ...(withEstado
             ? { estado: new FormControl<string | null>(null, Validators.required) }
             : {}),
-          cantidad: new FormControl<number | null>(null),
-          capacidad: new FormControl<number | null>(null),
+          cantidad: new FormControl<number | null>(null, Validators.min(1)),
+          capacidad: new FormControl<number | null>(null, Validators.min(1)),
         },
         { validators: [(g) => service.cantidadOCapacidadExcluyentes(g)] },
       );
@@ -133,6 +133,32 @@ describe('ServicioValidacionesService', () => {
       expect(errs['procedencia']).toBeDefined();
       expect(errs['nombre']).toBeDefined();
       expect(errs['estado']).toBeDefined();
+    });
+
+    it('muestra error min de cantidad cuando el valor es 0', () => {
+      const form = makeInfoForm();
+      form.get('cantidad')!.setValue(0);
+      form.get('cantidad')!.markAsTouched();
+      expect(service.getInfoErrors(form, false)['cantidad']).toMatch(/mayor a 0/);
+    });
+
+    it('no muestra error de cantidad cuando el valor es null', () => {
+      const form = makeInfoForm();
+      form.get('cantidad')!.markAsTouched();
+      expect(service.getInfoErrors(form, false)['cantidad']).toBeUndefined();
+    });
+
+    it('muestra error min de capacidad cuando el valor es 0', () => {
+      const form = makeInfoForm();
+      form.get('capacidad')!.setValue(0);
+      form.get('capacidad')!.markAsTouched();
+      expect(service.getInfoErrors(form, false)['capacidad']).toMatch(/mayor a 0/);
+    });
+
+    it('no muestra error de capacidad cuando el valor es null', () => {
+      const form = makeInfoForm();
+      form.get('capacidad')!.markAsTouched();
+      expect(service.getInfoErrors(form, false)['capacidad']).toBeUndefined();
     });
   });
 

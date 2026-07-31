@@ -78,8 +78,8 @@ export class NuevoServicio {
     {
       procedencia: new FormControl<string | null>(null, Validators.required),
       nombre: new FormControl<string | null>(null, Validators.required),
-      cantidad: new FormControl<number | null>(null),
-      capacidad: new FormControl<number | null>(null),
+      cantidad: new FormControl<number | null>(null, Validators.min(1)),
+      capacidad: new FormControl<number | null>(null, Validators.min(1)),
       costoPersonaExtra: new FormControl<number | null>(null, Validators.min(0)),
       tarifas: this.tarifas,
     },
