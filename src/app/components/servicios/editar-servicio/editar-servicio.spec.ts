@@ -10,6 +10,7 @@ import {
   TipoClienteTarifa,
 } from '../models/servicio.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { ConfirmDialogService } from '../../../shared';
 import { AuthService } from '@auth0/auth0-angular';
 import { UserService } from '../../../core/services/user.service';
 
@@ -106,9 +107,11 @@ describe('EditarServicio', () => {
   let mockErrorHandler: {
     handle: ReturnType<typeof vi.fn>;
   };
+  let mockConfirmDialogService: { open: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockErrorHandler = { handle: vi.fn() };
+    mockConfirmDialogService = { open: vi.fn().mockReturnValue(of(true)) };
     await TestBed.configureTestingModule({
       imports: [EditarServicio],
       providers: [
@@ -121,6 +124,7 @@ describe('EditarServicio', () => {
         },
         { provide: Router, useValue: { navigate: vi.fn(), navigateByUrl: vi.fn() } },
         { provide: ErrorHandlerService, useValue: mockErrorHandler },
+        { provide: ConfirmDialogService, useValue: mockConfirmDialogService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: UserService, useValue: mockUserService },
       ],
@@ -191,9 +195,21 @@ describe('EditarServicio', () => {
 
     component['quitarTarifa'](0);
 
+    expect(mockConfirmDialogService.open).toHaveBeenCalled();
     expect(eliminarTarifaSpy).toHaveBeenCalledWith(1, 10);
     expect(component['tarifas'].length).toBe(1);
     expect(component['tarifas'].at(0).controls.id.value).toBe(11);
+  });
+
+  it('quitarTarifa con una fila con id no llama a eliminarTarifa si se cancela la confirmación', () => {
+    mockConfirmDialogService.open.mockReturnValue(of(false));
+    const eliminarTarifaSpy = vi.fn().mockReturnValue(of(undefined));
+    const { component } = setup({ eliminarTarifa: eliminarTarifaSpy });
+
+    component['quitarTarifa'](0);
+
+    expect(eliminarTarifaSpy).not.toHaveBeenCalled();
+    expect(component['tarifas'].length).toBe(2);
   });
 
   it('quitarTarifa con una fila con id no la quita si el servicio falla, y delega el error', () => {
