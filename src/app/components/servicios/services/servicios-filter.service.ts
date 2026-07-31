@@ -1,5 +1,10 @@
 import { Injectable, signal } from '@angular/core';
-import { FilterConfigProvider, FormFieldConfig, PROCEDENCIA_OPTIONS } from '../../../shared';
+import {
+  FilterConfigProvider,
+  FormFieldConfig,
+  Procedencia,
+  PROCEDENCIA_OPTIONS,
+} from '../../../shared';
 import { ESTADO_SERVICIO_OPTIONS, EstadoServicio } from '../models/servicio.model';
 
 @Injectable()
@@ -10,7 +15,12 @@ export class ServiciosFilterService extends FilterConfigProvider {
       label: 'Procedencia',
       type: 'select',
       placeholder: 'Seleccionar procedencia',
-      options: PROCEDENCIA_OPTIONS,
+      // Un servicio pertenece a una sola sede: "Ambos" no es una procedencia válida para
+      // filtrar servicios (mismo criterio que servicio-options.service.ts para el alta).
+      options: [
+        { label: 'Todos', value: '' },
+        ...PROCEDENCIA_OPTIONS.filter((option) => option.value !== Procedencia.Ambos),
+      ],
     },
     {
       key: 'nombre',
