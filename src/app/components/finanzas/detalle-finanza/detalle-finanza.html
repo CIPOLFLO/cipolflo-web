@@ -10,9 +10,5 @@
     @if (registroData()) {
       <app-detail-registro-section [data]="registroData()!" [extraFields]="registroExtraFields()" />
     }
-
-    <app-form-actions actions>
-      <app-button label="Editar" intent="primary" icon="pi-pencil" (clicked)="onEditar()" />
-    </app-form-actions>
   </app-form-layout>
 </app-page-layout>

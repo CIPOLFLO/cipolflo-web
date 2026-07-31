@@ -23,7 +23,7 @@ export abstract class FinanzaFormBase {
     procedencia: new FormControl<Procedencia | null>(Procedencia.Sede, Validators.required),
     concepto: new FormControl<Concepto | null>(Concepto.PagoReserva, Validators.required),
     fecha: new FormControl<string | null>(null, Validators.required),
-    importe: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
+    importe: new FormControl<number | null>(null, [Validators.required, Validators.min(0.01)]),
     formaPago: new FormControl<FormaPago | null>(FormaPago.Efectivo, Validators.required),
     notas: new FormControl<string | null>(null),
   });

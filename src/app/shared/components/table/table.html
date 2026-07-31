@@ -14,10 +14,14 @@
   <ng-template pTemplate="header">
     <tr>
       @for (col of columns(); track col.key) {
-        <th scope="col" [pSortableColumn]="col.key" [pSortableColumnDisabled]="!col.sortable">
+        <th
+          scope="col"
+          [pSortableColumn]="col.sortField ?? col.key"
+          [pSortableColumnDisabled]="!col.sortable"
+        >
           {{ col.label }}
           @if (col.sortable) {
-            <p-sortIcon [field]="col.key" />
+            <p-sortIcon [field]="col.sortField ?? col.key" />
           }
         </th>
       }

@@ -56,6 +56,24 @@ describe('ErrorHandlerService', () => {
     });
   });
 
+  it('descarta la lista de valores aceptados de errores de enum inválido', () => {
+    const error = new HttpErrorResponse({
+      error: {
+        codigo: 'SOLICITUD_INVALIDA',
+        descripcion:
+          'concepto inválido. Valores aceptados: PAGO_RESERVA, UTE, ANTEL, BARRACA, PAGO_CUOTA, OSE, SUELDOS, OTRO, DEVOLUCION_RESERVA',
+      },
+    });
+
+    service.handle(error);
+
+    expect(mockErrorDialogService.open).toHaveBeenCalledWith({
+      title: 'Error',
+      message: 'Concepto inválido.',
+      confirmButtonLabel: 'Cerrar',
+    });
+  });
+
   it('muestra mensaje genérico cuando HttpErrorResponse no tiene body estructurado', () => {
     const error = new HttpErrorResponse({
       error: null,

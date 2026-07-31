@@ -8,6 +8,7 @@ import {
   FilterConfigProvider,
   FilterPanel,
   LoadDataFn,
+  LoadingDialog,
   PageLayout,
   RowAction,
   TableStateService,
@@ -22,7 +23,6 @@ import { FinanzaRow, TipoMovimiento } from '../models/finanza.model';
 import { Router } from '@angular/router';
 import { mapFacturaToFinanza } from '../mappers/factura-finanza.mapper';
 import { DocumentIntelligenceService } from '../../documentos/services/document-intelligence.service';
-import { LoadingDialog } from '../../../shared';
 import { EliminarReservaCerradaDialog } from '../eliminar-reserva-cerrada-dialog/eliminar-reserva-cerrada-dialog';
 import { ErrorResponse } from '../../../core/models/error-response.model';
 import { resolveErrorMessage } from '../../../core/config/error-codes';
@@ -89,7 +89,7 @@ export class ListadoFinanzas {
           concepto: dto.concepto,
           fecha: dto.fecha,
           importeSignado: dto.tipoMovimiento === TipoMovimiento.Egreso ? -dto.importe : dto.importe,
-          descripcion: dto.descripcion,
+          notas: dto.notas,
         })),
       })),
       catchError((err) => {
@@ -111,11 +111,6 @@ export class ListadoFinanzas {
       label: 'Ver detalle',
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/finanzas', row.id]),
-    },
-    {
-      label: 'Modificar',
-      icon: 'pi pi-pencil',
-      command: () => this.router.navigate(['/finanzas', row.id, 'editar']),
     },
     {
       label: 'Eliminar',

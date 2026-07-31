@@ -383,6 +383,22 @@ describe('AppTable', () => {
     expect(sortIcon).not.toBeNull();
   });
 
+  it('debe ordenar por sortField en lugar de key cuando la columna lo define', async () => {
+    const service = TestBed.inject(TableStateService);
+    fixture.componentRef.setInput('columns', [
+      { key: 'importeSignado', label: 'Importe', sortable: true, sortField: 'importe' },
+    ] satisfies ColumnConfig[]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('th');
+    header.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(service.queryParams().sortField).toBe('importe');
+  });
+
   it('debe renderizar celda tipo amount', async () => {
     fixture.componentRef.setInput('columns', [
       { key: 'monto', label: 'Monto', cellType: 'amount' },
