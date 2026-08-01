@@ -1,0 +1,140 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ayuda__estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.ayuda__secciones {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ayuda__seccion {
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+.ayuda__seccion-titulo {
+  margin: 0 0 16px;
+  color: var(--color-text-primary);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.ayuda__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.ayuda__manual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: 10px;
+  padding: 16px 20px;
+  transition: border-color 0.2s;
+}
+
+.ayuda__manual:hover {
+  border-color: var(--color-border);
+}
+
+.ayuda__manual--no-disponible {
+  background-color: var(--color-bg-subtle);
+}
+
+.ayuda__manual-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ayuda__manual-titulo {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ayuda__manual--no-disponible .ayuda__manual-titulo {
+  color: var(--color-text-secondary);
+}
+
+.ayuda__manual-detalle {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.ayuda__descargar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-primary);
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.ayuda__descargar:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+}
+
+.ayuda__descargar:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .ayuda__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile (breakpoint del proyecto: 767px) */
+@media (max-width: 767px) {
+  .ayuda__seccion {
+    padding: 16px;
+  }
+
+  .ayuda__seccion-titulo {
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  .ayuda__grid {
+    gap: 12px;
+  }
+
+  .ayuda__manual {
+    padding: 14px 16px;
+  }
+
+  .ayuda__manual-titulo {
+    font-size: 14px;
+  }
+}

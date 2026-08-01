@@ -22,6 +22,16 @@
   </nav>
   @if (auth.user$ | async; as user) {
     <div class="header__user">
+      <a
+        routerLink="/ayuda"
+        routerLinkActive="active"
+        class="header__help"
+        aria-label="Ayuda y documentación"
+        pTooltip="Ayuda y documentación"
+        tooltipPosition="bottom"
+      >
+        <i class="pi pi-question-circle" aria-hidden="true"></i>
+      </a>
       <div class="header__avatar">{{ userService.userInitials() }}</div>
       <span class="header__username">{{ user.name ?? user.email }}</span>
       <button class="header__logout" (click)="logout()">

@@ -15,6 +15,8 @@ export const ERROR_CODES: Record<string, string> = {
   CHAT_ID_DUPLICADO: 'Ya existe un cliente autorizado de Telegram con ese Chat ID.',
   CHAT_NO_ENCONTRADO: 'El cliente autorizado de Telegram no fue encontrado.',
   DESTINATARIO_NO_ENCONTRADO: 'El destinatario de notificaciones no fue encontrado.',
+  MANUAL_NO_ENCONTRADO: 'El manual solicitado no existe.',
+  MANUAL_NO_DISPONIBLE: 'El manual todavía está en preparación y no puede descargarse.',
 };
 
 /**

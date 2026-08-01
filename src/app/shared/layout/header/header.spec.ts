@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideAuth0 } from '@auth0/auth0-angular';
+import { AuthService } from '@auth0/auth0-angular';
+import { of } from 'rxjs';
 import { Header } from './header';
 
 describe('Header', () => {
@@ -12,20 +13,30 @@ describe('Header', () => {
       imports: [Header],
       providers: [
         provideRouter([]),
-        provideAuth0({
-          domain: 'test.auth0.com',
-          clientId: 'test-client-id',
-          authorizationParams: { redirect_uri: 'http://localhost' },
-        }),
+        {
+          provide: AuthService,
+          useValue: {
+            user$: of({ name: 'Camila Ruiz', email: 'camila@cipolflo.com' }),
+            logout: () => undefined,
+          },
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Header);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('enlaza el ícono de ayuda a /ayuda', () => {
+    const help = (fixture.nativeElement as HTMLElement).querySelector('.header__help');
+
+    expect(help?.getAttribute('href')).toBe('/ayuda');
+    expect(help?.querySelector('.pi-question-circle')).toBeTruthy();
   });
 });
