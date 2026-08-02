@@ -399,6 +399,35 @@ describe('DetalleReserva', () => {
     });
   });
 
+  describe('puedeModificar', () => {
+    [EstadoReserva.Pendiente, EstadoReserva.Confirmada].forEach((estado) => {
+      it(`muestra el botón Modificar en estado ${estado}`, async () => {
+        const { component, fixture } = await setup({ ...mockReserva, estado });
+        expect(component['puedeModificar']()).toBe(true);
+        expect(fixture.nativeElement.textContent).toContain('Modificar');
+      });
+    });
+
+    [
+      EstadoReserva.EnCurso,
+      EstadoReserva.Finalizada,
+      EstadoReserva.Cancelada,
+      EstadoReserva.VencidaSinPago,
+    ].forEach((estado) => {
+      it(`oculta el botón Modificar en estado ${estado}`, async () => {
+        const { component, fixture } = await setup({ ...mockReserva, estado });
+        expect(component['puedeModificar']()).toBe(false);
+        expect(fixture.nativeElement.textContent).not.toContain('Modificar');
+      });
+    });
+
+    it('es false mientras la reserva todavía no cargó', async () => {
+      const { component } = await setup(mockReserva, 'abc');
+      expect(component['reserva']()).toBeUndefined();
+      expect(component['puedeModificar']()).toBe(false);
+    });
+  });
+
   it('onModificar navega a /reservas/:id/editar con queryParam from=detalle', async () => {
     const { component, navigateSpy } = await setup();
     component['onModificar']();

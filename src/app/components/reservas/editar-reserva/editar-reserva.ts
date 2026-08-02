@@ -8,6 +8,9 @@ import {
   DetailRegistroSection,
   DetailSection,
   emailValido,
+  ErrorDialogService,
+  ESTADO_RESERVA_LABEL,
+  esReservaEditable,
   FormActions,
   FormField,
   FormLayout,
@@ -53,6 +56,7 @@ import { ReservasService } from '../services/reservas.service';
 })
 export class EditarReserva extends ReservaFormBase {
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly errorDialog = inject(ErrorDialogService);
 
   protected readonly reservaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
@@ -87,6 +91,15 @@ export class EditarReserva extends ReservaFormBase {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (reserva) => {
+          // El listado y el detalle ocultan la acción, pero se puede llegar por URL directa
+          // (o con el botón atrás): sólo el estado que devuelve el backend es autoritativo.
+          if (!esReservaEditable(reserva.estado)) {
+            this.errorDialog.open({
+              message: `La reserva está ${ESTADO_RESERVA_LABEL[reserva.estado].toLowerCase()} y no puede modificarse.`,
+            });
+            this.router.navigate(['/reservas', reserva.id]);
+            return;
+          }
           this.reserva.set(reserva);
           this.aplicarFormulario(reserva);
         },

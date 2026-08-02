@@ -2,6 +2,7 @@ import {
   EstadoReserva,
   ESTADO_RESERVA_LABEL,
   ESTADO_RESERVA_VALUE_CLASS,
+  esReservaEditable,
 } from './estado-reserva.model';
 
 describe('ESTADO_RESERVA_LABEL', () => {
@@ -36,5 +37,25 @@ describe('ESTADO_RESERVA_VALUE_CLASS', () => {
   it('no asigna clase a Pendiente ni Finalizada', () => {
     expect(ESTADO_RESERVA_VALUE_CLASS[EstadoReserva.Pendiente]).toBeUndefined();
     expect(ESTADO_RESERVA_VALUE_CLASS[EstadoReserva.Finalizada]).toBeUndefined();
+  });
+});
+
+describe('esReservaEditable', () => {
+  it('admite edición en Pendiente y Confirmada', () => {
+    expect(esReservaEditable(EstadoReserva.Pendiente)).toBe(true);
+    expect(esReservaEditable(EstadoReserva.Confirmada)).toBe(true);
+  });
+
+  it('rechaza los estados históricos o inmutables', () => {
+    expect(esReservaEditable(EstadoReserva.EnCurso)).toBe(false);
+    expect(esReservaEditable(EstadoReserva.Finalizada)).toBe(false);
+    expect(esReservaEditable(EstadoReserva.Cancelada)).toBe(false);
+    expect(esReservaEditable(EstadoReserva.VencidaSinPago)).toBe(false);
+  });
+
+  it('cubre todos los estados del enum', () => {
+    Object.values(EstadoReserva).forEach((estado) => {
+      expect(typeof esReservaEditable(estado)).toBe('boolean');
+    });
   });
 });
