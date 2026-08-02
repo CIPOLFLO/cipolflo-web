@@ -54,6 +54,20 @@ describe('ReservasFilterService', () => {
     expect(field?.options?.[0]).toEqual({ label: 'Todos', value: '' });
   });
 
+  it('procedencia no ofrece "Ambos" como valor filtrable', () => {
+    const field = service.filterFields().find((f) => f.key === 'procedencia');
+    expect(field?.options?.some((o) => o.value === Procedencia.Ambos)).toBe(false);
+  });
+
+  it('procedencia ofrece Todos, Sede y Camping', () => {
+    const field = service.filterFields().find((f) => f.key === 'procedencia');
+    expect(field?.options).toEqual([
+      { label: 'Todos', value: '' },
+      { label: 'Sede', value: Procedencia.Sede },
+      { label: 'Camping', value: Procedencia.Camping },
+    ]);
+  });
+
   it('estadoReserva incluye "Todos" como primera opción', () => {
     const field = service.filterFields().find((f) => f.key === 'estadoReserva');
     expect(field?.options?.[0]).toEqual({ label: 'Todos', value: '' });

@@ -5,7 +5,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@auth0/auth0-angular';
-import { ConfirmDialogService, EstadoReserva, Procedencia } from '../../../shared';
+import {
+  ConfirmDialogService,
+  ErrorDialogService,
+  EstadoReserva,
+  Procedencia,
+} from '../../../shared';
 import { FormaPago } from '../../../shared/models/forma-pago.model';
 import { TipoCliente } from '../../clientes/models/cliente.model';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -158,6 +163,7 @@ async function setupCustom(options: {
 
   const navigateSpy = vi.fn();
   const handleSpy = vi.fn();
+  const errorDialogOpenSpy = vi.fn();
 
   await TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
@@ -177,6 +183,7 @@ async function setupCustom(options: {
       },
       { provide: Router, useValue: { navigate: navigateSpy, navigateByUrl: navigateSpy } },
       { provide: ErrorHandlerService, useValue: { handle: handleSpy } },
+      { provide: ErrorDialogService, useValue: { open: errorDialogOpenSpy } },
       {
         provide: ConfirmDialogService,
         useValue: { open: confirmDialogOpen, close: confirmDialogClose },
@@ -221,6 +228,7 @@ async function setupCustom(options: {
     handleSpy,
     getAllSpy,
     descargarComprobanteSpy,
+    errorDialogOpenSpy,
     confirmDialogOpenSpy: confirmDialogOpen,
     confirmDialogCloseSpy: confirmDialogClose,
   };
@@ -495,6 +503,54 @@ describe('EditarReserva', () => {
     });
     expect(handleSpy).toHaveBeenCalledWith(error);
     expect(component['servicios']().length).toBe(0);
+  });
+
+  describe('acceso por URL directa a una reserva no editable', () => {
+    const noEditables = [
+      EstadoReserva.EnCurso,
+      EstadoReserva.Finalizada,
+      EstadoReserva.Cancelada,
+      EstadoReserva.VencidaSinPago,
+    ];
+
+    noEditables.forEach((estado) => {
+      it(`estado ${estado}: avisa al usuario y redirige al detalle sin poblar el formulario`, async () => {
+        const { component, navigateSpy, errorDialogOpenSpy } = await setup({
+          ...mockReserva,
+          estado,
+        });
+
+        expect(errorDialogOpenSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ message: expect.stringContaining('no puede modificarse') }),
+        );
+        expect(navigateSpy).toHaveBeenCalledWith(['/reservas', 42]);
+        expect(component['reserva']()).toBeUndefined();
+        expect(component['form'].get('fechaInicio')?.value).toBeNull();
+      });
+    });
+
+    it('el mensaje nombra el estado que bloquea la edición', async () => {
+      const { errorDialogOpenSpy } = await setup({
+        ...mockReserva,
+        estado: EstadoReserva.Cancelada,
+      });
+
+      expect(errorDialogOpenSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'La reserva está cancelada y no puede modificarse.' }),
+      );
+    });
+
+    it('estado Pendiente: carga el formulario con normalidad', async () => {
+      const { component, navigateSpy, errorDialogOpenSpy } = await setup({
+        ...mockReserva,
+        estado: EstadoReserva.Pendiente,
+      });
+
+      expect(errorDialogOpenSpy).not.toHaveBeenCalled();
+      expect(navigateSpy).not.toHaveBeenCalled();
+      expect(component['reserva']()?.id).toBe(42);
+      expect(component['form'].get('fechaInicio')?.value).toBe('2026-08-10');
+    });
   });
 
   it('getById con error: llama al errorHandler y navega a /reservas', async () => {

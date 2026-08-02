@@ -556,6 +556,51 @@ describe('NuevaReserva', () => {
     expect(opciones.some((o) => o.value === TipoReserva.ColaboracionSinFines)).toBe(false);
   });
 
+  it('al precargar un cliente Empresa el RUT se valida como RUT y no como cédula', async () => {
+    queryParamGet.mockReturnValue('3');
+    const f = TestBed.createComponent(NuevaReserva);
+    f.detectChanges();
+    await f.whenStable();
+
+    const documento = f.componentInstance['form'].get('documento');
+    expect(documento?.value).toBe('211003420017');
+    expect(f.componentInstance['tipoDocumentoValue']()).toBe(TipoDocumento.Rut);
+    expect(documento?.hasError('cedulaInvalida')).toBe(false);
+    expect(documento?.valid).toBe(true);
+  });
+
+  it('al precargar un cliente Particular el documento sigue validándose como cédula', async () => {
+    queryParamGet.mockReturnValue('2');
+    const f = TestBed.createComponent(NuevaReserva);
+    f.detectChanges();
+    await f.whenStable();
+
+    const documento = f.componentInstance['form'].get('documento');
+    expect(f.componentInstance['tipoDocumentoValue']()).toBe(TipoDocumento.Cedula);
+    expect(documento?.valid).toBe(true);
+
+    documento?.setValue('211003420017'); // un RUT no es una cédula válida
+    expect(documento?.hasError('cedulaInvalida')).toBe(true);
+  });
+
+  it('con una Empresa precargada y la reserva completa, confirmar queda habilitado', async () => {
+    queryParamGet.mockReturnValue('3');
+    const f = TestBed.createComponent(NuevaReserva);
+    f.detectChanges();
+    await f.whenStable();
+
+    const c = f.componentInstance;
+    c['form'].get('procedencia')?.setValue(Procedencia.Sede);
+    c['form'].get('servicioId')?.setValue('2');
+    c['onRangoSeleccionado']({ inicio: '2026-08-01', fin: '2026-08-03' });
+    c['form'].get('cantidadTotal')?.setValue('4');
+    f.detectChanges();
+
+    expect(c['busquedaRealizada']()).toBe(true);
+    expect(c['form'].valid).toBe(true);
+    expect(c['confirmDisabled']()).toBe(false);
+  });
+
   it('al precargar un cliente Empresa sí se ofrece Colaboración sin fines de lucro', async () => {
     queryParamGet.mockReturnValue('3');
     const f = TestBed.createComponent(NuevaReserva);

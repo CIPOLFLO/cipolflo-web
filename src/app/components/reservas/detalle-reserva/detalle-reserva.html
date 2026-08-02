@@ -19,7 +19,9 @@
     }
 
     <app-form-actions actions>
-      <app-button label="Modificar" icon="pi-pencil" (clicked)="onModificar()" />
+      @if (puedeModificar()) {
+        <app-button label="Modificar" icon="pi-pencil" (clicked)="onModificar()" />
+      }
       <app-button
         label="Descargar comprobante"
         icon="pi-download"

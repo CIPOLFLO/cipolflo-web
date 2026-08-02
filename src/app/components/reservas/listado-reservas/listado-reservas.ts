@@ -14,6 +14,7 @@ import { LoadDataFn, RowAction } from '../../../shared/components/table/table.mo
 import { ReservasColumnsService } from '../services/reserva-columns.service';
 import {
   EstadoReserva,
+  esReservaEditable,
   ConfirmDialogService,
   VerificationDialog,
   MobFilterPanel,
@@ -126,8 +127,7 @@ export class ListadoReservas {
       icon: 'pi pi-eye',
       command: () => this.router.navigate(['/reservas', row.id]),
     },
-    ...(row.estadoReserva === EstadoReserva.Pendiente ||
-    row.estadoReserva === EstadoReserva.Confirmada
+    ...(esReservaEditable(row.estadoReserva)
       ? [
           {
             label: 'Modificar',

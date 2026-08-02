@@ -2,7 +2,7 @@ import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { map } from 'rxjs';
 import { FilterConfigProvider } from '../../../shared/services/filter-config.provider';
 import { FormFieldConfig, FormFieldOption } from '../../../shared/models/form-field.model';
-import { PROCEDENCIA_OPTIONS } from '../../../shared/models/procedencia.model';
+import { Procedencia, PROCEDENCIA_OPTIONS } from '../../../shared/models/procedencia.model';
 import { ESTADO_RESERVA_OPTIONS } from '../../../shared/models/estado-reserva.model';
 import { ServicioService } from '../../servicios/services/servicio.service';
 import { EstadoServicio } from '../../servicios/models/servicio.model';
@@ -21,7 +21,12 @@ export class ReservasFilterService extends FilterConfigProvider {
       label: 'Procedencia',
       type: 'select',
       placeholder: 'Seleccionar procedencia',
-      options: [{ label: 'Todos', value: '' }, ...PROCEDENCIA_OPTIONS],
+      // Una reserva pertenece a una sola sede: "Ambos" no es un valor filtrable y se
+      // confundía con "Todos" (mismo criterio que servicios-filter.service.ts).
+      options: [
+        { label: 'Todos', value: '' },
+        ...PROCEDENCIA_OPTIONS.filter((option) => option.value !== Procedencia.Ambos),
+      ],
     },
     {
       key: 'servicio',
