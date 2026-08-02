@@ -11,6 +11,8 @@ interface BaseColumnConfig {
   key: string;
   label: string;
   sortable?: boolean;
+  /** Campo a enviar como sortField al backend cuando difiere de `key` (ej. una columna calculada). */
+  sortField?: string;
   unitKey?: string;
   nullFallback?: string;
   transform?: (value: unknown) => string;

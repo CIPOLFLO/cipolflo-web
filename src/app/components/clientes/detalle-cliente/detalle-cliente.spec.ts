@@ -116,6 +116,21 @@ describe('DetalleCliente', () => {
     expect(fixture.nativeElement.textContent).toContain('Socia Nueva');
   });
 
+  it('debería mostrar el tipo de cliente con su label, no el valor del enum', () => {
+    const field = component['infoFields']().find((f) => f.key === 'tipoCliente');
+    expect(field?.value).toBe('Socio');
+  });
+
+  it('debería mostrar el estado con su label, no el valor del enum', () => {
+    const field = component['infoFields']().find((f) => f.key === 'estado');
+    expect(field?.value).toBe('Activo');
+  });
+
+  it('debería mostrar la cédula formateada', () => {
+    const field = component['infoFields']().find((f) => f.key === 'cedula');
+    expect(field?.value).toBe('5.191.926-8');
+  });
+
   it('debería mostrar la categoría del socio con su label', () => {
     const field = component['infoFields']().find((f) => f.key === 'categoriaSocio');
     expect(field?.value).toBe('Socio común');
@@ -218,5 +233,48 @@ describe('DetalleCliente con metodoCobro null (cliente PARTICULAR)', () => {
   it('el campo antiguedad tiene value null', () => {
     const field = component['infoFields']().find((f) => f.key === 'antiguedad');
     expect(field?.value).toBeNull();
+  });
+
+  it('el campo estado tiene value null cuando el cliente no es socio', () => {
+    const field = component['infoFields']().find((f) => f.key === 'estado');
+    expect(field?.value).toBeNull();
+  });
+
+  it('el tipo de cliente Particular se muestra con su label', () => {
+    const field = component['infoFields']().find((f) => f.key === 'tipoCliente');
+    expect(field?.value).toBe('Particular');
+  });
+});
+
+describe('DetalleCliente con cédula sin formato', () => {
+  let component: DetalleCliente;
+
+  /** El backend puede devolver la cédula en crudo: el detalle la formatea igual que el listado. */
+  const mockSinFormato: ClienteDetalleRespuestaDto = { ...mockCliente, cedula: '1000001' };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DetalleCliente],
+      providers: [
+        {
+          provide: ClientesService,
+          useValue: { getById: vi.fn().mockReturnValue(of(mockSinFormato)) },
+        },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: ErrorHandlerService, useValue: { handle: vi.fn() } },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: UserService, useValue: mockUserService },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(DetalleCliente);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('formatea una cédula de 7 dígitos recibida en crudo', () => {
+    const field = component['infoFields']().find((f) => f.key === 'cedula');
+    expect(field?.value).toBe('100.000-1');
   });
 });

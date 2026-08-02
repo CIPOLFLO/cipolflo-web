@@ -15,9 +15,4 @@ export const FINANZAS_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./detalle-finanza/detalle-finanza').then((m) => m.DetalleFinanza),
   },
-  {
-    path: ':id/editar',
-    loadComponent: () =>
-      import('./modificar-finanza/modificar-finanza').then((m) => m.ModificarFinanza),
-  },
 ];

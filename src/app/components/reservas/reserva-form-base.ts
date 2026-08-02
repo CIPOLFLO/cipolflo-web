@@ -460,6 +460,10 @@ export abstract class ReservaFormBase {
     this.form.get('documento')?.setValue(cliente.documento, { emitEvent: false });
     this.form.get('tipoDocumento')?.setValue(cliente.tipoDocumento, { emitEvent: false });
     this.tipoDocumentoValue.set(cliente.tipoDocumento);
+    // Escribir tipoDocumento sin emitir tampoco dispara el listener que reaplica el validador
+    // de formato, así que hay que reaplicarlo a mano: si no, un cliente Empresa precargado
+    // queda con su RUT validado como cédula y el formulario nunca llega a ser válido.
+    this.aplicarValidadoresCliente();
     this.form.patchValue({
       tipoCliente: cliente.tipoCliente,
       nombre: cliente.nombre,

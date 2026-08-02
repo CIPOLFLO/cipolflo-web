@@ -2,8 +2,10 @@
 
 > Base URL: `http://localhost:8080`  
 > Todos los endpoints requieren autenticación (Bearer Token JWT), **salvo el webhook de
-> Telegram** (`/api/public/**`), que se autentica con un secret token propio.  
-> Las fechas/horas se manejan como `Instant` (ISO-8601 UTC, ej: `"2025-01-15T10:30:00Z"`).
+> Telegram** (`/api/public/**`), que se autentica con un secret token propio, y los endpoints
+> de monitoreo (`GET /api/health`, que responde `200 OK` con el texto `OK`, y `/actuator/**`).  
+> Las fechas/horas se manejan como `Instant` (ISO-8601 UTC, ej: `"2025-01-15T10:30:00Z"`),
+> salvo los campos declarados explícitamente como `LocalDate` (`yyyy-MM-dd`, sin hora ni zona).
 
 ---
 
@@ -16,14 +18,15 @@
 5. [Clientes — Endpoints](#clientes--endpoints)
 6. [Clientes — DTOs](#clientes--dtos)
 7. [Reservas — Endpoints](#reservas--endpoints)
-   - `POST /api/v1/pago_reserva/{id}`
 8. [Reservas — DTOs](#reservas--dtos)
 9. [Finanzas — Endpoints](#finanzas--endpoints)
 10. [Finanzas — DTOs](#finanzas--dtos)
 11. [Integraciones — Endpoints](#integraciones--endpoints)
 12. [Ajustes — Endpoints](#ajustes--endpoints)
 13. [Ajustes — DTOs](#ajustes--dtos)
-14. [Manejo de errores](#manejo-de-errores)
+14. [Manuales — Endpoints](#manuales--endpoints)
+15. [Manuales — DTOs](#manuales--dtos)
+16. [Manejo de errores](#manejo-de-errores)
 
 ---
 
@@ -31,7 +34,10 @@
 
 ### `Procedencia`
 
-SEDE | CAMPING
+SEDE | CAMPING | AMBOS
+
+> `AMBOS` solo aplica a servicios que se prestan en las dos sedes; una reserva o un
+> movimiento financiero siempre se registra con `SEDE` o `CAMPING`.
 
 ### `EstadoServicio`
 
@@ -41,21 +47,22 @@ HABILITADO | DESHABILITADO
 
 POR_DIA | POR_PERSONA | POR_DIA_POR_PERSONA | POR_UNIDAD | POR_HORA
 
+### `TipoClienteTarifa`
+
+PARTICULAR | SOCIO_COMUN | SOCIO_POLICIA | SOCIO_POLICIA_RETIRADO
+
+> Discrimina el precio de una tarifa según a quién se le cobra. No es lo mismo que
+> `TipoCliente`: acá los socios se abren por categoría, porque cada una paga distinto.
+
 ### `EstadoReserva`
 
-PENDIENTE | CONFIRMADA | EN_CURSO | FINALIZADA | CANCELADA
+PENDIENTE | CONFIRMADA | EN_CURSO | VENCIDA_SIN_PAGO | FINALIZADA | CANCELADA
+
+> `VENCIDA_SIN_PAGO` no se puede setear vía API: la asigna automáticamente una tarea programada diaria a las reservas `EN_CURSO` cuya `fechaSalida` ya pasó y siguen sin estar pagas. Se cierra (pasa a `FINALIZADA`) con `PATCH /api/v1/reservas/{id}/finalizacion`, igual que una reserva `EN_CURSO`.
 
 ### `PlazoConfirmacion`
 
 VEINTICUATRO_HORAS | TRES_MESES
-
-```
-PENDIENTE | CONFIRMADA | EN_CURSO | VENCIDA_SIN_PAGO | FINALIZADA | CANCELADA
-```
-
-> `VENCIDA_SIN_PAGO` no se puede setear vía API: la asigna automáticamente una tarea programada diaria a las reservas `EN_CURSO` cuya `fechaSalida` ya pasó y siguen sin estar pagas. Se cierra (pasa a `FINALIZADA`) con `PATCH /api/v1/reservas/{id}/finalizacion`, igual que una reserva `EN_CURSO`.
-
-### `TipoCliente`
 
 > Plazo para confirmar (pagar seña y/o entregar documentación) una reserva antes de que se
 > cancele automáticamente. Solo aplica cuando `requiereSena` y/o `requiereDocumentacion` son
@@ -78,7 +85,7 @@ POLICIA_ACTIVO | POLICIA_RETIRADO | SOCIO_COMUN
 
 ### `MetodoCobro`
 
-COBRADORA | DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO | DEBITO
+DESCUENTO_SALARIAL | TRANSFERENCIA | EN_SEDE | EFECTIVO | DEBITO
 
 ### `TipoMovimiento`
 
@@ -90,11 +97,21 @@ COMUN | COLABORACION_SIN_FINES_DE_LUCRO
 
 ### `FormaPago`
 
-EFECTIVO | TRANSFERENCIA | DEBITO | CREDITO
+EFECTIVO | TRANSFERENCIA | DEBITO
 
 ### `Concepto`
 
-PAGO_RESERVA | PAGO_CUOTA | UTE | OSE | ANTEL | SUELDOS | BARRACA | OTROS
+PAGO_RESERVA | PAGO_CUOTA | DEVOLUCION_RESERVA | UTE | OSE | ANTEL | SUELDOS | BARRACA | OTRO
+
+> `DEVOLUCION_RESERVA` lo genera el sistema al cancelar una reserva con devolución
+> (`PATCH /api/v1/reservas/{id}/cancelacion`), no se envía manualmente.
+
+### `CategoriaManual`
+
+TECNICO | USUARIO
+
+> `TECNICO` agrupa los manuales de configuración de la infraestructura (Auth0, Azure,
+> Telegram); `USUARIO` los manuales de uso de cada módulo del sistema.
 
 ---
 
@@ -361,6 +378,35 @@ Retorna las reservas activas del servicio que se solapan con la ventana `[desde,
 | 400    | `ID_INVALIDO`            | `id` no es entero positivo |
 | 400    | `RANGO_FECHAS_INVALIDO`  | `desde` > `hasta`          |
 | 404    | `SERVICIO_NO_ENCONTRADO` | el servicio no existe      |
+
+---
+
+### `DELETE /api/v1/servicios/{servicioId}/tarifas/{tarifaId}`
+
+Elimina una tarifa de un servicio.
+
+**Path params:**
+
+| Param        | Tipo             | Descripción                                       |
+| ------------ | ---------------- | ------------------------------------------------- |
+| `servicioId` | integer positivo | Servicio dueño de la tarifa                       |
+| `tarifaId`   | integer positivo | Tarifa a eliminar; debe pertenecer a ese servicio |
+
+**Respuesta 204:** sin body.
+
+> No se puede dejar al servicio sin cobertura de tarifas obligatorias: si la tarifa a borrar
+> es la única de su `TipoClienteTarifa`, la operación se rechaza con
+> `TARIFA_OBLIGATORIA_NO_ELIMINABLE`.
+
+**Errores:**
+
+| HTTP Status | Código                             | Cuándo ocurre                                             |
+| ----------- | ---------------------------------- | --------------------------------------------------------- |
+| 400         | `ID_INVALIDO`                      | `servicioId` o `tarifaId` no son enteros positivos        |
+| 400         | `TARIFA_OBLIGATORIA_NO_ELIMINABLE` | Es la última tarifa de su tipo de cliente en ese servicio |
+| 404         | `SERVICIO_NO_ENCONTRADO`           | No existe el servicio                                     |
+| 404         | `TARIFA_NO_ENCONTRADA`             | La tarifa no existe o no pertenece a ese servicio         |
+| 401         | —                                  | Token ausente, inválido o expirado                        |
 
 ---
 
@@ -683,6 +729,68 @@ Descarga el comprobante en PDF de alta de un socio (para entregarle al confirmar
 
 ---
 
+### `POST /api/v1/clientes/socios/{id}/pago-cuota`
+
+Registra el pago de una o varias cuotas de un socio. Los períodos **no se eligen**: se
+imputan automáticamente y de forma consecutiva a partir del primer mes pendiente del socio.
+El `importeTotal` se reparte en partes iguales entre las cuotas (redondeo a 2 decimales).
+
+Cada cuota registrada genera además un ingreso en Finanzas con concepto `PAGO_CUOTA`.
+
+**Path param:** `id` — integer positivo; ID del socio.
+
+**Body** (`application/json`):
+
+```json
+{
+  "cantidadCuotas": 3,
+  "importeTotal": 1500.0,
+  "metodoCobro": "EFECTIVO",
+  "fechaPago": "2026-06-20",
+  "observaciones": "Pago mostrador"
+}
+```
+
+| Campo            | Tipo             | Obligatorio | Validación     |
+| ---------------- | ---------------- | ----------- | -------------- |
+| `cantidadCuotas` | integer          | Sí          | > 0, máximo 12 |
+| `importeTotal`   | number (decimal) | Sí          | > 0            |
+| `metodoCobro`    | `MetodoCobro`    | Sí          | —              |
+| `fechaPago`      | string (date)    | Sí          | `yyyy-MM-dd`   |
+| `observaciones`  | string           | No          | —              |
+
+**Respuesta 201:** `PagoCuotaResponseDto[]` — un elemento por cuota registrada.
+
+```json
+[
+  {
+    "id": 10,
+    "socioId": 1,
+    "anio": 2026,
+    "mes": 6,
+    "nombreMes": "junio",
+    "descripcion": "junio 2026",
+    "fechaPago": "2026-06-20T03:00:00Z",
+    "importe": 500.0,
+    "metodoCobro": "EFECTIVO"
+  }
+]
+```
+
+> Los `id` de esta respuesta son los que el front usa, sin transformación, para armar el
+> query param `ids` de `GET /api/v1/clientes/socios/{id}/pago-cuota/comprobante`.
+
+**Errores:**
+
+| HTTP Status | Código                | Cuándo ocurre                                                                    |
+| ----------- | --------------------- | -------------------------------------------------------------------------------- |
+| 400         | `ID_INVALIDO`         | `id` no es un entero positivo                                                    |
+| 400         | `SOLICITUD_INVALIDA`  | Campo obligatorio faltante, `cantidadCuotas` fuera de 1..12 o `importeTotal` ≤ 0 |
+| 404         | `SOCIO_NO_ENCONTRADO` | El `id` no existe o no corresponde a un socio                                    |
+| 401         | —                     | Token ausente, inválido o expirado                                               |
+
+---
+
 ### `GET /api/v1/clientes/socios/{id}/pago-cuota/comprobante`
 
 Descarga el comprobante en PDF de uno o varios pagos de cuota registrados en una misma operación de alta. El PDF se genera en el backend con Apache PDFBox y contiene, en prosa, el/los mes(es) cubierto(s), el monto total abonado y el medio de pago utilizado. Todo comprobante incluye arriba, de forma automática, la fecha/hora de generación del documento.
@@ -944,6 +1052,159 @@ Registra un nuevo cliente de tipo empresa.
 
 ---
 
+### `GET /api/v1/clientes/cedula/{cedula}`
+
+Busca un cliente por cédula. Es el equivalente a `GET /api/v1/clientes/rut/{rut}` para
+clientes con cédula (socios y particulares).
+
+**Path param:** `cedula` — string; se acepta con o sin puntos y guion (se normaliza).
+
+**Respuesta 200:** `BusquedaCedulaResponseDto`
+
+```json
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "cedula": "12345678",
+  "telefono": "099123456",
+  "mail": "juan.perez@mail.com",
+  "observaciones": null,
+  "tipoCliente": "SOCIO"
+}
+```
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                             |
+| ----------- | ----------------------- | ----------------------------------------- |
+| 400         | `CEDULA_INVALIDA`       | La cédula no cumple el algoritmo uruguayo |
+| 404         | `CLIENTE_NO_ENCONTRADO` | No existe un cliente con esa cédula       |
+| 401         | —                       | Token ausente, inválido o expirado        |
+
+---
+
+### `POST /api/v1/clientes/exportar`
+
+Exporta a Excel el listado de clientes que cumple los filtros. Recibe los mismos filtros que
+`GET /api/v1/clientes`, pero en el body en lugar de query params, y sin paginación: exporta
+todo el resultado.
+
+**Body** (`application/json`): `ListadoClientesRequestDto`
+
+```json
+{
+  "tipoCliente": "SOCIO",
+  "nombre": "pérez",
+  "identificador": "12345678",
+  "estado": "ACTIVO"
+}
+```
+
+Todos los campos son opcionales; un body `{}` exporta todos los clientes.
+
+**Respuesta 200:** cuerpo binario.
+
+| Header                | Valor                                                               |
+| --------------------- | ------------------------------------------------------------------- |
+| `Content-Type`        | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| `Content-Disposition` | `attachment; filename="clientes_yyyy-MM-dd_HHmm.xlsx"`              |
+
+**Errores:**
+
+| HTTP Status | Código                    | Cuándo ocurre                                          |
+| ----------- | ------------------------- | ------------------------------------------------------ |
+| 400         | `SOLICITUD_INVALIDA`      | `nombre` supera los 100 caracteres, o un enum inválido |
+| 400         | `LIMITE_TAMANIO_EXCEDIDO` | El resultado supera el límite de filas exportables     |
+| 401         | —                         | Token ausente, inválido o expirado                     |
+
+---
+
+### `GET /api/v1/clientes/socios/importar/plantilla`
+
+Descarga la plantilla Excel vacía (con encabezados y dos filas de ejemplo) para la
+importación masiva de socios.
+
+**Respuesta 200:** cuerpo binario.
+
+| Header                | Valor                                                                      |
+| --------------------- | -------------------------------------------------------------------------- |
+| `Content-Type`        | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`        |
+| `Content-Disposition` | `attachment; filename="plantilla_importacion_socios_yyyy-MM-dd_HHmm.xlsx"` |
+
+**Columnas de la plantilla** (15, en este orden exacto):
+
+```
+numeroSocio | cedula | nombreCompleto | fechaNacimiento (dd/MM/yyyy) | telefono |
+email | metodoCobro | pais | departamento | ciudad | direccion |
+observaciones | categoriaSocio | fechaIngreso (dd/MM/yyyy) | estado
+```
+
+> `metodoCobro`, `categoriaSocio` y `estado` se cargan con la etiqueta legible, no con el
+> valor del enum (ej. `Efectivo`, `Socio común`, `Activo`).
+
+**Errores:**
+
+| HTTP Status | Código | Cuándo ocurre                      |
+| ----------- | ------ | ---------------------------------- |
+| 401         | —      | Token ausente, inválido o expirado |
+
+---
+
+### `POST /api/v1/clientes/socios/importar`
+
+Importa socios en masa desde un Excel con el formato de la plantilla.
+
+**Body** (`multipart/form-data`):
+
+| Campo  | Tipo | Obligatorio | Descripción                                         |
+| ------ | ---- | ----------- | --------------------------------------------------- |
+| `file` | file | Sí          | Excel (`.xlsx`) con las 15 columnas de la plantilla |
+
+**Comportamiento:** la importación es **parcial y fila a fila**. Las filas válidas se dan de
+alta aunque otras fallen; las filas vacías se ignoran y no cuentan en `totalFilas`. La
+respuesta es siempre **201**, incluso si ninguna fila se pudo importar: el detalle de lo que
+falló viene en `detalleErrores`.
+
+**Respuesta 201:** `ImportacionSociosResponseDto`
+
+```json
+{
+  "totalFilas": 10,
+  "filasImportadas": 8,
+  "filasConError": 2,
+  "detalleErrores": [
+    {
+      "numeroFila": 4,
+      "codigoError": "CEDULA_DUPLICADA",
+      "motivo": "Ya existe un socio con la cédula 12345678"
+    },
+    { "numeroFila": 7, "codigoError": "FILA_INVALIDA", "motivo": "Fecha inválida: '31/02/2020'" }
+  ]
+}
+```
+
+> `numeroFila` es el número de fila tal como se ve en Excel (la fila 1 es el encabezado, así
+> que los datos empiezan en la 2), para que el usuario pueda ubicar el error en su archivo.
+
+**Códigos posibles dentro de `detalleErrores`:**
+
+| Código                   | Cuándo ocurre                                                            |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `CEDULA_DUPLICADA`       | La cédula ya existe en la base o está repetida antes en el mismo archivo |
+| `EMAIL_DUPLICADO`        | El email ya existe en la base o está repetido antes en el mismo archivo  |
+| `NUMERO_SOCIO_DUPLICADO` | El número de socio ya existe o está repetido antes en el mismo archivo   |
+| `FILA_INVALIDA`          | Campo obligatorio faltante, fecha o número mal formados, cédula inválida |
+
+**Errores (de la request completa):**
+
+| HTTP Status | Código                         | Cuándo ocurre                                                                         |
+| ----------- | ------------------------------ | ------------------------------------------------------------------------------------- |
+| 400         | `ARCHIVO_IMPORTACION_INVALIDO` | El archivo no es un Excel válido, no tiene las 15 columnas, o no tiene filas de datos |
+| 400         | `SOLICITUD_INVALIDA`           | Falta el campo `file`                                                                 |
+| 401         | —                              | Token ausente, inválido o expirado                                                    |
+
+---
+
 ## Clientes — DTOs
 
 ### Request DTOs
@@ -1090,9 +1351,63 @@ Registra un nuevo cliente de tipo empresa.
 }
 ```
 
+#### `BusquedaCedulaResponseDto` — respuesta de `GET /api/v1/clientes/cedula/{cedula}`
+
+```typescript
+{
+  id: number;
+  nombre: string;
+  cedula: string; // normalizada, sin puntos ni guion
+  telefono: string | null;
+  mail: string | null;
+  observaciones: string | null;
+  tipoCliente: TipoCliente; // SOCIO o PARTICULAR
+}
+```
+
+#### `PagoCuotaResponseDto` — ítem de `POST /api/v1/clientes/socios/{id}/pago-cuota`
+
+```typescript
+{
+  id: number;
+  socioId: number;
+  anio: number;
+  mes: number; // 1..12
+  nombreMes: string; // en español (ej. "junio")
+  descripcion: string; // ej. "junio 2026"
+  fechaPago: string; // Instant ISO-8601 UTC
+  importe: number; // parte proporcional del importeTotal
+  metodoCobro: MetodoCobro;
+}
+```
+
+#### `ImportacionSociosResponseDto` — respuesta de `POST /api/v1/clientes/socios/importar`
+
+```typescript
+{
+  totalFilas: number;      // filas con datos procesadas (excluye vacías)
+  filasImportadas: number;
+  filasConError: number;
+  detalleErrores: FilaErrorImportacionDto[];
+}
+```
+
+#### `FilaErrorImportacionDto` — ítem de `detalleErrores`
+
+```typescript
+{
+  numeroFila: number; // número de fila tal como se ve en Excel
+  codigoError: string; // CEDULA_DUPLICADA | EMAIL_DUPLICADO | NUMERO_SOCIO_DUPLICADO | FILA_INVALIDA
+  motivo: string; // mensaje legible para mostrarle al usuario
+}
+```
+
 ---
 
 ## Reservas — Endpoints
+
+> Incluye `POST /api/v1/pago_reserva/{id}`, que cuelga de una ruta base propia pero pertenece
+> al dominio de reservas y está documentado en esta sección.
 
 ### `GET /api/v1/reservas`
 
@@ -1587,6 +1902,174 @@ Ver `PagoAsociadoReservaDto` en [Reservas — DTOs](#reservas--dtos). Si la rese
 
 ---
 
+### `PUT /api/v1/reservas/{id}`
+
+Modifica una reserva existente.
+
+**Path param:** `id` — integer positivo
+
+**Body** (`application/json`): `ReservaModificacionRequestDto`
+
+```json
+{
+  "servicioId": 3,
+  "procedencia": "CAMPING",
+  "fechaInicio": "2026-07-10",
+  "fechaFin": "2026-07-12",
+  "cantidadTotal": 4,
+  "cantidadMenores": 1,
+  "cantidad": 2,
+  "notas": "Cambio de fechas pedido por el cliente"
+}
+```
+
+| Campo             | Tipo          | Obligatorio | Validación   |
+| ----------------- | ------------- | ----------- | ------------ |
+| `servicioId`      | integer       | Sí          | > 0          |
+| `procedencia`     | `Procedencia` | Sí          | —            |
+| `fechaInicio`     | string (date) | Sí          | `yyyy-MM-dd` |
+| `fechaFin`        | string (date) | Sí          | `yyyy-MM-dd` |
+| `cantidadTotal`   | integer       | No          | >= 0         |
+| `cantidadMenores` | integer       | No          | >= 0         |
+| `cantidad`        | integer       | No          | >= 0         |
+| `notas`           | string        | No          | —            |
+
+> El cliente de la reserva no se puede cambiar por este endpoint.
+
+**Respuesta 200:** `ReservaModificacionResponseDto`
+
+```json
+{ "id": 12 }
+```
+
+**Errores:**
+
+| HTTP Status | Código                        | Cuándo ocurre                                              |
+| ----------- | ----------------------------- | ---------------------------------------------------------- |
+| 400         | `ID_INVALIDO`                 | `id` no es un entero positivo                              |
+| 400         | `SOLICITUD_INVALIDA`          | Campo obligatorio faltante o valor fuera de rango          |
+| 400         | `RESERVA_NO_MODIFICABLE`      | La reserva está en un estado que no admite modificaciones  |
+| 400         | `FECHA_FIN_ANTERIOR_A_INICIO` | `fechaFin` < `fechaInicio`                                 |
+| 400         | `FECHAS_SOLAPADAS`            | El servicio ya está ocupado en ese rango                   |
+| 400         | `SERVICIO_NO_DISPONIBLE`      | El servicio está deshabilitado o no admite esa procedencia |
+| 404         | `RESERVA_NO_ENCONTRADA`       | No existe una reserva con ese `id`                         |
+| 404         | `SERVICIO_NO_ENCONTRADO`      | No existe el `servicioId` indicado                         |
+| 401         | —                             | Token ausente, inválido o expirado                         |
+
+---
+
+### `POST /api/v1/reservas/exportar`
+
+Exporta a Excel el listado de reservas que cumple los filtros. Recibe los mismos filtros que
+`GET /api/v1/reservas`, pero en el body y sin paginación.
+
+**Body** (`application/json`): `ListadoReservasRequestDto`. Todos los campos son opcionales;
+un body `{}` exporta todas las reservas.
+
+**Respuesta 200:** cuerpo binario.
+
+| Header                | Valor                                                               |
+| --------------------- | ------------------------------------------------------------------- |
+| `Content-Type`        | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| `Content-Disposition` | `attachment; filename="reservas_yyyy-MM-dd_HHmm.xlsx"`              |
+
+**Errores:**
+
+| HTTP Status | Código                    | Cuándo ocurre                                      |
+| ----------- | ------------------------- | -------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`      | Filtro con valor inválido                          |
+| 400         | `LIMITE_TAMANIO_EXCEDIDO` | El resultado supera el límite de filas exportables |
+| 401         | —                         | Token ausente, inválido o expirado                 |
+
+---
+
+### `GET /api/v1/reservas/{id}/cancelacion`
+
+Consulta previa a cancelar: informa si la reserva puede cancelarse directamente o si tiene
+pagos asociados que obligan a decidir sobre una devolución. El front lo usa para saber si
+tiene que pedirle datos al usuario antes de llamar al `PATCH`.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:** `ReservaCancelacionCheckResponseDto`
+
+```json
+{
+  "puedeCancelarseDirectamente": false,
+  "pagosAsociados": [
+    { "id": 5, "fecha": "2026-06-01", "importe": 1500.0, "formaPago": "EFECTIVO" }
+  ],
+  "importeTotalPagos": 1500.0
+}
+```
+
+| Campo                         | Tipo                       | Descripción                                                      |
+| ----------------------------- | -------------------------- | ---------------------------------------------------------------- |
+| `puedeCancelarseDirectamente` | boolean                    | `true` si no hay pagos asociados (no hay que decidir devolución) |
+| `pagosAsociados`              | `PagoAsociadoReservaDto[]` | Pagos registrados de la reserva                                  |
+| `importeTotalPagos`           | number                     | Suma de los pagos; techo del importe de devolución               |
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                                            |
+| ----------- | ----------------------- | -------------------------------------------------------- |
+| 400         | `ID_INVALIDO`           | `id` no es un entero positivo                            |
+| 400         | `RESERVA_NO_CANCELABLE` | La reserva no está en estado `PENDIENTE` ni `CONFIRMADA` |
+| 404         | `RESERVA_NO_ENCONTRADA` | No existe una reserva con ese `id`                       |
+| 401         | —                       | Token ausente, inválido o expirado                       |
+
+---
+
+### `PATCH /api/v1/reservas/{id}/cancelacion`
+
+Cancela una reserva y, opcionalmente, registra la devolución de lo pagado.
+
+**Path param:** `id` — integer positivo
+
+**Body** (`application/json`): `ReservaCancelacionRequestDto`
+
+```json
+{
+  "generarDevolucion": true,
+  "formaPago": "TRANSFERENCIA",
+  "importeDevolucion": 1500.0
+}
+```
+
+| Campo               | Tipo             | Obligatorio | Validación                                                     |
+| ------------------- | ---------------- | ----------- | -------------------------------------------------------------- |
+| `generarDevolucion` | boolean          | Condicional | Obligatorio **solo si la reserva tiene pagos asociados**       |
+| `formaPago`         | `FormaPago`      | Condicional | Obligatorio si `generarDevolucion: true`                       |
+| `importeDevolucion` | number (decimal) | Condicional | Obligatorio si `generarDevolucion: true`; > 0 y ≤ total pagado |
+
+**Comportamiento:**
+
+- **Sin pagos asociados**: el body puede ir vacío (`{}`); la reserva pasa a `CANCELADA`.
+- **Con pagos y `generarDevolucion: false`**: se cancela sin registrar movimiento financiero.
+- **Con pagos y `generarDevolucion: true`**: se registra un egreso en Finanzas con concepto
+  `DEVOLUCION_RESERVA`, por `importeDevolucion` y con la `formaPago` indicada, y luego se
+  cancela la reserva. Todo en la misma transacción.
+
+> Solo se pueden cancelar reservas en estado `PENDIENTE` o `CONFIRMADA`. La devolución admite
+> importes parciales, siempre que no superen el total pagado.
+
+**Respuesta 204:** sin body.
+
+**Errores:**
+
+| HTTP Status | Código                                   | Cuándo ocurre                                                   |
+| ----------- | ---------------------------------------- | --------------------------------------------------------------- |
+| 400         | `ID_INVALIDO`                            | `id` no es un entero positivo                                   |
+| 400         | `RESERVA_NO_CANCELABLE`                  | La reserva no está en estado `PENDIENTE` ni `CONFIRMADA`        |
+| 400         | `DECISION_DEVOLUCION_REQUERIDA`          | Hay pagos asociados y no se envió `generarDevolucion`           |
+| 400         | `FORMA_PAGO_REQUERIDA_PARA_DEVOLUCION`   | `generarDevolucion: true` sin `formaPago`                       |
+| 400         | `IMPORTE_DEVOLUCION_INVALIDO`            | `generarDevolucion: true` con `importeDevolucion` ausente o ≤ 0 |
+| 400         | `IMPORTE_DEVOLUCION_SUPERA_TOTAL_PAGADO` | `importeDevolucion` mayor que el total pagado                   |
+| 404         | `RESERVA_NO_ENCONTRADA`                  | No existe una reserva con ese `id`                              |
+| 401         | —                                        | Token ausente, inválido o expirado                              |
+
+---
+
 ## Reservas — DTOs
 
 ### Request DTOs
@@ -1669,7 +2152,50 @@ Ver `PagoAsociadoReservaDto` en [Reservas — DTOs](#reservas--dtos). Si la rese
 }
 ```
 
+#### `ReservaModificacionRequestDto` — body en `PUT /api/v1/reservas/{id}`
+
+```typescript
+{
+  servicioId: number       // obligatorio, > 0
+  procedencia: Procedencia // obligatorio
+  fechaInicio: string      // obligatorio, LocalDate yyyy-MM-dd
+  fechaFin: string         // obligatorio, LocalDate yyyy-MM-dd
+  cantidadTotal?: number   // opcional, >= 0
+  cantidadMenores?: number // opcional, >= 0
+  cantidad?: number        // opcional, >= 0
+  notas?: string           // opcional
+}
+```
+
+#### `ReservaCancelacionRequestDto` — body en `PATCH /api/v1/reservas/{id}/cancelacion`
+
+```typescript
+{
+  generarDevolucion?: boolean // condicional, requerido si la reserva tiene pagos asociados
+  formaPago?: FormaPago       // condicional, requerido si generarDevolucion: true
+  importeDevolucion?: number  // condicional, requerido si generarDevolucion: true; > 0 y <= total pagado
+}
+```
+
 ### Response DTOs
+
+#### `ReservaModificacionResponseDto` — respuesta de `PUT /api/v1/reservas/{id}`
+
+```typescript
+{
+  id: number;
+}
+```
+
+#### `ReservaCancelacionCheckResponseDto` — respuesta de `GET /api/v1/reservas/{id}/cancelacion`
+
+```typescript
+{
+  puedeCancelarseDirectamente: boolean; // true si no hay pagos asociados
+  pagosAsociados: PagoAsociadoReservaDto[];
+  importeTotalPagos: number;
+}
+```
 
 #### `ListadoReservasResponseDto` — ítem dentro del listado paginado
 
@@ -1811,17 +2337,24 @@ Registra manualmente un ingreso o egreso.
 }
 ```
 
-| Campo            | Tipo             | Obligatorio | Validación   |
-| ---------------- | ---------------- | ----------- | ------------ |
-| `tipoMovimiento` | `TipoMovimiento` | Sí          | —            |
-| `fecha`          | string (date)    | No          | `yyyy-MM-dd` |
-| `importe`        | number (decimal) | Sí          | > 0          |
-| `concepto`       | `Concepto`       | Sí          | —            |
-| `procedencia`    | `Procedencia`    | Sí          | —            |
-| `formaPago`      | `FormaPago`      | Sí          | —            |
-| `notas`          | string           | No          | —            |
+| Campo            | Tipo             | Obligatorio | Validación             |
+| ---------------- | ---------------- | ----------- | ---------------------- |
+| `tipoMovimiento` | `TipoMovimiento` | Sí          | —                      |
+| `fecha`          | string (date)    | No          | `yyyy-MM-dd`           |
+| `importe`        | number (decimal) | Sí          | > 0, hasta 2 decimales |
+| `concepto`       | `Concepto`       | Sí          | —                      |
+| `procedencia`    | `Procedencia`    | Sí          | —                      |
+| `formaPago`      | `FormaPago`      | Sí          | —                      |
+| `notas`          | string           | No          | —                      |
+| `reservaId`      | integer          | No          | Uso interno, ver nota  |
+| `pagoCuotaId`    | integer          | No          | Uso interno, ver nota  |
 
 > Si no se envía `fecha`, se utilizará la fecha actual del sistema.
+
+> `reservaId` y `pagoCuotaId` existen para que el sistema vincule el movimiento con su origen
+> cuando lo genera automáticamente (pago de reserva, pago de cuota). El front **no** los envía
+> al registrar un movimiento manual: un movimiento con alguno de estos campos queda sujeto a
+> las restricciones de eliminación descritas en `DELETE /api/v1/finanzas/{id}`.
 
 **Respuesta 201:**
 
@@ -1846,6 +2379,126 @@ Registra manualmente un ingreso o egreso.
 | ----------- | -------------------- | ------------------------------------------- |
 | 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o valor inválido |
 | 401         | —                    | Token ausente, inválido o expirado          |
+
+---
+
+### `GET /api/v1/finanzas`
+
+Retorna el listado paginado de movimientos financieros con filtros opcionales.
+
+**Query params** (todos opcionales):
+
+| Param            | Tipo             | Validación   |
+| ---------------- | ---------------- | ------------ |
+| `fechaDesde`     | string (date)    | `yyyy-MM-dd` |
+| `fechaHasta`     | string (date)    | `yyyy-MM-dd` |
+| `concepto`       | `Concepto`       | —            |
+| `tipoMovimiento` | `TipoMovimiento` | —            |
+
+Más los de `PageRequestDto`. `sortField` admite únicamente **`importe`** y **`fecha`**.
+
+**Respuesta 200:** `PageResponse<ListadoFinanzasResponseDto>`
+
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "concepto": "PAGO_RESERVA",
+      "fecha": "2026-06-20",
+      "importe": 1500.0,
+      "notas": "Pago realizado en administración",
+      "tipoMovimiento": "INGRESO"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 42,
+  "totalPages": 5,
+  "first": true,
+  "last": false
+}
+```
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                                             |
+| ----------- | -------------------- | --------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | `sortField` fuera de los permitidos, o un filtro inválido |
+| 401         | —                    | Token ausente, inválido o expirado                        |
+
+---
+
+### `GET /api/v1/finanzas/{id}`
+
+Retorna el detalle de un movimiento financiero, con su información de auditoría.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:** `FinanzaDetalleResponseDto`
+
+```json
+{
+  "id": 1,
+  "tipoMovimiento": "INGRESO",
+  "procedencia": "SEDE",
+  "concepto": "PAGO_RESERVA",
+  "fecha": "2026-06-20",
+  "importe": 1500.0,
+  "formaPago": "EFECTIVO",
+  "notas": "Pago realizado en administración",
+  "createdAt": "2026-06-20T14:05:00Z",
+  "updatedAt": "2026-06-20T14:05:00Z",
+  "createdBy": "admin@cipolflo.com",
+  "updatedBy": "admin@cipolflo.com"
+}
+```
+
+> A diferencia de `FinanzaResponseDto`, el detalle **no** incluye `reservaId` ni
+> `pagoCuotaId`, pero sí los campos de auditoría.
+
+**Errores:**
+
+| HTTP Status | Código                  | Cuándo ocurre                      |
+| ----------- | ----------------------- | ---------------------------------- |
+| 400         | `ID_INVALIDO`           | `id` no es un entero positivo      |
+| 404         | `FINANZA_NO_ENCONTRADA` | No existe una finanza con ese `id` |
+| 401         | —                       | Token ausente, inválido o expirado |
+
+---
+
+### `POST /api/v1/finanzas/export`
+
+Exporta a Excel los movimientos financieros que cumplen los filtros. Recibe los mismos
+filtros que `GET /api/v1/finanzas`, pero en el body y sin paginación.
+
+**Body** (`application/json`): `ListadoFinanzasRequestDto`
+
+```json
+{
+  "fechaDesde": "2026-06-01",
+  "fechaHasta": "2026-06-30",
+  "concepto": "PAGO_RESERVA",
+  "tipoMovimiento": "INGRESO"
+}
+```
+
+Todos los campos son opcionales; un body `{}` exporta todos los movimientos.
+
+**Respuesta 200:** cuerpo binario.
+
+| Header                | Valor                                                               |
+| --------------------- | ------------------------------------------------------------------- |
+| `Content-Type`        | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| `Content-Disposition` | `attachment; filename="finanzas_yyyy-MM-dd_HHmm.xlsx"`              |
+
+**Errores:**
+
+| HTTP Status | Código                    | Cuándo ocurre                                      |
+| ----------- | ------------------------- | -------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`      | Filtro con valor inválido                          |
+| 400         | `LIMITE_TAMANIO_EXCEDIDO` | El resultado supera el límite de filas exportables |
+| 401         | —                         | Token ausente, inválido o expirado                 |
 
 ---
 
@@ -1901,12 +2554,25 @@ Elimina una finanza. La eliminación es **consciente del origen** del movimiento
 ```typescript
 {
   tipoMovimiento: TipoMovimiento
-  fecha?: string
-  importe: number
-  concepto: Concepto
   procedencia: Procedencia
+  concepto: Concepto
+  fecha?: string        // opcional, LocalDate yyyy-MM-dd; default hoy
+  importe: number       // > 0, hasta 2 decimales
   formaPago: FormaPago
   notas?: string
+  reservaId?: number    // uso interno del sistema, no lo envía el front
+  pagoCuotaId?: number  // uso interno del sistema, no lo envía el front
+}
+```
+
+#### `ListadoFinanzasRequestDto` — query params en `GET /api/v1/finanzas`, body en `POST /api/v1/finanzas/export`
+
+```typescript
+{
+  fechaDesde?: string        // opcional, LocalDate yyyy-MM-dd
+  fechaHasta?: string        // opcional, LocalDate yyyy-MM-dd
+  concepto?: Concepto        // opcional
+  tipoMovimiento?: TipoMovimiento // opcional
 }
 ```
 
@@ -1929,9 +2595,97 @@ Elimina una finanza. La eliminación es **consciente del origen** del movimiento
 }
 ```
 
+#### `FinanzaDetalleResponseDto` — respuesta de `GET /api/v1/finanzas/{id}`
+
+```typescript
+{
+  id: number;
+  tipoMovimiento: TipoMovimiento;
+  procedencia: Procedencia;
+  concepto: Concepto;
+  fecha: string; // LocalDate yyyy-MM-dd
+  importe: number;
+  formaPago: FormaPago;
+  notas: string | null;
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### `ListadoFinanzasResponseDto` — ítem dentro del listado paginado
+
+```typescript
+{
+  id: number;
+  concepto: Concepto;
+  fecha: string; // LocalDate yyyy-MM-dd
+  importe: number;
+  notas: string | null;
+  tipoMovimiento: TipoMovimiento;
+}
+```
+
 ---
 
 ## Integraciones — Endpoints
+
+> Endpoints que dependen de servicios externos: Azure Document Intelligence (`/api/v1/documentos`)
+> y el bot de Telegram (`/api/public/telegram`).
+
+### `POST /api/v1/documentos/analizar-factura`
+
+Envía una factura a Azure Document Intelligence y devuelve el resultado del análisis. El
+análisis queda persistido para consulta posterior.
+
+**Body** (`multipart/form-data`):
+
+| Campo  | Tipo | Obligatorio | Descripción                                   |
+| ------ | ---- | ----------- | --------------------------------------------- |
+| `file` | file | Sí          | Archivo de la factura (ver formatos y límite) |
+
+**Validaciones del archivo:**
+
+- Tamaño máximo: **4 MB**.
+- Formatos aceptados: PDF, JPG/JPEG, PNG, BMP, TIFF, HEIF.
+- Además del `Content-Type`, se verifican los _magic bytes_ del archivo: un archivo con
+  extensión o tipo declarado que no coincide con su contenido real se rechaza.
+
+**Respuesta 200:** `DocumentoAnalizadoResponseDto`
+
+```json
+{
+  "id": 7,
+  "nombreArchivo": "factura-ute-junio.pdf",
+  "tipoContenido": "application/pdf",
+  "modeloUsado": "prebuilt-invoice",
+  "fechaAnalisis": "2026-06-20",
+  "resultadoJson": "{ ... }"
+}
+```
+
+| Campo           | Tipo               | Descripción                                                  |
+| --------------- | ------------------ | ------------------------------------------------------------ |
+| `id`            | integer            | ID del análisis persistido                                   |
+| `nombreArchivo` | string             | Nombre original del archivo subido                           |
+| `tipoContenido` | string             | MIME type detectado                                          |
+| `modeloUsado`   | string             | Modelo de Azure aplicado                                     |
+| `fechaAnalisis` | string `LocalDate` | Fecha del análisis (`yyyy-MM-dd`)                            |
+| `resultadoJson` | string             | Respuesta cruda de Azure, como JSON serializado en un string |
+
+> `resultadoJson` es un **string**, no un objeto: el front tiene que parsearlo. Contiene la
+> respuesta de Azure tal cual, sin normalizar.
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                                                                 |
+| ----------- | -------------------- | ----------------------------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | Falta el archivo, está vacío, supera los 4 MB, o el formato no está permitido |
+| 401         | —                    | Token ausente, inválido o expirado                                            |
+| 500         | `ERROR_INTERNO`      | Falla la comunicación con Azure Document Intelligence                         |
+
+---
 
 ### `POST /api/public/telegram/webhook`
 
@@ -2241,6 +2995,177 @@ Elimina definitivamente un cliente autorizado de Telegram.
 
 ---
 
+### `GET /api/v1/ajustes/destinatarios-notificacion-email`
+
+Retorna el listado paginado de destinatarios de notificaciones administrativas por email
+(reporte semanal de reservas, avisos de cancelación), con filtros opcionales.
+
+**Query params** (todos opcionales):
+
+| Param       | Tipo    | Validación                                |
+| ----------- | ------- | ----------------------------------------- |
+| `alias`     | string  | contiene, case-insensitive, máx 100 chars |
+| `activo`    | boolean | —                                         |
+| `page`      | integer | >= 0, default 0                           |
+| `size`      | integer | 1–100, default 1                          |
+| `sortField` | string  | —                                         |
+| `sortOrder` | string  | `ASC` o `DESC`, default `ASC`             |
+
+**Respuesta 200:**
+
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "email": "administracion@cipolflo.com",
+      "alias": "Administración",
+      "activo": true,
+      "createdAt": "2026-01-10T09:00:00Z",
+      "updatedAt": "2026-01-10T09:00:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1,
+  "first": true,
+  "last": true
+}
+```
+
+---
+
+### `GET /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+Retorna el detalle de un destinatario de notificaciones por email.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 200:** mismo shape que un ítem del listado (ver arriba).
+
+**Errores:**
+
+| HTTP Status | Código                       | Cuándo ocurre                          |
+| ----------- | ---------------------------- | -------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`         | `id` no es un número positivo          |
+| 404         | `DESTINATARIO_NO_ENCONTRADO` | No existe un destinatario con ese `id` |
+| 401         | —                            | Token ausente, inválido o expirado     |
+
+---
+
+### `POST /api/v1/ajustes/destinatarios-notificacion-email`
+
+Da de alta un nuevo destinatario de notificaciones por email.
+
+**Body** (`application/json`):
+
+```json
+{
+  "email": "administracion@cipolflo.com",
+  "alias": "Administración"
+}
+```
+
+| Campo   | Tipo   | Obligatorio | Validación                                         |
+| ------- | ------ | ----------- | -------------------------------------------------- |
+| `email` | string | Sí          | formato de email válido, único, máx 255 caracteres |
+| `alias` | string | Sí          | no vacío, máx 100 caracteres                       |
+
+> El destinatario se crea con `activo: true`.
+
+**Respuesta 201:** mismo shape que `GET /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                             |
+| ----------- | -------------------- | ----------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA` | Campo obligatorio faltante o inválido     |
+| 400         | `EMAIL_DUPLICADO`    | Ya existe un destinatario con ese `email` |
+| 401         | —                    | Token ausente, inválido o expirado        |
+
+---
+
+### `PUT /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+Modifica el `alias` de un destinatario. El `email` **no es editable**: para cambiarlo hay
+que eliminar el destinatario y crear uno nuevo.
+
+**Path param:** `id` — integer positivo
+
+**Body** (`application/json`):
+
+```json
+{
+  "alias": "Tesorería"
+}
+```
+
+| Campo   | Tipo   | Obligatorio | Validación                   |
+| ------- | ------ | ----------- | ---------------------------- |
+| `alias` | string | Sí          | no vacío, máx 100 caracteres |
+
+**Respuesta 200:** mismo shape que `GET /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+**Errores:**
+
+| HTTP Status | Código                       | Cuándo ocurre                                             |
+| ----------- | ---------------------------- | --------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`         | Campo obligatorio faltante o inválido, o `id` no positivo |
+| 404         | `DESTINATARIO_NO_ENCONTRADO` | No existe un destinatario con ese `id`                    |
+| 401         | —                            | Token ausente, inválido o expirado                        |
+
+---
+
+### `PATCH /api/v1/ajustes/destinatarios-notificacion-email/{id}/habilitacion`
+
+Activa o desactiva un destinatario sin borrar el registro. Un destinatario desactivado
+deja de recibir notificaciones (no se incluye en `destinatariosActivos()`).
+
+**Path param:** `id` — integer positivo
+
+**Body** (`application/json`):
+
+```json
+{
+  "activo": false
+}
+```
+
+| Campo    | Tipo    | Obligatorio | Descripción                                |
+| -------- | ------- | ----------- | ------------------------------------------ |
+| `activo` | boolean | Sí          | `true` = habilitar, `false` = deshabilitar |
+
+**Respuesta 200:** mismo shape que `GET /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+**Errores:**
+
+| HTTP Status | Código                       | Cuándo ocurre                          |
+| ----------- | ---------------------------- | -------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`         | `activo` faltante, o `id` no positivo  |
+| 404         | `DESTINATARIO_NO_ENCONTRADO` | No existe un destinatario con ese `id` |
+| 401         | —                            | Token ausente, inválido o expirado     |
+
+---
+
+### `DELETE /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+Elimina definitivamente un destinatario de notificaciones por email.
+
+**Path param:** `id` — integer positivo
+
+**Respuesta 204:** sin body.
+
+**Errores:**
+
+| HTTP Status | Código                       | Cuándo ocurre                          |
+| ----------- | ---------------------------- | -------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`         | `id` no positivo                       |
+| 404         | `DESTINATARIO_NO_ENCONTRADO` | No existe un destinatario con ese `id` |
+| 401         | —                            | Token ausente, inválido o expirado     |
+
+---
+
 ## Ajustes — DTOs
 
 ### Request DTOs
@@ -2299,6 +3224,42 @@ Elimina definitivamente un cliente autorizado de Telegram.
 }
 ```
 
+#### `RegistroDestinatarioNotificacionEmailRequestDto` — body en `POST /api/v1/ajustes/destinatarios-notificacion-email`
+
+```typescript
+{
+  email: string; // obligatorio, formato de email válido, único, máx 255 chars
+  alias: string; // obligatorio, no vacío, máx 100 chars
+}
+```
+
+#### `ModificacionDestinatarioNotificacionEmailRequestDto` — body en `PUT /api/v1/ajustes/destinatarios-notificacion-email/{id}`
+
+```typescript
+{
+  alias: string; // obligatorio, no vacío, máx 100 chars
+}
+```
+
+> `email` no forma parte de este DTO: no es modificable.
+
+#### `HabilitacionDestinatarioNotificacionEmailRequestDto` — body en `PATCH /api/v1/ajustes/destinatarios-notificacion-email/{id}/habilitacion`
+
+```typescript
+{
+  activo: boolean; // obligatorio
+}
+```
+
+#### `ListadoDestinatariosNotificacionEmailRequestDto` — query params en `GET /api/v1/ajustes/destinatarios-notificacion-email`
+
+```typescript
+{
+  alias?: string  // opcional, máx 100 chars, contiene case-insensitive
+  activo?: boolean // opcional, null = todos
+}
+```
+
 ### Response DTOs
 
 #### `CostoCuotaResponseDto`
@@ -2335,6 +3296,155 @@ Elimina definitivamente un cliente autorizado de Telegram.
 }
 ```
 
+#### `DestinatarioNotificacionEmailResponseDto` / `ListadoDestinatarioNotificacionEmailResponseDto`
+
+```typescript
+{
+  id: number;
+  email: string;
+  alias: string;
+  activo: boolean;
+  createdAt: string; // Instant ISO-8601 UTC
+  updatedAt: string; // Instant ISO-8601 UTC
+}
+```
+
+---
+
+## Manuales — Endpoints
+
+Manuales en PDF del sistema (técnicos y de usuario final). Son archivos estáticos que viajan
+dentro del build del backend, así que el catálogo no depende de la base de datos: publicar o
+corregir un manual implica un despliegue.
+
+El catálogo está declarado en el backend y cada manual se identifica por una `clave` estable
+(la que va en la URL). Un manual puede estar declarado pero todavía no publicado: en ese caso
+aparece en el listado con `disponible: false`, sin `version` ni `fechaActualizacion`, y pedir
+su descarga devuelve `404 MANUAL_NO_DISPONIBLE`.
+
+**Claves disponibles:**
+
+| Categoría | Clave                    | Título visible                                  |
+| --------- | ------------------------ | ----------------------------------------------- |
+| `TECNICO` | `auth0-configuracion`    | Manual Técnico - Configuración de Auth0         |
+| `TECNICO` | `auth0-nuevo-usuario`    | Manual Técnico - Alta de Nuevo Usuario en Auth0 |
+| `TECNICO` | `azure-doc-intelligence` | Manual Técnico - Azure Document Intelligence    |
+| `TECNICO` | `bot-telegram`           | Manual Técnico - Bot de Telegram                |
+| `USUARIO` | `inicio-sesion`          | Manual de Inicio de Sesión                      |
+| `USUARIO` | `reservas`               | Manual de Módulo Reservas                       |
+| `USUARIO` | `clientes`               | Manual de Módulo Clientes                       |
+| `USUARIO` | `servicios`              | Manual de Módulo Servicios                      |
+| `USUARIO` | `finanzas`               | Manual de Módulo Finanzas                       |
+| `USUARIO` | `ajustes`                | Manual de Módulo Ajustes                        |
+
+> El front no debería hardcodear esta tabla: conviene armar la pantalla de ayuda con lo que
+> devuelve `GET /api/v1/manuales`, así los manuales nuevos aparecen sin tocar el front.
+
+---
+
+### `GET /api/v1/manuales`
+
+Lista el catálogo de manuales, con su estado de publicación, versión y fecha de última
+actualización.
+
+**Query param:**
+
+| Param       | Tipo              | Obligatorio | Validación                             |
+| ----------- | ----------------- | ----------- | -------------------------------------- |
+| `categoria` | `CategoriaManual` | No          | `TECNICO` o `USUARIO`; omitido = todas |
+
+**Respuesta 200:** `ManualResponseDto[]`
+
+```json
+[
+  {
+    "clave": "clientes",
+    "titulo": "Manual de Módulo Clientes",
+    "categoria": "USUARIO",
+    "disponible": true,
+    "version": "1.0",
+    "fechaActualizacion": "2026-07-31"
+  },
+  {
+    "clave": "ajustes",
+    "titulo": "Manual de Módulo Ajustes",
+    "categoria": "USUARIO",
+    "disponible": false,
+    "version": null,
+    "fechaActualizacion": null
+  }
+]
+```
+
+**Errores:**
+
+| HTTP Status | Código               | Cuándo ocurre                                          |
+| ----------- | -------------------- | ------------------------------------------------------ |
+| 400         | `SOLICITUD_INVALIDA` | `categoria` no es un valor válido de `CategoriaManual` |
+| 401         | —                    | Token ausente, inválido o expirado                     |
+
+---
+
+### `GET /api/v1/manuales/{clave}`
+
+Devuelve el PDF de un manual publicado.
+
+**Path param:** `clave` — string; una de las claves del catálogo (ver tabla). Se acepta en
+mayúsculas o minúsculas.
+
+**Query param:**
+
+| Param       | Tipo    | Obligatorio | Default | Descripción                                                              |
+| ----------- | ------- | ----------- | ------- | ------------------------------------------------------------------------ |
+| `descargar` | boolean | No          | `false` | `false` abre el PDF en el visor del navegador; `true` fuerza la descarga |
+
+**Respuesta 200:** cuerpo binario.
+
+| Header                | Valor                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `Content-Type`        | `application/pdf`                                                                      |
+| `Content-Disposition` | `inline` o `attachment` según `descargar`, con `filename*=UTF-8''<Título visible>.pdf` |
+
+> El nombre de descarga es el título visible del manual (ej. `Manual de Módulo Clientes.pdf`),
+> no el nombre interno del archivo. Va codificado en UTF-8 por los acentos, por eso el header
+> usa la forma `filename*`.
+
+**Errores:**
+
+| HTTP Status | Código                 | Cuándo ocurre                                                        |
+| ----------- | ---------------------- | -------------------------------------------------------------------- |
+| 400         | `SOLICITUD_INVALIDA`   | `clave` vacía                                                        |
+| 404         | `MANUAL_NO_ENCONTRADO` | La `clave` no corresponde a ningún manual del catálogo               |
+| 404         | `MANUAL_NO_DISPONIBLE` | El manual existe en el catálogo pero su PDF todavía no fue publicado |
+| 401         | —                      | Token ausente, inválido o expirado                                   |
+
+> Conviene distinguir los dos 404 en el front: `MANUAL_NO_ENCONTRADO` es una URL rota,
+> mientras que `MANUAL_NO_DISPONIBLE` se le puede mostrar al usuario como "manual en
+> preparación".
+
+---
+
+## Manuales — DTOs
+
+### Response DTOs
+
+#### `ManualResponseDto`
+
+```typescript
+{
+  clave: string; // identificador estable usado en la URL
+  titulo: string; // nombre visible para el usuario
+  categoria: CategoriaManual; // TECNICO | USUARIO
+  disponible: boolean; // false = declarado pero sin PDF publicado
+  version: string | null; // null si disponible es false
+  fechaActualizacion: string | null; // LocalDate ISO-8601 (yyyy-MM-dd); null si disponible es false
+}
+```
+
+> `fechaActualizacion` es un `LocalDate` (fecha sola, sin hora ni zona), a diferencia de los
+> `createdAt`/`updatedAt` del resto de la API que son `Instant` UTC. Representa la fecha de
+> revisión del documento, no un momento exacto.
+
 ---
 
 ## Manejo de errores
@@ -2348,12 +3458,17 @@ Todos los errores retornan el siguiente body:
 }
 ```
 
-| HTTP Status | Cuándo ocurre                                                                                           |
-| ----------- | ------------------------------------------------------------------------------------------------------- |
-| 400         | Validación fallida en body o query params                                                               |
-| 401         | Token ausente, inválido o expirado (o, en el webhook de Telegram, `TELEGRAM_SECRET_INVALIDO`)           |
-| 403         | Usuario autenticado sin permisos para la operación                                                      |
-| 404         | Recurso no encontrado por el ID proporcionado                                                           |
-| 409         | Conflicto de negocio (ej: deshabilitar con reservas activas sin confirmar)                              |
-| 428         | Falta una precondición para proceder (ej: confirmar la eliminación de un ingreso de reserva ya cerrada) |
-| 500         | Error interno del servidor                                                                              |
+| HTTP Status | Cuándo ocurre                                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| 400         | Validación fallida en body o query params, o regla de negocio incumplida                                              |
+| 401         | Token ausente, inválido o expirado (o, en el webhook de Telegram, `TELEGRAM_SECRET_INVALIDO`)                         |
+| 404         | Recurso no encontrado por el ID proporcionado                                                                         |
+| 428         | La operación requiere una confirmación explícita del usuario antes de ejecutarse (ver `DELETE /api/v1/finanzas/{id}`) |
+| 500         | Error inesperado; el body trae `ERROR_INTERNO` sin detalle del fallo                                                  |
+
+> Las reglas de negocio incumplidas se devuelven como **400** con un código propio
+> (`RESERVA_NO_CANCELABLE`, `TARIFA_OBLIGATORIA_NO_ELIMINABLE`, etc.), no como 409. La API no
+> usa 409 ni 403: como todos los endpoints autenticados exigen únicamente estar logueado, un
+> token válido nunca produce un 403.
+> | 428 | Falta una precondición para proceder (ej: confirmar la eliminación de un ingreso de reserva ya cerrada) |
+> | 500 | Error interno del servidor |

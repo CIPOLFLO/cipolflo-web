@@ -7,6 +7,15 @@ export enum EstadoReserva {
   VencidaSinPago = 'VENCIDA_SIN_PAGO',
 }
 
+/**
+ * Estados en los que la reserva admite edición. El resto (En curso, Finalizada, Cancelada,
+ * Vencida sin pago) es histórico o inmutable: la acción del listado, el botón del detalle
+ * y el acceso por URL directa a `/reservas/:id/modificar` se apoyan en este predicado.
+ */
+export function esReservaEditable(estado: EstadoReserva): boolean {
+  return estado === EstadoReserva.Pendiente || estado === EstadoReserva.Confirmada;
+}
+
 export const ESTADO_RESERVA_OPTIONS = [
   { label: 'Pendiente', value: EstadoReserva.Pendiente },
   { label: 'Confirmada', value: EstadoReserva.Confirmada },

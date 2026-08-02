@@ -15,7 +15,14 @@ import {
 } from '../../../shared';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { ClientesService } from '../services/cliente.service';
-import { METODO_COBRO_LABEL, TipoCliente, CATEGORIA_SOCIO_LABEL } from '../models/cliente.model';
+import {
+  METODO_COBRO_LABEL,
+  TipoCliente,
+  CATEGORIA_SOCIO_LABEL,
+  ESTADO_SOCIO_LABEL,
+  TIPO_CLIENTE_LABEL,
+} from '../models/cliente.model';
+import { CedulaFormatPipe } from '../pipes/cedula-format.pipe';
 
 @Component({
   standalone: true,
@@ -39,6 +46,7 @@ export class DetalleCliente {
   private readonly clientesService = inject(ClientesService);
   protected readonly metodoCobroLabel = METODO_COBRO_LABEL;
   private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly cedulaFormat = inject(CedulaFormatPipe);
 
   protected readonly clienteId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
@@ -73,7 +81,7 @@ export class DetalleCliente {
 
     return [
       { key: 'nombre', label: 'Nombre', value: c.nombre },
-      { key: 'cedula', label: 'Cédula', value: c.cedula },
+      { key: 'cedula', label: 'Cédula', value: this.cedulaFormat.transform(c.cedula) || null },
       { key: 'fechaNacimiento', label: 'Fecha de nacimiento', value: c.fechaNacimiento },
       { key: 'telefono', label: 'Teléfono', value: c.telefono },
       { key: 'email', label: 'Email', value: c.email },
@@ -87,8 +95,8 @@ export class DetalleCliente {
       { key: 'ciudad', label: 'Ciudad', value: c.ciudad },
       { key: 'direccion', label: 'Dirección', value: c.direccion },
       { key: 'numeroSocio', label: 'Nro de socio', value: c.numeroSocio?.toString() ?? null },
-      { key: 'tipoCliente', label: 'Tipo de cliente', value: c.tipoCliente },
-      { key: 'estado', label: 'Estado', value: c.estado },
+      { key: 'tipoCliente', label: 'Tipo de cliente', value: TIPO_CLIENTE_LABEL[c.tipoCliente] },
+      { key: 'estado', label: 'Estado', value: c.estado ? ESTADO_SOCIO_LABEL[c.estado] : null },
       {
         key: 'categoriaSocio',
         label: 'Categoría',

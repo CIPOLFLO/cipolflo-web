@@ -35,6 +35,12 @@ export class ServicioValidacionesService {
     ) {
       errs['capacidad'] = 'Solo se puede completar cantidad o capacidad, no ambas.';
     }
+    if (cantidad && (submitted || cantidad.touched) && cantidad.hasError('min')) {
+      errs['cantidad'] = 'La cantidad debe ser mayor a 0.';
+    }
+    if (capacidad && (submitted || capacidad.touched) && capacidad.hasError('min')) {
+      errs['capacidad'] = 'La capacidad debe ser mayor a 0.';
+    }
     return errs;
   }
 

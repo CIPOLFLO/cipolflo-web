@@ -10,6 +10,7 @@ import {
   DetailSection,
   ESTADO_RESERVA_LABEL,
   ESTADO_RESERVA_VALUE_CLASS,
+  esReservaEditable,
   FormActions,
   FormLayout,
   PageLayout,
@@ -210,6 +211,11 @@ export class DetalleReserva {
       fechaRegistro: e.createdAt,
       registradoPor: e.createdBy,
     };
+  });
+
+  protected readonly puedeModificar = computed<boolean>(() => {
+    const e = this.reserva();
+    return e ? esReservaEditable(e.estado) : false;
   });
 
   protected onModificar(): void {

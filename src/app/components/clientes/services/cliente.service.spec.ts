@@ -221,6 +221,7 @@ describe('ClientesService', () => {
 
   describe('modificarParticular', () => {
     const dto: ModificacionParticularRequestDto = {
+      cedula: '5.191.926-8',
       nombreCompleto: 'Laura Fernández',
       telefono: '099222222',
       mail: 'laura@mail.com',

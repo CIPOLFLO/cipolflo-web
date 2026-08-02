@@ -54,6 +54,28 @@
   gap: 10px;
 }
 
+.header__help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.header__help:hover,
+.header__help.active {
+  background-color: var(--color-primary-hover);
+  color: var(--color-text-inverse);
+}
+
+.header__help .pi {
+  font-size: 20px;
+}
+
 .header__avatar {
   width: 34px;
   height: 34px;

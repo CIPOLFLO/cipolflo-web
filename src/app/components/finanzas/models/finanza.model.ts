@@ -24,7 +24,7 @@ export enum Concepto {
   Antel = 'ANTEL',
   Sueldos = 'SUELDOS',
   Barraca = 'BARRACA',
-  Otro = 'Otro',
+  Otro = 'OTRO',
   DevolucionReserva = 'DEVOLUCION_RESERVA',
 }
 
@@ -33,7 +33,7 @@ export const CONCEPTO_LABEL: Record<Concepto, string> = {
   [Concepto.PagoCuota]: 'Pago de cuota',
   [Concepto.Ute]: 'UTE',
   [Concepto.Ose]: 'OSE',
-  [Concepto.Otro]: 'OTRO',
+  [Concepto.Otro]: 'Otro',
   [Concepto.Antel]: 'ANTEL',
   [Concepto.Sueldos]: 'Sueldos',
   [Concepto.Barraca]: 'Barraca',
@@ -45,7 +45,7 @@ export interface FinanzaRespuestaDto {
   concepto: Concepto;
   fecha: string;
   importe: number;
-  descripcion?: string | null;
+  notas?: string | null;
   tipoMovimiento: TipoMovimiento;
 }
 
@@ -54,7 +54,7 @@ export interface FinanzaRow extends Record<string, unknown> {
   concepto: Concepto;
   fecha: string;
   importeSignado: number;
-  descripcion?: string | null;
+  notas?: string | null;
 }
 
 export enum FormaPago {
@@ -82,18 +82,22 @@ export const CONCEPTOS_EGRESO = [
   Concepto.Antel,
   Concepto.Ose,
   Concepto.Barraca,
+  Concepto.Sueldos,
+  Concepto.DevolucionReserva,
   Concepto.Otro,
 ];
 
 export function getConceptoOptionsByTipoMovimiento(
   tipoMovimiento: TipoMovimiento | null | undefined,
 ): FormFieldOption[] {
-  const conceptos =
-    tipoMovimiento === TipoMovimiento.Ingreso
-      ? CONCEPTOS_INGRESO
-      : tipoMovimiento === TipoMovimiento.Egreso
-        ? CONCEPTOS_EGRESO
-        : Object.values(Concepto);
+  let conceptos: Concepto[];
+  if (tipoMovimiento === TipoMovimiento.Ingreso) {
+    conceptos = CONCEPTOS_INGRESO;
+  } else if (tipoMovimiento === TipoMovimiento.Egreso) {
+    conceptos = CONCEPTOS_EGRESO;
+  } else {
+    conceptos = Object.values(Concepto);
+  }
 
   return conceptos.map((concepto) => ({
     label: CONCEPTO_LABEL[concepto],

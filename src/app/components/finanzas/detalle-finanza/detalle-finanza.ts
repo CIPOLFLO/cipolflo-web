@@ -4,10 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, filter, map, switchMap } from 'rxjs';
 import {
-  AppButton,
   DetailRegistroSection,
   DetailSection,
-  FormActions,
   FormLayout,
   PageLayout,
   type DetailFieldConfig,
@@ -20,15 +18,7 @@ import { TipoMovimiento } from '../models/finanza.model';
 @Component({
   standalone: true,
   selector: 'app-detalle-finanza',
-  imports: [
-    CommonModule,
-    PageLayout,
-    FormLayout,
-    AppButton,
-    FormActions,
-    DetailSection,
-    DetailRegistroSection,
-  ],
+  imports: [CommonModule, PageLayout, FormLayout, DetailSection, DetailRegistroSection],
   templateUrl: './detalle-finanza.html',
   styleUrl: './detalle-finanza.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -108,11 +98,6 @@ export class DetalleFinanza {
       },
     ];
   });
-
-  protected onEditar(): void {
-    // TODO: navegar a /finanzas/:id/editar cuando se implemente la pantalla de edición
-    this.router.navigate(['/finanzas', this.finanzaId()]);
-  }
 
   protected formatImporte(importe: number, tipoMovimiento: TipoMovimiento): string {
     const { signo } = this.tipoMovimientoConfig[tipoMovimiento];
