@@ -96,6 +96,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   ultimaCuotaDto: UltimaCuotaDto | null;
 }
 export interface ModificacionParticularRequestDto {
+  cedula: string;
   nombreCompleto: string;
   telefono: string;
   mail: string | null;

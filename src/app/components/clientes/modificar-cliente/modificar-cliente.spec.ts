@@ -418,11 +418,21 @@ describe('ModificarCliente - onConfirmar Particular', () => {
   it('onConfirmar llama a modificarParticular con el payload correcto', () => {
     component['onConfirmar']();
     expect(mockClientesService.modificarParticular).toHaveBeenCalledWith(2, {
+      cedula: '5.191.926-8',
       nombreCompleto: 'Juan Pérez',
       telefono: '099958654',
       mail: 'juan@example.com',
       notas: 'Socio nuevo',
     });
+  });
+
+  it('onConfirmar envía la cédula editada, no la original', () => {
+    component['form'].get('cedula')?.setValue('  1.234.567-2  ');
+    component['onConfirmar']();
+    expect(mockClientesService.modificarParticular).toHaveBeenCalledWith(
+      2,
+      expect.objectContaining({ cedula: '1.234.567-2' }),
+    );
   });
 
   it('onConfirmar navega al detalle del cliente en éxito para particular', () => {
