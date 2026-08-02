@@ -163,6 +163,13 @@ describe('ModificarCliente', () => {
     expect(keys.indexOf('tipoCliente')).toBe(1);
   });
 
+  it('el campo estado es de sólo lectura (modificarSocio no persiste el estado)', () => {
+    const estado = component['infoFields']().find((f) => f.key === 'estado');
+    expect(estado?.disabled).toBe(true);
+    expect(estado?.locked).toBe(true);
+    expect(estado?.defaultValue).toBe(EstadoSocio.Activo);
+  });
+
   it('infoFields precarga categoriaSocio y fechaIngreso con los valores actuales del socio', () => {
     const fields = component['infoFields']();
     expect(fields.find((f) => f.key === 'categoriaSocio')?.defaultValue).toBe(
@@ -411,11 +418,21 @@ describe('ModificarCliente - onConfirmar Particular', () => {
   it('onConfirmar llama a modificarParticular con el payload correcto', () => {
     component['onConfirmar']();
     expect(mockClientesService.modificarParticular).toHaveBeenCalledWith(2, {
+      cedula: '5.191.926-8',
       nombreCompleto: 'Juan Pérez',
       telefono: '099958654',
       mail: 'juan@example.com',
       notas: 'Socio nuevo',
     });
+  });
+
+  it('onConfirmar envía la cédula editada, no la original', () => {
+    component['form'].get('cedula')?.setValue('  1.234.567-2  ');
+    component['onConfirmar']();
+    expect(mockClientesService.modificarParticular).toHaveBeenCalledWith(
+      2,
+      expect.objectContaining({ cedula: '1.234.567-2' }),
+    );
   });
 
   it('onConfirmar navega al detalle del cliente en éxito para particular', () => {

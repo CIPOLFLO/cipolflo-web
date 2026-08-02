@@ -38,6 +38,18 @@ export const ESTADO_SOCIO_OPTIONS = [
   { label: 'De baja', value: EstadoSocio.Baja },
 ];
 
+export const ESTADO_SOCIO_LABEL: Record<EstadoSocio, string> = {
+  [EstadoSocio.Activo]: 'Activo',
+  [EstadoSocio.Inactivo]: 'Inactivo',
+  [EstadoSocio.Baja]: 'De baja',
+};
+
+export const TIPO_CLIENTE_LABEL: Record<TipoCliente, string> = {
+  [TipoCliente.Socio]: 'Socio',
+  [TipoCliente.Particular]: 'Particular',
+  [TipoCliente.Empresa]: 'Empresa',
+};
+
 /** Opciones de tipo de cliente para selects de formulario (obligatorios, sin "Todos"). */
 export const TIPO_CLIENTE_FORM_OPTIONS: FormFieldOption[] = [
   { label: 'Socio', value: TipoCliente.Socio },
@@ -96,6 +108,7 @@ export interface ClienteDetalleRespuestaDto extends AuditInfoDto {
   ultimaCuotaDto: UltimaCuotaDto | null;
 }
 export interface ModificacionParticularRequestDto {
+  cedula: string;
   nombreCompleto: string;
   telefono: string;
   mail: string | null;
