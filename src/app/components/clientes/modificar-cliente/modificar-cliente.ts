@@ -181,12 +181,15 @@ export class ModificarCliente extends ClienteFormBase implements OnInit {
         maxDate: toIsoDate(startOfToday())!,
       },
       {
+        // Sólo lectura: `ModificacionSocioRequestDto` no lleva `estado`, así que editarlo
+        // acá nunca se persistía. La baja/reactivación se hace desde el listado.
         key: 'estado',
         label: 'Estado',
         type: 'select',
         defaultValue: c.estado ?? undefined,
+        disabled: true,
+        locked: true,
         options: [
-          { label: '', value: '' },
           { label: 'Activo', value: EstadoSocio.Activo },
           { label: 'Inactivo', value: EstadoSocio.Inactivo },
           { label: 'De baja', value: EstadoSocio.Baja },

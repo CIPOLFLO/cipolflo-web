@@ -163,6 +163,13 @@ describe('ModificarCliente', () => {
     expect(keys.indexOf('tipoCliente')).toBe(1);
   });
 
+  it('el campo estado es de sólo lectura (modificarSocio no persiste el estado)', () => {
+    const estado = component['infoFields']().find((f) => f.key === 'estado');
+    expect(estado?.disabled).toBe(true);
+    expect(estado?.locked).toBe(true);
+    expect(estado?.defaultValue).toBe(EstadoSocio.Activo);
+  });
+
   it('infoFields precarga categoriaSocio y fechaIngreso con los valores actuales del socio', () => {
     const fields = component['infoFields']();
     expect(fields.find((f) => f.key === 'categoriaSocio')?.defaultValue).toBe(
