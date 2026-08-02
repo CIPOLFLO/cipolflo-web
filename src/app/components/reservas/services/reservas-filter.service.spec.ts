@@ -73,13 +73,22 @@ describe('ReservasFilterService', () => {
     expect(field?.options?.[0]).toEqual({ label: 'Todos', value: '' });
   });
 
+  it('la key del filtro de servicio es el query param que espera el backend', () => {
+    // `ReservasService.getAll` esparce los filtros tal cual: la key ES el nombre del
+    // query param, y `GET /api/v1/reservas` sólo reconoce `servicioId`. Con cualquier
+    // otro nombre el backend ignora el filtro en silencio y devuelve todo.
+    const keys = service.filterFields().map((f) => f.key);
+    expect(keys).toContain('servicioId');
+    expect(keys).not.toContain('servicio');
+  });
+
   it('servicio está deshabilitado por defecto', () => {
-    const field = service.filterFields().find((f) => f.key === 'servicio');
+    const field = service.filterFields().find((f) => f.key === 'servicioId');
     expect(field?.disabled).toBe(true);
   });
 
   it('servicio tiene solo la opción "Todos" por defecto', () => {
-    const field = service.filterFields().find((f) => f.key === 'servicio');
+    const field = service.filterFields().find((f) => f.key === 'servicioId');
     expect(field?.options).toEqual([{ label: 'Todos', value: '' }]);
   });
 
@@ -94,9 +103,9 @@ describe('ReservasFilterService', () => {
     expect(mockServicioService.getAll).not.toHaveBeenCalled();
   });
 
-  it('onValueChange con procedencia devuelve { resetKeys: ["servicio"] }', () => {
+  it('onValueChange con procedencia devuelve { resetKeys: ["servicioId"] }', () => {
     const result = service.onValueChange('procedencia', Procedencia.Sede);
-    expect(result).toEqual({ resetKeys: ['servicio'] });
+    expect(result).toEqual({ resetKeys: ['servicioId'] });
   });
 
   it('onValueChange con procedencia vacía no llama a ServicioService', () => {
@@ -109,7 +118,7 @@ describe('ReservasFilterService', () => {
     service.onValueChange('procedencia', Procedencia.Sede);
     TestBed.flushEffects();
 
-    const field = service.filterFields().find((f) => f.key === 'servicio');
+    const field = service.filterFields().find((f) => f.key === 'servicioId');
     expect(field?.disabled).toBe(false);
   });
 
@@ -117,7 +126,7 @@ describe('ReservasFilterService', () => {
     service.onValueChange('procedencia', Procedencia.Sede);
     TestBed.flushEffects();
 
-    const field = service.filterFields().find((f) => f.key === 'servicio');
+    const field = service.filterFields().find((f) => f.key === 'servicioId');
     expect(field?.options).toEqual([
       { label: 'Todos', value: '' },
       { label: 'Pileta', value: '1' },
@@ -142,7 +151,7 @@ describe('ReservasFilterService', () => {
     service.onClear();
     TestBed.flushEffects();
 
-    const field = service.filterFields().find((f) => f.key === 'servicio');
+    const field = service.filterFields().find((f) => f.key === 'servicioId');
     expect(field?.disabled).toBe(true);
     expect(field?.options).toEqual([{ label: 'Todos', value: '' }]);
   });

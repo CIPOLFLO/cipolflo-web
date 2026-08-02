@@ -29,7 +29,8 @@ export class ReservasFilterService extends FilterConfigProvider {
       ],
     },
     {
-      key: 'servicio',
+      // La key es el nombre del query param: `GET /api/v1/reservas` espera `servicioId`.
+      key: 'servicioId',
       label: 'Servicio',
       type: 'select',
       placeholder: 'Seleccionar servicio',
@@ -90,7 +91,7 @@ export class ReservasFilterService extends FilterConfigProvider {
   override onValueChange(key: string, value: string | null): { resetKeys?: string[] } | void {
     if (key !== 'procedencia') return;
     this._procedencia.set(value || null);
-    return { resetKeys: ['servicio'] };
+    return { resetKeys: ['servicioId'] };
   }
 
   override onClear(): void {
