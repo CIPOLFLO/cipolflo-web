@@ -71,7 +71,6 @@ export class ReservasFilterService extends FilterConfigProvider {
         this._servicioDisabled.set(true);
         return;
       }
-      // TODO: reemplazar cuando el backend esté disponible
       const sub = this.servicioService
         .getAll({ page: 0, size: 100, filters: { procedencia, estado: EstadoServicio.Habilitado } })
         .pipe(
