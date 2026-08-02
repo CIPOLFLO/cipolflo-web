@@ -44,6 +44,7 @@ export class App implements OnInit {
   protected readonly navItems: NavItem[] = [
     { label: 'Reservas', route: '/reservas', icon: 'pi pi-calendar' },
     { label: 'Clientes', route: '/clientes', icon: 'pi pi-users' },
+    { label: 'Ayuda', route: '/ayuda', icon: 'pi pi-question-circle' },
   ];
 
   public ngOnInit(): void {

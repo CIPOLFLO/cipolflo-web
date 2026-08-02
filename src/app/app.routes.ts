@@ -40,6 +40,10 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./components/ajustes/ajustes.routes').then((m) => m.AJUSTES_ROUTES),
       },
+      {
+        path: 'ayuda',
+        loadChildren: () => import('./components/ayuda/ayuda.routes').then((m) => m.AYUDA_ROUTES),
+      },
     ],
   },
   {

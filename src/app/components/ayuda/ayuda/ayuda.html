@@ -1,0 +1,51 @@
+<app-page-layout
+  pageTitle="Ayuda y documentación"
+  pageDescription="Manuales del sistema en PDF"
+  [showBackButton]="true"
+  backButtonLink="/reservas"
+>
+  @if (cargando()) {
+    <p class="ayuda__estado"><i class="pi pi-spin pi-spinner"></i> Cargando manuales…</p>
+  } @else if (secciones().length === 0) {
+    <p class="ayuda__estado">No hay manuales disponibles.</p>
+  } @else {
+    <div class="ayuda__secciones">
+      @for (seccion of secciones(); track seccion.categoria) {
+        <section class="ayuda__seccion">
+          <h3 class="ayuda__seccion-titulo">{{ seccion.titulo }}</h3>
+
+          <div class="ayuda__grid">
+            @for (manual of seccion.manuales; track manual.clave) {
+              <article
+                class="ayuda__manual"
+                [class.ayuda__manual--no-disponible]="!manual.disponible"
+              >
+                <div class="ayuda__manual-texto">
+                  <h4 class="ayuda__manual-titulo">{{ manual.titulo }}</h4>
+                  <span class="ayuda__manual-detalle">{{ manual.detalle }}</span>
+                </div>
+
+                <button
+                  type="button"
+                  class="ayuda__descargar"
+                  [attr.aria-label]="'Descargar ' + manual.titulo"
+                  [disabled]="!manual.disponible || descargando() === manual.clave"
+                  [pTooltip]="manual.disponible ? 'Descargar' : 'Manual en preparación'"
+                  tooltipPosition="top"
+                  (click)="descargar(manual)"
+                >
+                  <i
+                    [class]="
+                      descargando() === manual.clave ? 'pi pi-spin pi-spinner' : 'pi pi-download'
+                    "
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</app-page-layout>
